@@ -15,7 +15,6 @@
     <properties>
         <java.version>11</java.version>
         <start-class>uk.gov.companieshouse.PscDataApiApplication</start-class>
-
         <spring-boot-dependencies.version>2.6.4</spring-boot-dependencies.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
@@ -106,6 +105,15 @@
                         <version>1.1</version>
                     </dependency>
                 </dependencies>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.sonarsource.scanner.maven</groupId>
+                <artifactId>sonar-maven-plugin</artifactId>
+                <version>${sonar-maven-plugin.version}</version>
             </plugin>
         </plugins>
     </build>
