@@ -15,7 +15,7 @@
     <description>Service handling CRUD functions for pscs</description>
     <properties>
         <java.version>11</java.version>
-        <start-class>uk.gov.companieshouse.PscDataApiApplication</start-class>
+        <start-class>uk.gov.companieshouse.pscdataapi.PscDataApiApplication</start-class>
         <spring-boot-dependencies.version>2.6.4</spring-boot-dependencies.version>
         <spring-boot-maven-plugin.version>2.6.4</spring-boot-maven-plugin.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
