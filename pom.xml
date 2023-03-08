@@ -9,13 +9,15 @@
         <relativePath />
     </parent>
     <artifactId>psc-data-api</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>unversioned</version>
+    <packaging>jar</packaging>
     <name>psc-data-api</name>
     <description>Service handling CRUD functions for pscs</description>
     <properties>
         <java.version>11</java.version>
         <start-class>uk.gov.companieshouse.PscDataApiApplication</start-class>
         <spring-boot-dependencies.version>2.6.4</spring-boot-dependencies.version>
+        <spring-boot-maven-plugin.version>2.6.4</spring-boot-maven-plugin.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <maven-surefire-plugin.version>3.0.0-M5</maven-surefire-plugin.version>
@@ -73,6 +75,17 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${spring-boot-maven-plugin.version}</version>
+                <configuration>
+                    <mainClass>${start-class}</mainClass>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
