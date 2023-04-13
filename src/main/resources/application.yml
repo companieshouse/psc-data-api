@@ -13,7 +13,6 @@ spring:
     mongodb:
       uri: ${MONGODB_URL:mongodb://mongo:27017}
       name: company_pscs
-      field-naming-strategy: org.springframework.data.mapping.model.SnakeCaseFieldNamingStrategy
   jackson:
     default-property-inclusion: NON_NULL
 
