@@ -1,0 +1,22 @@
+management:
+  endpoints:
+    web:
+      base-path: /psc-data-api
+      path-mapping:
+        health: /healthcheck
+
+logger:
+  namespace: psc-data-api
+
+spring:
+  data:
+    mongodb:
+      uri: ${MONGODB_URL:mongodb://mongo:27017}
+      name: company_pscs
+  jackson:
+    default-property-inclusion: NON_NULL
+
+mongodb:
+  pscs:
+    collection:
+      name: delta_company_pscs

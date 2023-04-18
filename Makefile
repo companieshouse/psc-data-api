@@ -30,6 +30,10 @@ test: test-unit
 test-unit:
 	mvn test
 
+.PHONY: coverage
+coverage:
+	mvn verify
+
 .PHONY: package
 package:
 ifndef version
@@ -45,7 +49,7 @@ endif
 	rm -rf $(tmpdir)
 
 .PHONY: dist
-dist: clean package
+dist: clean build package coverage
 
 .PHONY: publish
 publish:
