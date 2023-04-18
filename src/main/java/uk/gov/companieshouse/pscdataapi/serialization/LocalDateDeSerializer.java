@@ -10,12 +10,12 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
+import uk.gov.companieshouse.pscdataapi.PscDataApiApplication;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
 
 public class LocalDateDeSerializer extends JsonDeserializer<LocalDate> {
-    public static final String APPLICATION_NAME_SPACE = "psc-data-api";
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(APPLICATION_NAME_SPACE);
+    private static final Logger LOGGER = LoggerFactory.getLogger(
+            PscDataApiApplication.APPLICATION_NAME_SPACE);
 
     @Override
     public LocalDate deserialize(JsonParser jsonParser, DeserializationContext

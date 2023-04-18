@@ -5,8 +5,10 @@ import org.bson.Document;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
+import uk.gov.companieshouse.pscdataapi.exceptions.FailedToConvertException;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 
 class CompanyPscReadConverterTest {
 
@@ -26,5 +28,11 @@ class CompanyPscReadConverterTest {
         FullRecordCompanyPSCApi pscApi = converter.convert(document);
 
         assertEquals(NOTIFICATION_ID, pscApi.getExternalData().getNotificationId());
+    }
+
+    @Test
+    void conversionFails() {
+        Document brokenDocument = new Document("unknown_property", "value");
+        assertThrows(FailedToConvertException.class, () -> converter.convert(brokenDocument));
     }
 }

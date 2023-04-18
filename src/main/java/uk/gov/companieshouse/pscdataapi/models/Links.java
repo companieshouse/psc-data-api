@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.pscdataapi.models;
 
+import java.util.Objects;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 public class Links {
@@ -24,5 +25,35 @@ public class Links {
 
     public void setStatements(String statements) {
         this.statements = statements;
+    }
+
+    @Override
+    public String toString() {
+        return "Links{"
+                + "self='"
+                + self
+                + '\''
+                + ", statements='"
+                + statements
+                + '\''
+                + '}';
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) {
+            return true;
+        }
+        if (object == null || getClass() != object.getClass()) {
+            return false;
+        }
+        Links links = (Links) object;
+        return Objects.equals(self, links.self)
+                && Objects.equals(statements, links.statements);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(self, statements);
     }
 }

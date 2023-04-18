@@ -1,22 +1,15 @@
 package uk.gov.companieshouse.pscdataapi.transform;
 
-import java.time.LocalDate;
-import java.time.OffsetDateTime;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.companieshouse.api.psc.Data;
-import uk.gov.companieshouse.api.psc.DateOfBirth;
-import uk.gov.companieshouse.api.psc.ExternalData;
 import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
-import uk.gov.companieshouse.api.psc.InternalData;
-import uk.gov.companieshouse.api.psc.SensitiveData;
+import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.exceptions.FailedToTransformException;
-import uk.gov.companieshouse.pscdataapi.models.NameElements;
-import uk.gov.companieshouse.pscdataapi.models.PscData;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
-import uk.gov.companieshouse.pscdataapi.models.Updated;
 import uk.gov.companieshouse.pscdataapi.util.TestHelper;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -25,11 +18,15 @@ import static org.hamcrest.Matchers.is;
 @ExtendWith(MockitoExtension.class)
 class CompanyPscTransformerTest {
 
+    @Mock
+    private Logger logger;
+
     private static final String INDIVIDUAL_KIND = "individual-person-with-significant-control";
     private static final String SECURE_KIND = "super-secure-person-with-significant-control";
     private static final String CORPORATE_KIND = "corporate-entity-person-with-significant-control";
 
-    private CompanyPscTransformer pscTransformer = new CompanyPscTransformer();
+    @InjectMocks
+    private CompanyPscTransformer pscTransformer;
     private FullRecordCompanyPSCApi fullRecordCompanyPSCApi;
 
     @Test

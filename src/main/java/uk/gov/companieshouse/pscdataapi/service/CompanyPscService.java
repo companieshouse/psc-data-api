@@ -4,12 +4,10 @@ import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
 import uk.gov.companieshouse.logging.Logger;
-import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
 import uk.gov.companieshouse.pscdataapi.models.Created;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
@@ -19,12 +17,11 @@ import uk.gov.companieshouse.pscdataapi.transform.CompanyPscTransformer;
 @Service
 public class CompanyPscService {
 
-    private static final String APPLICATION_NAME_SPACE = "psc-data-api";
-    private static final Logger logger = LoggerFactory.getLogger(APPLICATION_NAME_SPACE);
-
     private final DateTimeFormatter dateTimeFormatter =
             DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'");
 
+    @Autowired
+    private Logger logger;
     @Autowired
     private CompanyPscTransformer transformer;
     @Autowired
@@ -87,8 +84,7 @@ public class CompanyPscService {
     private Created getCreatedFromCurrentRecord(String notificationId) {
         Created created = new Created();
         try {
-            Optional<PscDocument> doc = repository.findById(notificationId);
-            return doc.map(PscDocument::getCreated).orElse(null);
+            return repository.findById(notificationId).map(PscDocument::getCreated).orElse(null);
         } catch (Exception exception) {
             logger.error("exception thrown: " + exception.getMessage());
         }

@@ -1,31 +1,32 @@
 package uk.gov.companieshouse.pscdataapi.transform;
 
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
+import uk.gov.companieshouse.api.psc.SensitiveData;
 import uk.gov.companieshouse.logging.Logger;
-import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.companieshouse.pscdataapi.data.IndividualPscRoles;
 import uk.gov.companieshouse.pscdataapi.data.SecurePscRoles;
 import uk.gov.companieshouse.pscdataapi.exceptions.FailedToTransformException;
-import uk.gov.companieshouse.pscdataapi.models.Created;
-import uk.gov.companieshouse.pscdataapi.models.NameElements;
+import uk.gov.companieshouse.pscdataapi.models.Address;
+import uk.gov.companieshouse.pscdataapi.models.DateOfBirth;
 import uk.gov.companieshouse.pscdataapi.models.PscData;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
-import uk.gov.companieshouse.pscdataapi.models.Updated;
+import uk.gov.companieshouse.pscdataapi.models.PscSensitiveData;
+import uk.gov.companieshouse.pscdataapi.util.PscTransformationHelper;
 
 
 @Component
 public class CompanyPscTransformer {
 
+    @Autowired
+    private Logger logger;
+
     private final DateTimeFormatter dateTimeFormatter =
             DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSSSSS");
-
-    private static final Logger logger = LoggerFactory.getLogger("psc-data-api");
-
 
     /**
      * Transform PSC.
@@ -35,6 +36,7 @@ public class CompanyPscTransformer {
      */
     public PscDocument transformPsc(String notificationId, FullRecordCompanyPSCApi requestBody) {
         PscDocument pscDocument = new PscDocument();
+        logger.info(String.format("transforming incoming payload with Id: %s", notificationId));
 
         try {
             pscDocument.setId(notificationId);
@@ -43,15 +45,21 @@ public class CompanyPscTransformer {
             pscDocument.setCompanyNumber(requestBody.getExternalData().getCompanyNumber());
             OffsetDateTime deltaAt = requestBody.getInternalData().getDeltaAt();
             pscDocument.setDeltaAt(dateTimeFormatter.format(deltaAt));
-            Created created = new Created();
-            created.setAt(LocalDateTime.parse(requestBody.getInternalData().getCreatedAt()));
-            Updated updated = new Updated();
-            updated.setAt(requestBody.getInternalData().getUpdatedAt());
-            pscDocument.setCreated(created);
+            PscTransformationHelper.createDateFields(requestBody, pscDocument);
             pscDocument.setUpdatedBy(requestBody.getInternalData().getUpdatedBy());
-            pscDocument.setUpdated(updated);
-            pscDocument.setSensitiveData(requestBody.getExternalData().getSensitiveData());
-            manageDataFields(requestBody, pscDocument);
+            pscDocument.setData(transformDataFields(requestBody));
+
+            String kind = requestBody.getExternalData().getData().getKind();
+
+            if (IndividualPscRoles.includes(kind)) {
+                pscDocument.setSensitiveData(transformSensitiveDataFields(requestBody));
+                handleUraSameAsRo(pscDocument.getData(),
+                        requestBody.getExternalData().getSensitiveData());
+                handleIndividualFields(requestBody, pscDocument.getData());
+            }
+            if (SecurePscRoles.includes(kind)) {
+                handleSecureFields(requestBody, pscDocument.getData());
+            }
         } catch (Exception exception) {
             throw new FailedToTransformException(String.format(
                     "Failed to transform API payload: %s", exception.getMessage()));
@@ -60,15 +68,27 @@ public class CompanyPscTransformer {
         return pscDocument;
     }
 
-    private void manageDataFields(FullRecordCompanyPSCApi requestBody, PscDocument pscDocument) {
-        PscData data = new PscData();
+    private PscSensitiveData transformSensitiveDataFields(FullRecordCompanyPSCApi requestBody) {
+        PscSensitiveData pscSensitiveData = new PscSensitiveData();
+        SensitiveData sensitiveData = requestBody.getExternalData().getSensitiveData();
+        DateOfBirth dateOfBirth = new DateOfBirth(sensitiveData.getDateOfBirth());
+        pscSensitiveData.setDateOfBirth(dateOfBirth);
+        pscSensitiveData.setUsualResidentialAddress(
+                new Address(sensitiveData.getUsualResidentialAddress()));
 
-        data.setAddress(requestBody.getExternalData().getData().getServiceAddress());
+        return pscSensitiveData;
+    }
+
+    private PscData transformDataFields(FullRecordCompanyPSCApi requestBody) {
+        PscData data = new PscData();
+        Address serviceAddress = new Address(requestBody.getExternalData()
+                .getData().getServiceAddress());
+        data.setAddress(serviceAddress);
         data.setCeasedOn(requestBody.getExternalData().getData().getCeasedOn());
         data.setDescription(requestBody.getExternalData().getData().getDescription());
         data.setEtag(requestBody.getExternalData().getData().getEtag());
         data.setKind(requestBody.getExternalData().getData().getKind());
-        data.setLinks(requestBody.getExternalData().getData().getLinks());
+        data.setLinks(PscTransformationHelper.createLinks(requestBody));
         data.setName(requestBody.getExternalData().getData().getName());
         data.setNationality(requestBody.getExternalData().getData().getNationality());
         data.setNaturesOfControl(requestBody.getExternalData().getData().getNaturesOfControl());
@@ -77,20 +97,11 @@ public class CompanyPscTransformer {
         data.setSanctioned(requestBody.getExternalData().getData().getIsSanctioned());
         data.setServiceAddressIsSameAsRegisteredOfficeAddress(requestBody.getExternalData()
                     .getData().getServiceAddressSameAsRegisteredOfficeAddress());
-
-        String kind = requestBody.getExternalData().getData().getKind();
-
-        if (IndividualPscRoles.includes(kind)) {
-            handleIndividualFields(requestBody, data);
-        }
-        if (SecurePscRoles.includes(kind)) {
-            handleSecureFields(requestBody, data);
-        }
-        pscDocument.setData(data);
+        return data;
     }
 
     private void handleIndividualFields(FullRecordCompanyPSCApi requestBody, PscData data) {
-        createNameElements(requestBody, data);
+        data.setNameElements(PscTransformationHelper.createNameElements(requestBody));
         data.setCountryOfResidence(requestBody.getExternalData().getData().getCountryOfResidence());
     }
 
@@ -99,12 +110,8 @@ public class CompanyPscTransformer {
         data.setCeased(ceased);
     }
 
-    private void createNameElements(FullRecordCompanyPSCApi requestBody, PscData data) {
-        NameElements nameElements = new NameElements();
-        nameElements.setTitle(requestBody.getExternalData().getData().getTitle());
-        nameElements.setForename(requestBody.getExternalData().getData().getForename());
-        nameElements.setMiddleName(requestBody.getExternalData().getData().getOtherForenames());
-        nameElements.setSurname(requestBody.getExternalData().getData().getSurname());
-        data.setNameElements(nameElements);
+    private void handleUraSameAsRo(PscData data, SensitiveData sensitiveData) {
+        data.setResidentialAddressIsSameAsServiceAddress(sensitiveData
+                .getResidentialAddressSameAsServiceAddress());
     }
 }

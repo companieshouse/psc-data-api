@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.Objects;
 
 import org.springframework.data.mongodb.core.mapping.Field;
-import uk.gov.companieshouse.api.psc.Address;
-import uk.gov.companieshouse.api.psc.ItemLinkTypes;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PscData {
@@ -55,7 +53,7 @@ public class PscData {
     private NameElements nameElements;
 
     @Field("links")
-    private List<ItemLinkTypes> links;
+    private Links links;
 
     public LocalDate getCeasedOn() {
         return ceasedOn;
@@ -141,11 +139,11 @@ public class PscData {
         this.nameElements = nameElements;
     }
 
-    public List<ItemLinkTypes> getLinks() {
+    public Links getLinks() {
         return links;
     }
 
-    public void setLinks(List<ItemLinkTypes> links) {
+    public void setLinks(Links links) {
         this.links = links;
     }
 

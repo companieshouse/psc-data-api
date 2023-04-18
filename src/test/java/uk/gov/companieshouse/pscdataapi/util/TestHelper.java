@@ -2,15 +2,22 @@ package uk.gov.companieshouse.pscdataapi.util;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.util.List;
+
 import uk.gov.companieshouse.api.psc.Data;
-import uk.gov.companieshouse.api.psc.DateOfBirth;
 import uk.gov.companieshouse.api.psc.ExternalData;
 import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
 import uk.gov.companieshouse.api.psc.InternalData;
+import uk.gov.companieshouse.api.psc.ItemLinkTypes;
 import uk.gov.companieshouse.api.psc.SensitiveData;
+import uk.gov.companieshouse.api.psc.UsualResidentialAddress;
+import uk.gov.companieshouse.pscdataapi.models.Address;
+import uk.gov.companieshouse.pscdataapi.models.DateOfBirth;
+import uk.gov.companieshouse.pscdataapi.models.Links;
 import uk.gov.companieshouse.pscdataapi.models.NameElements;
 import uk.gov.companieshouse.pscdataapi.models.PscData;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
+import uk.gov.companieshouse.pscdataapi.models.PscSensitiveData;
 import uk.gov.companieshouse.pscdataapi.models.Updated;
 
 public class TestHelper {
@@ -23,8 +30,10 @@ public class TestHelper {
         data.setName("forename");
         data.setCompanyNumber("companyNumber");
         data.setKind(kind);
+        data.setLinks(List.of(new ItemLinkTypes()));
+        data.setServiceAddress(new uk.gov.companieshouse.api.psc.Address());
         SensitiveData sensitiveData = new SensitiveData();
-        sensitiveData.setDateOfBirth(new DateOfBirth());
+        sensitiveData.setDateOfBirth(new uk.gov.companieshouse.api.psc.DateOfBirth());
         externalData.setData(data);
         externalData.setSensitiveData(sensitiveData);
         externalData.setNotificationId("id");
@@ -36,6 +45,8 @@ public class TestHelper {
         internalData.setUpdatedAt(LocalDate.parse("2022-01-12"));
 
         if(kind.contains("individual")) {
+            UsualResidentialAddress address = new UsualResidentialAddress();
+            sensitiveData.setUsualResidentialAddress(address);
             data.setSurname("surname");
         } else if(kind.contains("secure")) {
             data.setCeasedOn(LocalDate.now());
@@ -52,12 +63,11 @@ public class TestHelper {
         PscData data = new PscData();
         data.setKind(kind);
         data.setName("forename");
-        SensitiveData sensitiveData = new SensitiveData();
-        sensitiveData.setDateOfBirth(new DateOfBirth());
+        data.setLinks(new Links());
+        data.setAddress(new Address());
 
         output.setNotificationId("id");
         output.setData(data);
-        output.setSensitiveData(sensitiveData);
         output.setPscId("pscId");
         output.setCompanyNumber("1234567");
         output.setDeltaAt("20220112000000000000");
@@ -66,6 +76,10 @@ public class TestHelper {
         output.setUpdated(updated);
 
         if(kind.contains("individual")) {
+            PscSensitiveData sensitiveData = new PscSensitiveData();
+            sensitiveData.setDateOfBirth(new DateOfBirth());
+            sensitiveData.setUsualResidentialAddress(new Address());
+            output.setSensitiveData(sensitiveData);
             NameElements nameElements = new NameElements();
             nameElements.setSurname("surname");
             data.setNameElements(nameElements);

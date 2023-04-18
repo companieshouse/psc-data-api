@@ -5,7 +5,6 @@ import java.util.Objects;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
-import uk.gov.companieshouse.api.psc.SensitiveData;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Document(collection = "delta_company_pscs")
@@ -39,7 +38,7 @@ public class PscDocument {
     private PscData data;
 
     @Field("sensitive_data")
-    private SensitiveData sensitiveData;
+    private PscSensitiveData sensitiveData;
 
     public String getId() {
         return id;
@@ -113,11 +112,11 @@ public class PscDocument {
         this.updatedBy = updatedBy;
     }
 
-    public SensitiveData getSensitiveData() {
+    public PscSensitiveData getSensitiveData() {
         return sensitiveData;
     }
 
-    public void setSensitiveData(SensitiveData sensitiveData) {
+    public void setSensitiveData(PscSensitiveData sensitiveData) {
         this.sensitiveData = sensitiveData;
     }
 

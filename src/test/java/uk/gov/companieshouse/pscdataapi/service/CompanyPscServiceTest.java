@@ -17,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.api.psc.ExternalData;
 import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
 import uk.gov.companieshouse.api.psc.InternalData;
+import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 import uk.gov.companieshouse.pscdataapi.models.Updated;
 import uk.gov.companieshouse.pscdataapi.repository.CompanyPscRepository;
@@ -33,6 +34,9 @@ import static org.mockito.Mockito.when;
 class CompanyPscServiceTest {
 
     private static final String PSC_ID = "pscId";
+
+    @Mock
+    private Logger logger;
 
     @Mock
     private CompanyPscRepository repository;

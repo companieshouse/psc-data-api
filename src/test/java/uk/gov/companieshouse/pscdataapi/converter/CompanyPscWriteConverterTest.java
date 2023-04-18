@@ -6,6 +6,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 
+import org.bson.Document;
+import uk.gov.companieshouse.pscdataapi.exceptions.FailedToConvertException;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 class CompanyPscWriteConverterTest {
@@ -28,5 +31,10 @@ class CompanyPscWriteConverterTest {
 
         String json = object.toJson();
         assertTrue(json.contains(PSC_ID));
+    }
+
+    @Test
+    void conversionFails() {
+        assertThrows(FailedToConvertException.class, () -> converter.convert(null));
     }
 }
