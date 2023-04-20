@@ -19,9 +19,15 @@ security-check:
 
 .PHONY: build
 build:
+	$(info Packaging version: $(version))
 	mvn versions:set -DnewVersion=$(version) -DgenerateBackupPoms=false
 	mvn package -DskipTests=true
-	cp ./target/$(artifact_name)-$(version).jar ./$(artifact_name).jar
+	$(eval tmpdir:=$(shell mktemp -d build-XXXXXXXXXX))
+	cp ./start.sh $(tmpdir)
+	cp ./routes.yaml $(tmpdir)
+	cp ./target/$(artifact_name)-$(version).jar $(tmpdir)/$(artifact_name).jar
+	cd $(tmpdir); zip -r ../$(artifact_name)-$(version).zip *
+	rm -rf $(tmpdir)
 
 .PHONY: test
 test: test-unit
