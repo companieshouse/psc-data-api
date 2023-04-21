@@ -1,6 +1,7 @@
 package uk.gov.companieshouse.pscdataapi.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -37,7 +38,7 @@ public class CompanyPscController {
         try {
             LOGGER.info("Payload received, inserting record...");
             pscService.insertPscRecord(contextId, request);
-            return ResponseEntity.ok().build();
+            return ResponseEntity.status(HttpStatus.CREATED).build();
         } catch (ServiceUnavailableException exception) {
             LOGGER.info(exception.getMessage());
             return ResponseEntity.internalServerError().build();
