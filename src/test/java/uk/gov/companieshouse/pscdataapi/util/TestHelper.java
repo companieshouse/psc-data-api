@@ -1,9 +1,12 @@
 package uk.gov.companieshouse.pscdataapi.util;
 
+import java.io.InputStreamReader;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.List;
 
+import org.springframework.util.FileCopyUtils;
 import uk.gov.companieshouse.api.psc.Data;
 import uk.gov.companieshouse.api.psc.ExternalData;
 import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
@@ -89,5 +92,12 @@ public class TestHelper {
         }
 
         return output;
+    }
+
+    public static String createJsonPayload() throws IOException {
+        InputStreamReader exampleJsonPayload = new InputStreamReader(
+                ClassLoader.getSystemClassLoader().getResourceAsStream("psc_payload.json"));
+
+        return FileCopyUtils.copyToString(exampleJsonPayload);
     }
 }
