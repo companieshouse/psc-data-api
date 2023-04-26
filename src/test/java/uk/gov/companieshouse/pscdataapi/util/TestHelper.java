@@ -50,7 +50,10 @@ public class TestHelper {
         if(kind.contains("individual")) {
             UsualResidentialAddress address = new UsualResidentialAddress();
             sensitiveData.setUsualResidentialAddress(address);
-            data.setSurname("surname");
+            uk.gov.companieshouse.api.psc.NameElements nameElements =
+                    new uk.gov.companieshouse.api.psc.NameElements();
+            nameElements.setSurname("surname");
+            data.setNameElements(nameElements);
         } else if(kind.contains("secure")) {
             data.setCeasedOn(LocalDate.now());
         }

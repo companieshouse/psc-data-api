@@ -44,18 +44,4 @@ public class PscTransformationHelper {
         links.setStatements(itemLinkTypes.getStatements());
         return links;
     }
-
-    /**
-     * Creates NameElements field.
-     * @param requestBody request payload.
-     * @return NameElements object.
-     */
-    public static NameElements createNameElements(FullRecordCompanyPSCApi requestBody) {
-        NameElements nameElements = new NameElements();
-        nameElements.setTitle(requestBody.getExternalData().getData().getTitle());
-        nameElements.setForename(requestBody.getExternalData().getData().getForename());
-        nameElements.setMiddleName(requestBody.getExternalData().getData().getOtherForenames());
-        nameElements.setSurname(requestBody.getExternalData().getData().getSurname());
-        return nameElements;
-    }
 }

@@ -13,6 +13,7 @@ import uk.gov.companieshouse.pscdataapi.data.SecurePscRoles;
 import uk.gov.companieshouse.pscdataapi.exceptions.FailedToTransformException;
 import uk.gov.companieshouse.pscdataapi.models.Address;
 import uk.gov.companieshouse.pscdataapi.models.DateOfBirth;
+import uk.gov.companieshouse.pscdataapi.models.NameElements;
 import uk.gov.companieshouse.pscdataapi.models.PscData;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 import uk.gov.companieshouse.pscdataapi.models.PscSensitiveData;
@@ -93,7 +94,7 @@ public class CompanyPscTransformer {
         data.setNationality(requestBody.getExternalData().getData().getNationality());
         data.setNaturesOfControl(requestBody.getExternalData().getData().getNaturesOfControl());
         data.setResidentialAddressIsSameAsServiceAddress(requestBody.getExternalData()
-                    .getData().getResidentialAddressIsSameAsServiceAddress());
+                    .getSensitiveData().getResidentialAddressSameAsServiceAddress());
         data.setSanctioned(requestBody.getExternalData().getData().getIsSanctioned());
         data.setServiceAddressIsSameAsRegisteredOfficeAddress(requestBody.getExternalData()
                     .getData().getServiceAddressSameAsRegisteredOfficeAddress());
@@ -101,7 +102,8 @@ public class CompanyPscTransformer {
     }
 
     private void handleIndividualFields(FullRecordCompanyPSCApi requestBody, PscData data) {
-        data.setNameElements(PscTransformationHelper.createNameElements(requestBody));
+        data.setNameElements(new NameElements(
+                requestBody.getExternalData().getData().getNameElements()));
         data.setCountryOfResidence(requestBody.getExternalData().getData().getCountryOfResidence());
     }
 
