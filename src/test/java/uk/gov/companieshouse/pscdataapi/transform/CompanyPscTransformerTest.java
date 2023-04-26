@@ -76,18 +76,4 @@ class CompanyPscTransformerTest {
         assertThat(result.getUpdated().getAt(), is(expectedDocument.getUpdated().getAt()));
         assertThat(result.getUpdatedBy(), is(expectedDocument.getUpdatedBy()));
     }
-
-    @Test
-    void testApiThrowsExceptionWhenTransformFails() {
-        FullRecordCompanyPSCApi api = new FullRecordCompanyPSCApi();
-        try {
-            pscTransformer.transformPsc("id", api);
-            Assert.fail("Expected a FailedToTransformException to be thrown");
-        } catch (FailedToTransformException e) {
-            assert(e.getMessage().contains("Failed to transform API payload:"));
-        }
-    }
-
-
-
 }

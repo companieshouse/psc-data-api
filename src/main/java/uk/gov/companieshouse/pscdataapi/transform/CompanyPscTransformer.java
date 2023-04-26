@@ -39,33 +39,27 @@ public class CompanyPscTransformer {
         PscDocument pscDocument = new PscDocument();
         logger.info(String.format("transforming incoming payload with Id: %s", notificationId));
 
-        try {
-            pscDocument.setId(notificationId);
-            pscDocument.setNotificationId(notificationId);
-            pscDocument.setPscId(requestBody.getExternalData().getPscId());
-            pscDocument.setCompanyNumber(requestBody.getExternalData().getCompanyNumber());
-            OffsetDateTime deltaAt = requestBody.getInternalData().getDeltaAt();
-            pscDocument.setDeltaAt(dateTimeFormatter.format(deltaAt));
-            PscTransformationHelper.createDateFields(requestBody, pscDocument);
-            pscDocument.setUpdatedBy(requestBody.getInternalData().getUpdatedBy());
-            pscDocument.setData(transformDataFields(requestBody));
+        pscDocument.setId(notificationId);
+        pscDocument.setNotificationId(notificationId);
+        pscDocument.setPscId(requestBody.getExternalData().getPscId());
+        pscDocument.setCompanyNumber(requestBody.getExternalData().getCompanyNumber());
+        OffsetDateTime deltaAt = requestBody.getInternalData().getDeltaAt();
+        pscDocument.setDeltaAt(dateTimeFormatter.format(deltaAt));
+        PscTransformationHelper.createDateFields(requestBody, pscDocument);
+        pscDocument.setUpdatedBy(requestBody.getInternalData().getUpdatedBy());
+        pscDocument.setData(transformDataFields(requestBody));
 
-            String kind = requestBody.getExternalData().getData().getKind();
+        String kind = requestBody.getExternalData().getData().getKind();
 
-            if (IndividualPscRoles.includes(kind)) {
-                pscDocument.setSensitiveData(transformSensitiveDataFields(requestBody));
-                handleUraSameAsRo(pscDocument.getData(),
-                        requestBody.getExternalData().getSensitiveData());
-                handleIndividualFields(requestBody, pscDocument.getData());
-            }
-            if (SecurePscRoles.includes(kind)) {
-                handleSecureFields(requestBody, pscDocument.getData());
-            }
-        } catch (Exception exception) {
-            throw new FailedToTransformException(String.format(
-                    "Failed to transform API payload: %s", exception.getMessage()));
+        if (IndividualPscRoles.includes(kind)) {
+            pscDocument.setSensitiveData(transformSensitiveDataFields(requestBody));
+            handleUraSameAsRo(pscDocument.getData(),
+                    requestBody.getExternalData().getSensitiveData());
+            handleIndividualFields(requestBody, pscDocument.getData());
         }
-
+        if (SecurePscRoles.includes(kind)) {
+            handleSecureFields(requestBody, pscDocument.getData());
+        }
         return pscDocument;
     }
 
