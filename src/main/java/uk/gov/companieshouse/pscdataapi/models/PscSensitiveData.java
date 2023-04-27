@@ -8,6 +8,8 @@ public class PscSensitiveData {
     private Address usualResidentialAddress;
     @Field("date_of_birth")
     private DateOfBirth dateOfBirth;
+    @Field("residential_address_is_same_as_service_address")
+    private Boolean residentialAddressIsSameAsServiceAddress;
 
     public Address getUsualResidentialAddress() {
         return usualResidentialAddress;
@@ -25,6 +27,16 @@ public class PscSensitiveData {
         this.dateOfBirth = dateOfBirth;
     }
 
+    public Boolean getResidentialAddressIsSameAsServiceAddress() {
+        return residentialAddressIsSameAsServiceAddress;
+    }
+
+    public void setResidentialAddressIsSameAsServiceAddress(
+            Boolean residentialAddressIsSameAsServiceAddress) {
+        this.residentialAddressIsSameAsServiceAddress
+                = residentialAddressIsSameAsServiceAddress;
+    }
+
     @Override
     public String toString() {
         return "PscSensitiveData{"
@@ -32,6 +44,8 @@ public class PscSensitiveData {
                 + usualResidentialAddress
                 + ", dateOfBirth="
                 + dateOfBirth
+                + ", residentialAddressIsSameAsServiceAddress="
+                + residentialAddressIsSameAsServiceAddress
                 + '}';
     }
 
@@ -45,11 +59,14 @@ public class PscSensitiveData {
         }
         PscSensitiveData that = (PscSensitiveData) object;
         return Objects.equals(usualResidentialAddress, that.usualResidentialAddress)
-                && Objects.equals(dateOfBirth, that.dateOfBirth);
+                && Objects.equals(dateOfBirth, that.dateOfBirth)
+                && Objects.equals(residentialAddressIsSameAsServiceAddress,
+                that.residentialAddressIsSameAsServiceAddress);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(usualResidentialAddress, dateOfBirth);
+        return Objects.hash(usualResidentialAddress, dateOfBirth,
+                residentialAddressIsSameAsServiceAddress);
     }
 }

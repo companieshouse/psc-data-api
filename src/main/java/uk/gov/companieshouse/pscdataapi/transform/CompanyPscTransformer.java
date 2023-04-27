@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.pscdataapi.transform;
 
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -17,6 +18,7 @@ import uk.gov.companieshouse.pscdataapi.models.NameElements;
 import uk.gov.companieshouse.pscdataapi.models.PscData;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 import uk.gov.companieshouse.pscdataapi.models.PscSensitiveData;
+import uk.gov.companieshouse.pscdataapi.models.Updated;
 import uk.gov.companieshouse.pscdataapi.util.PscTransformationHelper;
 
 
@@ -45,7 +47,7 @@ public class CompanyPscTransformer {
         pscDocument.setCompanyNumber(requestBody.getExternalData().getCompanyNumber());
         OffsetDateTime deltaAt = requestBody.getInternalData().getDeltaAt();
         pscDocument.setDeltaAt(dateTimeFormatter.format(deltaAt));
-        PscTransformationHelper.createDateFields(requestBody, pscDocument);
+        pscDocument.setUpdated(new Updated().setAt(LocalDate.now()));
         pscDocument.setUpdatedBy(requestBody.getInternalData().getUpdatedBy());
         pscDocument.setData(transformDataFields(requestBody));
 
@@ -53,12 +55,15 @@ public class CompanyPscTransformer {
 
         if (IndividualPscRoles.includes(kind)) {
             pscDocument.setSensitiveData(transformSensitiveDataFields(requestBody));
-            handleUraSameAsRo(pscDocument.getData(),
-                    requestBody.getExternalData().getSensitiveData());
+
             handleIndividualFields(requestBody, pscDocument.getData());
         }
         if (SecurePscRoles.includes(kind)) {
             handleSecureFields(requestBody, pscDocument.getData());
+        } else {
+            Address serviceAddress = new Address(requestBody.getExternalData()
+                    .getData().getServiceAddress());
+            pscDocument.getData().setAddress(serviceAddress);
         }
         return pscDocument;
     }
@@ -67,6 +72,8 @@ public class CompanyPscTransformer {
         PscSensitiveData pscSensitiveData = new PscSensitiveData();
         SensitiveData sensitiveData = requestBody.getExternalData().getSensitiveData();
         DateOfBirth dateOfBirth = new DateOfBirth(sensitiveData.getDateOfBirth());
+        pscSensitiveData.setResidentialAddressIsSameAsServiceAddress(requestBody.getExternalData()
+                .getSensitiveData().getResidentialAddressSameAsServiceAddress());
         pscSensitiveData.setDateOfBirth(dateOfBirth);
         pscSensitiveData.setUsualResidentialAddress(
                 new Address(sensitiveData.getUsualResidentialAddress()));
@@ -76,9 +83,6 @@ public class CompanyPscTransformer {
 
     private PscData transformDataFields(FullRecordCompanyPSCApi requestBody) {
         PscData data = new PscData();
-        Address serviceAddress = new Address(requestBody.getExternalData()
-                .getData().getServiceAddress());
-        data.setAddress(serviceAddress);
         data.setCeasedOn(requestBody.getExternalData().getData().getCeasedOn());
         data.setDescription(requestBody.getExternalData().getData().getDescription());
         data.setEtag(requestBody.getExternalData().getData().getEtag());
@@ -87,8 +91,6 @@ public class CompanyPscTransformer {
         data.setName(requestBody.getExternalData().getData().getName());
         data.setNationality(requestBody.getExternalData().getData().getNationality());
         data.setNaturesOfControl(requestBody.getExternalData().getData().getNaturesOfControl());
-        data.setResidentialAddressIsSameAsServiceAddress(requestBody.getExternalData()
-                    .getSensitiveData().getResidentialAddressSameAsServiceAddress());
         data.setSanctioned(requestBody.getExternalData().getData().getIsSanctioned());
         data.setServiceAddressIsSameAsRegisteredOfficeAddress(requestBody.getExternalData()
                     .getData().getServiceAddressSameAsRegisteredOfficeAddress());
@@ -104,10 +106,5 @@ public class CompanyPscTransformer {
     private void handleSecureFields(FullRecordCompanyPSCApi requestBody, PscData data) {
         Boolean ceased = requestBody.getExternalData().getData().getCeasedOn() != null;
         data.setCeased(ceased);
-    }
-
-    private void handleUraSameAsRo(PscData data, SensitiveData sensitiveData) {
-        data.setResidentialAddressIsSameAsServiceAddress(sensitiveData
-                .getResidentialAddressSameAsServiceAddress());
     }
 }

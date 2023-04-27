@@ -44,7 +44,6 @@ public class TestHelper {
         externalData.setPscId("pscId");
         InternalData internalData = new InternalData();
         internalData.setDeltaAt(OffsetDateTime.parse("2022-01-12T00:00:00Z"));
-        internalData.setCreatedAt("2022-01-12T00:00:00");
         internalData.setUpdatedAt(LocalDate.parse("2022-01-12"));
 
         if(kind.contains("individual")) {
@@ -70,7 +69,9 @@ public class TestHelper {
         data.setKind(kind);
         data.setName("forename");
         data.setLinks(new Links());
-        data.setAddress(new Address());
+        if (!kind.contains("secure")) {
+            data.setAddress(new Address());
+        }
 
         output.setNotificationId("id");
         output.setData(data);
@@ -78,7 +79,7 @@ public class TestHelper {
         output.setCompanyNumber("1234567");
         output.setDeltaAt("20220112000000000000");
         Updated updated = new Updated();
-        updated.setAt(LocalDate.parse("2022-01-12"));
+        updated.setAt(LocalDate.now());
         output.setUpdated(updated);
 
         if(kind.contains("individual")) {
