@@ -46,6 +46,9 @@ class CompanyPscControllerTest {
         mockMvc.perform(put(PUT_URL)
                 .contentType(APPLICATION_JSON)
                 .header("x-request-id", X_REQUEST_ID)
+                .header("ERIC-Identity", "test")
+                .header("ERIC-Identity-Type", "key")
+                .header("ERIC-Authorised-Key-Roles", "*")
                 .content(TestHelper.createJsonPayload()))
                 .andExpect(status().isCreated());
     }
