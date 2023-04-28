@@ -21,7 +21,7 @@ class IndividualPscRolesTest {
                 Arguments.of("individual-incorrect-psc", false),
                 Arguments.of("corporate-entity-beneficial-owner", false),
                 Arguments.of("individual-person-significant-control", false),
-                Arguments.of("legal-person-person-with-significant-control", true),
+                Arguments.of("legal-person-person-with-significant-control", false),
                 Arguments.of("legal-person-with-significant-control", false)
         );
     }

@@ -22,7 +22,9 @@ class CorporatePscRolesTest {
                 Arguments.of("corporate-entity-beneficial-owner", true),
                 Arguments.of("individual-person-significant-control", false),
                 Arguments.of("corporate-owner", false),
-                Arguments.of("corporate-entity-owner", false)
+                Arguments.of("corporate-entity-owner", false),
+                Arguments.of("legal-person-with-significant-control", false),
+                Arguments.of("legal-person-person-with-significant-control", true)
         );
     }
 

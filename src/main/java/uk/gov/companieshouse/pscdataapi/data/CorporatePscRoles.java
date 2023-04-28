@@ -5,7 +5,9 @@ import java.util.stream.Stream;
 
 public enum CorporatePscRoles {
     CORPORATE_PSC("corporate-entity-person-with-significant-control"),
-    CORPORATE_BO("corporate-entity-beneficial-owner");
+    CORPORATE_BO("corporate-entity-beneficial-owner"),
+    LEGAL_PSC("legal-person-person-with-significant-control"),
+    LEGAL_BO("legal-person-beneficial-owner");
 
     private String role;
 
