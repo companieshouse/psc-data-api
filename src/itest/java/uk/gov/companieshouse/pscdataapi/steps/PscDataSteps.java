@@ -1,4 +1,4 @@
-package uk.gov.companieshouse.pscdata.steps;
+package uk.gov.companieshouse.pscdataapi.steps;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.cucumber.java.After;
@@ -10,34 +10,25 @@ import org.assertj.core.api.Assertions;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import uk.gov.companieshouse.api.metrics.MetricsApi;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static uk.gov.companieshouse.pscdata.config.AbstractMongoConfig.mongoDBContainer;
+import static uk.gov.companieshouse.pscdataapi.config.AbstractMongoConfig.mongoDBContainer;
 
-import uk.gov.companieshouse.pscdata.config.CucumberContext;
-import uk.gov.companieshouse.pscdata.util.FileReaderUtil;
+import uk.gov.companieshouse.pscdataapi.config.CucumberContext;
+import uk.gov.companieshouse.pscdataapi.util.FileReaderUtil;
 import uk.gov.companieshouse.pscdataapi.repository.CompanyPscRepository;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
 
 public class PscDataSteps {
     private String contextId;

@@ -1,4 +1,4 @@
-package uk.gov.companieshouse.pscdata.config;
+package uk.gov.companieshouse.pscdataapi.config;
 
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;

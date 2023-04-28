@@ -1,4 +1,4 @@
-package uk.gov.companieshouse.pscdata.util;
+package uk.gov.companieshouse.pscdataapi.util;
 
 import org.springframework.util.FileCopyUtils;
 

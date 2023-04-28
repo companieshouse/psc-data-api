@@ -1,12 +1,11 @@
-package uk.gov.companieshouse.pscdata;
+package uk.gov.companieshouse.pscdataapi;
 
 import io.cucumber.junit.Cucumber;
 import io.cucumber.junit.CucumberOptions;
 import io.cucumber.spring.CucumberContextConfiguration;
 import org.junit.runner.RunWith;
-import org.springframework.test.context.TestPropertySource;
 
-import uk.gov.companieshouse.pscdata.config.AbstractIntegrationTest;
+import uk.gov.companieshouse.pscdataapi.config.AbstractIntegrationTest;
 
 @RunWith(Cucumber.class)
 @CucumberOptions(features = "src/itest/resources/features",

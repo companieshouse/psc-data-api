@@ -1,10 +1,8 @@
-package uk.gov.companieshouse.pscdata.config;
+package uk.gov.companieshouse.pscdataapi.config;
 
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
-import uk.gov.companieshouse.api.InternalApiClient;
 
 /**
  * Loads the application context.

@@ -1,4 +1,4 @@
-package uk.gov.companieshouse.pscdata.config;
+package uk.gov.companieshouse.pscdataapi.config;
 
 import java.util.HashMap;
 import java.util.Map;
