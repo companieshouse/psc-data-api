@@ -7,7 +7,6 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.assertj.core.api.Assertions;
-import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -24,7 +23,6 @@ import uk.gov.companieshouse.pscdataapi.config.CucumberContext;
 import uk.gov.companieshouse.pscdataapi.util.FileReaderUtil;
 import uk.gov.companieshouse.pscdataapi.repository.CompanyPscRepository;
 
-import java.io.IOException;
 import java.util.Collections;
 
 public class PscDataSteps {
@@ -42,7 +40,7 @@ public class PscDataSteps {
     @Autowired
     private CompanyPscRepository companyPscRepository;
 
-    private final String companyNumber = "34777772";
+    private final String COMPANY_NUMBER = "34777772";
 
     @Before
     public void dbCleanUp(){
@@ -57,7 +55,7 @@ public class PscDataSteps {
         assertThat(restTemplate).isNotNull();
     }
 
-    @When("I send a PUT request with payload {string} file for company number with notification id {string}")
+    @When("I send a PUT request with payload {string} file with notification id {string}")
     public void i_send_psc_statement_put_request_with_payload(String dataFile, String notificationId) {
         String data = FileReaderUtil.readFile("src/itest/resources/json/input/" + dataFile + ".json");
 
@@ -74,7 +72,7 @@ public class PscDataSteps {
 
         HttpEntity request = new HttpEntity(data, headers);
         String uri = "/company/{company_number}/persons-with-significant-control/{notfication_id}/full_record";
-        ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.PUT, request, Void.class, companyNumber, notificationId);
+        ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.PUT, request, Void.class, COMPANY_NUMBER, notificationId);
 
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
     }
