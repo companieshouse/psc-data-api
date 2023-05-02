@@ -17,6 +17,19 @@ public class NameElements {
     @Field("middle_name")
     private String middleName;
 
+    public NameElements() {}
+
+    /**
+     * Contructor using SDK NameElements.
+     * @param nameElements API NameElements object.
+     */
+    public NameElements(uk.gov.companieshouse.api.psc.NameElements nameElements) {
+        this.forename = nameElements.getForename();
+        this.surname = nameElements.getSurname();
+        this.middleName = nameElements.getMiddleName();
+        this.title = nameElements.getTitle();
+    }
+
     public String getTitle() {
         return title;
     }

@@ -17,21 +17,6 @@ public class PscTransformationHelper {
     }
 
     /**
-     * Creates the created and updated fields.
-     * @param requestBody request payload.
-     * @param pscDocument output document.
-     */
-    public static void createDateFields(FullRecordCompanyPSCApi requestBody,
-                                        PscDocument pscDocument) {
-        Created created = new Created();
-        created.setAt(LocalDateTime.parse(requestBody.getInternalData().getCreatedAt()));
-        Updated updated = new Updated();
-        updated.setAt(requestBody.getInternalData().getUpdatedAt());
-        pscDocument.setUpdated(updated);
-        pscDocument.setCreated(created);
-    }
-
-    /**
      * Creates Links field.
      * @param requestBody request payload.
      * @return Links object.
@@ -43,19 +28,5 @@ public class PscTransformationHelper {
         links.setSelf(itemLinkTypes.getSelf());
         links.setStatements(itemLinkTypes.getStatements());
         return links;
-    }
-
-    /**
-     * Creates NameElements field.
-     * @param requestBody request payload.
-     * @return NameElements object.
-     */
-    public static NameElements createNameElements(FullRecordCompanyPSCApi requestBody) {
-        NameElements nameElements = new NameElements();
-        nameElements.setTitle(requestBody.getExternalData().getData().getTitle());
-        nameElements.setForename(requestBody.getExternalData().getData().getForename());
-        nameElements.setMiddleName(requestBody.getExternalData().getData().getOtherForenames());
-        nameElements.setSurname(requestBody.getExternalData().getData().getSurname());
-        return nameElements;
     }
 }

@@ -37,9 +37,6 @@ public class PscData {
     @Field("service_address_is_same_as_registered_office_address")
     private Boolean serviceAddressIsSameAsRegisteredOfficeAddress;
 
-    @Field("residential_address_is_same_as_service_address")
-    private Boolean residentialAddressIsSameAsServiceAddress;
-
     @Field("is_sanctioned")
     private Boolean isSanctioned;
 
@@ -111,16 +108,6 @@ public class PscData {
             Boolean serviceAddressIsSameAsRegisteredOfficeAddress) {
         this.serviceAddressIsSameAsRegisteredOfficeAddress
                 = serviceAddressIsSameAsRegisteredOfficeAddress;
-    }
-
-    public Boolean getResidentialAddressIsSameAsServiceAddress() {
-        return residentialAddressIsSameAsServiceAddress;
-    }
-
-    public void setResidentialAddressIsSameAsServiceAddress(
-            Boolean residentialAddressIsSameAsServiceAddress) {
-        this.residentialAddressIsSameAsServiceAddress
-                = residentialAddressIsSameAsServiceAddress;
     }
 
     public List<String> getNaturesOfControl() {
@@ -206,8 +193,6 @@ public class PscData {
                 + '\''
                 + ", serviceAddressIsSameAsRegisteredOfficeAddress="
                 + serviceAddressIsSameAsRegisteredOfficeAddress
-                + ", residentialAddressIsSameAsServiceAddress="
-                + residentialAddressIsSameAsServiceAddress
                 + ", isSanctioned="
                 + isSanctioned
                 + ", ceased="
@@ -240,8 +225,6 @@ public class PscData {
                 && Objects.equals(description, pscData.description)
                 && Objects.equals(serviceAddressIsSameAsRegisteredOfficeAddress,
                 pscData.serviceAddressIsSameAsRegisteredOfficeAddress)
-                && Objects.equals(residentialAddressIsSameAsServiceAddress,
-                pscData.residentialAddressIsSameAsServiceAddress)
                 && Objects.equals(isSanctioned, pscData.isSanctioned)
                 && Objects.equals(ceased, pscData.ceased)
                 && Objects.equals(naturesOfControl, pscData.naturesOfControl)
@@ -253,7 +236,7 @@ public class PscData {
     public int hashCode() {
         return Objects.hash(ceasedOn, etag, address, name, nationality, countryOfResidence,
                 kind, description, serviceAddressIsSameAsRegisteredOfficeAddress,
-                residentialAddressIsSameAsServiceAddress, isSanctioned, ceased, naturesOfControl,
+                isSanctioned, ceased, naturesOfControl,
                 nameElements, links);
     }
 }
