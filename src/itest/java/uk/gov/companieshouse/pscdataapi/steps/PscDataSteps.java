@@ -42,13 +42,14 @@ public class PscDataSteps {
     @Autowired
     private CompanyPscRepository companyPscRepository;
 
+    private final String companyNumber = "34777772";
+
     @Before
     public void dbCleanUp(){
         if (!mongoDBContainer.isRunning()) {
             mongoDBContainer.start();
         }
         companyPscRepository.deleteAll();
-        MockitoAnnotations.initMocks(this);
     }
 
     @Given("Psc data api service is running")
@@ -56,19 +57,8 @@ public class PscDataSteps {
         assertThat(restTemplate).isNotNull();
     }
 
-    @Given("the database is down")
-    public void the_psc_data_db_is_down() {
-        mongoDBContainer.stop();
-    }
-
-    @Then("I should receive {int} status code")
-    public void i_should_receive_status_code(Integer statusCode) {
-        int expectedStatusCode = CucumberContext.CONTEXT.get("statusCode");
-        Assertions.assertThat(expectedStatusCode).isEqualTo(statusCode);
-    }
-
-    @When("I send a PUT request with payload {string} file for company number {string} with notification id {string}")
-    public void i_send_psc_statement_put_request_with_payload(String dataFile, String companyNumber, String notificationId) throws IOException {
+    @When("I send a PUT request with payload {string} file for company number with notification id {string}")
+    public void i_send_psc_statement_put_request_with_payload(String dataFile, String notificationId) {
         String data = FileReaderUtil.readFile("src/itest/resources/json/input/" + dataFile + ".json");
 
         HttpHeaders headers = new HttpHeaders();
@@ -89,9 +79,15 @@ public class PscDataSteps {
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
     }
 
-    @When("a record exists with id {string}")
+    @Then("a record exists with id {string}")
     public void statement_exists(String statementId) {
         Assertions.assertThat(companyPscRepository.existsById(statementId)).isTrue();
+    }
+
+    @Then("I should receive {int} status code")
+    public void i_should_receive_status_code(Integer statusCode) {
+        int expectedStatusCode = CucumberContext.CONTEXT.get("statusCode");
+        Assertions.assertThat(expectedStatusCode).isEqualTo(statusCode);
     }
 
     @After
