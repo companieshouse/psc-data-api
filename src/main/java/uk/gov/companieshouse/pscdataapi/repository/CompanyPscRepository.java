@@ -6,6 +6,6 @@ import org.springframework.data.mongodb.repository.Query;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 
 public interface CompanyPscRepository extends MongoRepository<PscDocument, String> {
-    @Query("{'_id': ?0, 'delta.at':{$gte : { \"$date\" : \"?1\" } }}")
+    @Query("{'_id': ?0, 'delta_at':{$gte : \"?1\" }}")
     List<PscDocument> findUpdatedPsc(String notificationId, String at);
 }
