@@ -65,7 +65,7 @@ public class PscDataSteps {
     }
 
     @Given("a psc data record exists with notification id {string} and delta_at {string}")
-    public void psc_statement_exists_for_company_and_id_with_delta_at(String notifcationId, String deltaAt) throws IOException {
+    public void psc_record_exists_for_company_and_id_with_delta_at(String notifcationId, String deltaAt) throws IOException {
         String pscDataFile = (FileReaderUtil.readFile("src/itest/resources/json/input/psc_data_api.json"));
         PscData pscData = objectMapper.readValue(pscDataFile, PscData.class);
 
@@ -79,7 +79,7 @@ public class PscDataSteps {
     }
 
     @When("I send a PUT request with payload {string} file with notification id {string}")
-    public void i_send_psc_statement_put_request_with_payload(String dataFile, String notificationId) {
+    public void i_send_psc_record_put_request_with_payload(String dataFile, String notificationId) {
         String data = FileReaderUtil.readFile("src/itest/resources/json/input/" + dataFile + ".json");
 
         HttpHeaders headers = new HttpHeaders();
