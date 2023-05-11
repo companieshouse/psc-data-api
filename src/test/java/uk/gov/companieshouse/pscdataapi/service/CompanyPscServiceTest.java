@@ -67,7 +67,7 @@ class CompanyPscServiceTest {
         document = new PscDocument();
         document.setUpdated(new Updated().setAt(LocalDate.now()));
         final DateTimeFormatter dateTimeFormatter =
-                DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'");
+                DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSSSSS");
         dateString = date.format(dateTimeFormatter);
     }
 
