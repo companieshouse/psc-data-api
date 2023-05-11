@@ -18,7 +18,7 @@ import uk.gov.companieshouse.pscdataapi.transform.CompanyPscTransformer;
 public class CompanyPscService {
 
     private final DateTimeFormatter dateTimeFormatter =
-            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'");
+            DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSSSSS");
 
     @Autowired
     private Logger logger;
