@@ -9,7 +9,6 @@ import io.cucumber.java.en.When;
 import org.assertj.core.api.Assertions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -20,8 +19,6 @@ import org.springframework.http.ResponseEntity;
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.companieshouse.pscdataapi.config.AbstractMongoConfig.mongoDBContainer;
 
-import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
-import uk.gov.companieshouse.api.psc.Statement;
 import uk.gov.companieshouse.pscdataapi.config.CucumberContext;
 import uk.gov.companieshouse.pscdataapi.models.PscData;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
@@ -66,7 +63,7 @@ public class PscDataSteps {
 
     @Given("a psc data record exists with notification id {string} and delta_at {string}")
     public void psc_record_exists_for_company_and_id_with_delta_at(String notifcationId, String deltaAt) throws IOException {
-        String pscDataFile = (FileReaderUtil.readFile("src/itest/resources/json/input/psc_data_api.json"));
+        String pscDataFile = FileReaderUtil.readFile("src/itest/resources/json/input/psc_data_api.json");
         PscData pscData = objectMapper.readValue(pscDataFile, PscData.class);
 
         PscDocument document = new PscDocument();
