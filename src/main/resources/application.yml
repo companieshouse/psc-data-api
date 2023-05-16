@@ -5,6 +5,12 @@ management:
       path-mapping:
         health: /healthcheck
 
+chs:
+  api:
+    kafka:
+      url: ${CHS_KAFKA_API_URL:localhost}
+      uri: ${PSC_API_RESOURCE_CHANGED_URI:/private/resource-changed}
+
 logger:
   namespace: psc-data-api
 

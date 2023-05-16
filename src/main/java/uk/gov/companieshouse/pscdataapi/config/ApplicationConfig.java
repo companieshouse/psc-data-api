@@ -13,10 +13,12 @@ import java.util.function.Supplier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
+import uk.gov.companieshouse.api.InternalApiClient;
 import uk.gov.companieshouse.pscdataapi.converter.CompanyPscReadConverter;
 import uk.gov.companieshouse.pscdataapi.converter.CompanyPscWriteConverter;
 import uk.gov.companieshouse.pscdataapi.serialization.LocalDateDeSerializer;
 import uk.gov.companieshouse.pscdataapi.serialization.LocalDateSerializer;
+import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 
 @Configuration
 public class ApplicationConfig {
@@ -31,6 +33,11 @@ public class ApplicationConfig {
         ObjectMapper objectMapper = mongoDbObjectMapper();
         return new MongoCustomConversions(List.of(new CompanyPscWriteConverter(objectMapper),
                 new CompanyPscReadConverter(objectMapper)));
+    }
+
+    @Bean
+    public InternalApiClient internalApiClient() {
+        return ApiSdkManager.getPrivateSDK();
     }
 
     @Bean

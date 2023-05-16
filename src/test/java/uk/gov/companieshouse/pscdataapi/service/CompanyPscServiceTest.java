@@ -14,10 +14,12 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.companieshouse.api.psc.Data;
 import uk.gov.companieshouse.api.psc.ExternalData;
 import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
 import uk.gov.companieshouse.api.psc.InternalData;
 import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 import uk.gov.companieshouse.pscdataapi.models.Updated;
 import uk.gov.companieshouse.pscdataapi.repository.CompanyPscRepository;
@@ -43,6 +45,8 @@ class CompanyPscServiceTest {
 
     @Mock
     private CompanyPscTransformer transformer;
+    @Mock
+    private ChsKafkaApiService chsKafkaApiService;
 
     @Captor
     private ArgumentCaptor<String> dateCaptor;
@@ -60,7 +64,10 @@ class CompanyPscServiceTest {
         request = new FullRecordCompanyPSCApi();
         InternalData internal = new InternalData();
         ExternalData external = new ExternalData();
+        Data data = new Data();
         external.setNotificationId(PSC_ID);
+        external.setData(data);
+        data.setKind("kind");
         internal.setDeltaAt(date);
         request.setInternalData(internal);
         request.setExternalData(external);

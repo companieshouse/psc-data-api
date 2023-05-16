@@ -25,6 +25,11 @@ import uk.gov.companieshouse.pscdataapi.models.Updated;
 
 public class TestHelper {
 
+    public static final String COMPANY_NUMBER = "companyNumber";
+    public static final String NOTIFICATION_ID = "notificationId";
+    public static final String X_REQUEST_ID = "654321";
+
+
     public static FullRecordCompanyPSCApi buildFullRecordPsc(String kind) {
         FullRecordCompanyPSCApi output  = new FullRecordCompanyPSCApi();
 

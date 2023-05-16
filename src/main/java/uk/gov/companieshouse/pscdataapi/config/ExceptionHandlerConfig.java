@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.pscdataapi.config;
 
+import com.mongodb.MongoException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.LinkedHashMap;
@@ -98,7 +99,8 @@ public class ExceptionHandlerConfig {
     * @param request request.
     * @return error response to return.
     */
-    @ExceptionHandler(value = {ServiceUnavailableException.class, DataAccessException.class})
+    @ExceptionHandler(value = {ServiceUnavailableException.class,
+            DataAccessException.class, MongoException.class})
     public ResponseEntity<Object> handleServiceUnavailableException(Exception ex,
                                                                     WebRequest request) {
         logger.error(String.format("Service unavailable, response code: %s",
