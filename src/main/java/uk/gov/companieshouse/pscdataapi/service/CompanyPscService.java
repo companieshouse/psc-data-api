@@ -82,13 +82,12 @@ public class CompanyPscService {
      * @return created if this is an update save the previous created to the new document.
      */
     private Created getCreatedFromCurrentRecord(String notificationId) {
-        Created created = new Created();
         try {
             return repository.findById(notificationId).map(PscDocument::getCreated).orElse(null);
         } catch (Exception exception) {
             logger.error("exception thrown: " + exception.getMessage());
+            return null;
         }
-        return created;
     }
 
 }

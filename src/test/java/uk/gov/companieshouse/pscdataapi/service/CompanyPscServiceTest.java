@@ -1,11 +1,13 @@
 package uk.gov.companieshouse.pscdataapi.service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,13 +20,15 @@ import uk.gov.companieshouse.api.psc.ExternalData;
 import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
 import uk.gov.companieshouse.api.psc.InternalData;
 import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
+import uk.gov.companieshouse.pscdataapi.models.Created;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 import uk.gov.companieshouse.pscdataapi.models.Updated;
 import uk.gov.companieshouse.pscdataapi.repository.CompanyPscRepository;
 import uk.gov.companieshouse.pscdataapi.transform.CompanyPscTransformer;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -72,7 +76,7 @@ class CompanyPscServiceTest {
     }
 
     @Test
-    void insertPscRecordSavesPsc() {
+    void insertBrandNewPscRecordSavesPsc() {
         when(repository.findUpdatedPsc(eq(PSC_ID), dateCaptor.capture())).thenReturn(new ArrayList<>());
         when(repository.findById(PSC_ID)).thenReturn(Optional.empty());
         when(transformer.transformPsc(PSC_ID, request)).thenReturn(document);
@@ -82,6 +86,23 @@ class CompanyPscServiceTest {
         verify(repository).save(document);
         assertEquals(dateString, dateCaptor.getValue());
         assertNotNull(document.getCreated().getAt());
+    }
+
+    @Test
+    void insertUpdatePscRecordSavesPsc() {
+        PscDocument oldRecord = new PscDocument();
+        LocalDateTime date = LocalDateTime.now();
+        oldRecord.setCreated(new Created().setAt(date));
+        when(repository.findUpdatedPsc(eq(PSC_ID), dateCaptor.capture())).thenReturn(new ArrayList<>());
+        when(repository.findById(PSC_ID)).thenReturn(Optional.of(oldRecord));
+        when(transformer.transformPsc(PSC_ID, request)).thenReturn(document);
+
+        service.insertPscRecord("", request);
+
+        verify(repository).save(document);
+        assertEquals(dateString, dateCaptor.getValue());
+        assertNotNull(document.getCreated().getAt());
+        assertEquals(date, document.getCreated().getAt());
     }
 
     @Test
@@ -95,5 +116,27 @@ class CompanyPscServiceTest {
 
         verify(repository, times(0)).save(document);
         assertEquals(dateString, dateCaptor.getValue());
+    }
+
+    @Test
+    void throwsBadRequestExceptionWhenNotGivenDocument() {
+        when(repository.findUpdatedPsc(eq(PSC_ID), any())).thenReturn(new ArrayList<>());
+        when(repository.findById(PSC_ID)).thenReturn(Optional.empty());
+        when(transformer.transformPsc(PSC_ID, request)).thenReturn(document);
+        when(repository.save(document)).thenThrow(new IllegalArgumentException());
+
+        assertThrows(BadRequestException.class, () -> service.insertPscRecord("", request));
+    }
+
+    @Test
+    void insertNewCreatedWhenCreatedCallToMongoFails() {
+        when(repository.findUpdatedPsc(eq(PSC_ID), any())).thenReturn(new ArrayList<>());
+        when(repository.findById(PSC_ID)).thenThrow(new RuntimeException());
+        when(transformer.transformPsc(PSC_ID, request)).thenReturn(document);
+
+        service.insertPscRecord("", request);
+
+        verify(repository).save(document);
+        assertNotNull(document.getCreated().getAt());
     }
 }
