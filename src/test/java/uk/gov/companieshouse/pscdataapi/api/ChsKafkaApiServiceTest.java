@@ -66,7 +66,7 @@ public class ChsKafkaApiServiceTest {
         verify(internalApiClient, times(1)).privateChangedResourceHandler();
         verify(privateChangedResourceHandler, times(1)).postChangedResource(Mockito.any(), changedResourceCaptor.capture());
         verify(privateChangedResourcePost, times(1)).execute();
-        Assertions.assertThat(changedResourceCaptor.getValue()).isNotNull();
+        Assertions.assertThat(changedResourceCaptor.getValue().getEvent().getType()).isEqualTo("changed");
     }
 
     @Test
