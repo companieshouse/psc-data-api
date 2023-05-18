@@ -21,7 +21,7 @@ public class ChsKafkaApiService {
     InternalApiClient internalApiClient;
     @Value("${chs.api.kafka.url}")
     private String chsKafkaApiUrl;
-    @Value("${chs.api.kafka.uri}")
+    @Value("${chs.api.kafka.resource-changed.uri}")
     private String resourceChangedUri;
     private static final String PSC_URI = "/company/%s/persons-with-significant-control/"
                                           + "%s/full_record";

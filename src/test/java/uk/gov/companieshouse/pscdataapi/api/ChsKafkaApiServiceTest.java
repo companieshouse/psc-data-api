@@ -7,11 +7,14 @@ import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.api.InternalApiClient;
+import uk.gov.companieshouse.api.chskafka.ChangedResource;
 import uk.gov.companieshouse.api.error.ApiErrorResponseException;
 import uk.gov.companieshouse.api.handler.chskafka.PrivateChangedResourceHandler;
 import uk.gov.companieshouse.api.handler.chskafka.request.PrivateChangedResourcePost;
@@ -42,6 +45,9 @@ public class ChsKafkaApiServiceTest {
     @InjectMocks
     private ChsKafkaApiService chsKafkaApiService;
 
+    @Captor
+    ArgumentCaptor<ChangedResource> changedResourceCaptor;
+
     @BeforeEach
     void setUp() {
         testHelper = new TestHelper();
@@ -58,8 +64,9 @@ public class ChsKafkaApiServiceTest {
         Assertions.assertThat(apiResponse).isNotNull();
 
         verify(internalApiClient, times(1)).privateChangedResourceHandler();
-        verify(privateChangedResourceHandler, times(1)).postChangedResource(Mockito.any(), Mockito.any());
+        verify(privateChangedResourceHandler, times(1)).postChangedResource(Mockito.any(), changedResourceCaptor.capture());
         verify(privateChangedResourcePost, times(1)).execute();
+        Assertions.assertThat(changedResourceCaptor.getValue()).isNotNull();
     }
 
     @Test
@@ -73,8 +80,9 @@ public class ChsKafkaApiServiceTest {
                 TestHelper.X_REQUEST_ID, TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID, "kind"));
 
         verify(internalApiClient, times(1)).privateChangedResourceHandler();
-        verify(privateChangedResourceHandler, times(1)).postChangedResource(Mockito.any(), Mockito.any());
+        verify(privateChangedResourceHandler, times(1)).postChangedResource(Mockito.any(), changedResourceCaptor.capture());
         verify(privateChangedResourcePost, times(1)).execute();
+        Assertions.assertThat(changedResourceCaptor.getValue()).isNotNull();
     }
 
     @Test
@@ -88,7 +96,8 @@ public class ChsKafkaApiServiceTest {
                 TestHelper.X_REQUEST_ID, TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID, "kind"));
 
         verify(internalApiClient, times(1)).privateChangedResourceHandler();
-        verify(privateChangedResourceHandler, times(1)).postChangedResource(Mockito.any(), Mockito.any());
+        verify(privateChangedResourceHandler, times(1)).postChangedResource(Mockito.any(), changedResourceCaptor.capture());
         verify(privateChangedResourcePost, times(1)).execute();
+        Assertions.assertThat(changedResourceCaptor.getValue()).isNotNull();
     }
 }

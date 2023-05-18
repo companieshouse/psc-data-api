@@ -42,14 +42,14 @@ public class CompanyPscService {
     @Transactional
     public void insertPscRecord(String contextId, FullRecordCompanyPSCApi requestBody) {
         String notificationId = requestBody.getExternalData().getNotificationId();
-        String kind = requestBody.getExternalData().getData().getKind();
         boolean isLatestRecord = isLatestRecord(notificationId, requestBody
                 .getInternalData().getDeltaAt());
-        String companyNumber = requestBody.getExternalData().getCompanyNumber();
         if (isLatestRecord) {
             PscDocument document = transformer.transformPsc(notificationId, requestBody);
             save(contextId, notificationId, document);
-            chsKafkaApiService.invokeChsKafkaApi(contextId, companyNumber, notificationId, kind);
+            chsKafkaApiService.invokeChsKafkaApi(contextId,
+                    requestBody.getExternalData().getCompanyNumber(),
+                    notificationId, requestBody.getExternalData().getData().getKind());
 
         } else {
             logger.info("PSC not persisted as the record provided is not the latest record.");
