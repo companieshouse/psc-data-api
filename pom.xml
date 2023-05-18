@@ -193,6 +193,13 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${maven-surefire-plugin.version}</version>
+                <configuration>
+                    <environmentVariables>
+                        <CHS_API_KEY>key</CHS_API_KEY>
+                        <API_URL>key</API_URL>
+                        <PAYMENTS_API_URL>key</PAYMENTS_API_URL>
+                    </environmentVariables>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

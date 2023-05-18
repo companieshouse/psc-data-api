@@ -6,8 +6,11 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import uk.gov.companieshouse.api.InternalApiClient;
 import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
 import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
 import uk.gov.companieshouse.pscdataapi.models.Created;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
@@ -26,12 +29,17 @@ public class CompanyPscService {
     private CompanyPscTransformer transformer;
     @Autowired
     private CompanyPscRepository repository;
+    @Autowired
+    ChsKafkaApiService chsKafkaApiService;
+    @Autowired
+    InternalApiClient internalApiClient;
 
     /**
      * Save or update a natural disqualification.
      * @param contextId     Id used for chsKafkaCall.
      * @param requestBody   Data to be saved.
      */
+    @Transactional
     public void insertPscRecord(String contextId, FullRecordCompanyPSCApi requestBody) {
         String notificationId = requestBody.getExternalData().getNotificationId();
         boolean isLatestRecord = isLatestRecord(notificationId, requestBody
@@ -39,6 +47,10 @@ public class CompanyPscService {
         if (isLatestRecord) {
             PscDocument document = transformer.transformPsc(notificationId, requestBody);
             save(contextId, notificationId, document);
+            chsKafkaApiService.invokeChsKafkaApi(contextId,
+                    requestBody.getExternalData().getCompanyNumber(),
+                    notificationId, requestBody.getExternalData().getData().getKind());
+
         } else {
             logger.info("PSC not persisted as the record provided is not the latest record.");
         }
