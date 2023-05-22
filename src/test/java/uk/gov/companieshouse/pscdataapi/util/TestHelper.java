@@ -24,6 +24,15 @@ import uk.gov.companieshouse.pscdataapi.models.PscSensitiveData;
 import uk.gov.companieshouse.pscdataapi.models.Updated;
 
 public class TestHelper {
+    public static final String INDIVIDUAL_KIND = "individual-person-with-significant-control";
+    public static final String SECURE_KIND = "super-secure-person-with-significant-control";
+    public static final String CORPORATE_KIND = "corporate-entity-person-with-significant-control";
+    public static final String LEGAL_KIND = "legal-person-person-with-significant-control";
+    public static final String INDIVIDUAL_BO_KIND = "individual-beneficial-owner";
+    public static final String COMPANY_NUMBER = "companyNumber";
+    public static final String NOTIFICATION_ID = "notificationId";
+    public static final String X_REQUEST_ID = "654321";
+
 
     public static FullRecordCompanyPSCApi buildFullRecordPsc(String kind) {
         FullRecordCompanyPSCApi output  = new FullRecordCompanyPSCApi();
