@@ -49,6 +49,7 @@ class CompanyPscServiceTest {
 
     @Mock
     private CompanyPscTransformer transformer;
+
     @Mock
     private ChsKafkaApiService chsKafkaApiService;
 
