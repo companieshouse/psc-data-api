@@ -1,7 +1,6 @@
 package uk.gov.companieshouse.pscdataapi.serialization;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import java.time.LocalDate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -10,12 +9,13 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDate;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
-class LocalDateSerializerTest {
+public class LocalDateSerializerTest {
 
     private LocalDateSerializer serializer;
 
@@ -38,5 +38,12 @@ class LocalDateSerializerTest {
 
         verify(generator).writeRawValue(dateString.capture());
         assertEquals("ISODate(\"2020-01-01T00:00:00.000Z\")", dateString.getValue());
+    }
+
+    @Test
+    void assertNullDateReturnsNull() throws Exception {
+        serializer.serialize(null, generator, null);
+
+        verify(generator).writeNull();
     }
 }
