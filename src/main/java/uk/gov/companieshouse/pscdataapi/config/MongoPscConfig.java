@@ -4,7 +4,9 @@ import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mapping.model.SnakeCaseFieldNamingStrategy;
@@ -15,6 +17,7 @@ import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
 import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
+@ConditionalOnProperty(name = "mongodb.transactional", havingValue = "true")
 @Configuration
 @EnableTransactionManagement
 public class MongoPscConfig extends AbstractMongoClientConfiguration {
@@ -24,6 +27,9 @@ public class MongoPscConfig extends AbstractMongoClientConfiguration {
 
     @Value("${spring.data.mongodb.uri}")
     private String databaseUri;
+
+    @Autowired
+    MongoCustomConversions mongoCustomConversions;
 
     @Bean
     MongoTransactionManager transactionManager(MongoDatabaseFactory dbFactory) {
@@ -37,6 +43,11 @@ public class MongoPscConfig extends AbstractMongoClientConfiguration {
 
     protected String getDatabaseUri() {
         return this.databaseUri;
+    }
+
+    @Override
+    public MongoCustomConversions customConversions() {
+        return this.mongoCustomConversions;
     }
 
     @Override
