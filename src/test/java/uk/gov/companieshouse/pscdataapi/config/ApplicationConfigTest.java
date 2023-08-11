@@ -4,7 +4,6 @@ import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
-import uk.gov.companieshouse.api.ApiClient;
 import uk.gov.companieshouse.api.InternalApiClient;
 
 import static org.hamcrest.core.IsNot.not;

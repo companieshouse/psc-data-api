@@ -1,6 +1,9 @@
 package uk.gov.companieshouse.pscdataapi.models;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+
+import uk.gov.companieshouse.api.psc.Identification;
+
 import java.util.Objects;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -39,6 +42,9 @@ public class PscDocument {
 
     @Field("sensitive_data")
     private PscSensitiveData sensitiveData;
+
+    @Field("identification")
+    private Identification identification;
 
     public String getId() {
         return id;
@@ -120,6 +126,14 @@ public class PscDocument {
         this.sensitiveData = sensitiveData;
     }
 
+    public Identification getIdentification() {
+        return identification;
+    }
+
+    public void setIdentification(Identification identification) {
+        this.identification = identification;
+    }
+
     @Override
     public String toString() {
         return "PscDocument{"
@@ -149,6 +163,8 @@ public class PscDocument {
                 + data
                 + ", sensitiveData="
                 + sensitiveData
+                + ", identification="
+                + identification
                 + '}';
     }
 
@@ -170,12 +186,13 @@ public class PscDocument {
                 && Objects.equals(created, that.created)
                 && Objects.equals(updated, that.updated)
                 && Objects.equals(data, that.data)
-                && Objects.equals(sensitiveData, that.sensitiveData);
+                && Objects.equals(sensitiveData, that.sensitiveData)
+                && Objects.equals(identification, that.identification);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(id, pscId, deltaAt, notificationId, companyNumber,
-                updatedBy, created, updated, data, sensitiveData);
+                updatedBy, created, updated, data, sensitiveData, identification);
     }
 }

@@ -10,6 +10,7 @@ import org.springframework.util.FileCopyUtils;
 import uk.gov.companieshouse.api.psc.Data;
 import uk.gov.companieshouse.api.psc.ExternalData;
 import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
+import uk.gov.companieshouse.api.psc.Identification;
 import uk.gov.companieshouse.api.psc.InternalData;
 import uk.gov.companieshouse.api.psc.ItemLinkTypes;
 import uk.gov.companieshouse.api.psc.SensitiveData;
@@ -44,6 +45,19 @@ public class TestHelper {
         data.setKind(kind);
         data.setLinks(List.of(new ItemLinkTypes()));
         data.setServiceAddress(new uk.gov.companieshouse.api.psc.Address());
+
+        Identification identification = new Identification();
+        data.setIdentification(identification);
+        if(kind.contains("corporate") || kind.contains("legal")) {
+            identification.setLegalForm("Form");
+            identification.setLegalAuthority("Authority");
+            if(kind.contains("corporate")){
+                identification.setCountryRegistered("Wales");
+                identification.setPlaceRegistered("Cardiff");
+                identification.setRegistrationNumber("16102009");
+            }
+        }
+        
         SensitiveData sensitiveData = new SensitiveData();
         sensitiveData.setDateOfBirth(new uk.gov.companieshouse.api.psc.DateOfBirth());
         externalData.setData(data);
@@ -51,6 +65,7 @@ public class TestHelper {
         externalData.setNotificationId("id");
         externalData.setCompanyNumber("companyNumber");
         externalData.setPscId("pscId");
+
         InternalData internalData = new InternalData();
         internalData.setDeltaAt(OffsetDateTime.parse("2022-01-12T00:00:00Z"));
         internalData.setUpdatedAt(LocalDate.parse("2022-01-12"));
@@ -102,6 +117,19 @@ public class TestHelper {
         } else if(kind.contains("secure")) {
             data.setCeasedOn(LocalDate.now());
             data.setCeased(true);
+        } else if(kind.contains("legal")) {
+            Identification identification = new Identification();
+            identification.setLegalForm("Form");
+            identification.setLegalAuthority("Authority");
+            output.setIdentification(identification);
+        } else if(kind.contains("corporate")) {
+            Identification identification = new Identification();
+            identification.setLegalForm("Form");
+            identification.setLegalAuthority("Authority");
+            identification.setCountryRegistered("Wales");
+            identification.setPlaceRegistered("Cardiff");
+            identification.setRegistrationNumber("16102009");
+            output.setIdentification(identification);
         }
 
         return output;
