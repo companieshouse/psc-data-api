@@ -1,13 +1,12 @@
 package uk.gov.companieshouse.pscdataapi.models;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-
-import uk.gov.companieshouse.api.psc.Identification;
-
-import java.util.Objects;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
+import uk.gov.companieshouse.api.psc.Identification;
+import java.util.Objects;
+
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Document(collection = "delta_company_pscs")
