@@ -17,17 +17,24 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static uk.gov.companieshouse.pscdataapi.config.AbstractMongoConfig.mongoDBContainer;
 
 import uk.gov.companieshouse.pscdataapi.config.CucumberContext;
+import uk.gov.companieshouse.pscdataapi.exceptions.ServiceUnavailableException;
 import uk.gov.companieshouse.pscdataapi.models.PscData;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
+import uk.gov.companieshouse.pscdataapi.service.CompanyPscService;
 import uk.gov.companieshouse.pscdataapi.util.FileReaderUtil;
 import uk.gov.companieshouse.pscdataapi.repository.CompanyPscRepository;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -47,6 +54,10 @@ public class PscDataSteps {
     private CompanyPscRepository companyPscRepository;
 
     private final String COMPANY_NUMBER = "34777772";
+
+    @Autowired
+    private CompanyPscService companyPscService;
+
 
     @Before
     public void dbCleanUp(){
@@ -75,8 +86,53 @@ public class PscDataSteps {
         assertThat(companyPscRepository.findById(notifcationId)).isNotEmpty();
     }
 
-    @When("I send a PUT request with payload {string} file with notification id {string}")
-    public void i_send_psc_record_put_request_with_payload(String dataFile, String notificationId) {
+    @Given("the database is down")
+    public void the_psc_db_is_down() {
+        mongoDBContainer.stop();
+    }
+
+    @Then("nothing is persisted in the database")
+    public void nothing_persisted_to_database() {
+        List<PscDocument> pscDocs = companyPscRepository.findAll();
+        Assertions.assertThat(pscDocs).hasSize(0);
+    }
+
+    @Then("the CHS Kafka API is not invoked")
+    public void chs_kafka_api_not_invoked() throws IOException {
+        verify(companyPscService, times(0)).invokeChsKafkaApi(any(), any(), any());
+    }
+
+//    @When("CHS kafka API service is unavailable")
+//    public void chs_kafka_service_unavailable() throws IOException {
+//
+//        doThrow(ServiceUnavailableException.class)
+//                .when(companyPscService).invokeChsKafkaApiWithDeleteEvent(any(), any(), any());
+//    }
+
+//    @When("I send a PUT request")
+//    public void i_send_psc_statement_put_request(String dataFile, String notificationId) throws IOException {
+//        String data = FileReaderUtil.readFile("src/itest/resources/json/input/" + dataFile + ".json");
+//
+//        HttpHeaders headers = new HttpHeaders();
+//        headers.setContentType(MediaType.APPLICATION_JSON);
+//        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+//
+//        this.contextId = "5234234234";
+//        CucumberContext.CONTEXT.set("contextId", this.contextId);
+//        headers.set("x-request-id", this.contextId);
+//        headers.set("ERIC-Identity", "TEST-IDENTITY");
+//        headers.set("ERIC-Identity-Type", "key");
+//        headers.set("ERIC-Authorised-Key-Roles", "*");
+//
+//        HttpEntity request = new HttpEntity(data, headers);
+//        String uri = "/company/{company_number}/persons-with-significant-control-statements/{notfication_id}/full_record";
+//        ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.PUT, request, Void.class, COMPANY_NUMBER, notificationId);
+//
+//        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+//    }
+
+    @When("I send a PUT request with payload {string} file for company number {string} with notification id  {string}")
+    public void i_send_psc_record_put_request_with_payload(String dataFile, String companyNumber, String notificationId) {
         String data = FileReaderUtil.readFile("src/itest/resources/json/input/" + dataFile + ".json");
 
         HttpHeaders headers = new HttpHeaders();
@@ -92,7 +148,7 @@ public class PscDataSteps {
 
         HttpEntity request = new HttpEntity(data, headers);
         String uri = "/company/{company_number}/persons-with-significant-control/{notfication_id}/full_record";
-        ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.PUT, request, Void.class, COMPANY_NUMBER, notificationId);
+        ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.PUT, request, Void.class, companyNumber, notificationId);
 
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
     }
