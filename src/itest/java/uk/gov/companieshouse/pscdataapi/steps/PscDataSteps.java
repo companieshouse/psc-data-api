@@ -1,14 +1,17 @@
 package uk.gov.companieshouse.pscdataapi.steps;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.assertj.core.api.Assertions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -19,6 +22,9 @@ import org.springframework.http.ResponseEntity;
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.companieshouse.pscdataapi.config.AbstractMongoConfig.mongoDBContainer;
 
+import uk.gov.companieshouse.api.company.CompanyProfile;
+import uk.gov.companieshouse.api.company.Data;
+import uk.gov.companieshouse.api.model.CompanyProfileDocument;
 import uk.gov.companieshouse.pscdataapi.config.CucumberContext;
 import uk.gov.companieshouse.pscdataapi.models.PscData;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
@@ -30,6 +36,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+
 
 public class PscDataSteps {
     private String contextId;
@@ -47,6 +54,8 @@ public class PscDataSteps {
     private CompanyPscRepository companyPscRepository;
 
     private final String COMPANY_NUMBER = "34777772";
+
+    private final String NOTIFICATION_ID = "ZfTs9WeeqpXTqf6dc6FZ4C0H0RQ";
 
     @Before
     public void dbCleanUp(){
@@ -137,8 +146,72 @@ public class PscDataSteps {
         Assertions.assertThat(companyPscRepository.findById(notificationId).get().getDeltaAt()).isEqualTo(deltaAt);
     }
 
+    @When("a DELETE request is sent  for {string} without valid ERIC headers")
+    public void aDELETERequestIsSentForWithoutValidERICHeaders(String companyNumber) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+
+        this.contextId = "5234234234";
+        CucumberContext.CONTEXT.set("contextId", this.contextId);
+        headers.set("x-request-id", this.contextId);
+
+
+        HttpEntity request = new HttpEntity(null, headers);
+        String uri = "/company/{company_number}/persons-with-significant-control/{notfication_id}/full_record";
+        ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.PUT, request, Void.class, companyNumber, NOTIFICATION_ID);
+
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());}
+
+
+    @When("a DELETE request is sent for {string}")
+    public void aDELETERequestIsSentFor(String companyNumber) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+
+        this.contextId = "5234234234";
+        CucumberContext.CONTEXT.set("contextId", this.contextId);
+        headers.set("x-request-id", this.contextId);
+        headers.set("ERIC-Identity", "TEST-IDENTITY");
+        headers.set("ERIC-Identity-Type", "key");
+        headers.set("ERIC-Authorised-Key-Roles", "*");
+
+        HttpEntity request = new HttpEntity(null, headers);
+        String uri = "/company/{company_number}/persons-with-significant-control/{notfication_id}/full_record";
+        ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.DELETE, request, Void.class, companyNumber, NOTIFICATION_ID);
+
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+    }
+
+    @Given("a PSC does not exist for {string}")
+    public void aPSCDoesNotExistFor(String companyNumber) {
+        assertThat(companyPscRepository.existsById(companyNumber)).isFalse();
+    }
+
+    @And("the database is down")
+    public void theDatabaseIsDown() {
+        mongoDBContainer.stop();
+    }
+
+    @And("a PSC exists for {string} and delta_at \"<deltaAt>")
+    public void aPSCExistsForAndDelta_atDeltaAt(String deltaAt) throws Throwable {
+        String pscDataFile = FileReaderUtil.readFile("src/itest/resources/json/input/34777772.json");
+        PscData pscData = objectMapper.readValue(pscDataFile, PscData.class);
+
+        PscDocument document = new PscDocument();
+        document.setId(NOTIFICATION_ID);
+        document.setCompanyNumber(COMPANY_NUMBER);
+        document.setData(pscData);
+        document.setDeltaAt(deltaAt);
+        mongoTemplate.save(document);
+        assertThat(companyPscRepository.findById(NOTIFICATION_ID)).isNotEmpty();
+    }
+
     @After
     public void dbStop(){
         mongoDBContainer.stop();
     }
+
+
 }
