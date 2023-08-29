@@ -30,11 +30,15 @@ build:
 	rm -rf $(tmpdir)
 
 .PHONY: test
-test: test-unit
+test: test-unit test-integration
 
 .PHONY: test-unit
 test-unit:
 	mvn test
+
+.PHONY: test-integration
+test-integration: clean
+	mvn integration-test -Dskip.unit.tests=true failsafe:verify
 
 .PHONY: coverage
 coverage:

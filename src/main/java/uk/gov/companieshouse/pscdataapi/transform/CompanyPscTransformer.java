@@ -11,7 +11,6 @@ import uk.gov.companieshouse.api.psc.SensitiveData;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.data.IndividualPscRoles;
 import uk.gov.companieshouse.pscdataapi.data.SecurePscRoles;
-import uk.gov.companieshouse.pscdataapi.exceptions.FailedToTransformException;
 import uk.gov.companieshouse.pscdataapi.models.Address;
 import uk.gov.companieshouse.pscdataapi.models.DateOfBirth;
 import uk.gov.companieshouse.pscdataapi.models.NameElements;
@@ -50,6 +49,7 @@ public class CompanyPscTransformer {
         pscDocument.setUpdated(new Updated().setAt(LocalDate.now()));
         pscDocument.setUpdatedBy(requestBody.getInternalData().getUpdatedBy());
         pscDocument.setData(transformDataFields(requestBody));
+        pscDocument.setIdentification(requestBody.getExternalData().getData().getIdentification());
 
         String kind = requestBody.getExternalData().getData().getKind();
 

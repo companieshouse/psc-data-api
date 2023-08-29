@@ -34,7 +34,7 @@ public class CompanyPscController {
      * @param contextId context Id taken from header.
      * @param request request payload.
      * @return response.
-     */
+     * */
     @PutMapping(consumes = "application/json")
     public ResponseEntity<Void> submitPscData(@RequestHeader("x-request-id") String contextId,
                                               @RequestBody final FullRecordCompanyPSCApi request) {

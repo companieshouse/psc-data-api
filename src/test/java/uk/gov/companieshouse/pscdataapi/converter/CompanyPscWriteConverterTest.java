@@ -6,7 +6,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 
-import org.bson.Document;
 import uk.gov.companieshouse.pscdataapi.exceptions.FailedToConvertException;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;

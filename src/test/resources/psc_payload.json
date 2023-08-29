@@ -58,6 +58,13 @@
         "surname" : "JONES",
         "forename" : "PHIL",
         "other_forenames" : "tom"
+      },
+      "identification": {
+        "legal_form": "Form",
+        "legal_authority": "Authority",
+        "country_registered": "Wales",
+        "place_registered": "Cardiff",
+        "registration_number": "16102009"
       }
     }
   }
