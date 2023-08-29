@@ -3,6 +3,7 @@ package uk.gov.companieshouse.pscdataapi.steps;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -31,6 +32,7 @@ import java.util.Collections;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
+
 public class PscDataSteps {
     private String contextId;
 
@@ -47,6 +49,8 @@ public class PscDataSteps {
     private CompanyPscRepository companyPscRepository;
 
     private final String COMPANY_NUMBER = "34777772";
+
+    private final String NOTIFICATION_ID = "ZfTs9WeeqpXTqf6dc6FZ4C0H0RQ";
 
     @Before
     public void dbCleanUp(){
@@ -135,6 +139,58 @@ public class PscDataSteps {
         Assertions.assertThat(companyPscRepository.existsById(notificationId)).isTrue();
         Optional<PscDocument> document = companyPscRepository.findById(notificationId);
         Assertions.assertThat(companyPscRepository.findById(notificationId).get().getDeltaAt()).isEqualTo(deltaAt);
+    }
+
+    @When("a DELETE request is sent  for {string} without valid ERIC headers")
+    public void aDELETERequestIsSentForWithoutValidERICHeaders(String companyNumber) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+
+        this.contextId = "5234234234";
+        CucumberContext.CONTEXT.set("contextId", this.contextId);
+        headers.set("x-request-id", this.contextId);
+
+
+        HttpEntity request = new HttpEntity(null, headers);
+        String uri = "/company/{company_number}/persons-with-significant-control/{notfication_id}/full_record";
+        ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.PUT, request, Void.class, companyNumber, NOTIFICATION_ID);
+
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+    }
+
+    @And("a PSC exists for {string}")
+    public void aPSCExistsFor(String arg0) {
+    }
+
+    @When("a DELETE request is sent for {string}")
+    public void aDELETERequestIsSentFor(String companyNumber) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+
+        this.contextId = "5234234234";
+        CucumberContext.CONTEXT.set("contextId", this.contextId);
+        headers.set("x-request-id", this.contextId);
+        headers.set("ERIC-Identity", "TEST-IDENTITY");
+        headers.set("ERIC-Identity-Type", "key");
+        headers.set("ERIC-Authorised-Key-Roles", "*");
+
+        HttpEntity request = new HttpEntity(null, headers);
+        String uri = "/company/{company_number}/persons-with-significant-control/{notfication_id}/full_record";
+        ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.DELETE, request, Void.class, companyNumber, NOTIFICATION_ID);
+
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+    }
+
+    @Given("a PSC does not exist for {string}")
+    public void aPSCDoesNotExistFor(String companyNumber) {
+        assertThat(companyPscRepository.existsById(companyNumber)).isFalse();
+    }
+
+    @And("the database is down")
+    public void theDatabaseIsDown() {
+        mongoDBContainer.stop();
     }
 
     @After

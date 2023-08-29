@@ -3,11 +3,14 @@ package uk.gov.companieshouse.pscdataapi.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import uk.gov.companieshouse.api.exception.ResourceNotFoundException;
 import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
@@ -41,6 +44,30 @@ public class CompanyPscController {
             return ResponseEntity.status(HttpStatus.CREATED).build();
         } catch (ServiceUnavailableException exception) {
             LOGGER.info(exception.getMessage());
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    /**
+     * Delete the data object for given company profile number.
+     *
+     * @param companyNumber The number of the company
+     * @return ResponseEntity
+     */
+    @DeleteMapping
+    public ResponseEntity<Void> deletePscData(
+            @PathVariable("company_number") String companyNumber) {
+        LOGGER.info(String.format("Deleting PSC data with company number %s", companyNumber));
+        try {
+            pscService.deletePsc(companyNumber);
+            LOGGER.info(String.format("Successfully deleted PSC with company number %s",
+                    companyNumber));
+            return ResponseEntity.status(HttpStatus.OK).build();
+        } catch (ResourceNotFoundException resourceNotFoundException) {
+            LOGGER.error(resourceNotFoundException.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (ServiceUnavailableException exception) {
+            LOGGER.error(exception.getMessage());
             return ResponseEntity.internalServerError().build();
         }
     }

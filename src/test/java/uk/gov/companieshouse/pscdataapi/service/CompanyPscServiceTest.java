@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -16,6 +17,7 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.companieshouse.api.exception.ResourceNotFoundException;
 import uk.gov.companieshouse.api.psc.Data;
 import uk.gov.companieshouse.api.psc.ExternalData;
 import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
@@ -147,4 +149,28 @@ class CompanyPscServiceTest {
         verify(repository).save(document);
         assertNotNull(document.getCreated().getAt());
     }
+
+    @Test
+    @DisplayName("When company number is provided, delete PSC")
+    public void testDeletePSC() {
+        when(repository.findById("1234567")).thenReturn(Optional.ofNullable(document));
+        service.deletePsc("1234567");
+
+        verify(repository, times(1)).findById("1234567");
+        verify(repository, times(1)).delete(document);
+    }
+
+    @Test
+    @DisplayName("When company number is null throw ResourceNotFound Exception")
+    public void testDeletePSCThrowsResourceNotFoundException() {
+        when(repository.findById("1234567")).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> {
+            service.deletePsc("1234567");
+        });
+
+        verify(repository, times(1)).findById("1234567");
+        verify(repository, times(0)).delete(any());
+    }
+
 }
