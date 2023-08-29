@@ -153,23 +153,23 @@ class CompanyPscServiceTest {
     @Test
     @DisplayName("When company number is provided, delete PSC")
     public void testDeletePSC() {
-        when(repository.findById("1234567")).thenReturn(Optional.ofNullable(document));
+        when(repository.getPscByCompanyNumber("1234567")).thenReturn(Optional.ofNullable(document));
         service.deletePsc("1234567");
 
-        verify(repository, times(1)).findById("1234567");
+        verify(repository, times(1)).getPscByCompanyNumber("1234567");
         verify(repository, times(1)).delete(document);
     }
 
     @Test
     @DisplayName("When company number is null throw ResourceNotFound Exception")
     public void testDeletePSCThrowsResourceNotFoundException() {
-        when(repository.findById("1234567")).thenReturn(Optional.empty());
+        when(repository.getPscByCompanyNumber("1234567")).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> {
             service.deletePsc("1234567");
         });
 
-        verify(repository, times(1)).findById("1234567");
+        verify(repository, times(1)).getPscByCompanyNumber("1234567");
         verify(repository, times(0)).delete(any());
     }
 

@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.pscdataapi.steps;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
@@ -10,6 +11,7 @@ import io.cucumber.java.en.When;
 import org.assertj.core.api.Assertions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -20,6 +22,9 @@ import org.springframework.http.ResponseEntity;
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.companieshouse.pscdataapi.config.AbstractMongoConfig.mongoDBContainer;
 
+import uk.gov.companieshouse.api.company.CompanyProfile;
+import uk.gov.companieshouse.api.company.Data;
+import uk.gov.companieshouse.api.model.CompanyProfileDocument;
 import uk.gov.companieshouse.pscdataapi.config.CucumberContext;
 import uk.gov.companieshouse.pscdataapi.models.PscData;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
@@ -156,12 +161,8 @@ public class PscDataSteps {
         String uri = "/company/{company_number}/persons-with-significant-control/{notfication_id}/full_record";
         ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.PUT, request, Void.class, companyNumber, NOTIFICATION_ID);
 
-        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
-    }
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());}
 
-    @And("a PSC exists for {string}")
-    public void aPSCExistsFor(String arg0) {
-    }
 
     @When("a DELETE request is sent for {string}")
     public void aDELETERequestIsSentFor(String companyNumber) {
@@ -193,8 +194,24 @@ public class PscDataSteps {
         mongoDBContainer.stop();
     }
 
+    @And("a PSC exists for {string} and delta_at \"<deltaAt>")
+    public void aPSCExistsForAndDelta_atDeltaAt(String deltaAt) throws Throwable {
+        String pscDataFile = FileReaderUtil.readFile("src/itest/resources/json/input/34777772.json");
+        PscData pscData = objectMapper.readValue(pscDataFile, PscData.class);
+
+        PscDocument document = new PscDocument();
+        document.setId(NOTIFICATION_ID);
+        document.setCompanyNumber(COMPANY_NUMBER);
+        document.setData(pscData);
+        document.setDeltaAt(deltaAt);
+        mongoTemplate.save(document);
+        assertThat(companyPscRepository.findById(NOTIFICATION_ID)).isNotEmpty();
+    }
+
     @After
     public void dbStop(){
         mongoDBContainer.stop();
     }
+
+
 }
