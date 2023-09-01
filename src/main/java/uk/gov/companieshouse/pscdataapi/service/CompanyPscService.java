@@ -107,8 +107,10 @@ public class CompanyPscService {
         }
     }
 
-    private PscDocument getPscDocument(String companyNumber) throws ResourceNotFoundException {
-        Optional<PscDocument> pscDocument = repository.getPscByCompanyNumber(companyNumber);
+    private PscDocument getPscDocument(String companyNumber, String notificationId)
+            throws ResourceNotFoundException {
+        Optional<PscDocument> pscDocument =
+                repository.getPscByCompanyNumberAndId(companyNumber, notificationId);
         return pscDocument.orElseThrow(() ->
                 new ResourceNotFoundException(HttpStatus.NOT_FOUND, String.format(
                         "Resource not found for company number: %s", companyNumber)));
@@ -116,12 +118,12 @@ public class CompanyPscService {
 
     /** Delete PSC record. */
     @Transactional
-    public void deletePsc(String companyNumber) throws ResourceNotFoundException {
-        PscDocument pscDocument = getPscDocument(companyNumber);
+    public void deletePsc(String companyNumber,String notificationId)
+            throws ResourceNotFoundException {
+        PscDocument pscDocument = getPscDocument(companyNumber, notificationId);
 
         repository.delete(pscDocument);
         logger.info(String.format("PSC record with company number %s has been deleted",
                 companyNumber));
-
     }
 }

@@ -122,7 +122,7 @@ public class PscDataSteps {
         headers.set("ERIC-Authorised-Key-Roles", "*");
 
         HttpEntity request = new HttpEntity(data, headers);
-        String uri = "/company/{company_number}/persons-with-significant-control/{notfication_id}/full_record";
+        String uri = "/company/{company_number}/persons-with-significant-control/{notification_id}/full_record";
         ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.PUT, request, Void.class, COMPANY_NUMBER, notificationId);
 
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
@@ -158,8 +158,8 @@ public class PscDataSteps {
 
 
         HttpEntity request = new HttpEntity(null, headers);
-        String uri = "/company/{company_number}/persons-with-significant-control/{notfication_id}/full_record";
-        ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.PUT, request, Void.class, companyNumber, NOTIFICATION_ID);
+        String uri = "/company/{company_number}/persons-with-significant-control/{notification_id}/full_record";
+        ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.DELETE, request, Void.class, companyNumber, NOTIFICATION_ID);
 
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());}
 
@@ -204,6 +204,19 @@ public class PscDataSteps {
         document.setCompanyNumber(COMPANY_NUMBER);
         document.setData(pscData);
         document.setDeltaAt(deltaAt);
+        mongoTemplate.save(document);
+        assertThat(companyPscRepository.findById(NOTIFICATION_ID)).isNotEmpty();
+    }
+
+    @And("a PSC exists for {string}")
+    public void aPSCExistsFor(String companyNumber) throws JsonProcessingException {
+        String pscDataFile = FileReaderUtil.readFile("src/itest/resources/json/input/34777772.json");
+        PscData pscData = objectMapper.readValue(pscDataFile, PscData.class);
+
+        PscDocument document = new PscDocument();
+        document.setId(NOTIFICATION_ID);
+        document.setCompanyNumber(COMPANY_NUMBER);
+        document.setData(pscData);
         mongoTemplate.save(document);
         assertThat(companyPscRepository.findById(NOTIFICATION_ID)).isNotEmpty();
     }

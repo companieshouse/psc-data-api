@@ -12,6 +12,7 @@ public interface CompanyPscRepository extends MongoRepository<PscDocument, Strin
     @Query("{'_id': ?0, 'delta_at':{$gte : \"?1\" }}")
     List<PscDocument> findUpdatedPsc(String notificationId, String at);
 
-    @Query("{'company_number' : ?0}")
-    Optional<PscDocument> getPscByCompanyNumber(String companyNumber);
+    @Query("{'company_number' : ?0, '_id' : ?1}")
+    Optional<PscDocument> getPscByCompanyNumberAndId(String companyNumber, String notificationId);
+
 }
