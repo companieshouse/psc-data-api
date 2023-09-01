@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.pscdataapi.controller;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,9 +10,18 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.companieshouse.api.exception.ResourceNotFoundException;
 import uk.gov.companieshouse.api.exception.ServiceUnavailableException;
+import uk.gov.companieshouse.api.psc.Data;
+import uk.gov.companieshouse.api.psc.ExternalData;
 import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
+import uk.gov.companieshouse.api.psc.InternalData;
+import uk.gov.companieshouse.pscdataapi.models.PscDocument;
+import uk.gov.companieshouse.pscdataapi.models.Updated;
 import uk.gov.companieshouse.pscdataapi.service.CompanyPscService;
 import uk.gov.companieshouse.pscdataapi.util.TestHelper;
+
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -34,6 +44,8 @@ class CompanyPscControllerTest {
 
     private static final String MOCK_COMPANY_NUMBER = "123456789";
 
+    private static final String MOCK_NOTIFICATION_ID = "123456789";
+
     private static final String ERIC_IDENTITY = "Test-Identity";
     private static final String ERIC_IDENTITY_TYPE = "key";
     private static final String ERIC_PRIVILEGES = "*";
@@ -41,6 +53,11 @@ class CompanyPscControllerTest {
 
     private static final String DELETE_URL = String.format("/company/%s/persons-with-significant-control/%s/full_record", MOCK_COMPANY_NUMBER, MOCK_COMPANY_NUMBER);
 
+    private FullRecordCompanyPSCApi request;
+
+    private PscDocument document;
+
+    private String dateString;
 
     @MockBean
     private CompanyPscService companyPscService;
@@ -48,6 +65,30 @@ class CompanyPscControllerTest {
     private MockMvc mockMvc;
     @Autowired
     private CompanyPscController companyPscController;
+
+
+
+    @BeforeEach
+    public void setUp() {
+        OffsetDateTime date = OffsetDateTime.now();
+        request = new FullRecordCompanyPSCApi();
+        InternalData internal = new InternalData();
+        ExternalData external = new ExternalData();
+        Data data = new Data();
+        external.setNotificationId(MOCK_NOTIFICATION_ID);
+        external.setData(data);
+        data.setKind("kind");
+        internal.setDeltaAt(date);
+        request.setInternalData(internal);
+        request.setExternalData(external);
+        document = new PscDocument();
+        document.setCompanyNumber(MOCK_COMPANY_NUMBER);
+        document.setNotificationId(MOCK_NOTIFICATION_ID);
+        document.setUpdated(new Updated().setAt(LocalDate.now()));
+        final DateTimeFormatter dateTimeFormatter =
+                DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSSSSS");
+        dateString = date.format(dateTimeFormatter);
+    }
 
     @Test
     void contextLoads() {
@@ -72,18 +113,18 @@ class CompanyPscControllerTest {
 
     @Test
     @DisplayName("Return 401 when no api key is present")
-    void deleteCompanyProfileWhenNoApiKeyPresent() throws Exception {
+    void deletePSCWhenNoApiKeyPresent() throws Exception {
         mockMvc.perform(delete(PUT_URL)).andExpect(status().isUnauthorized());
 
         verify(companyPscService
-                ,times(0)).deletePsc("123456789");
+                ,times(0)).deletePsc("123456789",MOCK_NOTIFICATION_ID);
     }
 
     @Test
-    void callPscStatementDeleteRequest() throws Exception {
+    void callPscDeleteRequest() throws Exception {
 
         doNothing()
-                .when(companyPscService).deletePsc(MOCK_COMPANY_NUMBER);
+                .when(companyPscService).deletePsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID);
 
         mockMvc.perform(delete(DELETE_URL)
                         .header("ERIC-Identity", "SOME_IDENTITY")
@@ -94,14 +135,14 @@ class CompanyPscControllerTest {
                         .header("ERIC-Authorised-Key-Privileges", "internal-app"))
                 .andExpect(status().isOk());
 
-        verify(companyPscService,times(1)).deletePsc(MOCK_COMPANY_NUMBER);
+        verify(companyPscService,times(1)).deletePsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID);
     }
 
     @Test
-    void callPscStatementDeleteRequestAndReturn404() throws Exception {
+    void callPscDeleteRequestAndReturn404() throws Exception {
 
         doThrow(ResourceNotFoundException.class)
-                .when(companyPscService).deletePsc(MOCK_COMPANY_NUMBER);
+                .when(companyPscService).deletePsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID);
 
         mockMvc.perform(delete(DELETE_URL)
                         .header("ERIC-Identity", "SOME_IDENTITY")
@@ -112,14 +153,14 @@ class CompanyPscControllerTest {
                         .header("ERIC-Authorised-Key-Privileges", "internal-app"))
                 .andExpect(status().isNotFound());
 
-        verify(companyPscService,times(1)).deletePsc(MOCK_COMPANY_NUMBER);
+        verify(companyPscService,times(1)).deletePsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID);
     }
 
     @Test
-    void callPscStatementDeleteRequestWhenServiceUnavailableAndReturn503() throws Exception {
+    void callPscDeleteRequestWhenServiceUnavailableAndReturn503() throws Exception {
 
         doThrow(ServiceUnavailableException.class)
-                .when(companyPscService).deletePsc(MOCK_COMPANY_NUMBER);
+                .when(companyPscService).deletePsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID);
 
         mockMvc.perform(delete(DELETE_URL)
                         .header("ERIC-Identity", "SOME_IDENTITY")
@@ -130,7 +171,6 @@ class CompanyPscControllerTest {
                         .header("ERIC-Authorised-Key-Privileges", "internal-app"))
                 .andExpect(status().isInternalServerError());
 
-        verify(companyPscService,times(1)).deletePsc(MOCK_COMPANY_NUMBER);
     }
 
 

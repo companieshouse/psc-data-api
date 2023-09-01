@@ -56,11 +56,13 @@ public class CompanyPscController {
      */
     @DeleteMapping
     public ResponseEntity<Void> deletePscData(
-            @PathVariable("company_number") String companyNumber) {
+            @PathVariable("company_number") String companyNumber,
+            @PathVariable("notification_id") String notificationId) {
         LOGGER.info(String.format("Deleting PSC data with company number %s", companyNumber));
         try {
-            pscService.deletePsc(companyNumber);
-            LOGGER.info(String.format("Successfully deleted PSC with company number %s",
+            pscService.deletePsc(companyNumber,notificationId);
+            LOGGER.info(String.format(
+                    "Successfully deleted PSC with company number %s",
                     companyNumber));
             return ResponseEntity.status(HttpStatus.OK).build();
         } catch (ResourceNotFoundException resourceNotFoundException) {

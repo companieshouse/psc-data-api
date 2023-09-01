@@ -2,11 +2,10 @@ Feature: Delete PSC
 
   Scenario Outline: Delete PSC successfully
     Given Psc data api service is running
-    And a PSC exists for "<company_number>" and delta_at "<deltaAt>
+    And a PSC exists for "<company_number>"
     When a DELETE request is sent for "<company_number>"
     And a PSC does not exist for "<company_number>"
     Then I should receive 200 status code
-
 
     Examples:
       | company_number |
