@@ -150,4 +150,10 @@ public class CompanyPscService {
     }
 
 
+    public ApiResponse<Void> invokeChsKafkaApiWithDeleteEvent(String contextId, String companyNumber, String notificationId) {
+        internalApiClient.setBasePath(chsKafkaApiUrl);
+        PrivateChangedResourcePost changedResourcePost = internalApiClient.privateChangedResourceHandler()
+                .postChangedResource(resourceChangedUri, mapChangedResource(contextId, companyNumber, notificationId ));
+        return handleApiCall(changedResourcePost);
+    }
 }

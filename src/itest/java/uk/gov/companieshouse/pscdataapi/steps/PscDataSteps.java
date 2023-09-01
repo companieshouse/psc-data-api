@@ -102,12 +102,17 @@ public class PscDataSteps {
         verify(companyPscService, times(0)).invokeChsKafkaApi(any(), any(), any());
     }
 
-//    @When("CHS kafka API service is unavailable")
-//    public void chs_kafka_service_unavailable() throws IOException {
-//
-//        doThrow(ServiceUnavailableException.class)
-//                .when(companyPscService).invokeChsKafkaApiWithDeleteEvent(any(), any(), any());
-//    }
+    @When("CHS kafka API service is unavailable")
+    public void chs_kafka_service_unavailable() throws IOException {
+
+        doThrow(ServiceUnavailableException.class)
+                .when(companyPscService).invokeChsKafkaApiWithDeleteEvent(any(), any(), any());
+    }
+
+
+
+
+
 
 //    @When("I send a PUT request")
 //    public void i_send_psc_statement_put_request(String dataFile, String notificationId) throws IOException {
