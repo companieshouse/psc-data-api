@@ -7,13 +7,13 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.config.ConfigDataResourceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.companieshouse.api.InternalApiClient;
 import uk.gov.companieshouse.api.exception.ResourceNotFoundException;
 import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
+import uk.gov.companieshouse.api.psc.Individual;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
@@ -125,5 +125,15 @@ public class CompanyPscService {
         repository.delete(pscDocument);
         logger.info(String.format("PSC record with company number %s has been deleted",
                 companyNumber));
+    }
+
+    /** Get Individual PSC record. */
+    public Individual getIndividualPsc(String companyNumber, String pscId)
+            throws ResourceNotFoundException {
+        Optional<Individual> pscDocument =
+                repository.getPscByCompanyNumberAndPscId(companyNumber, pscId);
+        return pscDocument.orElseThrow(() ->
+                new ResourceNotFoundException(HttpStatus.NOT_FOUND, String.format(
+                        "PSC Resource not found for company number: %s", companyNumber)));
     }
 }
