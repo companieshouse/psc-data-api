@@ -1,6 +1,7 @@
 package uk.gov.companieshouse.pscdataapi.steps;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.tomakehurst.wiremock.WireMockServer;
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
 import io.cucumber.java.en.Given;
@@ -8,38 +9,40 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.assertj.core.api.Assertions;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static uk.gov.companieshouse.pscdataapi.config.AbstractMongoConfig.mongoDBContainer;
-
+import org.springframework.http.*;
 import uk.gov.companieshouse.pscdataapi.config.CucumberContext;
 import uk.gov.companieshouse.pscdataapi.exceptions.ServiceUnavailableException;
 import uk.gov.companieshouse.pscdataapi.models.PscData;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
+import uk.gov.companieshouse.pscdataapi.repository.CompanyPscRepository;
 import uk.gov.companieshouse.pscdataapi.service.CompanyPscService;
 import uk.gov.companieshouse.pscdataapi.util.FileReaderUtil;
-import uk.gov.companieshouse.pscdataapi.repository.CompanyPscRepository;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
+import static uk.gov.companieshouse.pscdataapi.config.AbstractMongoConfig.mongoDBContainer;
+
 public class PscDataSteps {
+
+    private static WireMockServer wireMockServer;
+    @Value("${wiremock.server.port}")
+    private String port;
     private String contextId;
+
+    //@Autowired
+    //private KafkaTemplate<String, Object> kafkaTemplate;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -109,7 +112,27 @@ public class PscDataSteps {
                 .when(companyPscService).invokeChsKafkaApiWithDeleteEvent(any(), any(), any());
     }
 
+    private void configureWireMock() {
+        wireMockServer = new WireMockServer(Integer.parseInt(port));
+        wireMockServer.start();
+        configureFor("localhost", Integer.parseInt(port));
+    }
 
+    private void stubPutStatement(String companyNumber, String notificationId, int responseCode) {
+        stubFor(put(urlEqualTo(
+                "/company/" + companyNumber + "/persons-with-significant-control/" + notificationId + "/full_record"))
+                .willReturn(aResponse().withStatus(responseCode)));
+    }
+
+//    @When("^the consumer receives a message but the data api returns a (\\d*)$")
+//    public void theConsumerReceivesMessageButDataApiReturns(String companyNumber, String notificationId, int responseCode) throws Exception{
+//        configureWireMock();
+//        stubPutStatement(companyNumber,notificationId,responseCode);
+//        ChsDelta delta = new ChsDelta(TestData.getStatementDelta(), 1, "1", false);
+//        kafkaTemplate.send(mainTopic, delta);
+//
+//        countDown();
+//    }
 
 
 

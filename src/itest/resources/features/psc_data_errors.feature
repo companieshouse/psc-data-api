@@ -4,7 +4,7 @@ Scenario Outline: Put psc statement when kafka-api is not available (Should be 5
 
 Given Psc data api service is running
 And CHS kafka API service is unavailable
-When I send a PUT request with payload "<data>" file for company number "<companyNumber>" with statement id "<notificationId>"
+When I send a PUT request with payload "<data>" file for company number "<companyNumber>" with notification id  "<notificationId>"
 Then I should receive 200 status code
 And the CHS Kafka API is not invoked
 And nothing is persisted in the database
@@ -18,7 +18,7 @@ Examples:
 Scenario Outline: Processing bad psc statement payload
 
 Given Psc data api service is running
-When I send a PUT request with payload "<data>" file for company number "<companyNumber>" with notification id "<notificationId>"
+When I send a PUT request with payload "<data>" file for company number "<companyNumber>" with notification id  "<notificationId>"
 Then I should receive <statusCode> status code
 And the CHS Kafka API is not invoked
 And nothing is persisted in the database
@@ -31,7 +31,7 @@ Examples:
 Scenario Outline: Put psc statement when stubbed chs kafka api will return 503
 
 Given Psc data api service is running
-When I send a PUT request with payload "<data>" file for company number "<companyNumber>" with statement id "<notificationId>"
+When I send a PUT request with payload "<data>" file for company number "<companyNumber>" with notification id  "<notificationId>"
 Then I should receive 503 status code
 And the CHS Kafka API is not invoked
 And nothing is persisted in the database

@@ -7,12 +7,9 @@ import com.mongodb.client.MongoClients;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.mapping.model.SnakeCaseFieldNamingStrategy;
 import org.springframework.data.mongodb.MongoDatabaseFactory;
 import org.springframework.data.mongodb.MongoTransactionManager;
 import org.springframework.data.mongodb.config.AbstractMongoClientConfiguration;
-import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
-import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @Configuration
@@ -49,11 +46,4 @@ public class MongoPscConfig extends AbstractMongoClientConfiguration {
         return MongoClients.create(mongoClientSettings);
     }
 
-    @Bean
-    @Override
-    public MongoMappingContext mongoMappingContext(MongoCustomConversions customConversions) {
-        MongoMappingContext mappingContext = new MongoMappingContext();
-        mappingContext.setFieldNamingStrategy(new SnakeCaseFieldNamingStrategy());
-        return mappingContext;
-    }
 }

@@ -1,11 +1,6 @@
 package uk.gov.companieshouse.pscdataapi.service;
 
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.companieshouse.api.InternalApiClient;
@@ -15,7 +10,6 @@ import uk.gov.companieshouse.api.error.ApiErrorResponseException;
 import uk.gov.companieshouse.api.handler.chskafka.request.PrivateChangedResourcePost;
 import uk.gov.companieshouse.api.model.ApiResponse;
 import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
-import uk.gov.companieshouse.api.psc.Statement;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
@@ -24,6 +18,11 @@ import uk.gov.companieshouse.pscdataapi.models.Created;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 import uk.gov.companieshouse.pscdataapi.repository.CompanyPscRepository;
 import uk.gov.companieshouse.pscdataapi.transform.CompanyPscTransformer;
+
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 @Service
 public class CompanyPscService {
@@ -42,10 +41,10 @@ public class CompanyPscService {
     @Autowired
     InternalApiClient internalApiClient;
     private String chsKafkaApiUrl;
-    @Value("${chs.api.kafka.uri}")
-    private String resourceChangedUri;
-    @Value("${chs.api.kafka.kind}")
-    private String resourceKind;
+
+    private String resourceChangedUri = "/private/resource-changed";
+
+    private String resourceKind = "kind";
     private static final String PSC_STATEMENTS_URI = "/company/%s/persons-with-significant-control-statements/%s/full_record";
 
     private static final String CHANGED_EVENT_TYPE = "changed";

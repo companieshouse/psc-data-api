@@ -28,7 +28,7 @@ class MongoPscConfigTest {
     }
 
     @Test
-    void mongoMappingContext() {
+    void mongoMappingContext() throws ClassNotFoundException {
         assertThat(mongoConfig.mongoMappingContext(mongoCustomConversions), is(not(nullValue())));
         assertThat(mongoConfig.mongoMappingContext(mongoCustomConversions), isA(MongoMappingContext.class));
     }
