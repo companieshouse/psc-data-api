@@ -1,0 +1,37 @@
+{
+  "address": {
+    "address_line_1" : "ura_line1",
+    "address_line_2" : "ura_line2",
+    "care_of" : "ura_care_of",
+    "country" : "United Kingdom",
+    "locality" : "Cardiff",
+    "po_box" : "ura_po",
+    "postal_code" : "CF2 1B6",
+    "premises" : "URA",
+    "region" : "ura_region"
+  },
+  "ceased_on": "2021-11-02T08:47:45",
+  "country_of_residence": "United Kingdom",
+  "date_of_birth": {
+    "day": 21,
+    "month": 10,
+    "year": 1995
+  },
+  "etag": "string",
+  "kind": "individual-person-with-significant-control",
+  "links": {
+    "self": "/company/34777772/persons-with-significant-control/individual/ZfTs9WeeqpXTqf6dc6FZ4C0H0ZZ",
+    "statement": "string"
+  },
+  "name": "34777772",
+  "name_elements": {
+    "forename": "PHIL",
+    "other_forenames": "tom",
+    "surname": "JONES",
+    "title": "Mr"
+  },
+  "nationality": "British",
+  "natures_of_control": [
+    "part-right-to-share-surplus-assets-75-to-100-percent"
+  ]
+}

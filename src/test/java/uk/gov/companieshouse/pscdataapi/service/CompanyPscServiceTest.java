@@ -18,10 +18,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.api.exception.ResourceNotFoundException;
-import uk.gov.companieshouse.api.psc.Data;
-import uk.gov.companieshouse.api.psc.ExternalData;
-import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
-import uk.gov.companieshouse.api.psc.InternalData;
+import uk.gov.companieshouse.api.psc.*;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
@@ -30,6 +27,8 @@ import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 import uk.gov.companieshouse.pscdataapi.models.Updated;
 import uk.gov.companieshouse.pscdataapi.repository.CompanyPscRepository;
 import uk.gov.companieshouse.pscdataapi.transform.CompanyPscTransformer;
+
+import javax.xml.transform.TransformerException;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -42,6 +41,8 @@ import static org.mockito.Mockito.when;
 class CompanyPscServiceTest {
 
     private static final String PSC_ID = "pscId";
+
+    private static final String MOCK_COMPANY_NUMBER = "1234567";
 
     @Mock
     private Logger logger;
@@ -83,6 +84,9 @@ class CompanyPscServiceTest {
         final DateTimeFormatter dateTimeFormatter =
                 DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSSSSS");
         dateString = date.format(dateTimeFormatter);
+        document.setCompanyNumber(MOCK_COMPANY_NUMBER);
+        document.setPscId(PSC_ID);
+
     }
 
     @Test
@@ -184,6 +188,26 @@ class CompanyPscServiceTest {
 
         verify(repository, times(1)).getPscByCompanyNumberAndId("","");
         verify(repository, times(0)).delete(any());
+    }
+
+    @Test
+    public void GetIndividualPscReturn200() throws TransformerException {
+        Individual individual = new Individual();
+        when(repository.getPscByCompanyNumberAndPscId(MOCK_COMPANY_NUMBER,PSC_ID)).thenReturn(Optional.of(document));
+        when(transformer.transformPscDocToIndividual(Optional.of(document))).thenReturn(individual);
+
+        Individual result = service.getIndividualPsc(MOCK_COMPANY_NUMBER,PSC_ID);
+
+        assertEquals(individual,result);
+    }
+
+    @Test
+    public void GetIndividualPscReturn404() {
+        when(repository.getPscByCompanyNumberAndPscId(MOCK_COMPANY_NUMBER,PSC_ID)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> {
+            service.getIndividualPsc(MOCK_COMPANY_NUMBER,PSC_ID);
+        });
     }
 
 }

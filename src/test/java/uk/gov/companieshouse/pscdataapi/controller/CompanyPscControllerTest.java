@@ -203,12 +203,14 @@ class CompanyPscControllerTest {
                         .header("ERIC-Authorised-Key-Privileges", "internal-app"))
                 .andExpect(status().isOk());
 
+        verify(companyPscService).getIndividualPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID);
+
     }
 
     @Test
     @DisplayName(
             "GET request returns a 503 response when service is unavailable")
-    void getCompanyProfileNotFound() throws Exception {
+    void getIndividualPSCDocumentWhenServiceIsDown() throws Exception {
         when(companyPscService.getIndividualPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID)).thenThrow(ServiceUnavailableException.class);
 
         mockMvc.perform(get(GET_URL)
@@ -220,6 +222,29 @@ class CompanyPscControllerTest {
                         .header("ERIC-Authorised-Key-Privileges", "internal-app"))
                 .andExpect(status().isInternalServerError());
 
+        verify(companyPscService).getIndividualPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID);
+
     }
+
+    @Test
+    @DisplayName(
+            "GET request returns a 404 response when Resource is not found")
+    void getIndividualPSCDocumentWhenResourceNotFound() throws Exception {
+        when(companyPscService.getIndividualPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID)).thenThrow(ResourceNotFoundException.class);
+
+        mockMvc.perform(get(GET_URL)
+                        .header("ERIC-Identity", "SOME_IDENTITY")
+                        .header("ERIC-Identity-Type", "key")
+                        .contentType(APPLICATION_JSON)
+                        .header("x-request-id", "123456")
+                        .header("ERIC-Authorised-Key-Roles", "*")
+                        .header("ERIC-Authorised-Key-Privileges", "internal-app"))
+                .andExpect(status().isNotFound());
+
+        verify(companyPscService).getIndividualPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID);
+
+    }
+
+
 
 }

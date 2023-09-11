@@ -39,6 +39,7 @@ public class CompanyPscService {
     @Autowired
     InternalApiClient internalApiClient;
 
+
     /**
      * Save or update a natural disqualification.
      * @param contextId     Id used for chsKafkaCall.
@@ -128,12 +129,24 @@ public class CompanyPscService {
     }
 
     /** Get Individual PSC record. */
-    public Individual getIndividualPsc(String companyNumber, String pscId)
-            throws ResourceNotFoundException {
-        Optional<Individual> pscDocument =
-                repository.getPscByCompanyNumberAndPscId(companyNumber, pscId);
-        return pscDocument.orElseThrow(() ->
-                new ResourceNotFoundException(HttpStatus.NOT_FOUND, String.format(
-                        "PSC Resource not found for company number: %s", companyNumber)));
+    public Individual getIndividualPsc(String companyNumber, String pscId) {
+
+        try {
+            Optional<PscDocument> pscDocument =
+                    repository.getPscByCompanyNumberAndPscId(companyNumber, pscId);
+            if (pscDocument.isEmpty()) {
+                throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,"PSC document not found in Mongo with pscId " + pscId);
+            }
+            Individual individual = transformer.transformPscDocToIndividual(pscDocument);
+            if (individual == null) {
+                throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
+                        "Failed to transform PSCDocument to Individual");
+            }
+            return individual;
+        } catch (Exception exception) {
+            logger.error(exception.getMessage());
+            throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
+                    "Unexpected error occurred while fetching PSC document");
+        }
     }
 }
