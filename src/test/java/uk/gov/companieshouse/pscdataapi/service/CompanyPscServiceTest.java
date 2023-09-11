@@ -193,20 +193,20 @@ class CompanyPscServiceTest {
     @Test
     public void GetIndividualPscReturn200() throws TransformerException {
         Individual individual = new Individual();
-        when(repository.getPscByCompanyNumberAndPscId(MOCK_COMPANY_NUMBER,PSC_ID)).thenReturn(Optional.of(document));
+        when(repository.getPscByCompanyNumberAndId(MOCK_COMPANY_NUMBER,MOCK_COMPANY_NUMBER)).thenReturn(Optional.of(document));
         when(transformer.transformPscDocToIndividual(Optional.of(document))).thenReturn(individual);
 
-        Individual result = service.getIndividualPsc(MOCK_COMPANY_NUMBER,PSC_ID);
+        Individual result = service.getIndividualPsc(MOCK_COMPANY_NUMBER,MOCK_COMPANY_NUMBER);
 
         assertEquals(individual,result);
     }
 
     @Test
     public void GetIndividualPscReturn404() {
-        when(repository.getPscByCompanyNumberAndPscId(MOCK_COMPANY_NUMBER,PSC_ID)).thenReturn(Optional.empty());
+        when(repository.getPscByCompanyNumberAndId(MOCK_COMPANY_NUMBER,MOCK_COMPANY_NUMBER)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> {
-            service.getIndividualPsc(MOCK_COMPANY_NUMBER,PSC_ID);
+            service.getIndividualPsc(MOCK_COMPANY_NUMBER,MOCK_COMPANY_NUMBER);
         });
     }
 

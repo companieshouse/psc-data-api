@@ -1,6 +1,7 @@
 package uk.gov.companieshouse.pscdataapi.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -82,22 +83,22 @@ public class CompanyPscController {
      * @param companyNumber The number of the company
      * @return ResponseEntity
      */
-    @GetMapping("individual/{psc_id}")
+    @GetMapping("individual/{notification_id}")
     public ResponseEntity<Individual> getIndividualPscData(
             @PathVariable("company_number") String companyNumber,
-            @PathVariable("psc_id") String pscId) {
+            @PathVariable("notification_id") String notificationId) {
         LOGGER.info(String.format("Getting PSC data with company number %s", companyNumber));
         try {
 
             LOGGER.info(String.format(
                     "Retrieving PSC with company number %s",
                     companyNumber));
-            Individual individual = pscService.getIndividualPsc(companyNumber,pscId);
+            Individual individual = pscService.getIndividualPsc(companyNumber , notificationId);
             return new ResponseEntity<>(individual, HttpStatus.OK);
         } catch (ResourceNotFoundException resourceNotFoundException) {
             LOGGER.error(resourceNotFoundException.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        } catch (ServiceUnavailableException exception) {
+        } catch (DataAccessException exception) {
             LOGGER.error(exception.getMessage());
             return ResponseEntity.internalServerError().build();
         }

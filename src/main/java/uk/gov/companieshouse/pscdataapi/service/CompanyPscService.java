@@ -129,13 +129,17 @@ public class CompanyPscService {
     }
 
     /** Get Individual PSC record. */
-    public Individual getIndividualPsc(String companyNumber, String pscId) {
+    public Individual getIndividualPsc(String companyNumber, String notificationId) {
 
         try {
             Optional<PscDocument> pscDocument =
-                    repository.getPscByCompanyNumberAndPscId(companyNumber, pscId);
+                    repository.getPscByCompanyNumberAndId(companyNumber, notificationId);
             if (pscDocument.isEmpty()) {
-                throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,"PSC document not found in Mongo with pscId " + pscId);
+                System.out.println("-------------------------------------------------------------");
+                System.out.println(pscDocument.toString());
+                System.out.println(notificationId + " " + companyNumber);
+                throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
+                        "PSC document not found in Mongo with id " + notificationId);
             }
             Individual individual = transformer.transformPscDocToIndividual(pscDocument);
             if (individual == null) {
@@ -144,6 +148,7 @@ public class CompanyPscService {
             }
             return individual;
         } catch (Exception exception) {
+
             logger.error(exception.getMessage());
             throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
                     "Unexpected error occurred while fetching PSC document");

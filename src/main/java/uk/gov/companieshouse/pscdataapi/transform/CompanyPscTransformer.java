@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
+import javax.xml.transform.TransformerException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,9 +23,10 @@ import uk.gov.companieshouse.pscdataapi.models.PscData;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 import uk.gov.companieshouse.pscdataapi.models.PscSensitiveData;
 import uk.gov.companieshouse.pscdataapi.models.Updated;
+
 import uk.gov.companieshouse.pscdataapi.util.PscTransformationHelper;
 
-import javax.xml.transform.TransformerException;
+
 
 
 @Component
@@ -42,61 +44,26 @@ public class CompanyPscTransformer {
      * @param optionalPscDocument PSC.
      * @return PSC mongo Document.
      */
-    public Individual transformPscDocToIndividual(Optional<PscDocument> optionalPscDocument) throws TransformerException
-    {
+    public Individual transformPscDocToIndividual(Optional<PscDocument> optionalPscDocument)
+            throws TransformerException {
 
 
-
-        if(optionalPscDocument.isPresent()){
+        if (optionalPscDocument.isPresent()) {
             PscDocument pscDocument = optionalPscDocument.get();
             Individual individual = new Individual();
-            if(individual.getEtag() == null){
-                logger.error("Etag is null");
-            }
-            else{individual.setEtag(pscDocument.getData().getEtag());}
-            if(individual.getNotifiedOn()== null){
-                logger.error("NotifiedOn is null");
-            }
-            else{individual.setNotifiedOn(LocalDate.parse(pscDocument.getDeltaAt()));}
-            if(individual.getCeasedOn() == null){
-                logger.error("CeasedOn is null");
-            }
-            else{individual.setCeasedOn(pscDocument.getData().getCeasedOn());}
-            if(individual.getKind() == null){
-                logger.error("Kind is null");
-            }
-            else{individual.setKind(Individual.KindEnum.INDIVIDUAL_PERSON_WITH_SIGNIFICANT_CONTROL);}
-            if(individual.getCountryOfResidence() == null){
-                logger.error("CountryOfResidence is null");
-            }
-            else{individual.setCountryOfResidence(pscDocument.getData().getCountryOfResidence());}
-            if(individual.getName() == null){
-                logger.error("Name is null");
-            }
-            else{individual.setName(pscDocument.getData().getName());}
-            if(individual.getNameElements() == null){
-                logger.error("NameElements is null");
-            }
-            else{individual.setNameElements(pscDocument.getData().getNameElements());}
-            if(individual.getDateOfBirth() == null){
-                logger.error("DateOfBirth is null");
-            }
-            else{individual.setDateOfBirth(pscDocument.getSensitiveData().getDateOfBirth());}
-            if(individual.getAddress() == null){
-                logger.error("Address is null");
-            }
-            else{individual.setAddress(pscDocument.getData().getAddress());}
-            if(individual.getNaturesOfControl() == null){
-                logger.error("NaturesOfControl is null");
-            }
-            else{individual.setNaturesOfControl(pscDocument.getData().getNaturesOfControl());}
-            if(individual.getLinks() == null){
-                logger.error("Links is null");
-            }
-            else{individual.setLinks(pscDocument.getData().getLinks());}
+            individual.setEtag(pscDocument.getData().getEtag());
+            individual.setNotifiedOn(LocalDate.parse(pscDocument.getDeltaAt()));
+            individual.setKind(Individual.KindEnum.INDIVIDUAL_PERSON_WITH_SIGNIFICANT_CONTROL);
+            individual.setCountryOfResidence(pscDocument.getData().getCountryOfResidence());
+            individual.setName(pscDocument.getData().getName());
+            individual.setNameElements(pscDocument.getData().getNameElements());
+            individual.setDateOfBirth(pscDocument.getSensitiveData().getDateOfBirth());
+            individual.setAddress(pscDocument.getData().getAddress());
+            individual.setNaturesOfControl(pscDocument.getData().getNaturesOfControl());
+            individual.setLinks(pscDocument.getData().getLinks());
             return individual;
-        }
-        else {
+        } else {
+            logger.error("Skipped transforming pscDoc to individual");
             throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,"PscDocument not found");
         }
 

@@ -49,8 +49,8 @@ public class MongoPscConfig extends AbstractMongoClientConfiguration {
         return MongoClients.create(mongoClientSettings);
     }
 
+    /** Mongo Mapping. */
     @Bean
-    @Override
     public MongoMappingContext mongoMappingContext(MongoCustomConversions customConversions) {
         MongoMappingContext mappingContext = new MongoMappingContext();
         mappingContext.setFieldNamingStrategy(new SnakeCaseFieldNamingStrategy());
