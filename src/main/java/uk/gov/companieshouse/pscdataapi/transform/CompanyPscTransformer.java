@@ -3,10 +3,15 @@ package uk.gov.companieshouse.pscdataapi.transform;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
+import javax.xml.transform.TransformerException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import uk.gov.companieshouse.api.exception.ResourceNotFoundException;
 import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
+import uk.gov.companieshouse.api.psc.Individual;
 import uk.gov.companieshouse.api.psc.SensitiveData;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.data.IndividualPscRoles;
@@ -18,7 +23,10 @@ import uk.gov.companieshouse.pscdataapi.models.PscData;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 import uk.gov.companieshouse.pscdataapi.models.PscSensitiveData;
 import uk.gov.companieshouse.pscdataapi.models.Updated;
+
 import uk.gov.companieshouse.pscdataapi.util.PscTransformationHelper;
+
+
 
 
 @Component
@@ -29,6 +37,38 @@ public class CompanyPscTransformer {
 
     private final DateTimeFormatter dateTimeFormatter =
             DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSSSSS");
+
+
+    /**
+     * Transform PSC.
+     * @param optionalPscDocument PSC.
+     * @return PSC mongo Document.
+     */
+    public Individual transformPscDocToIndividual(Optional<PscDocument> optionalPscDocument)
+            throws TransformerException {
+
+
+        if (optionalPscDocument.isPresent()) {
+            PscDocument pscDocument = optionalPscDocument.get();
+            Individual individual = new Individual();
+            individual.setEtag(pscDocument.getData().getEtag());
+            individual.setNotifiedOn(LocalDate.parse(pscDocument.getDeltaAt()));
+            individual.setKind(Individual.KindEnum.INDIVIDUAL_PERSON_WITH_SIGNIFICANT_CONTROL);
+            individual.setCountryOfResidence(pscDocument.getData().getCountryOfResidence());
+            individual.setName(pscDocument.getData().getName());
+            individual.setNameElements(pscDocument.getData().getNameElements());
+            individual.setDateOfBirth(pscDocument.getSensitiveData().getDateOfBirth());
+            individual.setAddress(pscDocument.getData().getAddress());
+            individual.setNaturesOfControl(pscDocument.getData().getNaturesOfControl());
+            individual.setLinks(pscDocument.getData().getLinks());
+            return individual;
+        } else {
+            logger.error("Skipped transforming pscDoc to individual");
+            throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,"PscDocument not found");
+        }
+
+    }
+
 
     /**
      * Transform PSC.

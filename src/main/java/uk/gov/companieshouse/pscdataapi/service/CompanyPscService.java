@@ -7,13 +7,13 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.config.ConfigDataResourceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.companieshouse.api.InternalApiClient;
 import uk.gov.companieshouse.api.exception.ResourceNotFoundException;
 import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
+import uk.gov.companieshouse.api.psc.Individual;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
@@ -38,6 +38,7 @@ public class CompanyPscService {
     ChsKafkaApiService chsKafkaApiService;
     @Autowired
     InternalApiClient internalApiClient;
+
 
     /**
      * Save or update a natural disqualification.
@@ -125,5 +126,31 @@ public class CompanyPscService {
         repository.delete(pscDocument);
         logger.info(String.format("PSC record with company number %s has been deleted",
                 companyNumber));
+    }
+
+    /** Get Individual PSC record. */
+    public Individual getIndividualPsc(String companyNumber, String notificationId) {
+
+        try {
+            Optional<PscDocument> pscDocument =
+                    repository.getPscByCompanyNumberAndId(companyNumber, notificationId)
+                            .filter(document -> document.getData().getKind()
+                                    .equals("individual-person-with-significant-control"));
+            if (pscDocument.isEmpty()) {
+                throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
+                        "PSC document not found in Mongo with id " + notificationId);
+            }
+            Individual individual = transformer.transformPscDocToIndividual(pscDocument);
+            if (individual == null) {
+                throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
+                        "Failed to transform PSCDocument to Individual");
+            }
+            return individual;
+        } catch (Exception exception) {
+
+            logger.error(exception.getMessage());
+            throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
+                    "Unexpected error occurred while fetching PSC document");
+        }
     }
 }

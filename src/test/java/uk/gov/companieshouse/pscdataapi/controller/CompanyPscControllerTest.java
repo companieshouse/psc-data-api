@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.pscdataapi.controller;
 
+import io.cucumber.java.sl.In;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -10,10 +11,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.companieshouse.api.exception.ResourceNotFoundException;
 import uk.gov.companieshouse.api.exception.ServiceUnavailableException;
-import uk.gov.companieshouse.api.psc.Data;
-import uk.gov.companieshouse.api.psc.ExternalData;
-import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
-import uk.gov.companieshouse.api.psc.InternalData;
+import uk.gov.companieshouse.api.psc.*;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 import uk.gov.companieshouse.pscdataapi.models.Updated;
 import uk.gov.companieshouse.pscdataapi.service.CompanyPscService;
@@ -22,17 +20,17 @@ import uk.gov.companieshouse.pscdataapi.util.TestHelper;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.isA;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -40,6 +38,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class CompanyPscControllerTest {
     private static final String PUT_URL =
             "/company/123456789/persons-with-significant-control/123456789/full_record";
+
+    private static final String GET_URL =
+            "/company/123456789/persons-with-significant-control/individual/123456789";
     private static final String X_REQUEST_ID = "123456";
 
     private static final String MOCK_COMPANY_NUMBER = "123456789";
@@ -56,6 +57,8 @@ class CompanyPscControllerTest {
     private FullRecordCompanyPSCApi request;
 
     private PscDocument document;
+
+    private Individual individual;
 
     private String dateString;
 
@@ -88,6 +91,8 @@ class CompanyPscControllerTest {
         final DateTimeFormatter dateTimeFormatter =
                 DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSSSSS");
         dateString = date.format(dateTimeFormatter);
+
+
     }
 
     @Test
@@ -173,6 +178,72 @@ class CompanyPscControllerTest {
 
     }
 
+
+    @Test
+    @DisplayName("Return 401 when no api key is present")
+    void getPSCWhenNoApiKeyPresent() throws Exception {
+        mockMvc.perform(get(GET_URL)).andExpect(status().isUnauthorized());
+
+        verify(companyPscService
+                ,times(0)).getIndividualPsc( "123456789",MOCK_NOTIFICATION_ID);
+    }
+
+    @Test
+    @DisplayName(
+            "GET request returns a 200 response when Individual PSC found")
+    void getIndividualPSCFound() throws Exception {
+        when(companyPscService.getIndividualPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID)).thenReturn(individual);
+
+        mockMvc.perform(get(GET_URL)
+                        .header("ERIC-Identity", "SOME_IDENTITY")
+                        .header("ERIC-Identity-Type", "key")
+                        .contentType(APPLICATION_JSON)
+                        .header("x-request-id", "123456")
+                        .header("ERIC-Authorised-Key-Roles", "*")
+                        .header("ERIC-Authorised-Key-Privileges", "internal-app"))
+                .andExpect(status().isOk());
+
+        verify(companyPscService).getIndividualPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID);
+
+    }
+
+    @Test
+    @DisplayName(
+            "GET request returns a 503 response when service is unavailable")
+    void getIndividualPSCDocumentWhenServiceIsDown() throws Exception {
+        when(companyPscService.getIndividualPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID)).thenThrow(ServiceUnavailableException.class);
+
+        mockMvc.perform(get(GET_URL)
+                        .header("ERIC-Identity", "SOME_IDENTITY")
+                        .header("ERIC-Identity-Type", "key")
+                        .contentType(APPLICATION_JSON)
+                        .header("x-request-id", "123456")
+                        .header("ERIC-Authorised-Key-Roles", "*")
+                        .header("ERIC-Authorised-Key-Privileges", "internal-app"))
+                .andExpect(status().isInternalServerError());
+
+        verify(companyPscService).getIndividualPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID);
+
+    }
+
+    @Test
+    @DisplayName(
+            "GET request returns a 404 response when Resource is not found")
+    void getIndividualPSCDocumentWhenResourceNotFound() throws Exception {
+        when(companyPscService.getIndividualPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID)).thenThrow(ResourceNotFoundException.class);
+
+        mockMvc.perform(get(GET_URL)
+                        .header("ERIC-Identity", "SOME_IDENTITY")
+                        .header("ERIC-Identity-Type", "key")
+                        .contentType(APPLICATION_JSON)
+                        .header("x-request-id", "123456")
+                        .header("ERIC-Authorised-Key-Roles", "*")
+                        .header("ERIC-Authorised-Key-Privileges", "internal-app"))
+                .andExpect(status().isNotFound());
+
+        verify(companyPscService).getIndividualPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID);
+
+    }
 
 
 
