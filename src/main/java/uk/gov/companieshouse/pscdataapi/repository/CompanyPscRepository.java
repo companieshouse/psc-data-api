@@ -14,7 +14,5 @@ public interface CompanyPscRepository extends MongoRepository<PscDocument, Strin
     @Query("{'company_number' : ?0, '_id' : ?1}")
     Optional<PscDocument> getPscByCompanyNumberAndId(String companyNumber, String notificationId);
 
-    @Query("{'company_number' : ?0, 'psc_id' : ?1}")
-    Optional<PscDocument> getPscByCompanyNumberAndPscId(String companyNumber, String pscId);
 
 }
