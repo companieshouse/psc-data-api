@@ -3,7 +3,6 @@ Feature: Error and Retry Psc Data Requests
 Scenario Outline: Put psc statement when kafka-api is not available (Should be 503 and nothing saved to db)
 
 Given Psc data api service is running
-And CHS kafka API service is unavailable
 When I send a PUT request with payload "<data>" file for company number "<companyNumber>" with notification id  "<notificationId>"
 Then I should receive 200 status code
 And the CHS Kafka API is not invoked
