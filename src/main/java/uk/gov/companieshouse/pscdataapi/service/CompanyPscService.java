@@ -133,7 +133,7 @@ public class CompanyPscService {
 
         try {
             Optional<PscDocument> pscDocument =
-                    repository.getPscByCompanyNumberAndPscId(companyNumber, notificationId)
+                    repository.getPscByCompanyNumberAndId(companyNumber, notificationId)
                             .filter(document -> document.getData().getKind()
                                     .equals("individual-person-with-significant-control"));
             if (pscDocument.isEmpty()) {

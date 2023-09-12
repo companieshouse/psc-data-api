@@ -198,7 +198,7 @@ class CompanyPscServiceTest {
     @Test
     public void GetIndividualPscReturn200() throws TransformerException {
         Individual individual = new Individual();
-        when(repository.getPscByCompanyNumberAndPscId(MOCK_COMPANY_NUMBER, MOCK_COMPANY_NUMBER).
+        when(repository.getPscByCompanyNumberAndId(MOCK_COMPANY_NUMBER, MOCK_COMPANY_NUMBER).
                         filter(document -> document.getData().getKind()
                         .equals("individual-person-with-significant-control")))
                 .thenReturn(Optional.of(document));
@@ -211,7 +211,7 @@ class CompanyPscServiceTest {
 
     @Test
     public void GetIndividualPscReturn404() {
-        when(repository.getPscByCompanyNumberAndPscId(MOCK_COMPANY_NUMBER, MOCK_COMPANY_NUMBER)
+        when(repository.getPscByCompanyNumberAndId(MOCK_COMPANY_NUMBER, MOCK_COMPANY_NUMBER)
                 .filter(document -> document.getData().getKind()
                         .equals("individual-person-with-significant-control"))).thenReturn(Optional.empty());
 
@@ -222,7 +222,7 @@ class CompanyPscServiceTest {
 
     @Test
     public void GetWrongTypePscReturn404() {
-        when(repository.getPscByCompanyNumberAndPscId(MOCK_COMPANY_NUMBER, MOCK_COMPANY_NUMBER)
+        when(repository.getPscByCompanyNumberAndId(MOCK_COMPANY_NUMBER, MOCK_COMPANY_NUMBER)
                 .filter(document -> document.getData().getKind()
                         .equals("individual-person-with-significant-control")))
                 .thenReturn(Optional.empty());
