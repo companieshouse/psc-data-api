@@ -268,8 +268,6 @@ public class PscDataSteps {
         document.setSensitiveData(pscSensitiveData);
 
         mongoTemplate.save(document);
-        System.out.println("---------------------------------------------------------------------------------------------------");
-        System.out.println(companyPscRepository.getPscByCompanyNumberAndId(companyNumber,"ZfTs9WeeqpXTqf6dc6FZ4C0H0ZZ").toString());
         assertThat(companyPscRepository.getPscByCompanyNumberAndId(companyNumber,"ZfTs9WeeqpXTqf6dc6FZ4C0H0ZZ")).isPresent();
     }
 
@@ -297,7 +295,6 @@ public class PscDataSteps {
 
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
         CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
-        //assertThat(companyPscRepository.getPscByCompanyNumberAndPscId(companyNumber,notification_id)).isPresent();
 
     }
 

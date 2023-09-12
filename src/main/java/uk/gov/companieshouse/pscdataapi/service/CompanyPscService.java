@@ -133,11 +133,10 @@ public class CompanyPscService {
 
         try {
             Optional<PscDocument> pscDocument =
-                    repository.getPscByCompanyNumberAndId(companyNumber, notificationId);
+                    repository.getPscByCompanyNumberAndPscId(companyNumber, notificationId)
+                            .filter(document -> document.getData().getKind()
+                                    .equals("individual-person-with-significant-control"));
             if (pscDocument.isEmpty()) {
-                System.out.println("-------------------------------------------------------------");
-                System.out.println(pscDocument.toString());
-                System.out.println(notificationId + " " + companyNumber);
                 throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
                         "PSC document not found in Mongo with id " + notificationId);
             }

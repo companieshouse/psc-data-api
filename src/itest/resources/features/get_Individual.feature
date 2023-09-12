@@ -8,8 +8,8 @@ Feature: Get individual
     Then I should receive 200 status code
 
     Examples:
-      | company_number | notificationId              | result |
-      | 34777772       | ZfTs9WeeqpXTqf6dc6FZ4C0H0ZZ | result |
+      | company_number | notificationId              | result                        |
+      | 34777772       | ZfTs9WeeqpXTqf6dc6FZ4C0H0ZZ | individual_get_request_result |
 
 
 

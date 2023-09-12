@@ -23,6 +23,7 @@ import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
 import uk.gov.companieshouse.pscdataapi.models.Created;
+import uk.gov.companieshouse.pscdataapi.models.PscData;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 import uk.gov.companieshouse.pscdataapi.models.Updated;
 import uk.gov.companieshouse.pscdataapi.repository.CompanyPscRepository;
@@ -75,7 +76,7 @@ class CompanyPscServiceTest {
         Data data = new Data();
         external.setNotificationId(PSC_ID);
         external.setData(data);
-        data.setKind("kind");
+        data.setKind("individual-person-with-significant-control");
         internal.setDeltaAt(date);
         request.setInternalData(internal);
         request.setExternalData(external);
@@ -86,6 +87,10 @@ class CompanyPscServiceTest {
         dateString = date.format(dateTimeFormatter);
         document.setCompanyNumber(MOCK_COMPANY_NUMBER);
         document.setPscId(PSC_ID);
+        PscData pscData = new PscData();
+        pscData.setKind("individual-person-with-significant-control");
+        document.setNotificationId(MOCK_COMPANY_NUMBER);
+        document.setData(pscData);
 
     }
 
@@ -193,7 +198,10 @@ class CompanyPscServiceTest {
     @Test
     public void GetIndividualPscReturn200() throws TransformerException {
         Individual individual = new Individual();
-        when(repository.getPscByCompanyNumberAndId(MOCK_COMPANY_NUMBER,MOCK_COMPANY_NUMBER)).thenReturn(Optional.of(document));
+        when(repository.getPscByCompanyNumberAndPscId(MOCK_COMPANY_NUMBER, MOCK_COMPANY_NUMBER).
+                        filter(document -> document.getData().getKind()
+                        .equals("individual-person-with-significant-control")))
+                .thenReturn(Optional.of(document));
         when(transformer.transformPscDocToIndividual(Optional.of(document))).thenReturn(individual);
 
         Individual result = service.getIndividualPsc(MOCK_COMPANY_NUMBER,MOCK_COMPANY_NUMBER);
@@ -203,7 +211,21 @@ class CompanyPscServiceTest {
 
     @Test
     public void GetIndividualPscReturn404() {
-        when(repository.getPscByCompanyNumberAndId(MOCK_COMPANY_NUMBER,MOCK_COMPANY_NUMBER)).thenReturn(Optional.empty());
+        when(repository.getPscByCompanyNumberAndPscId(MOCK_COMPANY_NUMBER, MOCK_COMPANY_NUMBER)
+                .filter(document -> document.getData().getKind()
+                        .equals("individual-person-with-significant-control"))).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> {
+            service.getIndividualPsc(MOCK_COMPANY_NUMBER,MOCK_COMPANY_NUMBER);
+        });
+    }
+
+    @Test
+    public void GetWrongTypePscReturn404() {
+        when(repository.getPscByCompanyNumberAndPscId(MOCK_COMPANY_NUMBER, MOCK_COMPANY_NUMBER)
+                .filter(document -> document.getData().getKind()
+                        .equals("individual-person-with-significant-control")))
+                .thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> {
             service.getIndividualPsc(MOCK_COMPANY_NUMBER,MOCK_COMPANY_NUMBER);
