@@ -19,7 +19,7 @@ spring:
   data:
     mongodb:
       uri: ${MONGODB_URL:mongodb://mongo:27017}
-      name: company_pscs
+      name: delta_company_pscs
   jackson:
     default-property-inclusion: NON_NULL
 
