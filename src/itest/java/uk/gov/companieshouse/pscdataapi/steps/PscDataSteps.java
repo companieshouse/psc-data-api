@@ -165,7 +165,7 @@ public class PscDataSteps {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+        //headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 
         this.contextId = "5234234234";
         CucumberContext.CONTEXT.set("contextId", this.contextId);
@@ -175,8 +175,8 @@ public class PscDataSteps {
         headers.set("ERIC-Authorised-Key-Roles", "*");
 
         HttpEntity request = new HttpEntity(data, headers);
-        String uri = "/company/{company_number}/persons-with-significant-control/{notfication_id}/full_record";
-        ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.PUT, request, Void.class, companyNumber, notificationId);
+        String uri = String.format("/company/%s/persons-with-significant-control/%s/full_record",companyNumber, notificationId);
+        ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.PUT, request, Void.class);
 
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
     }
