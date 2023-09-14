@@ -128,7 +128,7 @@ public class CompanyPscService {
                 companyNumber));
     }
 
-    /** Get PSC record */
+    /** Get PSC record. */
     /** and transform it into an individual PSC.*/
     public Individual getIndividualPsc(String companyNumber, String notificationId) {
 
