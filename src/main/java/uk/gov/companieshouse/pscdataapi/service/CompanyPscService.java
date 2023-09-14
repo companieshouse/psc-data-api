@@ -128,7 +128,8 @@ public class CompanyPscService {
                 companyNumber));
     }
 
-    /** Get Individual PSC record. */
+    /** Get PSC record. */
+    /** and transform it into an individual PSC.*/
     public Individual getIndividualPsc(String companyNumber, String notificationId) {
 
         try {
@@ -147,7 +148,6 @@ public class CompanyPscService {
             }
             return individual;
         } catch (Exception exception) {
-
             logger.error(exception.getMessage());
             throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
                     "Unexpected error occurred while fetching PSC document");
