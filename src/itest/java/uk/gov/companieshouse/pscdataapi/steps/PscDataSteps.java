@@ -161,7 +161,7 @@ public class PscDataSteps {
 
     @When("I send a PUT request with payload {string} file for company number {string} with notification id  {string}")
     public void i_send_psc_record_put_request_with_payload(String dataFile, String companyNumber, String notificationId) {
-        String data = FileReaderUtil.readFile("src/itest/resources/json.input/" + dataFile + ".json");
+        String data = FileReaderUtil.readFile("src/itest/resources/json/input/" + dataFile + ".json");
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
