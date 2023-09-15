@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.gov.companieshouse.api.exception.ResourceNotFoundException;
 import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
 import uk.gov.companieshouse.api.psc.Individual;
+import uk.gov.companieshouse.api.psc.IndividualBeneficialOwner;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.companieshouse.pscdataapi.exceptions.ServiceUnavailableException;
@@ -104,5 +105,23 @@ public class CompanyPscController {
         }
 
     }
+
+    @GetMapping("individual-beneficial-owner/{notification_id}")
+    public ResponseEntity<IndividualBeneficialOwner> getIndividualBeneficialOwnerPscData(
+        @PathVariable("company_number") String companyNumber,
+        @PathVariable("notification_id") String notificationId) {
+            LOGGER.info(String.format("Getting PSC data with company number %s", companyNumber));
+            try {
+                LOGGER.info(String.format("Retrieving PSC with company number %s", companyNumber));
+                IndividualBeneficialOwner individualBeneficialOwner = pscService.getIndividualBeneficialOwnerPsc(companyNumber, notificationId);
+                return new ResponseEntity<>(individualBeneficialOwner, HttpStatus.OK);
+            } catch (ResourceNotFoundException resourceNotFoundException) {
+                LOGGER.error(resourceNotFoundException.getMessage());
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            } catch (DataAccessException exception) {
+                LOGGER.error(exception.getMessage());
+                return ResponseEntity.internalServerError().build();
+            }
+        }
 
 }

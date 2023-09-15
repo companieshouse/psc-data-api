@@ -14,6 +14,7 @@ import uk.gov.companieshouse.api.InternalApiClient;
 import uk.gov.companieshouse.api.exception.ResourceNotFoundException;
 import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
 import uk.gov.companieshouse.api.psc.Individual;
+import uk.gov.companieshouse.api.psc.IndividualBeneficialOwner;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
@@ -149,6 +150,29 @@ public class CompanyPscService {
                         "Failed to transform PSCDocument to Individual");
             }
             return individual;
+        } catch (Exception exception) {
+            logger.error(exception.getMessage());
+            throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
+                    "Unexpected error occurred while fetching PSC document");
+        }
+    }
+
+    public IndividualBeneficialOwner getIndividualBeneficialOwnerPsc(String companyNumber, String notificationId) {
+        try {
+            Optional<PscDocument> pscDocument =
+                    repository.getPscByCompanyNumberAndId(companyNumber, notificationId)
+                            .filter(document -> document.getData().getKind()
+                                    .equals("individual-beneficial-owner-with-significant-control"));
+            if (pscDocument.isEmpty()) {
+                throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
+                        "PSC document not found in Mongo with id " + notificationId);
+            }
+            IndividualBeneficialOwner individualBeneficialOwner = transformer.transformPscDocToIndividualBeneficialOwner(pscDocument);
+            if (individualBeneficialOwner == null) {
+                throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
+                        "Failed to transform PSCDocument to IndividualBeneficialOwner");
+            }
+            return individualBeneficialOwner;
         } catch (Exception exception) {
             logger.error(exception.getMessage());
             throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
