@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.api.exception.ResourceNotFoundException;
 import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
 import uk.gov.companieshouse.api.psc.Individual;
+import uk.gov.companieshouse.api.psc.IndividualBeneficialOwner;
 import uk.gov.companieshouse.api.psc.SensitiveData;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.data.IndividualPscRoles;
@@ -40,7 +41,7 @@ public class CompanyPscTransformer {
 
 
     /**
-     * Transform PSC.
+     * Transform Individual PSC.
      * @param optionalPscDocument PSC.
      * @return PSC mongo Document.
      */
@@ -67,6 +68,34 @@ public class CompanyPscTransformer {
             throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,"PscDocument not found");
         }
 
+    }
+
+    /**
+     * Transform Individual Beneficial Owner PSC.
+     * @param optionalPscDocument PSC.
+     * @return PSC mongo Document.
+     */
+    public IndividualBeneficialOwner transformPscDocToIndividualBeneficialOwner(Optional<PscDocument> optionalPscDocument) throws TransformerException {
+
+        if (optionalPscDocument.isPresent()) {
+            PscDocument pscDocument = optionalPscDocument.get();
+            IndividualBeneficialOwner individualBeneficialOwner = new IndividualBeneficialOwner();
+            individualBeneficialOwner.setEtag(pscDocument.getData().getEtag());
+            individualBeneficialOwner.setNotifiedOn(LocalDate.parse(pscDocument.getDeltaAt()));
+            individualBeneficialOwner.setKind(IndividualBeneficialOwner.KindEnum.INDIVIDUAL_BENEFICIAL_OWNER);
+            individualBeneficialOwner.setName(pscDocument.getData().getName());
+            individualBeneficialOwner.setNameElements(pscDocument.getData().getNameElements());
+            individualBeneficialOwner.setDateOfBirth(pscDocument.getSensitiveData().getDateOfBirth());
+            individualBeneficialOwner.setAddress(pscDocument.getData().getAddress());
+            individualBeneficialOwner.setNaturesOfControl(pscDocument.getData().getNaturesOfControl());
+            individualBeneficialOwner.setLinks(pscDocument.getData().getLinks());
+            individualBeneficialOwner.setNationality(pscDocument.getData().getNationality());
+            individualBeneficialOwner.setIsSanctioned(pscDocument.getData().getSanctioned());
+            return individualBeneficialOwner;
+        } else {
+            logger.error("Skipped transforming pscDoc to individual beneficial owner");
+            throw new ResourceNotFoundException(HttpStatus.NOT_FOUND, "PscDocument not found");
+        } 
     }
 
 
