@@ -41,7 +41,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class CompanyPscServiceTest {
 
-    private static final String PSC_ID = "pscId";
+    private static final String NOTIFICATION_ID = "pscId";
 
     private static final String MOCK_COMPANY_NUMBER = "1234567";
 
@@ -74,7 +74,7 @@ class CompanyPscServiceTest {
         InternalData internal = new InternalData();
         ExternalData external = new ExternalData();
         Data data = new Data();
-        external.setNotificationId(PSC_ID);
+        external.setNotificationId(NOTIFICATION_ID);
         external.setData(data);
         data.setKind("individual-person-with-significant-control");
         internal.setDeltaAt(date);
@@ -86,7 +86,7 @@ class CompanyPscServiceTest {
                 DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSSSSS");
         dateString = date.format(dateTimeFormatter);
         document.setCompanyNumber(MOCK_COMPANY_NUMBER);
-        document.setPscId(PSC_ID);
+        document.setPscId("1234");
         PscData pscData = new PscData();
         pscData.setKind("individual-person-with-significant-control");
         document.setNotificationId(MOCK_COMPANY_NUMBER);
@@ -96,9 +96,9 @@ class CompanyPscServiceTest {
 
     @Test
     void insertBrandNewPscRecordSavesPsc() {
-        when(repository.findUpdatedPsc(eq(PSC_ID), dateCaptor.capture())).thenReturn(new ArrayList<>());
-        when(repository.findById(PSC_ID)).thenReturn(Optional.empty());
-        when(transformer.transformPsc(PSC_ID, request)).thenReturn(document);
+        when(repository.findUpdatedPsc(eq(NOTIFICATION_ID), dateCaptor.capture())).thenReturn(new ArrayList<>());
+        when(repository.findById(NOTIFICATION_ID)).thenReturn(Optional.empty());
+        when(transformer.transformPsc(NOTIFICATION_ID, request)).thenReturn(document);
 
         service.insertPscRecord("", request);
 
@@ -112,9 +112,9 @@ class CompanyPscServiceTest {
         PscDocument oldRecord = new PscDocument();
         LocalDateTime date = LocalDateTime.now();
         oldRecord.setCreated(new Created().setAt(date));
-        when(repository.findUpdatedPsc(eq(PSC_ID), dateCaptor.capture())).thenReturn(new ArrayList<>());
-        when(repository.findById(PSC_ID)).thenReturn(Optional.of(oldRecord));
-        when(transformer.transformPsc(PSC_ID, request)).thenReturn(document);
+        when(repository.findUpdatedPsc(eq(NOTIFICATION_ID), dateCaptor.capture())).thenReturn(new ArrayList<>());
+        when(repository.findById(NOTIFICATION_ID)).thenReturn(Optional.of(oldRecord));
+        when(transformer.transformPsc(NOTIFICATION_ID, request)).thenReturn(document);
 
         service.insertPscRecord("", request);
 
@@ -129,7 +129,7 @@ class CompanyPscServiceTest {
 
         List<PscDocument> documents = new ArrayList<>();
         documents.add(new PscDocument());
-        when(repository.findUpdatedPsc(eq(PSC_ID), dateCaptor.capture())).thenReturn(documents);
+        when(repository.findUpdatedPsc(eq(NOTIFICATION_ID), dateCaptor.capture())).thenReturn(documents);
 
         service.insertPscRecord("", request);
 
@@ -139,9 +139,9 @@ class CompanyPscServiceTest {
 
     @Test
     void throwsBadRequestExceptionWhenNotGivenDocument() {
-        when(repository.findUpdatedPsc(eq(PSC_ID), any())).thenReturn(new ArrayList<>());
-        when(repository.findById(PSC_ID)).thenReturn(Optional.empty());
-        when(transformer.transformPsc(PSC_ID, request)).thenReturn(document);
+        when(repository.findUpdatedPsc(eq(NOTIFICATION_ID), any())).thenReturn(new ArrayList<>());
+        when(repository.findById(NOTIFICATION_ID)).thenReturn(Optional.empty());
+        when(transformer.transformPsc(NOTIFICATION_ID, request)).thenReturn(document);
         when(repository.save(document)).thenThrow(new IllegalArgumentException());
 
         assertThrows(BadRequestException.class, () -> service.insertPscRecord("", request));
@@ -149,9 +149,9 @@ class CompanyPscServiceTest {
 
     @Test
     void insertNewCreatedWhenCreatedCallToMongoFails() {
-        when(repository.findUpdatedPsc(eq(PSC_ID), any())).thenReturn(new ArrayList<>());
-        when(repository.findById(PSC_ID)).thenThrow(new RuntimeException());
-        when(transformer.transformPsc(PSC_ID, request)).thenReturn(document);
+        when(repository.findUpdatedPsc(eq(NOTIFICATION_ID), any())).thenReturn(new ArrayList<>());
+        when(repository.findById(NOTIFICATION_ID)).thenThrow(new RuntimeException());
+        when(transformer.transformPsc(NOTIFICATION_ID, request)).thenReturn(document);
 
         service.insertPscRecord("", request);
 
@@ -162,73 +162,65 @@ class CompanyPscServiceTest {
     @Test
     @DisplayName("When company number & notification id is provided, delete PSC")
     public void testDeletePSC() {
-        when(repository.getPscByCompanyNumberAndId("1234567",PSC_ID)).thenReturn(Optional.ofNullable(document));
-        service.deletePsc("1234567",PSC_ID);
+        when(repository.findById(NOTIFICATION_ID)).thenReturn(Optional.ofNullable(document));
+        service.deletePsc("1234567",NOTIFICATION_ID);
 
-        verify(repository, times(1)).getPscByCompanyNumberAndId("1234567",PSC_ID);
+        verify(repository, times(1)).findById(NOTIFICATION_ID);
         verify(repository, times(1)).delete(document);
     }
 
     @Test
     @DisplayName("When company number is null throw ResourceNotFound Exception")
     public void testDeletePSCThrowsResourceNotFoundException() {
-        when(repository.getPscByCompanyNumberAndId("",PSC_ID)).thenReturn(Optional.empty());
+        when(repository.findById(NOTIFICATION_ID)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> {
-            service.deletePsc("",PSC_ID);
+            service.deletePsc("",NOTIFICATION_ID);
         });
 
-        verify(repository, times(1)).getPscByCompanyNumberAndId("",PSC_ID);
+        verify(repository, times(1)).findById(NOTIFICATION_ID);
         verify(repository, times(0)).delete(any());
     }
 
     @Test
     @DisplayName("When company number and id is null throw ResourceNotFound Exception")
     public void testDeletePSCThrowsResourceNotFoundExceptionWhenCompanyNumberAndNotificationIdIsNull() {
-        when(repository.getPscByCompanyNumberAndId("","")).thenReturn(Optional.empty());
+        when(repository.findById("")).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> {
             service.deletePsc("","");
         });
 
-        verify(repository, times(1)).getPscByCompanyNumberAndId("","");
+        verify(repository, times(1)).findById("");
         verify(repository, times(0)).delete(any());
     }
 
     @Test
     public void GetIndividualPscReturn200() throws TransformerException {
         Individual individual = new Individual();
-        when(repository.getPscByCompanyNumberAndId(MOCK_COMPANY_NUMBER, MOCK_COMPANY_NUMBER).
-                        filter(document -> document.getData().getKind()
-                        .equals("individual-person-with-significant-control")))
-                .thenReturn(Optional.of(document));
+        when(repository.findById(NOTIFICATION_ID)).thenReturn(Optional.of(document));
         when(transformer.transformPscDocToIndividual(Optional.of(document))).thenReturn(individual);
 
-        Individual result = service.getIndividualPsc(MOCK_COMPANY_NUMBER,MOCK_COMPANY_NUMBER);
+        Individual result = service.getIndividualPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
 
         assertEquals(individual,result);
     }
 
     @Test
     public void GetIndividualPscReturn404() {
-        when(repository.getPscByCompanyNumberAndId(MOCK_COMPANY_NUMBER, MOCK_COMPANY_NUMBER)
-                .filter(document -> document.getData().getKind()
-                        .equals("individual-person-with-significant-control"))).thenReturn(Optional.empty());
+        when(repository.findById(NOTIFICATION_ID)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> {
-            service.getIndividualPsc(MOCK_COMPANY_NUMBER,MOCK_COMPANY_NUMBER);
+            service.getIndividualPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
         });
     }
 
     @Test
     public void GetWrongTypePscReturn404() {
-        when(repository.getPscByCompanyNumberAndId(MOCK_COMPANY_NUMBER, MOCK_COMPANY_NUMBER)
-                .filter(document -> document.getData().getKind()
-                        .equals("individual-person-with-significant-control")))
-                .thenReturn(Optional.empty());
+        when(repository.findById(NOTIFICATION_ID)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> {
-            service.getIndividualPsc(MOCK_COMPANY_NUMBER,MOCK_COMPANY_NUMBER);
+            service.getIndividualPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
         });
     }
 

@@ -1,8 +1,11 @@
 package uk.gov.companieshouse.pscdataapi.config;
 
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
+import uk.gov.companieshouse.api.InternalApiClient;
+import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
 
 /**
  * Loads the application context.
@@ -12,5 +15,7 @@ import org.springframework.test.context.ActiveProfiles;
 @DirtiesContext
 @ActiveProfiles({"test"})
 public abstract class AbstractIntegrationTest extends AbstractMongoConfig {
+    @MockBean
+    public ChsKafkaApiService chsKafkaApiService;
 
 }
