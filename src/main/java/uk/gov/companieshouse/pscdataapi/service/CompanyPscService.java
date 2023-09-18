@@ -111,7 +111,8 @@ public class CompanyPscService {
     private PscDocument getPscDocument(String companyNumber, String notificationId)
             throws ResourceNotFoundException {
         Optional<PscDocument> pscDocument =
-                repository.getPscByCompanyNumberAndId(companyNumber, notificationId);
+                repository.findById(notificationId)
+                        .filter(document -> document.getCompanyNumber().equals(companyNumber));
         return pscDocument.orElseThrow(() ->
                 new ResourceNotFoundException(HttpStatus.NOT_FOUND, String.format(
                         "Resource not found for company number: %s", companyNumber)));
@@ -134,9 +135,10 @@ public class CompanyPscService {
 
         try {
             Optional<PscDocument> pscDocument =
-                    repository.getPscByCompanyNumberAndId(companyNumber, notificationId)
+                    repository.findById(notificationId)
                             .filter(document -> document.getData().getKind()
-                                    .equals("individual-person-with-significant-control"));
+                                    .equals("individual-person-with-significant-control")
+                                    && document.getCompanyNumber().equals(companyNumber));
             if (pscDocument.isEmpty()) {
                 throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
                         "PSC document not found in Mongo with id " + notificationId);

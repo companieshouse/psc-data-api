@@ -9,6 +9,7 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.assertj.core.api.Assertions;
+import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.core.io.ClassPathResource;
@@ -72,6 +73,7 @@ public class PscDataSteps {
             mongoDBContainer.start();
         }
         companyPscRepository.deleteAll();
+        MockitoAnnotations.initMocks(this);
     }
 
     @Given("Psc data api service is running")
@@ -138,8 +140,8 @@ public class PscDataSteps {
     }
 
     @Then("a record exists with id {string}")
-    public void statement_exists(String statementId) {
-        Assertions.assertThat(companyPscRepository.existsById(statementId)).isTrue();
+    public void statement_exists(String notificationId) {
+        Assertions.assertThat(companyPscRepository.existsById(notificationId)).isTrue();
     }
 
     @Then("I should receive {int} status code")
@@ -268,7 +270,7 @@ public class PscDataSteps {
         document.setSensitiveData(pscSensitiveData);
 
         mongoTemplate.save(document);
-        assertThat(companyPscRepository.getPscByCompanyNumberAndId(companyNumber,"ZfTs9WeeqpXTqf6dc6FZ4C0H0ZZ")).isPresent();
+        assertThat(companyPscRepository.findById(NOTIFICATION_ID)).isNotEmpty();
     }
 
 

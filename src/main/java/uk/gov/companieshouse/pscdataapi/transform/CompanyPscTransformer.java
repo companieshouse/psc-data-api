@@ -83,7 +83,12 @@ public class CompanyPscTransformer {
         pscDocument.setId(notificationId);
         pscDocument.setNotificationId(notificationId);
         pscDocument.setPscId(requestBody.getExternalData().getPscId());
-        pscDocument.setCompanyNumber(requestBody.getExternalData().getCompanyNumber());
+        if (requestBody.getExternalData().getCompanyNumber() == null) {
+            pscDocument.setCompanyNumber(
+                    requestBody.getExternalData().getData().getCompanyNumber());
+        } else {
+            pscDocument.setCompanyNumber(requestBody.getExternalData().getCompanyNumber());
+        }
         OffsetDateTime deltaAt = requestBody.getInternalData().getDeltaAt();
         pscDocument.setDeltaAt(dateTimeFormatter.format(deltaAt));
         pscDocument.setUpdated(new Updated().setAt(LocalDate.now()));
