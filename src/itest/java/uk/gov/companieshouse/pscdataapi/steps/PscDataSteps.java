@@ -2,6 +2,7 @@ package uk.gov.companieshouse.pscdataapi.steps;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.tomakehurst.wiremock.WireMockServer;
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
 import io.cucumber.java.en.And;
@@ -11,6 +12,7 @@ import io.cucumber.java.en.When;
 import org.assertj.core.api.Assertions;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -21,32 +23,39 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.InstanceOfAssertFactories.LOCAL_DATE;
 import static uk.gov.companieshouse.pscdataapi.config.AbstractMongoConfig.mongoDBContainer;
 
 import org.springframework.util.FileCopyUtils;
-import uk.gov.companieshouse.api.company.CompanyProfile;
-import uk.gov.companieshouse.api.company.Data;
-import uk.gov.companieshouse.api.model.CompanyProfileDocument;
 import uk.gov.companieshouse.api.psc.Individual;
-import uk.gov.companieshouse.api.psc.StatementList;
+import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
 import uk.gov.companieshouse.pscdataapi.config.CucumberContext;
 import uk.gov.companieshouse.pscdataapi.models.*;
 import uk.gov.companieshouse.pscdataapi.transform.CompanyPscTransformer;
 import uk.gov.companieshouse.pscdataapi.util.FileReaderUtil;
+import uk.gov.companieshouse.pscdataapi.exceptions.ServiceUnavailableException;
+import uk.gov.companieshouse.pscdataapi.models.PscData;
+import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 import uk.gov.companieshouse.pscdataapi.repository.CompanyPscRepository;
-
+import uk.gov.companieshouse.pscdataapi.service.CompanyPscService;
 import javax.xml.transform.TransformerException;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 public class PscDataSteps {
+
     private String contextId;
 
     @Autowired
@@ -62,11 +71,15 @@ public class PscDataSteps {
     private CompanyPscRepository companyPscRepository;
 
     @Autowired
+    private ChsKafkaApiService chsKafkaApiService;
+
+    @Autowired
     private CompanyPscTransformer transformer;
 
     private final String COMPANY_NUMBER = "34777772";
-
     private final String NOTIFICATION_ID = "ZfTs9WeeqpXTqf6dc6FZ4C0H0ZZ";
+    @Autowired
+    private CompanyPscService companyPscService;
 
     @Before
     public void dbCleanUp(){
@@ -94,6 +107,45 @@ public class PscDataSteps {
         document.setDeltaAt(deltaAt);
         mongoTemplate.save(document);
         assertThat(companyPscRepository.findById(notifcationId)).isNotEmpty();
+    }
+
+
+    @And("nothing is persisted to the database")
+    public void nothingIsPersistedInTheDatabase() {
+        assertThat(companyPscRepository.findAll()).isEmpty();
+    }
+
+    @Then("the CHS Kafka API is not invoked")
+    public void chs_kafka_api_not_invoked() throws IOException {
+        verify(chsKafkaApiService, times(0)).invokeChsKafkaApi(any(), any(), any(), any());
+    }
+
+    @And("the CHS Kafka API service is not invoked")
+    public void verifyChsKafkaApiNotInvoked(){
+        verifyNoInteractions(chsKafkaApiService);
+    }
+
+
+
+    @When("I send a PUT request with payload {string} file for company number {string} with notification id  {string}")
+    public void i_send_psc_record_put_request_with_payload(String dataFile, String companyNumber, String notificationId) {
+        String data = FileReaderUtil.readFile("src/itest/resources/json/input/" + dataFile + ".json");
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        this.contextId = "5234234234";
+        CucumberContext.CONTEXT.set("contextId", this.contextId);
+        headers.set("x-request-id", this.contextId);
+        headers.set("ERIC-Identity", "TEST-IDENTITY");
+        headers.set("ERIC-Identity-Type", "key");
+        headers.set("ERIC-Authorised-Key-Roles", "*");
+
+        HttpEntity request = new HttpEntity(data, headers);
+        String uri = String.format("/company/%s/persons-with-significant-control/%s/full_record",companyNumber, notificationId);
+        ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.PUT, request, Void.class);
+
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
     }
 
     @When("I send a PUT request with payload {string} file with notification id {string}")
@@ -204,6 +256,11 @@ public class PscDataSteps {
     @And("the database is down")
     public void theDatabaseIsDown() {
         mongoDBContainer.stop();
+    }
+
+    @When("the chs kafka api is not available")
+    public void theChsKafkaApiIsNotAvailable() {
+        doThrow(ServiceUnavailableException.class).when(chsKafkaApiService).invokeChsKafkaApi(any(), any(), any(), any());
     }
 
     @And("a PSC exists for {string} and delta_at \"<deltaAt>")

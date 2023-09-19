@@ -17,6 +17,7 @@ import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
 import uk.gov.companieshouse.api.psc.Individual;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
+import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
 import uk.gov.companieshouse.pscdataapi.exceptions.ServiceUnavailableException;
 import uk.gov.companieshouse.pscdataapi.service.CompanyPscService;
 
@@ -47,7 +48,10 @@ public class CompanyPscController {
             return ResponseEntity.status(HttpStatus.CREATED).build();
         } catch (ServiceUnavailableException exception) {
             LOGGER.info(exception.getMessage());
-            return ResponseEntity.internalServerError().build();
+            return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
+        } catch (BadRequestException exception) {
+            LOGGER.info(exception.getMessage());
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
 

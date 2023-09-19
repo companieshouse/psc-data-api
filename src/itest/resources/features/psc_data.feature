@@ -24,4 +24,3 @@ Feature: Process Psc Data Requests
       | notificationId                 | deltaAt                   | oldData                      |
       | ZfTs9WeeqpXTqf6dc6FZ4C0H0ZZ    | 2023-11-20T08:47:45.378Z  | psc_data_api_old             |
 
-
