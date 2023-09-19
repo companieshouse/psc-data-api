@@ -1,15 +1,24 @@
 package uk.gov.companieshouse.pscdataapi.service;
 
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import uk.gov.companieshouse.api.InternalApiClient;
 import uk.gov.companieshouse.api.chskafka.ChangedResource;
 import uk.gov.companieshouse.api.chskafka.ChangedResourceEvent;
 import uk.gov.companieshouse.api.error.ApiErrorResponseException;
+import uk.gov.companieshouse.api.exception.ResourceNotFoundException;
 import uk.gov.companieshouse.api.handler.chskafka.request.PrivateChangedResourcePost;
 import uk.gov.companieshouse.api.model.ApiResponse;
 import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
+import uk.gov.companieshouse.api.psc.Individual;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
@@ -19,20 +28,8 @@ import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 import uk.gov.companieshouse.pscdataapi.repository.CompanyPscRepository;
 import uk.gov.companieshouse.pscdataapi.transform.CompanyPscTransformer;
 
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import uk.gov.companieshouse.api.InternalApiClient;
-import uk.gov.companieshouse.api.exception.ResourceNotFoundException;
-import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
-import uk.gov.companieshouse.api.psc.Individual;
+
 @Service
 public class CompanyPscService {
 
@@ -54,7 +51,8 @@ public class CompanyPscService {
     private String resourceChangedUri = "/private/resource-changed";
 
     private String resourceKind = "kind";
-    private static final String PSC_STATEMENTS_URI = "/company/%s/persons-with-significant-control-statements/%s/full_record";
+    private static final String PSC_STATEMENTS_URI =
+            "/company/%s/persons-with-significant-control-statements/%s/full_record";
 
     private static final String CHANGED_EVENT_TYPE = "changed";
     private static final String DELETE_EVENT_TYPE = "deleted";
@@ -66,12 +64,20 @@ public class CompanyPscService {
      * @param requestBody   Data to be saved.
      */
     @Transactional
-    public void insertPscRecord(String contextId, FullRecordCompanyPSCApi requestBody) {
-        String notificationId = requestBody.getExternalData().getNotificationId();
+    public void insertPscRecord(String contextId, FullRecordCompanyPSCApi requestBody)
+            throws ServiceUnavailableException, BadRequestException {
+
+        String notificationId;
+        try {
+            notificationId = requestBody.getExternalData().getNotificationId();
+        } catch (NullPointerException ex) {
+            throw new BadRequestException("NotificationId not provided");
+        }
         boolean isLatestRecord = isLatestRecord(notificationId, requestBody
                 .getInternalData().getDeltaAt());
         if (isLatestRecord) {
             PscDocument document = transformer.transformPsc(notificationId, requestBody);
+
             save(contextId, notificationId, document);
             chsKafkaApiService.invokeChsKafkaApi(contextId,
                     requestBody.getExternalData().getCompanyNumber(),
@@ -127,6 +133,7 @@ public class CompanyPscService {
             return null;
         }
     }
+
     private PscDocument getPscDocument(String companyNumber, String notificationId)
             throws ResourceNotFoundException {
         Optional<PscDocument> pscDocument =
@@ -172,41 +179,5 @@ public class CompanyPscService {
                     "Unexpected error occurred while fetching PSC document");
         }
     }
-    public ApiResponse<Void> invokeChsKafkaApi(String contextId, String companyNumber, String notificationId) {
-        internalApiClient.setBasePath(chsKafkaApiUrl);
-        PrivateChangedResourcePost changedResourcePost = internalApiClient.privateChangedResourceHandler()
-                .postChangedResource(resourceChangedUri, mapChangedResource(contextId, companyNumber, notificationId));
-        return handleApiCall(changedResourcePost);
-    }
 
-    private ChangedResource mapChangedResource(String contextId, String companyNumber, String notificationId) {
-        ChangedResourceEvent event = new ChangedResourceEvent();
-        ChangedResource changedResource = new ChangedResource();
-        event.setPublishedAt(String.valueOf(OffsetDateTime.now()));
-        changedResource.setResourceUri(String.format(PSC_STATEMENTS_URI, companyNumber, notificationId));
-        changedResource.event(event);
-        changedResource.setResourceKind(resourceKind);
-        changedResource.setContextId(contextId);
-        return changedResource;
-    }
-
-    private ApiResponse<Void> handleApiCall(PrivateChangedResourcePost changedResourcePost) {
-        try {
-            return changedResourcePost.execute();
-        } catch (ApiErrorResponseException exception) {
-            logger.error("Unsuccessful call to /resource-changed endpoint", exception);
-            throw new ServiceUnavailableException(exception.getMessage());
-        } catch (RuntimeException exception) {
-            logger.error("Error occurred while calling /resource-changed endpoint", exception);
-            throw exception;
-        }
-    }
-
-
-    public ApiResponse<Void> invokeChsKafkaApiWithDeleteEvent(String contextId, String companyNumber, String notificationId) {
-        internalApiClient.setBasePath(chsKafkaApiUrl);
-        PrivateChangedResourcePost changedResourcePost = internalApiClient.privateChangedResourceHandler()
-                .postChangedResource(resourceChangedUri, mapChangedResource(contextId, companyNumber, notificationId ));
-        return handleApiCall(changedResourcePost);
-    }
 }

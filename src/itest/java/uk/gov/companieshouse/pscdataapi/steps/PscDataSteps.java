@@ -23,15 +23,11 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.InstanceOfAssertFactories.LOCAL_DATE;
 import static uk.gov.companieshouse.pscdataapi.config.AbstractMongoConfig.mongoDBContainer;
 
 import org.springframework.util.FileCopyUtils;
-import uk.gov.companieshouse.api.company.CompanyProfile;
-import uk.gov.companieshouse.api.company.Data;
-import uk.gov.companieshouse.api.model.CompanyProfileDocument;
 import uk.gov.companieshouse.api.psc.Individual;
-import uk.gov.companieshouse.api.psc.StatementList;
+import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
 import uk.gov.companieshouse.pscdataapi.config.CucumberContext;
 import uk.gov.companieshouse.pscdataapi.models.*;
 import uk.gov.companieshouse.pscdataapi.transform.CompanyPscTransformer;
@@ -41,9 +37,7 @@ import uk.gov.companieshouse.pscdataapi.models.PscData;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 import uk.gov.companieshouse.pscdataapi.repository.CompanyPscRepository;
 import uk.gov.companieshouse.pscdataapi.service.CompanyPscService;
-import uk.gov.companieshouse.pscdataapi.util.FileReaderUtil;
 import javax.xml.transform.TransformerException;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -55,11 +49,9 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.*;
-import static uk.gov.companieshouse.pscdataapi.config.AbstractMongoConfig.mongoDBContainer;
 
 public class PscDataSteps {
 
@@ -67,9 +59,6 @@ public class PscDataSteps {
     @Value("${wiremock.server.port}")
     private String port;
     private String contextId;
-
-    //@Autowired
-    //private KafkaTemplate<String, Object> kafkaTemplate;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -82,6 +71,9 @@ public class PscDataSteps {
 
     @Autowired
     private CompanyPscRepository companyPscRepository;
+
+    @Autowired
+    private ChsKafkaApiService chsKafkaApiService;
 
     @Autowired
     private CompanyPscTransformer transformer;
@@ -119,27 +111,20 @@ public class PscDataSteps {
         assertThat(companyPscRepository.findById(notifcationId)).isNotEmpty();
     }
 
-    @Given("the database is down")
-    public void the_psc_db_is_down() {
-        mongoDBContainer.stop();
-    }
 
-    @Then("nothing is persisted in the database")
-    public void nothing_persisted_to_database() {
-        List<PscDocument> pscDocs = companyPscRepository.findAll();
-        Assertions.assertThat(pscDocs).hasSize(0);
+    @And("nothing is persisted to the database")
+    public void nothingIsPersistedInTheDatabase() {
+        assertThat(companyPscRepository.findAll()).isEmpty();
     }
 
     @Then("the CHS Kafka API is not invoked")
     public void chs_kafka_api_not_invoked() throws IOException {
-        verify(companyPscService, times(0)).invokeChsKafkaApi(any(), any(), any());
+        verify(chsKafkaApiService, times(0)).invokeChsKafkaApi(any(), any(), any(), any());
     }
 
-    @When("CHS kafka API service is unavailable")
-    public void chs_kafka_service_unavailable() throws IOException {
-
-        doThrow(ServiceUnavailableException.class)
-                .when(companyPscService).invokeChsKafkaApiWithDeleteEvent(any(), any(), any());
+    @And("the CHS Kafka API service is not invoked")
+    public void verifyChsKafkaApiNotInvoked(){
+        verifyNoInteractions(chsKafkaApiService);
     }
 
     private void configureWireMock() {
@@ -154,40 +139,7 @@ public class PscDataSteps {
                 .willReturn(aResponse().withStatus(responseCode)));
     }
 
-//    @When("^the consumer receives a message but the data api returns a (\\d*)$")
-//    public void theConsumerReceivesMessageButDataApiReturns(String companyNumber, String notificationId, int responseCode) throws Exception{
-//        configureWireMock();
-//        stubPutStatement(companyNumber,notificationId,responseCode);
-//        ChsDelta delta = new ChsDelta(TestData.getStatementDelta(), 1, "1", false);
-//        kafkaTemplate.send(mainTopic, delta);
-//
-//        countDown();
-//    }
 
-
-
-
-//    @When("I send a PUT request")
-//    public void i_send_psc_statement_put_request(String dataFile, String notificationId) throws IOException {
-//        String data = FileReaderUtil.readFile("src/itest/resources/json/input/" + dataFile + ".json");
-//
-//        HttpHeaders headers = new HttpHeaders();
-//        headers.setContentType(MediaType.APPLICATION_JSON);
-//        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-//
-//        this.contextId = "5234234234";
-//        CucumberContext.CONTEXT.set("contextId", this.contextId);
-//        headers.set("x-request-id", this.contextId);
-//        headers.set("ERIC-Identity", "TEST-IDENTITY");
-//        headers.set("ERIC-Identity-Type", "key");
-//        headers.set("ERIC-Authorised-Key-Roles", "*");
-//
-//        HttpEntity request = new HttpEntity(data, headers);
-//        String uri = "/company/{company_number}/persons-with-significant-control-statements/{notfication_id}/full_record";
-//        ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.PUT, request, Void.class, COMPANY_NUMBER, notificationId);
-//
-//        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
-//    }
 
     @When("I send a PUT request with payload {string} file for company number {string} with notification id  {string}")
     public void i_send_psc_record_put_request_with_payload(String dataFile, String companyNumber, String notificationId) {
@@ -207,6 +159,28 @@ public class PscDataSteps {
         HttpEntity request = new HttpEntity(data, headers);
         String uri = String.format("/company/%s/persons-with-significant-control/%s/full_record",companyNumber, notificationId);
         ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.PUT, request, Void.class);
+
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+    }
+
+    @When("I send a PUT request with payload {string} file with notification id {string}")
+    public void i_send_psc_record_put_request_with_payload(String dataFile, String notificationId) {
+        String data = FileReaderUtil.readFile("src/itest/resources/json/input/" + dataFile + ".json");
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+
+        this.contextId = "5234234234";
+        CucumberContext.CONTEXT.set("contextId", this.contextId);
+        headers.set("x-request-id", this.contextId);
+        headers.set("ERIC-Identity", "TEST-IDENTITY");
+        headers.set("ERIC-Identity-Type", "key");
+        headers.set("ERIC-Authorised-Key-Roles", "*");
+
+        HttpEntity request = new HttpEntity(data, headers);
+        String uri = "/company/{company_number}/persons-with-significant-control/{notfication_id}/full_record";
+        ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.PUT, request, Void.class, COMPANY_NUMBER, notificationId);
 
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
     }
@@ -242,6 +216,12 @@ public class PscDataSteps {
     public void i_should_receive_status_code(Integer statusCode) {
         int expectedStatusCode = CucumberContext.CONTEXT.get("statusCode");
         Assertions.assertThat(expectedStatusCode).isEqualTo(statusCode);
+    }
+
+    @When("CHS kafka API service is down")
+    public void chs_kafka_service_down() throws IOException {
+        doThrow(ServiceUnavailableException.class)
+                .when(chsKafkaApiService).invokeChsKafkaApi(any(), any(), any(), any());
     }
 
     @When("a record exists with id {string} and delta_at {string}")
@@ -297,6 +277,11 @@ public class PscDataSteps {
     @And("the database is down")
     public void theDatabaseIsDown() {
         mongoDBContainer.stop();
+    }
+
+    @When("the chs kafka api is not available")
+    public void theChsKafkaApiIsNotAvailable() {
+        doThrow(ServiceUnavailableException.class).when(chsKafkaApiService).invokeChsKafkaApi(any(), any(), any(), any());
     }
 
     @And("a PSC exists for {string} and delta_at \"<deltaAt>")
