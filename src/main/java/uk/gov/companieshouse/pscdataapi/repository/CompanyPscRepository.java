@@ -12,7 +12,7 @@ public interface CompanyPscRepository extends MongoRepository<PscDocument, Strin
     List<PscDocument> findUpdatedPsc(String notificationId, String at);
 
     @Query("{'_id' : ?1, 'company_number' : ?0}")
-    PscDocument getPscByCompanyNumberAndId(String companyNumber, String notificationId);
+    Optional<PscDocument> getPscByCompanyNumberAndId(String companyNumber, String notificationId);
 
 
 }
