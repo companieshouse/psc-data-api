@@ -44,7 +44,6 @@
         <skip.integration.tests>false</skip.integration.tests>
         <skip.unit.tests>false</skip.unit.tests>
         <maven-resources-plugin.version>2.5</maven-resources-plugin.version>
-        <wiremock.standalone.version>2.32.0</wiremock.standalone.version>
 
         <!--sonar configuration-->
         <sonar.coverage.jacoco.xmlReportPaths>${project.basedir}/target/site/jacoco/jacoco.xml,
@@ -171,32 +170,6 @@
             <groupId>uk.gov.companieshouse</groupId>
             <artifactId>kafka-models</artifactId>
             <version>${kafka-models.version}</version>
-        </dependency>
-
-
-        <dependency>
-            <groupId>com.github.tomakehurst</groupId>
-            <artifactId>wiremock-jre8</artifactId>
-            <version>${wiremock.standalone.version}</version>
-            <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.conscrypt</groupId>
-                    <artifactId>conscrypt-openjdk-uber</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>net.javacrumbs.json-unit</groupId>
-                    <artifactId>json-unit-core</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.github.jknack</groupId>
-                    <artifactId>handlebars</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.github.jknack</groupId>
-                    <artifactId>handlebars-helpers</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
     </dependencies>
 

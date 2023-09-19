@@ -55,9 +55,6 @@ import static org.mockito.Mockito.*;
 
 public class PscDataSteps {
 
-    private static WireMockServer wireMockServer;
-    @Value("${wiremock.server.port}")
-    private String port;
     private String contextId;
 
     @Autowired
@@ -125,18 +122,6 @@ public class PscDataSteps {
     @And("the CHS Kafka API service is not invoked")
     public void verifyChsKafkaApiNotInvoked(){
         verifyNoInteractions(chsKafkaApiService);
-    }
-
-    private void configureWireMock() {
-        wireMockServer = new WireMockServer(Integer.parseInt(port));
-        wireMockServer.start();
-        configureFor("localhost", Integer.parseInt(port));
-    }
-
-    private void stubPutStatement(String companyNumber, String notificationId, int responseCode) {
-        stubFor(put(urlEqualTo(
-                "/company/" + companyNumber + "/persons-with-significant-control/" + notificationId + "/full_record"))
-                .willReturn(aResponse().withStatus(responseCode)));
     }
 
 
@@ -216,12 +201,6 @@ public class PscDataSteps {
     public void i_should_receive_status_code(Integer statusCode) {
         int expectedStatusCode = CucumberContext.CONTEXT.get("statusCode");
         Assertions.assertThat(expectedStatusCode).isEqualTo(statusCode);
-    }
-
-    @When("CHS kafka API service is down")
-    public void chs_kafka_service_down() throws IOException {
-        doThrow(ServiceUnavailableException.class)
-                .when(chsKafkaApiService).invokeChsKafkaApi(any(), any(), any(), any());
     }
 
     @When("a record exists with id {string} and delta_at {string}")

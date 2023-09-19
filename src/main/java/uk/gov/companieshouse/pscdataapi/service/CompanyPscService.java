@@ -46,17 +46,6 @@ public class CompanyPscService {
     ChsKafkaApiService chsKafkaApiService;
     @Autowired
     InternalApiClient internalApiClient;
-    private String chsKafkaApiUrl;
-
-    private String resourceChangedUri = "/private/resource-changed";
-
-    private String resourceKind = "kind";
-    private static final String PSC_STATEMENTS_URI =
-            "/company/%s/persons-with-significant-control-statements/%s/full_record";
-
-    private static final String CHANGED_EVENT_TYPE = "changed";
-    private static final String DELETE_EVENT_TYPE = "deleted";
-
 
     /**
      * Save or update a natural disqualification.
