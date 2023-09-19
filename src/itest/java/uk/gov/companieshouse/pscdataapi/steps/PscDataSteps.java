@@ -42,6 +42,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 
 
@@ -230,9 +231,9 @@ public class PscDataSteps {
         document.setId(NOTIFICATION_ID);
         document.setCompanyNumber(companyNumber);
         document.setPscId("ZfTs9WeeqpXTqf6dc6FZ4C0H0ZZ");
-        document.setDeltaAt(String.valueOf(LocalDate.now()));
+        document.setDeltaAt("20231120084745378000");
         pscData.setEtag("string");
-        pscData.setCeasedOn(LocalDate.now());
+        pscData.setCeasedOn(LocalDate.from(LocalDateTime.now()));
         pscData.setKind("individual-person-with-significant-control");
         pscData.setCountryOfResidence("United Kingdom");
         DateOfBirth dateOfBirth = new DateOfBirth();

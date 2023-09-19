@@ -47,12 +47,11 @@ public class CompanyPscTransformer {
     public Individual transformPscDocToIndividual(Optional<PscDocument> optionalPscDocument)
             throws TransformerException {
 
-
         if (optionalPscDocument.isPresent()) {
             PscDocument pscDocument = optionalPscDocument.get();
             Individual individual = new Individual();
             individual.setEtag(pscDocument.getData().getEtag());
-            individual.setNotifiedOn(LocalDate.parse(pscDocument.getDeltaAt()));
+            individual.setNotifiedOn(LocalDate.parse(pscDocument.getDeltaAt(),dateTimeFormatter));
             individual.setKind(Individual.KindEnum.INDIVIDUAL_PERSON_WITH_SIGNIFICANT_CONTROL);
             individual.setCountryOfResidence(pscDocument.getData().getCountryOfResidence());
             individual.setName(pscDocument.getData().getName());
