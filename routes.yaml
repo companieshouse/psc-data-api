@@ -4,3 +4,4 @@ weight: 905
 routes:
   1: ^/persons-with-significant-control/healthcheck
   2: ^/company/(.*)/persons-with-significant-control/(.*)/full_record
+  3: ^/company/(.*)/persons-with-significant-control/individual/(.*)
