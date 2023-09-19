@@ -132,7 +132,6 @@ public class PscDataSteps {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        //headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 
         this.contextId = "5234234234";
         CucumberContext.CONTEXT.set("contextId", this.contextId);
