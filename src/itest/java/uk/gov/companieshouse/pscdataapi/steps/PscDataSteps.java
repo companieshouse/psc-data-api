@@ -302,9 +302,6 @@ public class PscDataSteps {
 
         Individual actual = CucumberContext.CONTEXT.get("getResponseBody");
 
-        System.out.println(actual.getNotifiedOn());
-
-
         assertThat(actual.getName()).isEqualTo(expected.getName());
         assertThat(actual.getCountryOfResidence()).isEqualTo(expected.getCountryOfResidence());
         assertThat(actual.getNaturesOfControl()).isEqualTo(expected.getNaturesOfControl());
