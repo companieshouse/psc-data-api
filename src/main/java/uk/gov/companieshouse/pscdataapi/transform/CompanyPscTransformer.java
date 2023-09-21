@@ -47,18 +47,78 @@ public class CompanyPscTransformer {
     public Individual transformPscDocToIndividual(Optional<PscDocument> optionalPscDocument)
             throws TransformerException {
 
+        logger.info("Attempting to transform pscDocument to individual");
+
         if (optionalPscDocument.isPresent()) {
             PscDocument pscDocument = optionalPscDocument.get();
             Individual individual = new Individual();
-            individual.setEtag(pscDocument.getData().getEtag());
-            individual.setNotifiedOn(LocalDate.parse(pscDocument.getDeltaAt(),dateTimeFormatter));
+            if (pscDocument.getData().getEtag() != null) {
+                individual.setEtag(pscDocument.getData().getEtag());
+            }
+            if (pscDocument.getDeltaAt() != null) {
+                individual.setNotifiedOn(LocalDate
+                        .parse(pscDocument.getDeltaAt(),dateTimeFormatter));
+            }
             individual.setKind(Individual.KindEnum.INDIVIDUAL_PERSON_WITH_SIGNIFICANT_CONTROL);
-            individual.setCountryOfResidence(pscDocument.getData().getCountryOfResidence());
-            individual.setName(pscDocument.getData().getName());
-            individual.setNameElements(pscDocument.getData().getNameElements());
-            individual.setAddress(pscDocument.getData().getAddress());
-            individual.setNaturesOfControl(pscDocument.getData().getNaturesOfControl());
-            individual.setLinks(pscDocument.getData().getLinks());
+            if (pscDocument.getData().getCountryOfResidence() != null) {
+                individual.setCountryOfResidence(pscDocument.getData().getCountryOfResidence());
+            }
+            if (pscDocument.getData().getName() != null) {
+                individual.setName(pscDocument.getData().getName());
+            }
+            if (pscDocument.getData().getNameElements() != null) {
+                NameElements nameElements = new NameElements();
+                if (pscDocument.getData().getNameElements().getTitle() != null) {
+                    nameElements.setTitle(pscDocument.getData().getNameElements().getTitle());
+                }
+                if (pscDocument.getData().getNameElements().getForename() != null) {
+                    nameElements.setTitle(pscDocument.getData().getNameElements().getForename());
+                }
+                if (pscDocument.getData().getNameElements().getMiddleName() != null) {
+                    nameElements.setTitle(pscDocument.getData().getNameElements().getMiddleName());
+                }
+                if (pscDocument.getData().getNameElements().getSurname() != null) {
+                    nameElements.setTitle(pscDocument.getData().getNameElements().getSurname());
+                }
+                individual.setNameElements(nameElements);
+            }
+            if (pscDocument.getData().getAddress() != null) {
+                Address address = new Address();
+                if (pscDocument.getData().getAddress().getAddressLine1() != null) {
+                    address.setAddressLine1(pscDocument.getData().getAddress().getAddressLine1());
+                }
+                if (pscDocument.getData().getAddress().getAddressLine2() != null) {
+                    address.setAddressLine1(pscDocument.getData().getAddress().getAddressLine2());
+                }
+                if (pscDocument.getData().getAddress().getCountry() != null) {
+                    address.setAddressLine1(pscDocument.getData().getAddress().getCountry());
+                }
+                if (pscDocument.getData().getAddress().getLocality() != null) {
+                    address.setAddressLine1(pscDocument.getData().getAddress().getLocality());
+                }
+                if (pscDocument.getData().getAddress().getPostalCode() != null) {
+                    address.setAddressLine1(pscDocument.getData().getAddress().getPostalCode());
+                }
+                if (pscDocument.getData().getAddress().getPremises() != null) {
+                    address.setAddressLine1(pscDocument.getData().getAddress().getPremises());
+                }
+                if (pscDocument.getData().getAddress().getRegion() != null) {
+                    address.setAddressLine1(pscDocument.getData().getAddress().getRegion());
+                }
+                if (pscDocument.getData().getAddress().getCareOf() != null) {
+                    address.setAddressLine1(pscDocument.getData().getAddress().getCareOf());
+                }
+                if (pscDocument.getData().getAddress().getPoBox() != null) {
+                    address.setAddressLine1(pscDocument.getData().getAddress().getPoBox());
+                }
+                individual.setAddress(address);
+            }
+            if (pscDocument.getData().getNaturesOfControl() != null) {
+                individual.setNaturesOfControl(pscDocument.getData().getNaturesOfControl());
+            }
+            if (pscDocument.getData().getLinks() != null) {
+                individual.setLinks(pscDocument.getData().getLinks());
+            }
             return individual;
         } else {
             logger.error("Skipped transforming pscDoc to individual");
