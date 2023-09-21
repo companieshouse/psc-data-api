@@ -72,13 +72,14 @@ public class CompanyPscTransformer {
                     nameElements.setTitle(pscDocument.getData().getNameElements().getTitle());
                 }
                 if (pscDocument.getData().getNameElements().getForename() != null) {
-                    nameElements.setTitle(pscDocument.getData().getNameElements().getForename());
+                    nameElements.setForename(pscDocument.getData().getNameElements().getForename());
                 }
                 if (pscDocument.getData().getNameElements().getMiddleName() != null) {
-                    nameElements.setTitle(pscDocument.getData().getNameElements().getMiddleName());
+                    nameElements.setMiddleName(pscDocument.getData()
+                            .getNameElements().getMiddleName());
                 }
                 if (pscDocument.getData().getNameElements().getSurname() != null) {
-                    nameElements.setTitle(pscDocument.getData().getNameElements().getSurname());
+                    nameElements.setSurname(pscDocument.getData().getNameElements().getSurname());
                 }
                 individual.setNameElements(nameElements);
             }
@@ -88,28 +89,28 @@ public class CompanyPscTransformer {
                     address.setAddressLine1(pscDocument.getData().getAddress().getAddressLine1());
                 }
                 if (pscDocument.getData().getAddress().getAddressLine2() != null) {
-                    address.setAddressLine1(pscDocument.getData().getAddress().getAddressLine2());
+                    address.setAddressLine2(pscDocument.getData().getAddress().getAddressLine2());
                 }
                 if (pscDocument.getData().getAddress().getCountry() != null) {
-                    address.setAddressLine1(pscDocument.getData().getAddress().getCountry());
+                    address.setCountry(pscDocument.getData().getAddress().getCountry());
                 }
                 if (pscDocument.getData().getAddress().getLocality() != null) {
-                    address.setAddressLine1(pscDocument.getData().getAddress().getLocality());
+                    address.setLocality(pscDocument.getData().getAddress().getLocality());
                 }
                 if (pscDocument.getData().getAddress().getPostalCode() != null) {
-                    address.setAddressLine1(pscDocument.getData().getAddress().getPostalCode());
+                    address.setPostalCode(pscDocument.getData().getAddress().getPostalCode());
                 }
                 if (pscDocument.getData().getAddress().getPremises() != null) {
-                    address.setAddressLine1(pscDocument.getData().getAddress().getPremises());
+                    address.setPremises(pscDocument.getData().getAddress().getPremises());
                 }
                 if (pscDocument.getData().getAddress().getRegion() != null) {
-                    address.setAddressLine1(pscDocument.getData().getAddress().getRegion());
+                    address.setRegion(pscDocument.getData().getAddress().getRegion());
                 }
                 if (pscDocument.getData().getAddress().getCareOf() != null) {
-                    address.setAddressLine1(pscDocument.getData().getAddress().getCareOf());
+                    address.setCareOf(pscDocument.getData().getAddress().getCareOf());
                 }
                 if (pscDocument.getData().getAddress().getPoBox() != null) {
-                    address.setAddressLine1(pscDocument.getData().getAddress().getPoBox());
+                    address.setPoBox(pscDocument.getData().getAddress().getPoBox());
                 }
                 individual.setAddress(address);
             }
