@@ -56,7 +56,6 @@ public class CompanyPscTransformer {
             individual.setCountryOfResidence(pscDocument.getData().getCountryOfResidence());
             individual.setName(pscDocument.getData().getName());
             individual.setNameElements(pscDocument.getData().getNameElements());
-            individual.setDateOfBirth(pscDocument.getSensitiveData().getDateOfBirth());
             individual.setAddress(pscDocument.getData().getAddress());
             individual.setNaturesOfControl(pscDocument.getData().getNaturesOfControl());
             individual.setLinks(pscDocument.getData().getLinks());

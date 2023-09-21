@@ -293,11 +293,6 @@ public class PscDataSteps {
         pscData.setCeasedOn(LocalDate.from(LocalDateTime.now()));
         pscData.setKind("individual-person-with-significant-control");
         pscData.setCountryOfResidence("United Kingdom");
-        DateOfBirth dateOfBirth = new DateOfBirth();
-        dateOfBirth.setDay(21);
-        dateOfBirth.setMonth(10);
-        dateOfBirth.setYear(1995);
-        pscSensitiveData.setDateOfBirth(dateOfBirth);
         pscData.setName("34777772");
         NameElements nameElements = new NameElements();
         nameElements.setTitle("Mr");
@@ -325,7 +320,6 @@ public class PscDataSteps {
         list.add("part-right-to-share-surplus-assets-75-to-100-percent");
         pscData.setNaturesOfControl(list);
         document.setData(pscData);
-        document.setSensitiveData(pscSensitiveData);
 
         mongoTemplate.save(document);
         assertThat(companyPscRepository.findById(NOTIFICATION_ID)).isNotEmpty();
@@ -367,7 +361,6 @@ public class PscDataSteps {
 
         assertThat(actual.getName()).isEqualTo(expected.getName());
         assertThat(actual.getCountryOfResidence()).isEqualTo(expected.getCountryOfResidence());
-        assertThat(actual.getDateOfBirth()).isEqualTo(expected.getDateOfBirth());
         assertThat(actual.getNaturesOfControl()).isEqualTo(expected.getNaturesOfControl());
     }
 
