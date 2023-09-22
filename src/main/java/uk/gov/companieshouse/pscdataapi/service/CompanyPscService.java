@@ -157,17 +157,22 @@ public class CompanyPscService {
         }
     }
 
-    public IndividualBeneficialOwner getIndividualBeneficialOwnerPsc(String companyNumber, String notificationId) {
+    /** Get PSC record. */
+    /** and transform it into an individualBeneficialOwner PSC.*/
+    public IndividualBeneficialOwner getIndividualBeneficialOwnerPsc(
+            String companyNumber, String notificationId) {
         try {
             Optional<PscDocument> pscDocument =
-                    repository.getPscByCompanyNumberAndId(companyNumber, notificationId)
+                    repository.findById(notificationId)
                             .filter(document -> document.getData().getKind()
-                                    .equals("individual-beneficial-owner-with-significant-control"));
+                                    .equals("individual-beneficial-owner")
+                                    && document.getCompanyNumber().equals(companyNumber));
             if (pscDocument.isEmpty()) {
                 throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
                         "PSC document not found in Mongo with id " + notificationId);
             }
-            IndividualBeneficialOwner individualBeneficialOwner = transformer.transformPscDocToIndividualBeneficialOwner(pscDocument);
+            IndividualBeneficialOwner individualBeneficialOwner =
+                    transformer.transformPscDocToIndividualBeneficialOwner(pscDocument);
             if (individualBeneficialOwner == null) {
                 throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
                         "Failed to transform PSCDocument to IndividualBeneficialOwner");

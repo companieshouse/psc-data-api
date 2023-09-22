@@ -134,27 +134,93 @@ public class CompanyPscTransformer {
      * @param optionalPscDocument PSC.
      * @return PSC mongo Document.
      */
-    public IndividualBeneficialOwner transformPscDocToIndividualBeneficialOwner(Optional<PscDocument> optionalPscDocument) throws TransformerException {
+    public IndividualBeneficialOwner transformPscDocToIndividualBeneficialOwner(
+            Optional<PscDocument> optionalPscDocument) throws TransformerException {
+
+        logger.info("Attempting to transform pscDocument to IndividualBeneficialOwner");
 
         if (optionalPscDocument.isPresent()) {
             PscDocument pscDocument = optionalPscDocument.get();
             IndividualBeneficialOwner individualBeneficialOwner = new IndividualBeneficialOwner();
-            individualBeneficialOwner.setEtag(pscDocument.getData().getEtag());
-            individualBeneficialOwner.setNotifiedOn(LocalDate.parse(pscDocument.getDeltaAt()));
-            individualBeneficialOwner.setKind(IndividualBeneficialOwner.KindEnum.INDIVIDUAL_BENEFICIAL_OWNER);
-            individualBeneficialOwner.setName(pscDocument.getData().getName());
-            individualBeneficialOwner.setNameElements(pscDocument.getData().getNameElements());
-            individualBeneficialOwner.setDateOfBirth(pscDocument.getSensitiveData().getDateOfBirth());
-            individualBeneficialOwner.setAddress(pscDocument.getData().getAddress());
-            individualBeneficialOwner.setNaturesOfControl(pscDocument.getData().getNaturesOfControl());
-            individualBeneficialOwner.setLinks(pscDocument.getData().getLinks());
-            individualBeneficialOwner.setNationality(pscDocument.getData().getNationality());
-            individualBeneficialOwner.setIsSanctioned(pscDocument.getData().getSanctioned());
+            if (pscDocument.getData().getEtag() != null) {
+                individualBeneficialOwner.setEtag(pscDocument.getData().getEtag());
+            }
+            if (pscDocument.getDeltaAt() != null) {
+                individualBeneficialOwner.setNotifiedOn(LocalDate
+                        .parse(pscDocument.getDeltaAt(),dateTimeFormatter));
+            }
+            individualBeneficialOwner
+                    .setKind(IndividualBeneficialOwner.KindEnum.INDIVIDUAL_BENEFICIAL_OWNER);
+            if (pscDocument.getData().getName() != null) {
+                individualBeneficialOwner.setName(pscDocument.getData().getName());
+            }
+            if (pscDocument.getData().getNameElements() != null) {
+                NameElements nameElements = new NameElements();
+                if (pscDocument.getData().getNameElements().getTitle() != null) {
+                    nameElements.setTitle(pscDocument.getData().getNameElements().getTitle());
+                }
+                if (pscDocument.getData().getNameElements().getForename() != null) {
+                    nameElements.setForename(pscDocument.getData().getNameElements().getForename());
+                }
+                if (pscDocument.getData().getNameElements().getMiddleName() != null) {
+                    nameElements.setMiddleName(pscDocument.getData()
+                            .getNameElements().getMiddleName());
+                }
+                if (pscDocument.getData().getNameElements().getSurname() != null) {
+                    nameElements.setSurname(pscDocument.getData().getNameElements().getSurname());
+                }
+                individualBeneficialOwner.setNameElements(nameElements);
+            }
+            if (pscDocument.getData().getAddress() != null) {
+                Address address = new Address();
+                if (pscDocument.getData().getAddress().getAddressLine1() != null) {
+                    address.setAddressLine1(pscDocument.getData().getAddress().getAddressLine1());
+                }
+                if (pscDocument.getData().getAddress().getAddressLine2() != null) {
+                    address.setAddressLine2(pscDocument.getData().getAddress().getAddressLine2());
+                }
+                if (pscDocument.getData().getAddress().getCountry() != null) {
+                    address.setCountry(pscDocument.getData().getAddress().getCountry());
+                }
+                if (pscDocument.getData().getAddress().getLocality() != null) {
+                    address.setLocality(pscDocument.getData().getAddress().getLocality());
+                }
+                if (pscDocument.getData().getAddress().getPostalCode() != null) {
+                    address.setPostalCode(pscDocument.getData().getAddress().getPostalCode());
+                }
+                if (pscDocument.getData().getAddress().getPremises() != null) {
+                    address.setPremises(pscDocument.getData().getAddress().getPremises());
+                }
+                if (pscDocument.getData().getAddress().getRegion() != null) {
+                    address.setRegion(pscDocument.getData().getAddress().getRegion());
+                }
+                if (pscDocument.getData().getAddress().getCareOf() != null) {
+                    address.setCareOf(pscDocument.getData().getAddress().getCareOf());
+                }
+                if (pscDocument.getData().getAddress().getPoBox() != null) {
+                    address.setPoBox(pscDocument.getData().getAddress().getPoBox());
+                }
+                individualBeneficialOwner.setAddress(address);
+            }
+            if (pscDocument.getData().getNaturesOfControl() != null) {
+                individualBeneficialOwner
+                        .setNaturesOfControl(pscDocument.getData().getNaturesOfControl());
+            }
+            if (pscDocument.getData().getLinks() != null) {
+                individualBeneficialOwner.setLinks(pscDocument.getData().getLinks());
+            }
+            if (pscDocument.getData().getNationality() != null) {
+                individualBeneficialOwner.setNationality(pscDocument.getData().getNationality());
+            }
+            if (pscDocument.getData().getSanctioned() != null) {
+                individualBeneficialOwner.setIsSanctioned(pscDocument.getData().getSanctioned());
+            }
             return individualBeneficialOwner;
         } else {
-            logger.error("Skipped transforming pscDoc to individual beneficial owner");
-            throw new ResourceNotFoundException(HttpStatus.NOT_FOUND, "PscDocument not found");
-        } 
+            logger.error("Skipped transforming pscDoc to individualBeneficialOwner");
+            throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,"PscDocument not found");
+        }
+
     }
 
 
