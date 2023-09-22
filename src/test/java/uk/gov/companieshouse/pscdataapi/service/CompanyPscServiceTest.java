@@ -162,43 +162,44 @@ class CompanyPscServiceTest {
     @Test
     @DisplayName("When company number & notification id is provided, delete PSC")
     public void testDeletePSC() {
-        when(repository.findById(NOTIFICATION_ID)).thenReturn(Optional.ofNullable(document));
+        when(repository.getPscByCompanyNumberAndId("1234567",NOTIFICATION_ID)).thenReturn(Optional.ofNullable(document));
         service.deletePsc("1234567",NOTIFICATION_ID);
 
-        verify(repository, times(1)).findById(NOTIFICATION_ID);
+        verify(repository, times(1)).getPscByCompanyNumberAndId("1234567",NOTIFICATION_ID);
         verify(repository, times(1)).delete(document);
     }
 
     @Test
     @DisplayName("When company number is null throw ResourceNotFound Exception")
     public void testDeletePSCThrowsResourceNotFoundException() {
-        when(repository.findById(NOTIFICATION_ID)).thenReturn(Optional.empty());
+        when(repository.getPscByCompanyNumberAndId("",NOTIFICATION_ID)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> {
             service.deletePsc("",NOTIFICATION_ID);
         });
 
-        verify(repository, times(1)).findById(NOTIFICATION_ID);
+        verify(repository, times(1)).getPscByCompanyNumberAndId("",NOTIFICATION_ID);
         verify(repository, times(0)).delete(any());
     }
 
     @Test
     @DisplayName("When company number and id is null throw ResourceNotFound Exception")
     public void testDeletePSCThrowsResourceNotFoundExceptionWhenCompanyNumberAndNotificationIdIsNull() {
-        when(repository.findById("")).thenReturn(Optional.empty());
+        when(repository.getPscByCompanyNumberAndId("","")).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> {
             service.deletePsc("","");
         });
 
-        verify(repository, times(1)).findById("");
+        verify(repository, times(1)).getPscByCompanyNumberAndId("","");
         verify(repository, times(0)).delete(any());
     }
 
     @Test
     public void GetIndividualPscReturn200() throws TransformerException {
         Individual individual = new Individual();
-        when(repository.findById(NOTIFICATION_ID)).thenReturn(Optional.of(document));
+        when(repository.getPscByCompanyNumberAndId(MOCK_COMPANY_NUMBER, NOTIFICATION_ID))
+                .thenReturn(Optional.of(document));
         when(transformer.transformPscDocToIndividual(Optional.of(document))).thenReturn(individual);
 
         Individual result = service.getIndividualPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
@@ -208,7 +209,8 @@ class CompanyPscServiceTest {
 
     @Test
     public void GetIndividualPscReturn404() {
-        when(repository.findById(NOTIFICATION_ID)).thenReturn(Optional.empty());
+        when(repository.getPscByCompanyNumberAndId(MOCK_COMPANY_NUMBER, NOTIFICATION_ID))
+                .thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> {
             service.getIndividualPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
@@ -217,7 +219,8 @@ class CompanyPscServiceTest {
 
     @Test
     public void GetWrongTypePscReturn404() {
-        when(repository.findById(NOTIFICATION_ID)).thenReturn(Optional.empty());
+        when(repository.getPscByCompanyNumberAndId(MOCK_COMPANY_NUMBER, NOTIFICATION_ID))
+                .thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> {
             service.getIndividualPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
