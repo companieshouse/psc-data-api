@@ -10,11 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.api.exception.ResourceNotFoundException;
-import uk.gov.companieshouse.api.psc.CorporateEntity;
-import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
-import uk.gov.companieshouse.api.psc.Individual;
-import uk.gov.companieshouse.api.psc.IndividualBeneficialOwner;
-import uk.gov.companieshouse.api.psc.SensitiveData;
+import uk.gov.companieshouse.api.psc.*;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.data.IndividualPscRoles;
 import uk.gov.companieshouse.pscdataapi.data.SecurePscRoles;
@@ -364,7 +360,23 @@ public class CompanyPscTransformer {
                 corporateEntity.setAddress(address);
             }
             if (pscDocument.getData().getIdentification() != null) {
-                corporateEntity.setIdentification(pscDocument.getData().getIdentification());
+                Identification identification = new Identification();
+                if(pscDocument.getData().getIdentification().getPlaceRegistered() != null){
+                    identification.setPlaceRegistered(pscDocument.getData().getIdentification().getPlaceRegistered());
+                }
+                if(pscDocument.getData().getIdentification().getLegalAuthority() != null){
+                    identification.setLegalAuthority(pscDocument.getData().getIdentification().getLegalAuthority());
+                }
+                if(pscDocument.getData().getIdentification().getRegistrationNumber() != null){
+                    identification.setRegistrationNumber(pscDocument.getData().getIdentification().getRegistrationNumber());
+                }
+                if(pscDocument.getData().getIdentification().getCountryRegistered() != null){
+                    identification.setCountryRegistered(pscDocument.getData().getIdentification().getCountryRegistered());
+                }
+                if(pscDocument.getData().getIdentification().getLegalForm() != null){
+                    identification.setLegalForm(pscDocument.getData().getIdentification().getLegalForm());
+                }
+                corporateEntity.setIdentification(identification);
             }
             if (pscDocument.getData().getNaturesOfControl() != null) {
                 corporateEntity.setNaturesOfControl(pscDocument.getData().getNaturesOfControl());
@@ -372,7 +384,7 @@ public class CompanyPscTransformer {
             return corporateEntity;
         }
         else{
-            logger.error("Skipped transforming pscDoc to individual");
+            logger.error("Skipped transforming pscDoc to corporate entity");
             throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,"PscDocument not found");
         }
     }
