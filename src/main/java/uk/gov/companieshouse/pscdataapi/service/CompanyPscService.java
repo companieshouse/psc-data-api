@@ -11,12 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import uk.gov.companieshouse.api.InternalApiClient;
-import uk.gov.companieshouse.api.chskafka.ChangedResource;
-import uk.gov.companieshouse.api.chskafka.ChangedResourceEvent;
-import uk.gov.companieshouse.api.error.ApiErrorResponseException;
 import uk.gov.companieshouse.api.exception.ResourceNotFoundException;
-import uk.gov.companieshouse.api.handler.chskafka.request.PrivateChangedResourcePost;
-import uk.gov.companieshouse.api.model.ApiResponse;
 import uk.gov.companieshouse.api.psc.CorporateEntity;
 import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
 import uk.gov.companieshouse.api.psc.Individual;
@@ -173,8 +168,8 @@ public class CompanyPscService {
     }
 
     /** Get PSC record. */
-    /** and transform it into an corportate entity PSC.*/
-    public CorporateEntity getCorportateEntityPsc(String companyNumber, String notificationId) {
+    /** and transform it into corporate entity PSC.*/
+    public CorporateEntity getCorporateEntityPsc(String companyNumber, String notificationId) {
 
         try {
             Optional<PscDocument> pscDocument =
@@ -193,7 +188,8 @@ public class CompanyPscService {
                         "Failed to transform PSCDocument to Corporate Entity");
             }
             return corporateEntity;
-                 } catch (Exception exception) {
+
+        } catch (Exception exception) {
             logger.error(exception.getMessage());
             throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
                     "Unexpected error occurred while fetching PSC document");
