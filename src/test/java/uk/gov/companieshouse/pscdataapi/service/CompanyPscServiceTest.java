@@ -227,4 +227,39 @@ class CompanyPscServiceTest {
         });
     }
 
+    @Test
+    public void GetIndividualBeneficialOwnerPscReturn200() throws TransformerException {
+        document.getData().setKind("individual-beneficial-owner");
+        IndividualBeneficialOwner individualBeneficialOwner = new IndividualBeneficialOwner();
+        when(repository.findById(NOTIFICATION_ID)).thenReturn(Optional.of(document));
+        when(transformer.transformPscDocToIndividualBeneficialOwner(Optional.of(document)))
+                .thenReturn(individualBeneficialOwner);
+
+        IndividualBeneficialOwner result = service
+                .getIndividualBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
+
+        assertEquals(individualBeneficialOwner,result);
+    }
+
+    @Test
+    public void GetIndividualBeneficialOwnerPscReturn404() {
+        when(repository.findById(NOTIFICATION_ID)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> {
+            service.getIndividualBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
+        });
+    }
+
+    @Test
+    public void GetWrongTypeIndividualBeneficialOwnerPscReturn404() {
+        when(repository.findById(NOTIFICATION_ID)
+                .filter(document -> document.getData().getKind()
+                        .equals("WRONG KIND")))
+                .thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> {
+            service.getIndividualBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
+        });
+    }
+
 }
