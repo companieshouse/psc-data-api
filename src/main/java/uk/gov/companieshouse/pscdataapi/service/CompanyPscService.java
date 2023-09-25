@@ -142,7 +142,8 @@ public class CompanyPscService {
                                     && document.getCompanyNumber().equals(companyNumber));
             if (pscDocument.isEmpty()) {
                 throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
-                        "PSC document not found in Mongo with id " + notificationId);
+                        "Individual PSC document not found in Mongo with id "
+                                + notificationId);
             }
             Individual individual = transformer.transformPscDocToIndividual(pscDocument);
             if (individual == null) {
@@ -169,7 +170,8 @@ public class CompanyPscService {
                                     && document.getCompanyNumber().equals(companyNumber));
             if (pscDocument.isEmpty()) {
                 throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
-                        "PSC document not found in Mongo with id " + notificationId);
+                        "Individual Beneficial Owner PSC document not found in Mongo with id"
+                                + notificationId);
             }
             IndividualBeneficialOwner individualBeneficialOwner =
                     transformer.transformPscDocToIndividualBeneficialOwner(pscDocument);
