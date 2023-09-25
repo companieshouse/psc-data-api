@@ -184,8 +184,8 @@ public class CompanyPscTransformer {
                 }
                 corporateEntity.setAddress(address);
             }
-            if (pscDocument.getData().getIdentification != null) {
-                corporateEntity.setNaturesOfControl(pscDocument.getData().getIdentification());
+            if (pscDocument.getData().getIdentification() != null) {
+                corporateEntity.setIdentification(pscDocument.getData().getIdentification());
             }
             if (pscDocument.getData().getNaturesOfControl() != null) {
                 corporateEntity.setNaturesOfControl(pscDocument.getData().getNaturesOfControl());
@@ -197,8 +197,6 @@ public class CompanyPscTransformer {
             throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,"PscDocument not found");
         }
     }
-
-
 
 
     /**

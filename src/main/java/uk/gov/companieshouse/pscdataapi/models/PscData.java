@@ -51,6 +51,8 @@ public class PscData {
 
     @Field("links")
     private Links links;
+    @Field("identification")
+    private Identification identification;
 
     public LocalDate getCeasedOn() {
         return ceasedOn;
@@ -98,6 +100,14 @@ public class PscData {
 
     public void setCountryOfResidence(String countryOfResidence) {
         this.countryOfResidence = countryOfResidence;
+    }
+
+    public Identification getIdentification() {
+        return identification;
+    }
+
+    public void setIdentification(Identification identification) {
+        this.identification = identification;
     }
 
     public Boolean getServiceAddressIsSameAsRegisteredOfficeAddress() {
@@ -203,6 +213,8 @@ public class PscData {
                 + nameElements
                 + ", links="
                 + links
+                + ", identification="
+                + identification
                 + '}';
     }
 
@@ -229,14 +241,16 @@ public class PscData {
                 && Objects.equals(ceased, pscData.ceased)
                 && Objects.equals(naturesOfControl, pscData.naturesOfControl)
                 && Objects.equals(nameElements, pscData.nameElements)
-                && Objects.equals(links, pscData.links);
+                && Objects.equals(links, pscData.links)
+                && Objects.equals(identification, pscData.identification);
     }
+
 
     @Override
     public int hashCode() {
         return Objects.hash(ceasedOn, etag, address, name, nationality, countryOfResidence,
                 kind, description, serviceAddressIsSameAsRegisteredOfficeAddress,
                 isSanctioned, ceased, naturesOfControl,
-                nameElements, links);
+                nameElements, links, identification);
     }
 }
