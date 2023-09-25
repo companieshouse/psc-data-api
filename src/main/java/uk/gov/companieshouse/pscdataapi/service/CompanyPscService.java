@@ -20,6 +20,7 @@ import uk.gov.companieshouse.api.model.ApiResponse;
 import uk.gov.companieshouse.api.psc.CorporateEntity;
 import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
 import uk.gov.companieshouse.api.psc.Individual;
+import uk.gov.companieshouse.api.psc.IndividualBeneficialOwner;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
@@ -155,7 +156,8 @@ public class CompanyPscService {
                                     .equals("individual-person-with-significant-control"));
             if (pscDocument.isEmpty()) {
                 throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
-                        "PSC document not found in Mongo with id " + notificationId);
+                        "Individual PSC document not found in Mongo with id "
+                                + notificationId);
             }
             Individual individual = transformer.transformPscDocToIndividual(pscDocument);
             if (individual == null) {
@@ -191,6 +193,35 @@ public class CompanyPscService {
                         "Failed to transform PSCDocument to Corporate Entity");
             }
             return corporateEntity;
+                 } catch (Exception exception) {
+            logger.error(exception.getMessage());
+            throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
+                    "Unexpected error occurred while fetching PSC document");
+        }
+    }
+
+    /** and transform it into an individualBeneficialOwner PSC.*/
+    public IndividualBeneficialOwner getIndividualBeneficialOwnerPsc(
+            String companyNumber, String notificationId) {
+        try {
+            Optional<PscDocument> pscDocument =
+                    repository.findById(notificationId)
+                            .filter(document -> document.getData().getKind()
+                                    .equals("individual-beneficial-owner")
+                                    && document.getCompanyNumber().equals(companyNumber));
+            if (pscDocument.isEmpty()) {
+                throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
+                        "Individual Beneficial Owner PSC document not found in Mongo with id"
+                                + notificationId);
+            }
+            IndividualBeneficialOwner individualBeneficialOwner =
+                    transformer.transformPscDocToIndividualBeneficialOwner(pscDocument);
+            if (individualBeneficialOwner == null) {
+                throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
+                        "Failed to transform PSCDocument to IndividualBeneficialOwner");
+            }
+            return individualBeneficialOwner;
+
         } catch (Exception exception) {
             logger.error(exception.getMessage());
             throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
