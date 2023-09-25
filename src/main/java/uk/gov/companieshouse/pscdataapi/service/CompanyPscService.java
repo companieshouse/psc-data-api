@@ -5,23 +5,31 @@ import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import uk.gov.companieshouse.api.InternalApiClient;
+import uk.gov.companieshouse.api.chskafka.ChangedResource;
+import uk.gov.companieshouse.api.chskafka.ChangedResourceEvent;
+import uk.gov.companieshouse.api.error.ApiErrorResponseException;
 import uk.gov.companieshouse.api.exception.ResourceNotFoundException;
+import uk.gov.companieshouse.api.handler.chskafka.request.PrivateChangedResourcePost;
+import uk.gov.companieshouse.api.model.ApiResponse;
 import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
 import uk.gov.companieshouse.api.psc.Individual;
 import uk.gov.companieshouse.api.psc.IndividualBeneficialOwner;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
+import uk.gov.companieshouse.pscdataapi.exceptions.ServiceUnavailableException;
 import uk.gov.companieshouse.pscdataapi.models.Created;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 import uk.gov.companieshouse.pscdataapi.repository.CompanyPscRepository;
 import uk.gov.companieshouse.pscdataapi.transform.CompanyPscTransformer;
+
+
 
 @Service
 public class CompanyPscService {
@@ -40,19 +48,26 @@ public class CompanyPscService {
     @Autowired
     InternalApiClient internalApiClient;
 
-
     /**
      * Save or update a natural disqualification.
      * @param contextId     Id used for chsKafkaCall.
      * @param requestBody   Data to be saved.
      */
     @Transactional
-    public void insertPscRecord(String contextId, FullRecordCompanyPSCApi requestBody) {
-        String notificationId = requestBody.getExternalData().getNotificationId();
+    public void insertPscRecord(String contextId, FullRecordCompanyPSCApi requestBody)
+            throws ServiceUnavailableException, BadRequestException {
+
+        String notificationId;
+        try {
+            notificationId = requestBody.getExternalData().getNotificationId();
+        } catch (NullPointerException ex) {
+            throw new BadRequestException("NotificationId not provided");
+        }
         boolean isLatestRecord = isLatestRecord(notificationId, requestBody
                 .getInternalData().getDeltaAt());
         if (isLatestRecord) {
             PscDocument document = transformer.transformPsc(notificationId, requestBody);
+
             save(contextId, notificationId, document);
             chsKafkaApiService.invokeChsKafkaApi(contextId,
                     requestBody.getExternalData().getCompanyNumber(),
@@ -112,8 +127,7 @@ public class CompanyPscService {
     private PscDocument getPscDocument(String companyNumber, String notificationId)
             throws ResourceNotFoundException {
         Optional<PscDocument> pscDocument =
-                repository.findById(notificationId)
-                        .filter(document -> document.getCompanyNumber().equals(companyNumber));
+                repository.getPscByCompanyNumberAndId(companyNumber, notificationId);
         return pscDocument.orElseThrow(() ->
                 new ResourceNotFoundException(HttpStatus.NOT_FOUND, String.format(
                         "Resource not found for company number: %s", companyNumber)));
@@ -136,10 +150,9 @@ public class CompanyPscService {
 
         try {
             Optional<PscDocument> pscDocument =
-                    repository.findById(notificationId)
+                    repository.getPscByCompanyNumberAndId(companyNumber, notificationId)
                             .filter(document -> document.getData().getKind()
-                                    .equals("individual-person-with-significant-control")
-                                    && document.getCompanyNumber().equals(companyNumber));
+                                    .equals("individual-person-with-significant-control"));
             if (pscDocument.isEmpty()) {
                 throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
                         "Individual PSC document not found in Mongo with id "
