@@ -217,6 +217,7 @@ public class CompanyPscTransformer {
             if (pscDocument.getData().getSanctioned() != null) {
                 individualBeneficialOwner.setIsSanctioned(pscDocument.getData().getSanctioned());
             }
+
             return individualBeneficialOwner;
         } else {
             logger.error("Skipped transforming pscDoc to individualBeneficialOwner");
@@ -336,8 +337,9 @@ public class CompanyPscTransformer {
                 corporateEntityBeneficialOwner.setName(pscDocument.getData().getName());
             }
 
-            Address address = new Address();
+
             if (pscDocument.getData().getAddress() != null) {
+                Address address = new Address();
 
                 if (pscDocument.getData().getAddress().getAddressLine1() != null) {
                     address.setAddressLine1(pscDocument.getData().getAddress().getAddressLine1());
@@ -401,11 +403,11 @@ public class CompanyPscTransformer {
                     identification.setRegistrationNumber(
                             pscDocument.getIdentification().getRegistrationNumber());
                 }
-                pscDocument.setIdentification(identification);
+                corporateEntityBeneficialOwner.setIdentification(identification);
             }
             return corporateEntityBeneficialOwner;
         } else {
-            logger.error("Skipped transforming pscDoc to individualBeneficialOwner");
+            logger.error("Skipped transforming pscDoc to CorporateEntityBeneficialOwner");
             throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,"PscDocument not found");
         }
 

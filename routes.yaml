@@ -6,3 +6,4 @@ routes:
   2: ^/company/(.*)/persons-with-significant-control/(.*)/full_record
   3: ^/company/(.*)/persons-with-significant-control/individual/(.*)
   4: ^/company/(.*)/persons-with-significant-control/individual-beneficial-owner/(.*)
+  5: ^/company/(.*)/persons-with-significant-control/corporate-entity-beneficial-owner/(.*)
