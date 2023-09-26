@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Objects;
 
 import org.springframework.data.mongodb.core.mapping.Field;
+import uk.gov.companieshouse.api.psc.Identification;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PscData {
@@ -52,7 +53,7 @@ public class PscData {
     @Field("links")
     private Links links;
     @Field("identification")
-    private Identification identification;
+    private uk.gov.companieshouse.api.psc.Identification identification;
 
     public LocalDate getCeasedOn() {
         return ceasedOn;
@@ -106,7 +107,7 @@ public class PscData {
         return identification;
     }
 
-    public void setIdentification(Identification identification) {
+    public void setIdentification(uk.gov.companieshouse.api.psc.Identification identification) {
         this.identification = identification;
     }
 

@@ -92,6 +92,7 @@ class CompanyPscServiceTest {
         document.setNotificationId(MOCK_COMPANY_NUMBER);
         document.setData(pscData);
 
+
     }
 
     @Test
@@ -260,6 +261,19 @@ class CompanyPscServiceTest {
         assertThrows(ResourceNotFoundException.class, () -> {
             service.getIndividualBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
         });
+    }
+
+    @Test
+    public void GetCorporateEntityPscReturn200() throws TransformerException {
+        document.getData().setKind("corporate-entity");
+        CorporateEntity corporateEntity = new CorporateEntity();
+        when(repository.findById(NOTIFICATION_ID)).thenReturn(Optional.of(document));
+        when(transformer.transformPscDocToCorporateEntity(Optional.of(document)))
+                .thenReturn(corporateEntity);
+
+        CorporateEntity result = service.getCorporateEntityPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
+
+        assertEquals(corporateEntity,result);
     }
 
 }

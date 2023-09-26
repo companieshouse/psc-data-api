@@ -21,6 +21,7 @@ import uk.gov.companieshouse.pscdataapi.models.PscData;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 import uk.gov.companieshouse.pscdataapi.models.PscSensitiveData;
 import uk.gov.companieshouse.pscdataapi.models.Updated;
+import uk.gov.companieshouse.api.psc.Identification;
 
 import uk.gov.companieshouse.pscdataapi.util.PscTransformationHelper;
 
