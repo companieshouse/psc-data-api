@@ -52,8 +52,7 @@ public class PscData {
 
     @Field("links")
     private Links links;
-    @Field("identification")
-    private uk.gov.companieshouse.api.psc.Identification identification;
+
 
     public LocalDate getCeasedOn() {
         return ceasedOn;
@@ -103,13 +102,6 @@ public class PscData {
         this.countryOfResidence = countryOfResidence;
     }
 
-    public Identification getIdentification() {
-        return identification;
-    }
-
-    public void setIdentification(uk.gov.companieshouse.api.psc.Identification identification) {
-        this.identification = identification;
-    }
 
     public Boolean getServiceAddressIsSameAsRegisteredOfficeAddress() {
         return serviceAddressIsSameAsRegisteredOfficeAddress;
@@ -214,8 +206,6 @@ public class PscData {
                 + nameElements
                 + ", links="
                 + links
-                + ", identification="
-                + identification
                 + '}';
     }
 
@@ -242,8 +232,7 @@ public class PscData {
                 && Objects.equals(ceased, pscData.ceased)
                 && Objects.equals(naturesOfControl, pscData.naturesOfControl)
                 && Objects.equals(nameElements, pscData.nameElements)
-                && Objects.equals(links, pscData.links)
-                && Objects.equals(identification, pscData.identification);
+                && Objects.equals(links, pscData.links);
     }
 
 
@@ -252,6 +241,6 @@ public class PscData {
         return Objects.hash(ceasedOn, etag, address, name, nationality, countryOfResidence,
                 kind, description, serviceAddressIsSameAsRegisteredOfficeAddress,
                 isSanctioned, ceased, naturesOfControl,
-                nameElements, links, identification);
+                nameElements, links);
     }
 }

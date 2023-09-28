@@ -91,6 +91,13 @@ class CompanyPscServiceTest {
         pscData.setKind("individual-person-with-significant-control");
         document.setNotificationId(MOCK_COMPANY_NUMBER);
         document.setData(pscData);
+        Identification identification = new Identification();
+        identification.setCountryRegistered("x");
+        identification.setLegalForm("x");
+        identification.setPlaceRegistered("x");
+        identification.setLegalAuthority("x");
+        identification.setRegistrationNumber("x");
+        document.setIdentification(identification);
 
 
     }
@@ -265,15 +272,36 @@ class CompanyPscServiceTest {
 
     @Test
     public void GetCorporateEntityPscReturn200() throws TransformerException {
-        document.getData().setKind("corporate-entity");
+        document.getData().setKind("corporate-entity-person-with-significant-control");
         CorporateEntity corporateEntity = new CorporateEntity();
-        when(repository.findById(NOTIFICATION_ID)).thenReturn(Optional.of(document));
+        when(repository.getPscByCompanyNumberAndId(MOCK_COMPANY_NUMBER,NOTIFICATION_ID)).thenReturn(Optional.of(document));
         when(transformer.transformPscDocToCorporateEntity(Optional.of(document)))
                 .thenReturn(corporateEntity);
 
         CorporateEntity result = service.getCorporateEntityPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
 
         assertEquals(corporateEntity,result);
+    }
+
+    @Test
+    public void GetCorporateEntityPscReturn404() {
+        when(repository.getPscByCompanyNumberAndId(MOCK_COMPANY_NUMBER, NOTIFICATION_ID))
+                .thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> {
+            service.getCorporateEntityPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
+        });
+    }
+
+    @Test
+    public void GetWrongTypeCorporateEntityPscReturn404() {
+        when(repository.getPscByCompanyNumberAndId(MOCK_COMPANY_NUMBER, NOTIFICATION_ID))
+                .thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> {
+            service.getCorporateEntityPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
+        });
+
     }
 
 }
