@@ -26,10 +26,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.companieshouse.pscdataapi.config.AbstractMongoConfig.mongoDBContainer;
 
 import org.springframework.util.FileCopyUtils;
-import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
-import uk.gov.companieshouse.api.psc.Individual;
-import uk.gov.companieshouse.api.psc.IndividualBeneficialOwner;
-import uk.gov.companieshouse.api.psc.StatementList;
+import uk.gov.companieshouse.api.psc.*;
 import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
 import uk.gov.companieshouse.pscdataapi.config.CucumberContext;
 import uk.gov.companieshouse.pscdataapi.models.*;
