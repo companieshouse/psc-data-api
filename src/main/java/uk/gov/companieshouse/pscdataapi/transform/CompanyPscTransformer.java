@@ -10,7 +10,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.api.exception.ResourceNotFoundException;
-import uk.gov.companieshouse.api.psc.*;
+import uk.gov.companieshouse.api.psc.CorporateEntity;
+import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
+import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
+import uk.gov.companieshouse.api.psc.Identification;
+import uk.gov.companieshouse.api.psc.Individual;
+import uk.gov.companieshouse.api.psc.IndividualBeneficialOwner;
+import uk.gov.companieshouse.api.psc.SensitiveData;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.data.IndividualPscRoles;
 import uk.gov.companieshouse.pscdataapi.data.SecurePscRoles;
@@ -213,6 +219,7 @@ public class CompanyPscTransformer {
             if (pscDocument.getData().getSanctioned() != null) {
                 individualBeneficialOwner.setIsSanctioned(pscDocument.getData().getSanctioned());
             }
+
             return individualBeneficialOwner;
         } else {
             logger.error("Skipped transforming pscDoc to individualBeneficialOwner");
@@ -391,4 +398,107 @@ public class CompanyPscTransformer {
         data.setCeased(ceased);
     }
 
+    /**
+     * Transform Corporate Entity Beneficial Owner.
+     * @param optionalPscDocument PSC.
+     * @return PSC mongo Document.
+     */
+    public CorporateEntityBeneficialOwner transformPscDocToCorporateEntityBeneficialOwner(
+            Optional<PscDocument> optionalPscDocument) {
+        logger.info("Attempting to transform pscDocument to CorporateEntityBeneficialOwner");
+
+        if (optionalPscDocument.isPresent()) {
+            PscDocument pscDocument = optionalPscDocument.get();
+            CorporateEntityBeneficialOwner corporateEntityBeneficialOwner =
+                    new CorporateEntityBeneficialOwner();
+            if (pscDocument.getData().getEtag() != null) {
+                corporateEntityBeneficialOwner.setEtag(pscDocument.getData().getEtag());
+            }
+            if (pscDocument.getDeltaAt() != null) {
+                corporateEntityBeneficialOwner.setNotifiedOn(LocalDate
+                        .parse(pscDocument.getDeltaAt(),dateTimeFormatter));
+            }
+            corporateEntityBeneficialOwner
+                    .setKind(CorporateEntityBeneficialOwner
+                            .KindEnum.CORPORATE_ENTITY_BENEFICIAL_OWNER);
+            if (pscDocument.getData().getName() != null) {
+                corporateEntityBeneficialOwner.setName(pscDocument.getData().getName());
+            }
+
+
+            if (pscDocument.getData().getAddress() != null) {
+                Address address = new Address();
+
+                if (pscDocument.getData().getAddress().getAddressLine1() != null) {
+                    address.setAddressLine1(pscDocument.getData().getAddress().getAddressLine1());
+                }
+                if (pscDocument.getData().getAddress().getAddressLine2() != null) {
+                    address.setAddressLine2(pscDocument.getData().getAddress().getAddressLine2());
+                }
+                if (pscDocument.getData().getAddress().getCountry() != null) {
+                    address.setCountry(pscDocument.getData().getAddress().getCountry());
+                }
+                if (pscDocument.getData().getAddress().getLocality() != null) {
+                    address.setLocality(pscDocument.getData().getAddress().getLocality());
+                }
+                if (pscDocument.getData().getAddress().getPostalCode() != null) {
+                    address.setPostalCode(pscDocument.getData().getAddress().getPostalCode());
+                }
+                if (pscDocument.getData().getAddress().getPremises() != null) {
+                    address.setPremises(pscDocument.getData().getAddress().getPremises());
+                }
+                if (pscDocument.getData().getAddress().getRegion() != null) {
+                    address.setRegion(pscDocument.getData().getAddress().getRegion());
+                }
+                if (pscDocument.getData().getAddress().getCareOf() != null) {
+                    address.setCareOf(pscDocument.getData().getAddress().getCareOf());
+                }
+                if (pscDocument.getData().getAddress().getPoBox() != null) {
+                    address.setPoBox(pscDocument.getData().getAddress().getPoBox());
+                }
+                corporateEntityBeneficialOwner.setAddress(address);
+            }
+            if (pscDocument.getData().getNaturesOfControl() != null) {
+                corporateEntityBeneficialOwner
+                        .setNaturesOfControl(pscDocument.getData().getNaturesOfControl());
+            }
+            if (pscDocument.getData().getLinks() != null) {
+                corporateEntityBeneficialOwner.setLinks(pscDocument.getData().getLinks());
+            }
+            if (pscDocument.getData().getSanctioned() != null) {
+                corporateEntityBeneficialOwner
+                        .setIsSanctioned(pscDocument.getData().getSanctioned());
+            }
+            if (pscDocument.getIdentification() != null) {
+                Identification identification = new Identification();
+                if (pscDocument.getIdentification().getCountryRegistered() != null) {
+                    identification.setCountryRegistered(
+                            pscDocument.getIdentification().getCountryRegistered());
+                }
+                if (pscDocument.getIdentification().getLegalAuthority() != null) {
+                    identification.setLegalAuthority(
+                            pscDocument.getIdentification().getLegalAuthority());
+                }
+                if (pscDocument.getIdentification().getLegalForm() != null) {
+                    identification.setLegalForm(
+                            pscDocument.getIdentification().getLegalForm());
+                }
+                if (pscDocument.getIdentification().getPlaceRegistered() != null) {
+                    identification.setPlaceRegistered(
+                            pscDocument.getIdentification().getPlaceRegistered());
+                }
+                if (pscDocument.getIdentification().getRegistrationNumber() != null) {
+                    identification.setRegistrationNumber(
+                            pscDocument.getIdentification().getRegistrationNumber());
+                }
+                corporateEntityBeneficialOwner.setIdentification(identification);
+            }
+            return corporateEntityBeneficialOwner;
+        } else {
+            logger.error("Skipped transforming pscDoc to CorporateEntityBeneficialOwner");
+            throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,"PscDocument not found");
+        }
+
+
+    }
 }

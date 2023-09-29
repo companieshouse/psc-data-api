@@ -13,6 +13,9 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.gov.companieshouse.api.InternalApiClient;
 import uk.gov.companieshouse.api.exception.ResourceNotFoundException;
 import uk.gov.companieshouse.api.psc.CorporateEntity;
+import uk.gov.companieshouse.api.handler.chskafka.request.PrivateChangedResourcePost;
+import uk.gov.companieshouse.api.model.ApiResponse;
+import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
 import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
 import uk.gov.companieshouse.api.psc.Individual;
 import uk.gov.companieshouse.api.psc.IndividualBeneficialOwner;
@@ -225,4 +228,32 @@ public class CompanyPscService {
         }
     }
 
+    /** Get PSC record. */
+    /** and transform it into an CorporateEntityBeneficialOwner PSC.*/
+    public CorporateEntityBeneficialOwner getCorporateEntityBeneficialOwnerPsc(
+            String companyNumber, String notificationId) {
+        try {
+            Optional<PscDocument> pscDocument =
+                    repository.findById(notificationId)
+                            .filter(document -> document.getData().getKind()
+                                    .equals("corporate-entity-beneficial-owner")
+                                    && document.getCompanyNumber().equals(companyNumber));
+            if (pscDocument.isEmpty()) {
+                throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
+                        "Corporate Entity Beneficial Owner PSC document not found in Mongo with id"
+                                + notificationId);
+            }
+            CorporateEntityBeneficialOwner corporateEntityBeneficialOwner =
+                    transformer.transformPscDocToCorporateEntityBeneficialOwner(pscDocument);
+            if (corporateEntityBeneficialOwner == null) {
+                throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
+                        "Failed to transform PSCDocument to IndividualBeneficialOwner");
+            }
+            return corporateEntityBeneficialOwner;
+        } catch (Exception exception) {
+            logger.error(exception.getMessage());
+            throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
+                    "Unexpected error occurred while fetching PSC document");
+        }
+    }
 }

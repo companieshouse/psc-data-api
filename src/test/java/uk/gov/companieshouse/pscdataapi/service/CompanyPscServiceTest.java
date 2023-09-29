@@ -269,6 +269,41 @@ class CompanyPscServiceTest {
             service.getIndividualBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
         });
     }
+    @Test
+    public void GetCorporateEntityBeneficialOwnerPscReturn200() throws TransformerException {
+        document.getData().setKind("corporate-entity-beneficial-owner");
+        CorporateEntityBeneficialOwner corporateEntityBeneficialOwner =
+                new CorporateEntityBeneficialOwner();
+        when(repository.findById(NOTIFICATION_ID)).thenReturn(Optional.of(document));
+        when(transformer.transformPscDocToCorporateEntityBeneficialOwner(Optional.of(document)))
+                .thenReturn(corporateEntityBeneficialOwner);
+
+        CorporateEntityBeneficialOwner result = service
+                .getCorporateEntityBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
+
+        assertEquals(corporateEntityBeneficialOwner,result);
+    }
+
+    @Test
+    public void GetCorporateEntityBeneficialOwnerPscReturn404() {
+        when(repository.findById(NOTIFICATION_ID)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> {
+            service.getCorporateEntityBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
+        });
+    }
+
+    @Test
+    public void GetWrongTypeCorporateBeneficialOwnerPscReturn404() {
+        when(repository.findById(NOTIFICATION_ID)
+                .filter(document -> document.getData().getKind()
+                        .equals("WRONG KIND")))
+                .thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> {
+            service.getCorporateEntityBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
+        });
+    }
 
     @Test
     public void GetCorporateEntityPscReturn200() throws TransformerException {
