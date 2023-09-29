@@ -26,13 +26,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.companieshouse.pscdataapi.config.AbstractMongoConfig.mongoDBContainer;
 
 import org.springframework.util.FileCopyUtils;
-import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
-import uk.gov.companieshouse.api.psc.Individual;
-import uk.gov.companieshouse.api.psc.IndividualBeneficialOwner;
-import uk.gov.companieshouse.api.psc.StatementList;
+import uk.gov.companieshouse.api.psc.*;
 import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
 import uk.gov.companieshouse.pscdataapi.config.CucumberContext;
 import uk.gov.companieshouse.pscdataapi.models.*;
+import uk.gov.companieshouse.pscdataapi.models.Address;
+import uk.gov.companieshouse.pscdataapi.models.NameElements;
 import uk.gov.companieshouse.pscdataapi.transform.CompanyPscTransformer;
 import uk.gov.companieshouse.pscdataapi.util.FileReaderUtil;
 import uk.gov.companieshouse.pscdataapi.exceptions.ServiceUnavailableException;
@@ -279,6 +278,134 @@ public class PscDataSteps {
         document.setDeltaAt(deltaAt);
         mongoTemplate.save(document);
         assertThat(companyPscRepository.findById(NOTIFICATION_ID)).isNotEmpty();
+    }
+
+    @And("a PSC exists for {string} for Corporate Entity")
+    public void aPSCExistsForCorporateEntity(String companyNumber) throws JsonProcessingException {
+        String pscDataFile = FileReaderUtil.readFile("src/itest/resources/json/input/"+companyNumber+".json");
+        PscData pscData = objectMapper.readValue(pscDataFile, PscData.class);
+        PscDocument document = new PscDocument();
+
+        document.setId("ZfTs9WeeqpXTqf6dc6FZ4C0H0ZX");
+        document.setCompanyNumber(companyNumber);
+        document.setPscId("ZfTs9WeeqpXTqf6dc6FZ4C0H0ZX");
+        pscData.setEtag("string");
+        pscData.setName("string");
+        pscData.setNationality("British");
+        pscData.setSanctioned(true);
+        pscData.setKind("corporate-entity-person-with-significant-control");
+        Links links = new Links();
+        links.setSelf("/company/34777772/persons-with-significant-control/corporate-entity/ZfTs9WeeqpXTqf6dc6FZ4C0H0ZZ");
+        links.setStatements("string");
+        pscData.setLinks(links);
+        Address address = new Address();
+        address.setAddressLine1("ura_line1");
+        address.setAddressLine2("ura_line2");
+        address.setCareOf("ura_care_of");
+        address.setCountry("United Kingdom");
+        address.setLocality("Cardiff");
+        address.setPoBox("ura_po");
+        address.setPostalCode("CF2 1B6");
+        address.setPremises("URA");
+        address.setRegion("ura_region");
+        pscData.setAddress(address);
+        List<String> list = new ArrayList<>();
+        list.add("part-right-to-share-surplus-assets-75-to-100-percent");
+        pscData.setNaturesOfControl(list);
+        Identification identification = new Identification();
+        identification.setRegistrationNumber("string");
+        identification.setPlaceRegistered("string");
+        identification.setCountryRegistered("string");
+        identification.setLegalAuthority("string");
+        identification.setLegalForm("string");
+        document.setIdentification(identification);
+
+        document.setData(pscData);
+
+        mongoTemplate.save(document);
+        assertThat(companyPscRepository.getPscByCompanyNumberAndId(companyNumber,"ZfTs9WeeqpXTqf6dc6FZ4C0H0ZX")).isNotEmpty();
+    }
+
+    @When("a Get request is sent for {string} and {string} for Corporate Entity")
+    public void aGetRequestIsSentForAndForCorporateEntity(String companyNumber, String notification_id) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+
+        this.contextId = "5234234234";
+        CucumberContext.CONTEXT.set("contextId", this.contextId);
+        headers.set("x-request-id", this.contextId);
+        headers.set("ERIC-Identity", "TEST-IDENTITY");
+        headers.set("ERIC-Identity-Type", "key");
+        headers.set("ERIC-Authorised-Key-Roles", "*");
+
+        HttpEntity<String> request = new HttpEntity<String>(null, headers);
+
+        String uri =
+                String.format("/company/%s/persons-with-significant-control/corporate-entity/%s",companyNumber,notification_id);
+        ResponseEntity<CorporateEntity> response = restTemplate.exchange(uri,
+                HttpMethod.GET, request, CorporateEntity.class, companyNumber, notification_id);
+
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+        CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
+    }
+
+    @And("the Get call response body should match {string} file for Corporate Entity")
+    public void theGetCallResponseBodyShouldMatchFileForCorporateEntity(String result) throws IOException {
+        String data = FileCopyUtils.copyToString(new InputStreamReader(new FileInputStream("src/itest/resources/json/output/" + result + ".json")));
+        CorporateEntity expected = objectMapper.readValue(data, CorporateEntity.class);
+
+        CorporateEntity actual = CucumberContext.CONTEXT.get("getResponseBody");
+
+        assertThat(actual.getName()).isEqualTo(expected.getName());
+        assertThat(actual.getIdentification()).isEqualTo(expected.getIdentification());
+        assertThat(actual.getKind()).isEqualTo(expected.getKind());
+
+    }
+
+    @When("a Get request has been sent for {string} and {string} for Corporate Entity")
+    public void aGetRequestHasBeenSentForAndForCorporateEntity(String companyNumber, String notification_id) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+
+        this.contextId = "5234234234";
+        CucumberContext.CONTEXT.set("contextId", this.contextId);
+        headers.set("x-request-id", this.contextId);
+        headers.set("ERIC-Identity", "TEST-IDENTITY");
+        headers.set("ERIC-Identity-Type", "key");
+        headers.set("ERIC-Authorised-Key-Roles", "*");
+
+        HttpEntity<String> request = new HttpEntity<String>(null, headers);
+
+        String uri =
+                String.format("/company/%s/persons-with-significant-control/corporate-entity/%s",companyNumber,notification_id);
+        ResponseEntity<CorporateEntity> response = restTemplate.exchange(uri,
+                HttpMethod.GET, request, CorporateEntity.class, companyNumber, notification_id);
+
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+    }
+
+    @When("a Get request is sent for {string} and {string} without ERIC headers for Corporate Entity")
+    public void aGetRequestIsSentForAndWithoutERICHeadersForCorporateEntity(String companyNumber, String notification_id) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+
+        this.contextId = "5234234234";
+        CucumberContext.CONTEXT.set("contextId", this.contextId);
+        headers.set("x-request-id", this.contextId);
+
+
+        HttpEntity<String> request = new HttpEntity<String>(null, headers);
+
+        String uri =
+                String.format("/company/%s/persons-with-significant-control/corporate-entity/%s",companyNumber,notification_id);
+        ResponseEntity<CorporateEntity> response = restTemplate.exchange(uri,
+                HttpMethod.GET, request, CorporateEntity.class, companyNumber, notification_id);
+
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+        CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
     }
 
     @And("a PSC exists for {string}")
@@ -621,5 +748,6 @@ public class PscDataSteps {
 
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
     }
+
 }
 

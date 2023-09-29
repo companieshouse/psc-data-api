@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.api.exception.ResourceNotFoundException;
+import uk.gov.companieshouse.api.psc.CorporateEntity;
 import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
 import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
 import uk.gov.companieshouse.api.psc.Identification;
@@ -226,6 +227,101 @@ public class CompanyPscTransformer {
 
     }
 
+    /**
+     * Transform Corporate Entity PSC.
+     * @param optionalPscDocument PSC.
+     * @return PSC mongo Document.
+     */
+    public CorporateEntity transformPscDocToCorporateEntity(
+            Optional<PscDocument> optionalPscDocument) throws TransformerException {
+
+        logger.info("Attempting to transform pscDocument to corporate entity");
+
+        if (optionalPscDocument.isPresent()) {
+            PscDocument pscDocument = optionalPscDocument.get();
+            CorporateEntity corporateEntity = new CorporateEntity();
+            if (pscDocument.getData().getEtag() != null) {
+                corporateEntity.setEtag(pscDocument.getData().getEtag());
+            }
+            if (pscDocument.getDeltaAt() != null) {
+                corporateEntity.setNotifiedOn(LocalDate
+                        .parse(pscDocument.getDeltaAt(),dateTimeFormatter));
+            }
+            if (pscDocument.getData().getCeasedOn() != null) {
+                corporateEntity.setCeasedOn(pscDocument.getData().getCeasedOn());
+            }
+            corporateEntity.setKind(CorporateEntity
+                    .KindEnum.CORPORATE_ENTITY_PERSON_WITH_SIGNIFICANT_CONTROL);
+
+            if (pscDocument.getData().getName() != null) {
+                corporateEntity.setName(pscDocument.getData().getName());
+            }
+            if (pscDocument.getData().getLinks() != null) {
+                corporateEntity.setLinks(pscDocument.getData().getLinks());
+            }
+            if (pscDocument.getData().getAddress() != null) {
+                Address address = new Address();
+                if (pscDocument.getData().getAddress().getAddressLine1() != null) {
+                    address.setAddressLine1(pscDocument.getData().getAddress().getAddressLine1());
+                }
+                if (pscDocument.getData().getAddress().getAddressLine2() != null) {
+                    address.setAddressLine2(pscDocument.getData().getAddress().getAddressLine2());
+                }
+                if (pscDocument.getData().getAddress().getCountry() != null) {
+                    address.setCountry(pscDocument.getData().getAddress().getCountry());
+                }
+                if (pscDocument.getData().getAddress().getLocality() != null) {
+                    address.setLocality(pscDocument.getData().getAddress().getLocality());
+                }
+                if (pscDocument.getData().getAddress().getPostalCode() != null) {
+                    address.setPostalCode(pscDocument.getData().getAddress().getPostalCode());
+                }
+                if (pscDocument.getData().getAddress().getPremises() != null) {
+                    address.setPremises(pscDocument.getData().getAddress().getPremises());
+                }
+                if (pscDocument.getData().getAddress().getRegion() != null) {
+                    address.setRegion(pscDocument.getData().getAddress().getRegion());
+                }
+                if (pscDocument.getData().getAddress().getCareOf() != null) {
+                    address.setCareOf(pscDocument.getData().getAddress().getCareOf());
+                }
+                if (pscDocument.getData().getAddress().getPoBox() != null) {
+                    address.setPoBox(pscDocument.getData().getAddress().getPoBox());
+                }
+                corporateEntity.setAddress(address);
+            }
+            if (pscDocument.getIdentification() != null) {
+                Identification identification = new Identification();
+                if (pscDocument.getIdentification().getPlaceRegistered() != null) {
+                    identification.setPlaceRegistered(
+                            pscDocument.getIdentification().getPlaceRegistered());
+                }
+                if (pscDocument.getIdentification().getLegalAuthority() != null) {
+                    identification.setLegalAuthority(
+                            pscDocument.getIdentification().getLegalAuthority());
+                }
+                if (pscDocument.getIdentification().getRegistrationNumber() != null) {
+                    identification.setRegistrationNumber(
+                            pscDocument.getIdentification().getRegistrationNumber());
+                }
+                if (pscDocument.getIdentification().getCountryRegistered() != null) {
+                    identification.setCountryRegistered(
+                            pscDocument.getIdentification().getCountryRegistered());
+                }
+                if (pscDocument.getIdentification().getLegalForm() != null) {
+                    identification.setLegalForm(pscDocument.getIdentification().getLegalForm());
+                }
+                corporateEntity.setIdentification(identification);
+            }
+            if (pscDocument.getData().getNaturesOfControl() != null) {
+                corporateEntity.setNaturesOfControl(pscDocument.getData().getNaturesOfControl());
+            }
+            return corporateEntity;
+        } else {
+            logger.error("Skipped transforming pscDoc to corporate entity");
+            throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,"PscDocument not found");
+        }
+    }
 
     /**
      * Transform PSC.
