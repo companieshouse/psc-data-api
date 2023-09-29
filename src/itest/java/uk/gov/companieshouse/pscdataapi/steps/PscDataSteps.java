@@ -444,7 +444,6 @@ public class PscDataSteps {
         document.setId("ZfTs9WeeqpXTqf6dc6FZ4C0H0ZX");
         document.setCompanyNumber(companyNumber);
         document.setPscId("ZfTs9WeeqpXTqf6dc6FZ4C0H0ZX");
-        document.setDeltaAt("20231120084745378000");
         pscData.setEtag("string");
         pscData.setName("string");
         pscData.setNationality("British");
@@ -522,7 +521,7 @@ public class PscDataSteps {
         HttpEntity<String> request = new HttpEntity<String>(null, headers);
 
         String uri =
-                "/company/{company_number}/persons-with-significant-control/corporate-entity/{notification_id}";
+                String.format("/company/%s/persons-with-significant-control/corporate-entity/%s",companyNumber,notification_id);
         ResponseEntity<CorporateEntity> response = restTemplate.exchange(uri,
                 HttpMethod.GET, request, CorporateEntity.class, companyNumber, notification_id);
 
@@ -551,7 +550,7 @@ public class PscDataSteps {
         CorporateEntity actual = CucumberContext.CONTEXT.get("getResponseBody");
 
         assertThat(actual.getName()).isEqualTo(expected.getName());
-        //assertThat(actual.getIdentification()).isEqualTo(expected.getIdentification());
+        assertThat(actual.getIdentification()).isEqualTo(expected.getIdentification());
         assertThat(actual.getKind()).isEqualTo(expected.getKind());
 
     }
@@ -595,7 +594,7 @@ public class PscDataSteps {
         HttpEntity<String> request = new HttpEntity<String>(null, headers);
 
         String uri =
-                "/company/{company_number}/persons-with-significant-control/corporate-entity/{notification_id}";
+                String.format("/company/%s/persons-with-significant-control/corporate-entity/%s",companyNumber,notification_id);
         ResponseEntity<CorporateEntity> response = restTemplate.exchange(uri,
                 HttpMethod.GET, request, CorporateEntity.class, companyNumber, notification_id);
 
@@ -636,7 +635,8 @@ public class PscDataSteps {
 
         HttpEntity<String> request = new HttpEntity<String>(null, headers);
 
-        String uri = "/company/{company_number}/persons-with-significant-control/corporate-entity/{notification_id}";
+        String uri =
+                String.format("/company/%s/persons-with-significant-control/corporate-entity/%s",companyNumber,notification_id);
         ResponseEntity<CorporateEntity> response = restTemplate.exchange(uri,
                 HttpMethod.GET, request, CorporateEntity.class, companyNumber, notification_id);
 
