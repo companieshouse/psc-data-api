@@ -128,6 +128,72 @@ class CompanyPscControllerTest {
     }
 
     @Test
+    @DisplayName("Return 401 for Corporate Entity when no api key is present")
+    void getCorporateEntityPSCWhenNoApiKeyPresent() throws Exception {
+        mockMvc.perform(get(GET_CorporateEntity_URL)).andExpect(status().isUnauthorized());
+
+        verify(companyPscService
+                ,times(0)).getCorporateEntityPsc( "123456789",MOCK_NOTIFICATION_ID);
+    }
+
+    @Test
+    @DisplayName(
+            "GET request returns a 200 response when Corporate Entity PSC found")
+    void getCorporateEntityPSCFound() throws Exception {
+        when(companyPscService.getCorporateEntityPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID)).thenReturn(corporateEntity);
+
+        mockMvc.perform(get(GET_CorporateEntity_URL)
+                        .header("ERIC-Identity", "SOME_IDENTITY")
+                        .header("ERIC-Identity-Type", "key")
+                        .contentType(APPLICATION_JSON)
+                        .header("x-request-id", "123456")
+                        .header("ERIC-Authorised-Key-Roles", "*")
+                        .header("ERIC-Authorised-Key-Privileges", "internal-app"))
+                .andExpect(status().isOk());
+
+        verify(companyPscService).getCorporateEntityPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID);
+
+    }
+
+    @Test
+    @DisplayName(
+            "GET request returns a 503 response when service is unavailable")
+    void getCorporateEntityPSCDocumentWhenServiceIsDown() throws Exception {
+        when(companyPscService.getCorporateEntityPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID)).thenThrow(ServiceUnavailableException.class);
+
+        mockMvc.perform(get(GET_CorporateEntity_URL)
+                        .header("ERIC-Identity", "SOME_IDENTITY")
+                        .header("ERIC-Identity-Type", "key")
+                        .contentType(APPLICATION_JSON)
+                        .header("x-request-id", "123456")
+                        .header("ERIC-Authorised-Key-Roles", "*")
+                        .header("ERIC-Authorised-Key-Privileges", "internal-app"))
+                .andExpect(status().isInternalServerError());
+
+        verify(companyPscService).getCorporateEntityPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID);
+
+    }
+
+    @Test
+    @DisplayName(
+            "GET request returns a 404 response when Resource is not found")
+    void getCorporateEntityPSCDocumentWhenResourceNotFound() throws Exception {
+        when(companyPscService.getCorporateEntityPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID)).thenThrow(ResourceNotFoundException.class);
+
+        mockMvc.perform(get(GET_CorporateEntity_URL)
+                        .header("ERIC-Identity", "SOME_IDENTITY")
+                        .header("ERIC-Identity-Type", "key")
+                        .contentType(APPLICATION_JSON)
+                        .header("x-request-id", "123456")
+                        .header("ERIC-Authorised-Key-Roles", "*")
+                        .header("ERIC-Authorised-Key-Privileges", "internal-app"))
+                .andExpect(status().isNotFound());
+
+        verify(companyPscService).getCorporateEntityPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID);
+
+    }
+
+    @Test
     @DisplayName("Return 401 when no api key is present")
     void deletePSCWhenNoApiKeyPresent() throws Exception {
         mockMvc.perform(delete(PUT_URL)).andExpect(status().isUnauthorized());
@@ -329,72 +395,5 @@ class CompanyPscControllerTest {
         verify(companyPscService).getIndividualBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID);
 
     }
-
-    @Test
-    @DisplayName("Return 401 for Corporate Entity when no api key is present")
-    void getCorporateEntityPSCWhenNoApiKeyPresent() throws Exception {
-        mockMvc.perform(get(GET_CorporateEntity_URL)).andExpect(status().isUnauthorized());
-
-        verify(companyPscService
-                ,times(0)).getCorporateEntityPsc( "123456789",MOCK_NOTIFICATION_ID);
-    }
-
-    @Test
-    @DisplayName(
-            "GET request returns a 200 response when Corporate Entity PSC found")
-    void getCorporateEntityPSCFound() throws Exception {
-        when(companyPscService.getCorporateEntityPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID)).thenReturn(corporateEntity);
-
-        mockMvc.perform(get(GET_CorporateEntity_URL)
-                        .header("ERIC-Identity", "SOME_IDENTITY")
-                        .header("ERIC-Identity-Type", "key")
-                        .contentType(APPLICATION_JSON)
-                        .header("x-request-id", "123456")
-                        .header("ERIC-Authorised-Key-Roles", "*")
-                        .header("ERIC-Authorised-Key-Privileges", "internal-app"))
-                .andExpect(status().isOk());
-
-        verify(companyPscService).getCorporateEntityPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID);
-
-    }
-
-    @Test
-    @DisplayName(
-            "GET request returns a 503 response when service is unavailable")
-    void getCorporateEntityPSCDocumentWhenServiceIsDown() throws Exception {
-        when(companyPscService.getCorporateEntityPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID)).thenThrow(ServiceUnavailableException.class);
-
-        mockMvc.perform(get(GET_CorporateEntity_URL)
-                        .header("ERIC-Identity", "SOME_IDENTITY")
-                        .header("ERIC-Identity-Type", "key")
-                        .contentType(APPLICATION_JSON)
-                        .header("x-request-id", "123456")
-                        .header("ERIC-Authorised-Key-Roles", "*")
-                        .header("ERIC-Authorised-Key-Privileges", "internal-app"))
-                .andExpect(status().isInternalServerError());
-
-        verify(companyPscService).getCorporateEntityPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID);
-
-    }
-
-    @Test
-    @DisplayName(
-            "GET request returns a 404 response when Resource is not found")
-    void getCorporateEntityPSCDocumentWhenResourceNotFound() throws Exception {
-        when(companyPscService.getCorporateEntityPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID)).thenThrow(ResourceNotFoundException.class);
-
-        mockMvc.perform(get(GET_CorporateEntity_URL)
-                        .header("ERIC-Identity", "SOME_IDENTITY")
-                        .header("ERIC-Identity-Type", "key")
-                        .contentType(APPLICATION_JSON)
-                        .header("x-request-id", "123456")
-                        .header("ERIC-Authorised-Key-Roles", "*")
-                        .header("ERIC-Authorised-Key-Privileges", "internal-app"))
-                .andExpect(status().isNotFound());
-
-        verify(companyPscService).getCorporateEntityPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID);
-
-    }
-
 
 }
