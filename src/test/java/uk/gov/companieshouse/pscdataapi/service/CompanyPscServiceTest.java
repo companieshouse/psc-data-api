@@ -297,4 +297,40 @@ class CompanyPscServiceTest {
         });
     }
 
+    @Test
+    public void GetLegalPersonPscReturn200() throws TransformerException {
+        document.getData().setKind("legal-person-person-with-significant-control");
+        LegalPerson legalPerson =
+                new LegalPerson();
+        when(repository.findById(NOTIFICATION_ID)).thenReturn(Optional.of(document));
+        when(transformer.transformPscDocToLegalPerson(Optional.of(document)))
+                .thenReturn(legalPerson);
+
+        LegalPerson result = service
+                .getLegalPersonPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
+
+        assertEquals(legalPerson,result);
+    }
+
+    @Test
+    public void GetLegalPersonPscReturn404() {
+        when(repository.findById(NOTIFICATION_ID)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> {
+            service.getLegalPersonPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
+        });
+    }
+
+    @Test
+    public void GetWrongTypeLegalPersonPscReturn404() {
+        when(repository.findById(NOTIFICATION_ID)
+                .filter(document -> document.getData().getKind()
+                        .equals("WRONG KIND")))
+                .thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> {
+            service.getLegalPersonPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
+        });
+    }
+
 }

@@ -15,6 +15,7 @@ import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
 import uk.gov.companieshouse.api.psc.Identification;
 import uk.gov.companieshouse.api.psc.Individual;
 import uk.gov.companieshouse.api.psc.IndividualBeneficialOwner;
+import uk.gov.companieshouse.api.psc.LegalPerson;
 import uk.gov.companieshouse.api.psc.SensitiveData;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.data.IndividualPscRoles;
@@ -411,6 +412,92 @@ public class CompanyPscTransformer {
             throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,"PscDocument not found");
         }
 
+    }
 
+    /**
+     * Transform Legal person.
+     * @param optionalPscDocument PSC.
+     * @return PSC mongo Document.
+     */
+    public LegalPerson transformPscDocToLegalPerson(Optional<PscDocument> optionalPscDocument) {
+        logger.info("Attempting to transform pscDocument to Legal Person");
+
+        if (optionalPscDocument.isPresent()) {
+            PscDocument pscDocument = optionalPscDocument.get();
+            LegalPerson legalPerson =
+                    new LegalPerson();
+            if (pscDocument.getData().getEtag() != null) {
+                legalPerson.setEtag(pscDocument.getData().getEtag());
+            }
+            if (pscDocument.getDeltaAt() != null) {
+                legalPerson.setNotifiedOn(LocalDate
+                        .parse(pscDocument.getDeltaAt(),dateTimeFormatter));
+            }
+            legalPerson
+                    .setKind(LegalPerson
+                            .KindEnum.LEGAL_PERSON_PERSON_WITH_SIGNIFICANT_CONTROL);
+            if (pscDocument.getData().getName() != null) {
+                legalPerson.setName(pscDocument.getData().getName());
+            }
+            if (pscDocument.getData().getAddress() != null) {
+                Address address = new Address();
+
+                if (pscDocument.getData().getAddress().getAddressLine1() != null) {
+                    address.setAddressLine1(pscDocument.getData().getAddress().getAddressLine1());
+                }
+                if (pscDocument.getData().getAddress().getAddressLine2() != null) {
+                    address.setAddressLine2(pscDocument.getData().getAddress().getAddressLine2());
+                }
+                if (pscDocument.getData().getAddress().getCountry() != null) {
+                    address.setCountry(pscDocument.getData().getAddress().getCountry());
+                }
+                if (pscDocument.getData().getAddress().getLocality() != null) {
+                    address.setLocality(pscDocument.getData().getAddress().getLocality());
+                }
+                if (pscDocument.getData().getAddress().getPostalCode() != null) {
+                    address.setPostalCode(pscDocument.getData().getAddress().getPostalCode());
+                }
+                if (pscDocument.getData().getAddress().getPremises() != null) {
+                    address.setPremises(pscDocument.getData().getAddress().getPremises());
+                }
+                if (pscDocument.getData().getAddress().getRegion() != null) {
+                    address.setRegion(pscDocument.getData().getAddress().getRegion());
+                }
+                if (pscDocument.getData().getAddress().getCareOf() != null) {
+                    address.setCareOf(pscDocument.getData().getAddress().getCareOf());
+                }
+                if (pscDocument.getData().getAddress().getPoBox() != null) {
+                    address.setPoBox(pscDocument.getData().getAddress().getPoBox());
+                }
+                legalPerson.setAddress(address);
+            }
+            if (pscDocument.getData().getNaturesOfControl() != null) {
+                legalPerson
+                        .setNaturesOfControl(pscDocument.getData().getNaturesOfControl());
+            }
+            if (pscDocument.getData().getLinks() != null) {
+                legalPerson.setLinks(pscDocument.getData().getLinks());
+            }
+            if (pscDocument.getIdentification() != null) {
+                Identification identification = new Identification();
+                if (pscDocument.getIdentification().getLegalAuthority() != null) {
+                    identification.setLegalAuthority(
+                            pscDocument.getIdentification().getLegalAuthority());
+                }
+                if (pscDocument.getIdentification().getLegalForm() != null) {
+                    identification.setLegalForm(
+                            pscDocument.getIdentification().getLegalForm());
+                }
+                legalPerson.setIdentification(identification);
+            }
+            if (pscDocument.getData().getCeasedOn() != null) {
+                legalPerson.setCeasedOn(pscDocument.getData().getCeasedOn());
+            }
+            return legalPerson;
+        } else {
+            logger.error("Skipped transforming pscDoc to Legal Person");
+            throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,"PscDocument not found");
+        }
+        
     }
 }
