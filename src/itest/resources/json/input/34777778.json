@@ -1,0 +1,63 @@
+{
+  "_id": "YfTs9WeeqpXTqf6dc6FZ4C0H0ZX",
+  "internal_data": {
+    "created_at" : "2021-11-02T08:47:45",
+    "updated_at" :"2021-09-14T10:30:16.000Z",
+    "updated_by" :"CHIPS",
+    "delta_at" : "2023-11-20T08:47:45.378Z"
+  },
+  "external_data": {
+    "notification_id": "ZfTs9WeeqpXTqf6dc6FZ4C0H0ZX",
+    "psc_id" : "ZfTs9WeeqpXTqf6dc6FZ4C0H0ZX",
+    "sensitive_data": {
+      "usual_residential_address" : {
+        "address_line_1" : "ura_line1",
+        "address_line_2" : "ura_line2",
+        "care_of" : "ura_care_of",
+        "country" : "United Kingdom",
+        "locality" : "Cardiff",
+        "po_box" : "ura_po",
+        "postal_code" : "CF2 1B6",
+        "premises" : "URA",
+        "region" : "ura_region"
+      },
+      "residential_address_same_as_service_address": true,
+      "date_of_birth": {
+        "day": 21,
+        "year": 1995,
+        "month": 10
+      }
+    },
+    "data" : {
+      "service_address" : {
+        "address_line_1" : "sa_line1",
+        "address_line_2" : "sa_line2",
+        "care_of" : "sa_care_of",
+        "country" : "United Kingdom",
+        "locality" : "Cardiff",
+        "po_box" : "sa_po",
+        "postal_code" : "CF2 1B6",
+        "premises" : "SA",
+        "region" : "sa_region"
+      },
+      "natures_of_control": [
+        "part-right-to-share-surplus-assets-75-to-100-percent"
+      ],
+      "country_of_residence" : "United Kingdom",
+      "links" : [{
+        "self" : "/company/34777778/persons-with-significant-control/ZfTs9WeeqpXTqf6dc6FZ4C0H0ZZ"
+      }],
+      "nationality" : "British",
+      "is_sanctioned": true,
+      "kind" : "corporate-entity-person-with-significant-control",
+      "company_number": "34777778",
+      "name": "string",
+      "name_elements": {
+        "title":"Mr.",
+        "surname" : "JONES",
+        "forename" : "PHIL",
+        "middlename" : "tom"
+      }
+    }
+  }
+}
