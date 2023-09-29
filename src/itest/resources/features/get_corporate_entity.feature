@@ -9,7 +9,7 @@ Feature: Get corporate entity
 
     Examples:
       | company_number | notificationId              | result                                     |
-      | 34777774       | ZfTs9WeeqpXTqf6dc6FZ4C0H0ZX | corporate_entity_get_request_result        |
+      | 34777778       | ZfTs9WeeqpXTqf6dc6FZ4C0H0ZX | corporate_entity_get_request_result        |
 
 
 
@@ -22,7 +22,7 @@ Feature: Get corporate entity
 
     Examples:
       | company_number | notificationId              |
-      | 34777774       | ZfTs9WeeqpXTqf6dc6FZ4C0H0ZX |
+      | 34777778       | ZfTs9WeeqpXTqf6dc6FZ4C0H0ZX |
 
   Scenario Outline: Get PSC for corporate entity unsuccessfully - PSC resource does not exist
     Given a PSC does not exist for "<company_number>"
@@ -31,5 +31,5 @@ Feature: Get corporate entity
 
     Examples:
       | company_number | notificationId              |
-      | 34777774       | ZfTs9WeeqpXTqf6dc6FZ4C0H0ZX |
+      | 34777778       | ZfTs9WeeqpXTqf6dc6FZ4C0H0ZX |
 

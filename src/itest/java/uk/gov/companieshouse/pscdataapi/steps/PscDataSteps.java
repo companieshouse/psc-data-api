@@ -435,6 +435,87 @@ public class PscDataSteps {
         assertThat(companyPscRepository.findById("ZfTs9WeeqpXTqf6dc6FZ4C0H0ZX")).isNotEmpty();
     }
 
+    @When("a Get request is sent for {string} and {string} for Individual Beneficial Owner")
+    public void aGetRequestIsSentForAndForIndividualBeneficialOwner(String companyNumber, String notification_id) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+
+        this.contextId = "5234234234";
+        CucumberContext.CONTEXT.set("contextId", this.contextId);
+        headers.set("x-request-id", this.contextId);
+        headers.set("ERIC-Identity", "TEST-IDENTITY");
+        headers.set("ERIC-Identity-Type", "key");
+        headers.set("ERIC-Authorised-Key-Roles", "*");
+
+        HttpEntity<String> request = new HttpEntity<String>(null, headers);
+
+        String uri =
+                "/company/{company_number}/persons-with-significant-control/individual-beneficial-owner/{notification_id}";
+        ResponseEntity<IndividualBeneficialOwner> response = restTemplate.exchange(uri,
+                HttpMethod.GET, request, IndividualBeneficialOwner.class, companyNumber, notification_id);
+
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+        CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
+    }
+
+    @And("the Get call response body should match {string} file for Individual Beneficial Owner")
+    public void theGetCallResponseBodyShouldMatchFileForIndividualBeneficialOwner(String result) throws IOException {
+        String data = FileCopyUtils.copyToString(new InputStreamReader(new FileInputStream("src/itest/resources/json/output/" + result + ".json")));
+        IndividualBeneficialOwner expected = objectMapper.readValue(data, IndividualBeneficialOwner.class);
+
+        IndividualBeneficialOwner actual = CucumberContext.CONTEXT.get("getResponseBody");
+
+        assertThat(actual.getName()).isEqualTo(expected.getName());
+        assertThat(actual.getIsSanctioned()).isEqualTo(expected.getIsSanctioned());
+        assertThat(actual.getNationality()).isEqualTo(expected.getNationality());
+
+    }
+
+    @When("a Get request has been sent for {string} and {string} for Individual Beneficial Owner")
+    public void aGetRequestHasBeenSentForAndForIndividualBeneficialOwner(String companyNumber, String notification_id) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+
+        this.contextId = "5234234234";
+        CucumberContext.CONTEXT.set("contextId", this.contextId);
+        headers.set("x-request-id", this.contextId);
+        headers.set("ERIC-Identity", "TEST-IDENTITY");
+        headers.set("ERIC-Identity-Type", "key");
+        headers.set("ERIC-Authorised-Key-Roles", "*");
+
+        HttpEntity<String> request = new HttpEntity<String>(null, headers);
+
+        String uri =
+                "/company/{company_number}/persons-with-significant-control/individual-beneficial-owner/{notification_id}";
+        ResponseEntity<IndividualBeneficialOwner> response = restTemplate.exchange(uri,
+                HttpMethod.GET, request, IndividualBeneficialOwner.class, companyNumber, notification_id);
+
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+    }
+
+    @When("a Get request is sent for {string} and {string} without ERIC headers for Individual Beneficial Owner")
+    public void aGetRequestIsSentForAndWithoutERICHeadersForIndividualBeneficialOwner(String companyNumber, String notification_id) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+
+        this.contextId = "5234234234";
+        CucumberContext.CONTEXT.set("contextId", this.contextId);
+        headers.set("x-request-id", this.contextId);
+
+
+        HttpEntity<String> request = new HttpEntity<String>(null, headers);
+
+        String uri = "/company/{company_number}/persons-with-significant-control/individual-beneficial-owner/{notification_id}";
+        ResponseEntity<IndividualBeneficialOwner> response = restTemplate.exchange(uri,
+                HttpMethod.GET, request, IndividualBeneficialOwner.class, companyNumber, notification_id);
+
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+        CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
+    }
+
     @And("a PSC exists for {string} for Corporate Entity")
     public void aPSCExistsForCorporateEntity(String companyNumber) throws JsonProcessingException {
         String pscDataFile = FileReaderUtil.readFile("src/itest/resources/json/input/"+companyNumber+".json");
@@ -481,30 +562,6 @@ public class PscDataSteps {
         assertThat(companyPscRepository.getPscByCompanyNumberAndId(companyNumber,"ZfTs9WeeqpXTqf6dc6FZ4C0H0ZX")).isNotEmpty();
     }
 
-    @When("a Get request is sent for {string} and {string} for Individual Beneficial Owner")
-    public void aGetRequestIsSentForAndForIndividualBeneficialOwner(String companyNumber, String notification_id) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-
-        this.contextId = "5234234234";
-        CucumberContext.CONTEXT.set("contextId", this.contextId);
-        headers.set("x-request-id", this.contextId);
-        headers.set("ERIC-Identity", "TEST-IDENTITY");
-        headers.set("ERIC-Identity-Type", "key");
-        headers.set("ERIC-Authorised-Key-Roles", "*");
-
-        HttpEntity<String> request = new HttpEntity<String>(null, headers);
-
-        String uri =
-                "/company/{company_number}/persons-with-significant-control/individual-beneficial-owner/{notification_id}";
-        ResponseEntity<IndividualBeneficialOwner> response = restTemplate.exchange(uri,
-                HttpMethod.GET, request, IndividualBeneficialOwner.class, companyNumber, notification_id);
-
-        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
-        CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
-    }
-
     @When("a Get request is sent for {string} and {string} for Corporate Entity")
     public void aGetRequestIsSentForAndForCorporateEntity(String companyNumber, String notification_id) {
         HttpHeaders headers = new HttpHeaders();
@@ -529,19 +586,6 @@ public class PscDataSteps {
         CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
     }
 
-    @And("the Get call response body should match {string} file for Individual Beneficial Owner")
-    public void theGetCallResponseBodyShouldMatchFileForIndividualBeneficialOwner(String result) throws IOException {
-        String data = FileCopyUtils.copyToString(new InputStreamReader(new FileInputStream("src/itest/resources/json/output/" + result + ".json")));
-        IndividualBeneficialOwner expected = objectMapper.readValue(data, IndividualBeneficialOwner.class);
-
-        IndividualBeneficialOwner actual = CucumberContext.CONTEXT.get("getResponseBody");
-
-        assertThat(actual.getName()).isEqualTo(expected.getName());
-        assertThat(actual.getIsSanctioned()).isEqualTo(expected.getIsSanctioned());
-        assertThat(actual.getNationality()).isEqualTo(expected.getNationality());
-
-    }
-
     @And("the Get call response body should match {string} file for Corporate Entity")
     public void theGetCallResponseBodyShouldMatchFileForCorporateEntity(String result) throws IOException {
         String data = FileCopyUtils.copyToString(new InputStreamReader(new FileInputStream("src/itest/resources/json/output/" + result + ".json")));
@@ -553,29 +597,6 @@ public class PscDataSteps {
         assertThat(actual.getIdentification()).isEqualTo(expected.getIdentification());
         assertThat(actual.getKind()).isEqualTo(expected.getKind());
 
-    }
-
-    @When("a Get request has been sent for {string} and {string} for Individual Beneficial Owner")
-    public void aGetRequestHasBeenSentForAndForIndividualBeneficialOwner(String companyNumber, String notification_id) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-
-        this.contextId = "5234234234";
-        CucumberContext.CONTEXT.set("contextId", this.contextId);
-        headers.set("x-request-id", this.contextId);
-        headers.set("ERIC-Identity", "TEST-IDENTITY");
-        headers.set("ERIC-Identity-Type", "key");
-        headers.set("ERIC-Authorised-Key-Roles", "*");
-
-        HttpEntity<String> request = new HttpEntity<String>(null, headers);
-
-        String uri =
-                "/company/{company_number}/persons-with-significant-control/individual-beneficial-owner/{notification_id}";
-        ResponseEntity<IndividualBeneficialOwner> response = restTemplate.exchange(uri,
-                HttpMethod.GET, request, IndividualBeneficialOwner.class, companyNumber, notification_id);
-
-        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
     }
 
     @When("a Get request has been sent for {string} and {string} for Corporate Entity")
@@ -599,27 +620,6 @@ public class PscDataSteps {
                 HttpMethod.GET, request, CorporateEntity.class, companyNumber, notification_id);
 
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
-    }
-
-    @When("a Get request is sent for {string} and {string} without ERIC headers for Individual Beneficial Owner")
-    public void aGetRequestIsSentForAndWithoutERICHeadersForIndividualBeneficialOwner(String companyNumber, String notification_id) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-
-        this.contextId = "5234234234";
-        CucumberContext.CONTEXT.set("contextId", this.contextId);
-        headers.set("x-request-id", this.contextId);
-
-
-        HttpEntity<String> request = new HttpEntity<String>(null, headers);
-
-        String uri = "/company/{company_number}/persons-with-significant-control/individual-beneficial-owner/{notification_id}";
-        ResponseEntity<IndividualBeneficialOwner> response = restTemplate.exchange(uri,
-                HttpMethod.GET, request, IndividualBeneficialOwner.class, companyNumber, notification_id);
-
-        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
-        CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
     }
 
     @When("a Get request is sent for {string} and {string} without ERIC headers for Corporate Entity")

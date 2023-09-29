@@ -45,12 +45,12 @@
       ],
       "country_of_residence" : "United Kingdom",
       "links" : [{
-        "self" : "/company/34777774/persons-with-significant-control/ZfTs9WeeqpXTqf6dc6FZ4C0H0ZZ"
+        "self" : "/company/34777778/persons-with-significant-control/ZfTs9WeeqpXTqf6dc6FZ4C0H0ZZ"
       }],
       "nationality" : "British",
       "is_sanctioned": true,
       "kind" : "corporate-entity-person-with-significant-control",
-      "company_number": "34777774",
+      "company_number": "34777778",
       "name": "string",
       "name_elements": {
         "title":"Mr.",
