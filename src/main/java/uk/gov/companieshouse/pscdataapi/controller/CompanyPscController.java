@@ -36,6 +36,31 @@ public class CompanyPscController {
     private static final Logger LOGGER = LoggerFactory.getLogger("psc-data-api");
 
     /**
+     * Get the data object for given company profile number.
+     *
+     * @param companyNumber The number of the company
+     * @return ResponseEntity
+     */
+    @GetMapping("corporate-entity/{notification_id}")
+    public ResponseEntity<CorporateEntity> getCorporateEntityPscData(
+            @PathVariable("company_number") String companyNumber,
+            @PathVariable("notification_id") String notificationId) {
+        LOGGER.info(String.format("Getting PSC data with company number %s", companyNumber));
+        try {
+            LOGGER.info(String.format("Retrieving PSC with company number %s", companyNumber));
+            CorporateEntity corporateEntity =
+                    pscService.getCorporateEntityPsc(companyNumber, notificationId);
+            return new ResponseEntity<>(corporateEntity, HttpStatus.OK);
+        } catch (ResourceNotFoundException resourceNotFoundException) {
+            LOGGER.error(resourceNotFoundException.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (DataAccessException exception) {
+            LOGGER.error(exception.getMessage());
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    /**
      * PUT endpoint for PSC record
      * @param contextId context Id taken from header.
      * @param request request payload.
@@ -127,31 +152,6 @@ public class CompanyPscController {
             IndividualBeneficialOwner individualBeneficialOwner =
                     pscService.getIndividualBeneficialOwnerPsc(companyNumber, notificationId);
             return new ResponseEntity<>(individualBeneficialOwner, HttpStatus.OK);
-        } catch (ResourceNotFoundException resourceNotFoundException) {
-            LOGGER.error(resourceNotFoundException.getMessage());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        } catch (DataAccessException exception) {
-            LOGGER.error(exception.getMessage());
-            return ResponseEntity.internalServerError().build();
-        }
-    }
-
-    /**
-     * Get the data object for given company profile number.
-     *
-     * @param companyNumber The number of the company
-     * @return ResponseEntity
-     */
-    @GetMapping("corporate-entity/{notification_id}")
-    public ResponseEntity<CorporateEntity> getCorporateEntityPscData(
-            @PathVariable("company_number") String companyNumber,
-            @PathVariable("notification_id") String notificationId) {
-        LOGGER.info(String.format("Getting PSC data with company number %s", companyNumber));
-        try {
-            LOGGER.info(String.format("Retrieving PSC with company number %s", companyNumber));
-            CorporateEntity corporateEntity =
-                    pscService.getCorporateEntityPsc(companyNumber, notificationId);
-            return new ResponseEntity<>(corporateEntity, HttpStatus.OK);
         } catch (ResourceNotFoundException resourceNotFoundException) {
             LOGGER.error(resourceNotFoundException.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();

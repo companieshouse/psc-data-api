@@ -221,88 +221,6 @@ public class CompanyPscTransformer {
 
     }
 
-    /**
-     * Transform PSC.
-     * @param notificationId PSC Id.
-     * @param requestBody request payload.
-     * @return PSC mongo Document.
-     */
-    public PscDocument transformPsc(String notificationId, FullRecordCompanyPSCApi requestBody) {
-        PscDocument pscDocument = new PscDocument();
-        logger.info(String.format("transforming incoming payload with Id: %s", notificationId));
-
-        pscDocument.setId(notificationId);
-        pscDocument.setNotificationId(notificationId);
-        pscDocument.setPscId(requestBody.getExternalData().getPscId());
-        if (requestBody.getExternalData().getCompanyNumber() == null) {
-            pscDocument.setCompanyNumber(
-                    requestBody.getExternalData().getData().getCompanyNumber());
-        } else {
-            pscDocument.setCompanyNumber(requestBody.getExternalData().getCompanyNumber());
-        }
-        OffsetDateTime deltaAt = requestBody.getInternalData().getDeltaAt();
-        pscDocument.setDeltaAt(dateTimeFormatter.format(deltaAt));
-        pscDocument.setUpdated(new Updated().setAt(LocalDate.now()));
-        pscDocument.setUpdatedBy(requestBody.getInternalData().getUpdatedBy());
-        pscDocument.setData(transformDataFields(requestBody));
-        pscDocument.setIdentification(requestBody.getExternalData().getData().getIdentification());
-
-        String kind = requestBody.getExternalData().getData().getKind();
-
-        if (IndividualPscRoles.includes(kind)) {
-            pscDocument.setSensitiveData(transformSensitiveDataFields(requestBody));
-
-            handleIndividualFields(requestBody, pscDocument.getData());
-        }
-        if (SecurePscRoles.includes(kind)) {
-            handleSecureFields(requestBody, pscDocument.getData());
-        } else {
-            Address serviceAddress = new Address(requestBody.getExternalData()
-                    .getData().getServiceAddress());
-            pscDocument.getData().setAddress(serviceAddress);
-        }
-        return pscDocument;
-    }
-
-    private PscSensitiveData transformSensitiveDataFields(FullRecordCompanyPSCApi requestBody) {
-        PscSensitiveData pscSensitiveData = new PscSensitiveData();
-        SensitiveData sensitiveData = requestBody.getExternalData().getSensitiveData();
-        DateOfBirth dateOfBirth = new DateOfBirth(sensitiveData.getDateOfBirth());
-        pscSensitiveData.setResidentialAddressIsSameAsServiceAddress(requestBody.getExternalData()
-                .getSensitiveData().getResidentialAddressSameAsServiceAddress());
-        pscSensitiveData.setDateOfBirth(dateOfBirth);
-        pscSensitiveData.setUsualResidentialAddress(
-                new Address(sensitiveData.getUsualResidentialAddress()));
-
-        return pscSensitiveData;
-    }
-
-    private PscData transformDataFields(FullRecordCompanyPSCApi requestBody) {
-        PscData data = new PscData();
-        data.setCeasedOn(requestBody.getExternalData().getData().getCeasedOn());
-        data.setDescription(requestBody.getExternalData().getData().getDescription());
-        data.setEtag(requestBody.getExternalData().getData().getEtag());
-        data.setKind(requestBody.getExternalData().getData().getKind());
-        data.setLinks(PscTransformationHelper.createLinks(requestBody));
-        data.setName(requestBody.getExternalData().getData().getName());
-        data.setNationality(requestBody.getExternalData().getData().getNationality());
-        data.setNaturesOfControl(requestBody.getExternalData().getData().getNaturesOfControl());
-        data.setSanctioned(requestBody.getExternalData().getData().getIsSanctioned());
-        data.setServiceAddressIsSameAsRegisteredOfficeAddress(requestBody.getExternalData()
-                    .getData().getServiceAddressSameAsRegisteredOfficeAddress());
-        return data;
-    }
-
-    private void handleIndividualFields(FullRecordCompanyPSCApi requestBody, PscData data) {
-        data.setNameElements(new NameElements(
-                requestBody.getExternalData().getData().getNameElements()));
-        data.setCountryOfResidence(requestBody.getExternalData().getData().getCountryOfResidence());
-    }
-
-    private void handleSecureFields(FullRecordCompanyPSCApi requestBody, PscData data) {
-        Boolean ceased = requestBody.getExternalData().getData().getCeasedOn() != null;
-        data.setCeased(ceased);
-    }
 
     public CorporateEntity transformPscDocToCorporateEntity(Optional<PscDocument> optionalPscDocument)
             throws TransformerException {
@@ -389,4 +307,88 @@ public class CompanyPscTransformer {
             throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,"PscDocument not found");
         }
     }
+
+    /**
+     * Transform PSC.
+     * @param notificationId PSC Id.
+     * @param requestBody request payload.
+     * @return PSC mongo Document.
+     */
+    public PscDocument transformPsc(String notificationId, FullRecordCompanyPSCApi requestBody) {
+        PscDocument pscDocument = new PscDocument();
+        logger.info(String.format("transforming incoming payload with Id: %s", notificationId));
+
+        pscDocument.setId(notificationId);
+        pscDocument.setNotificationId(notificationId);
+        pscDocument.setPscId(requestBody.getExternalData().getPscId());
+        if (requestBody.getExternalData().getCompanyNumber() == null) {
+            pscDocument.setCompanyNumber(
+                    requestBody.getExternalData().getData().getCompanyNumber());
+        } else {
+            pscDocument.setCompanyNumber(requestBody.getExternalData().getCompanyNumber());
+        }
+        OffsetDateTime deltaAt = requestBody.getInternalData().getDeltaAt();
+        pscDocument.setDeltaAt(dateTimeFormatter.format(deltaAt));
+        pscDocument.setUpdated(new Updated().setAt(LocalDate.now()));
+        pscDocument.setUpdatedBy(requestBody.getInternalData().getUpdatedBy());
+        pscDocument.setData(transformDataFields(requestBody));
+        pscDocument.setIdentification(requestBody.getExternalData().getData().getIdentification());
+
+        String kind = requestBody.getExternalData().getData().getKind();
+
+        if (IndividualPscRoles.includes(kind)) {
+            pscDocument.setSensitiveData(transformSensitiveDataFields(requestBody));
+
+            handleIndividualFields(requestBody, pscDocument.getData());
+        }
+        if (SecurePscRoles.includes(kind)) {
+            handleSecureFields(requestBody, pscDocument.getData());
+        } else {
+            Address serviceAddress = new Address(requestBody.getExternalData()
+                    .getData().getServiceAddress());
+            pscDocument.getData().setAddress(serviceAddress);
+        }
+        return pscDocument;
+    }
+
+    private PscSensitiveData transformSensitiveDataFields(FullRecordCompanyPSCApi requestBody) {
+        PscSensitiveData pscSensitiveData = new PscSensitiveData();
+        SensitiveData sensitiveData = requestBody.getExternalData().getSensitiveData();
+        DateOfBirth dateOfBirth = new DateOfBirth(sensitiveData.getDateOfBirth());
+        pscSensitiveData.setResidentialAddressIsSameAsServiceAddress(requestBody.getExternalData()
+                .getSensitiveData().getResidentialAddressSameAsServiceAddress());
+        pscSensitiveData.setDateOfBirth(dateOfBirth);
+        pscSensitiveData.setUsualResidentialAddress(
+                new Address(sensitiveData.getUsualResidentialAddress()));
+
+        return pscSensitiveData;
+    }
+
+    private PscData transformDataFields(FullRecordCompanyPSCApi requestBody) {
+        PscData data = new PscData();
+        data.setCeasedOn(requestBody.getExternalData().getData().getCeasedOn());
+        data.setDescription(requestBody.getExternalData().getData().getDescription());
+        data.setEtag(requestBody.getExternalData().getData().getEtag());
+        data.setKind(requestBody.getExternalData().getData().getKind());
+        data.setLinks(PscTransformationHelper.createLinks(requestBody));
+        data.setName(requestBody.getExternalData().getData().getName());
+        data.setNationality(requestBody.getExternalData().getData().getNationality());
+        data.setNaturesOfControl(requestBody.getExternalData().getData().getNaturesOfControl());
+        data.setSanctioned(requestBody.getExternalData().getData().getIsSanctioned());
+        data.setServiceAddressIsSameAsRegisteredOfficeAddress(requestBody.getExternalData()
+                    .getData().getServiceAddressSameAsRegisteredOfficeAddress());
+        return data;
+    }
+
+    private void handleIndividualFields(FullRecordCompanyPSCApi requestBody, PscData data) {
+        data.setNameElements(new NameElements(
+                requestBody.getExternalData().getData().getNameElements()));
+        data.setCountryOfResidence(requestBody.getExternalData().getData().getCountryOfResidence());
+    }
+
+    private void handleSecureFields(FullRecordCompanyPSCApi requestBody, PscData data) {
+        Boolean ceased = requestBody.getExternalData().getData().getCeasedOn() != null;
+        data.setCeased(ceased);
+    }
+
 }
