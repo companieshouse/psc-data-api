@@ -323,10 +323,10 @@ class CompanyPscServiceTest {
     @Test
     public void GetLegalPersonPscReturn404() {
         when(repository.findById(NOTIFICATION_ID)).thenReturn(Optional.empty());
-
         assertThrows(ResourceNotFoundException.class, () -> {
-            service.getLegalPersonPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
-
+            service.getLegalPersonPsc(MOCK_COMPANY_NUMBER, NOTIFICATION_ID);
+        });
+    }
     public void GetCorporateEntityPscReturn200() throws TransformerException {
         document.getData().setKind("corporate-entity-person-with-significant-control");
         CorporateEntity corporateEntity = new CorporateEntity();
@@ -350,7 +350,6 @@ class CompanyPscServiceTest {
     }
 
     @Test
-
     public void GetWrongTypeLegalPersonPscReturn404() {
         when(repository.findById(NOTIFICATION_ID)
                 .filter(document -> document.getData().getKind()
@@ -358,8 +357,10 @@ class CompanyPscServiceTest {
                 .thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> {
-            service.getLegalPersonPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
+            service.getLegalPersonPsc(MOCK_COMPANY_NUMBER, NOTIFICATION_ID);
         });
+    }
+
     public void GetWrongTypeCorporateEntityPscReturn404() {
         when(repository.getPscByCompanyNumberAndId(MOCK_COMPANY_NUMBER, NOTIFICATION_ID))
                 .thenReturn(Optional.empty());
@@ -367,7 +368,6 @@ class CompanyPscServiceTest {
         assertThrows(ResourceNotFoundException.class, () -> {
             service.getCorporateEntityPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
         });
-
 
     }
 
