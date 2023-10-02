@@ -10,14 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.api.exception.ResourceNotFoundException;
-import uk.gov.companieshouse.api.psc.CorporateEntity;
-import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
-import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
-import uk.gov.companieshouse.api.psc.Identification;
-import uk.gov.companieshouse.api.psc.Individual;
-import uk.gov.companieshouse.api.psc.IndividualBeneficialOwner;
-import uk.gov.companieshouse.api.psc.LegalPerson;
-import uk.gov.companieshouse.api.psc.SensitiveData;
+import uk.gov.companieshouse.api.psc.*;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.data.IndividualPscRoles;
 import uk.gov.companieshouse.pscdataapi.data.SecurePscRoles;
@@ -227,6 +220,48 @@ public class CompanyPscTransformer {
         }
 
     }
+
+    /**
+     * Transform Super Secure PSC.
+     * @param optionalPscDocument PSC.
+     * @return PSC mongo Document.
+     */
+
+    public SuperSecure transformPscDocToSuperSecure(
+            Optional<PscDocument> optionalPscDocument) throws TransformerException {
+
+        logger.info("Attempting to transform pscDocument to SuperSecure");
+
+        if (optionalPscDocument.isPresent()) {
+            PscDocument pscDocument = optionalPscDocument.get();
+            SuperSecure superSecure = new SuperSecure();
+
+            if (pscDocument.getData().getEtag() != null) {
+                superSecure.setEtag(pscDocument.getData().getEtag());
+            }
+
+            superSecure
+                    .setKind(SuperSecure.KindEnum.SUPER_SECURE_PERSON_WITH_SIGNIFICANT_CONTROL);
+
+
+            superSecure
+                    .setDescription(SuperSecure.DescriptionEnum.SUPER_SECURE_PERSONS_WITH_SIGNIFICANT_CONTROL);
+
+            if(pscDocument.getData().getCeased() != null) {
+                superSecure.setCeased(pscDocument.getData().getCeased());
+            }
+
+            if (pscDocument.getData().getLinks() != null) {
+                superSecure.setLinks(pscDocument.getData().getLinks());
+            }
+
+            return superSecure;
+        } else {
+            logger.error("Skipped transforming pscDoc to SuperSecure");
+            throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,"PscDocument not found");
+        }
+    }
+
 
     /**
      * Transform Corporate Entity PSC.
