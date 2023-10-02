@@ -17,6 +17,7 @@ import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
 import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
 import uk.gov.companieshouse.api.psc.Individual;
 import uk.gov.companieshouse.api.psc.IndividualBeneficialOwner;
+import uk.gov.companieshouse.api.psc.LegalPerson;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
@@ -246,9 +247,37 @@ public class CompanyPscService {
                     transformer.transformPscDocToCorporateEntityBeneficialOwner(pscDocument);
             if (corporateEntityBeneficialOwner == null) {
                 throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
-                        "Failed to transform PSCDocument to IndividualBeneficialOwner");
+                        "Failed to transform PSCDocument to CorporateEntityBeneficialOwnerOwner");
             }
             return corporateEntityBeneficialOwner;
+        } catch (Exception exception) {
+            logger.error(exception.getMessage());
+            throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
+                    "Unexpected error occurred while fetching PSC document");
+        }
+    }
+
+    /** Get PSC record. */
+    /** and transform it into an Legal person PSC.*/
+    public LegalPerson getLegalPersonPsc(String companyNumber, String notificationId) {
+        try {
+            Optional<PscDocument> pscDocument =
+                    repository.findById(notificationId)
+                            .filter(document -> document.getData().getKind()
+                                    .equals("legal-person-person-with-significant-control")
+                                    && document.getCompanyNumber().equals(companyNumber));
+            if (pscDocument.isEmpty()) {
+                throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
+                        "Legal person PSC document not found in Mongo with id"
+                                + notificationId);
+            }
+            LegalPerson legalPerson =
+                    transformer.transformPscDocToLegalPerson(pscDocument);
+            if (legalPerson == null) {
+                throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
+                        "Failed to transform PSCDocument to Legal Person");
+            }
+            return legalPerson;
         } catch (Exception exception) {
             logger.error(exception.getMessage());
             throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,

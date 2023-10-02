@@ -749,5 +749,109 @@ public class PscDataSteps {
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
     }
 
+
+    @And("a PSC exists for {string} for Legal Person")
+    public void aPSCExistsForForLegalPerson(String companyNumber) throws JsonProcessingException {
+        String pscDataFile = FileReaderUtil.readFile("src/itest/resources/json/input/"+companyNumber+".json");
+        PscData pscData = objectMapper.readValue(pscDataFile, PscData.class);
+        PscDocument document = new PscDocument();
+
+        document.setId("ZfTs9WeeqpXTqf6dc6FZ4C0H0ZV");
+        document.setCompanyNumber(companyNumber);
+        document.setPscId("ZfTs9WeeqpXTqf6dc6FZ4C0H0ZV");
+        document.setDeltaAt("20231120084745378000");
+        pscData.setEtag("string");
+        pscData.setName("string");
+        pscData.setNationality("British");
+        pscData.setSanctioned(true);
+        pscData.setKind("legal-person-person-with-significant-control");
+
+
+        document.setData(pscData);
+
+        mongoTemplate.save(document);
+        assertThat(companyPscRepository.findById("ZfTs9WeeqpXTqf6dc6FZ4C0H0ZV")).isNotEmpty();
+    }
+
+    @When("a Get request is sent for {string} and {string} for Legal Person")
+    public void aGetRequestIsSentForAndForLegalPerson(String companyNumber, String notification_id) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+
+        this.contextId = "5234234234";
+        CucumberContext.CONTEXT.set("contextId", this.contextId);
+        headers.set("x-request-id", this.contextId);
+        headers.set("ERIC-Identity", "TEST-IDENTITY");
+        headers.set("ERIC-Identity-Type", "key");
+        headers.set("ERIC-Authorised-Key-Roles", "*");
+
+        HttpEntity<String> request = new HttpEntity<String>(null, headers);
+
+        String uri =
+                "/company/{company_number}/persons-with-significant-control/legal-person/{notification_id}";
+        ResponseEntity<LegalPerson> response = restTemplate.exchange(uri,
+                HttpMethod.GET, request, LegalPerson.class, companyNumber, notification_id);
+
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+        CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
+    }
+
+    @And("the Get call response body should match {string} file for Legal Person")
+    public void theGetCallResponseBodyShouldMatchFileForLegalPerson(String result) throws IOException {
+        String data = FileCopyUtils.copyToString(new InputStreamReader(
+                new FileInputStream("src/itest/resources/json/output/" + result + ".json")));
+        LegalPerson expected = objectMapper.readValue(data, LegalPerson.class);
+
+        LegalPerson actual = CucumberContext.CONTEXT.get("getResponseBody");
+
+        assertThat(actual.getName()).isEqualTo(expected.getName());
+        assertThat(actual.getCeasedOn()).isEqualTo(expected.getCeasedOn());
+    }
+
+    @When("a Get request is sent for {string} and {string} without ERIC headers for Legal Person")
+    public void aGetRequestIsSentForAndWithoutERICHeadersForLegalPerson(String companyNumber, String notification_id) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+
+        this.contextId = "5234234234";
+        CucumberContext.CONTEXT.set("contextId", this.contextId);
+        headers.set("x-request-id", this.contextId);
+
+
+        HttpEntity<String> request = new HttpEntity<String>(null, headers);
+
+        String uri = "/company/{company_number}/persons-with-significant-control/legal-person/{notification_id}";
+        ResponseEntity<LegalPerson> response = restTemplate.exchange(uri,
+                HttpMethod.GET, request, LegalPerson.class, companyNumber, notification_id);
+
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+        CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
+    }
+
+    @When("a Get request has been sent for {string} and {string} for Legal Person")
+    public void aGetRequestHasBeenSentForAndForLegalPerson(String companyNumber, String notification_id) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+
+        this.contextId = "5234234234";
+        CucumberContext.CONTEXT.set("contextId", this.contextId);
+        headers.set("x-request-id", this.contextId);
+        headers.set("ERIC-Identity", "TEST-IDENTITY");
+        headers.set("ERIC-Identity-Type", "key");
+        headers.set("ERIC-Authorised-Key-Roles", "*");
+
+        HttpEntity<String> request = new HttpEntity<String>(null, headers);
+
+        String uri =
+                "/company/{company_number}/persons-with-significant-control/legal-person/{notification_id}";
+        ResponseEntity<LegalPerson> response = restTemplate.exchange(uri,
+                HttpMethod.GET, request, LegalPerson.class, companyNumber, notification_id);
+
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+    }
+
 }
 

@@ -7,4 +7,6 @@ routes:
   3: ^/company/(.*)/persons-with-significant-control/individual/(.*)
   4: ^/company/(.*)/persons-with-significant-control/individual-beneficial-owner/(.*)
   5: ^/company/(.*)/persons-with-significant-control/corporate-entity-beneficial-owner/(.*)
-  6: ^/company/(.*)/persons-with-significant-control/corporate-entity/(.*)
+  6: ^/company/(.*)/persons-with-significant-control/legal-person/(.*)
+  7: ^/company/(.*)/persons-with-significant-control/corporate-entity/(.*)
+
