@@ -363,6 +363,7 @@ class CompanyPscServiceTest {
             service.getSuperSecurePsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
         });
     }
+    @Test
     public void GetCorporateEntityPscReturn200() throws TransformerException {
         document.getData().setKind("corporate-entity-person-with-significant-control");
         CorporateEntity corporateEntity = new CorporateEntity();
