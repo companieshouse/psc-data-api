@@ -19,6 +19,7 @@ import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
 import uk.gov.companieshouse.api.psc.Individual;
 import uk.gov.companieshouse.api.psc.IndividualBeneficialOwner;
 import uk.gov.companieshouse.api.psc.LegalPerson;
+import uk.gov.companieshouse.api.psc.LegalPersonBeneficialOwner;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
@@ -204,6 +205,31 @@ public class CompanyPscController {
             LegalPerson legalPerson =
                     pscService.getLegalPersonPsc(companyNumber, notificationId);
             return new ResponseEntity<>(legalPerson, HttpStatus.OK);
+        } catch (ResourceNotFoundException resourceNotFoundException) {
+            LOGGER.error(resourceNotFoundException.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (DataAccessException exception) {
+            LOGGER.error(exception.getMessage());
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    /**
+     * Get the data object for given company profile number.
+     *
+     * @param companyNumber The number of the company
+     * @return ResponseEntity
+     */
+    @GetMapping("legal-person-beneficial-owner/{notification_id}")
+    public ResponseEntity<LegalPersonBeneficialOwner> getLegalPersonBeneficialOwnerPscData(
+            @PathVariable("company_number") String companyNumber,
+            @PathVariable("notification_id") String notificationId) {
+        LOGGER.info(String.format("Getting PSC data with company number %s", companyNumber));
+        try {
+            LOGGER.info(String.format("Retrieving PSC with company number %s", companyNumber));
+            LegalPersonBeneficialOwner legalPersonBeneficialOwner =
+                    pscService.getLegalPersonBeneficialOwnerPsc(companyNumber, notificationId);
+            return new ResponseEntity<>(legalPersonBeneficialOwner, HttpStatus.OK);
         } catch (ResourceNotFoundException resourceNotFoundException) {
             LOGGER.error(resourceNotFoundException.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
