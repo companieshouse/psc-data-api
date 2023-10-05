@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import net.bytebuddy.implementation.bind.annotation.Super;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -327,6 +328,42 @@ class CompanyPscServiceTest {
             service.getLegalPersonPsc(MOCK_COMPANY_NUMBER, NOTIFICATION_ID);
         });
     }
+
+    @Test
+    public void GetSuperSecurePscReturn200() throws TransformerException {
+        document.getData().setKind("super-secure-person-with-significant-control");
+        SuperSecure superSecure = new SuperSecure();
+        when(repository.getPscByCompanyNumberAndId(MOCK_COMPANY_NUMBER,NOTIFICATION_ID)).thenReturn(Optional.of(document));
+        when(transformer.transformPscDocToSuperSecure(Optional.of(document)))
+                .thenReturn(superSecure);
+
+        SuperSecure result = service
+                .getSuperSecurePsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
+
+        assertEquals(superSecure,result);
+    }
+
+    @Test
+    public void GetSuperSecurePscReturn404() {
+        when(repository.getPscByCompanyNumberAndId(MOCK_COMPANY_NUMBER,NOTIFICATION_ID)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> {
+            service.getSuperSecurePsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
+        });
+    }
+
+    @Test
+    public void GetWrongTypeSuperSecurePscReturn404() {
+        when(repository.getPscByCompanyNumberAndId(MOCK_COMPANY_NUMBER,NOTIFICATION_ID)
+                .filter(document -> document.getData().getKind()
+                        .equals("WRONG KIND")))
+                .thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> {
+            service.getSuperSecurePsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
+        });
+    }
+    @Test
     public void GetCorporateEntityPscReturn200() throws TransformerException {
         document.getData().setKind("corporate-entity-person-with-significant-control");
         CorporateEntity corporateEntity = new CorporateEntity();
