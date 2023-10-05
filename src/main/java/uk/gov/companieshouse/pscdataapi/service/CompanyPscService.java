@@ -18,6 +18,7 @@ import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
 import uk.gov.companieshouse.api.psc.Individual;
 import uk.gov.companieshouse.api.psc.IndividualBeneficialOwner;
 import uk.gov.companieshouse.api.psc.LegalPerson;
+import uk.gov.companieshouse.api.psc.SuperSecure;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
@@ -140,6 +141,33 @@ public class CompanyPscService {
         repository.delete(pscDocument);
         logger.info(String.format("PSC record with company number %s has been deleted",
                 companyNumber));
+    }
+
+    /** Get PSC record. */
+    /** and transform it into Super Secure.*/
+    public SuperSecure getSuperSecurePsc(String companyNumber, String notificationId) {
+
+        try {
+            Optional<PscDocument> pscDocument =
+                    repository.getPscByCompanyNumberAndId(companyNumber, notificationId)
+                            .filter(document -> document.getData().getKind()
+                                    .equals("super-secure-person-with-significant-control"));
+            if (pscDocument.isEmpty()) {
+                throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
+                        "SuperSecure PSC document not found in Mongo with id "
+                                + notificationId);
+            }
+            SuperSecure superSecure = transformer.transformPscDocToSuperSecure(pscDocument);
+            if (superSecure == null) {
+                throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
+                        "Failed to transform PSCDocument to SuperSecure");
+            }
+            return superSecure;
+        } catch (Exception exception) {
+            logger.error(exception.getMessage());
+            throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
+                    "Unexpected error occurred while fetching PSC document");
+        }
     }
 
     /** Get PSC record. */

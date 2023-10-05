@@ -9,6 +9,7 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import net.bytebuddy.implementation.bind.annotation.Super;
 import org.assertj.core.api.Assertions;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -278,6 +279,114 @@ public class PscDataSteps {
         document.setDeltaAt(deltaAt);
         mongoTemplate.save(document);
         assertThat(companyPscRepository.findById(NOTIFICATION_ID)).isNotEmpty();
+    }
+
+    @And("a PSC exists for {string} for Super Secure")
+    public void aPSCExistsForForSuperSecure(String companyNumber) throws JsonProcessingException {
+        String pscDataFile = FileReaderUtil.readFile("src/itest/resources/json/input/"+companyNumber+".json");
+        PscData pscData = objectMapper.readValue(pscDataFile, PscData.class);
+        PscDocument document = new PscDocument();
+
+        document.setId("ZfTs9WeeqpXTqf6dc6FZ4C0H0ZX");
+        document.setCompanyNumber(companyNumber);
+        document.setPscId("ZfTs9WeeqpXTqf6dc6FZ4C0H0ZX");
+        document.setDeltaAt("20231120084745378000");
+        pscData.setEtag("string");
+        pscData.setKind("super-secure-person-with-significant-control");
+        pscData.setDescription("super-secure-persons-with-significant-control");
+        Links links = new Links();
+        links.setSelf("/company/34777777/persons-with-significant-control/super-secure/ZfTs9WeeqpXTqf6dc6FZ4C0H0ZZ");
+        links.setStatements("string");
+        pscData.setLinks(links);
+        pscData.setCeased(false);
+
+
+        document.setData(pscData);
+
+        mongoTemplate.save(document);
+        assertThat(companyPscRepository.getPscByCompanyNumberAndId(companyNumber,"ZfTs9WeeqpXTqf6dc6FZ4C0H0ZX")).isNotEmpty();
+    }
+
+    @When("a Get request is sent for {string} and {string} for Super Secure")
+    public void aGetRequestIsSentForAndForSuperSecure(String companyNumber, String notification_id) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+
+        this.contextId = "5234234234";
+        CucumberContext.CONTEXT.set("contextId", this.contextId);
+        headers.set("x-request-id", this.contextId);
+        headers.set("ERIC-Identity", "TEST-IDENTITY");
+        headers.set("ERIC-Identity-Type", "key");
+        headers.set("ERIC-Authorised-Key-Roles", "*");
+
+        HttpEntity<String> request = new HttpEntity<String>(null, headers);
+
+        String uri =
+                String.format("/company/%s/persons-with-significant-control/super-secure/%s",companyNumber,notification_id);
+        ResponseEntity<SuperSecure> response = restTemplate.exchange(uri,
+                HttpMethod.GET, request, SuperSecure.class, companyNumber, notification_id);
+
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+        CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
+    }
+
+    @And("the Get call response body should match {string} file for Super Secure")
+    public void theGetCallResponseBodyShouldMatchFileForSuperSecure(String result) throws IOException {
+        String data = FileCopyUtils.copyToString(new InputStreamReader(new FileInputStream("src/itest/resources/json/output/" + result + ".json")));
+        SuperSecure expected = objectMapper.readValue(data, SuperSecure.class);
+
+        SuperSecure actual = CucumberContext.CONTEXT.get("getResponseBody");
+
+        assertThat(actual.getDescription()).isEqualTo(expected.getDescription());
+        assertThat(actual.getCeased()).isEqualTo(expected.getCeased());
+        assertThat(actual.getKind()).isEqualTo(expected.getKind());
+
+    }
+
+    @When("a Get request is sent for {string} and {string} without ERIC headers for Super Secure")
+    public void aGetRequestIsSentForAndWithoutERICHeadersForSuperSecure(String companyNumber, String notification_id) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+
+        this.contextId = "5234234234";
+        CucumberContext.CONTEXT.set("contextId", this.contextId);
+        headers.set("x-request-id", this.contextId);
+
+
+        HttpEntity<String> request = new HttpEntity<String>(null, headers);
+
+        String uri =
+                String.format("/company/%s/persons-with-significant-control/super-secure/%s",companyNumber,notification_id);
+        ResponseEntity<SuperSecure> response = restTemplate.exchange(uri,
+                HttpMethod.GET, request, SuperSecure.class, companyNumber, notification_id);
+
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+        CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
+    }
+
+    @When("a Get request has been sent for {string} and {string} for Super Secure")
+    public void aGetRequestHasBeenSentForAndForSuperSecure(String companyNumber, String notification_id) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+
+        this.contextId = "5234234234";
+        CucumberContext.CONTEXT.set("contextId", this.contextId);
+        headers.set("x-request-id", this.contextId);
+        headers.set("ERIC-Identity", "TEST-IDENTITY");
+        headers.set("ERIC-Identity-Type", "key");
+        headers.set("ERIC-Authorised-Key-Roles", "*");
+
+        HttpEntity<String> request = new HttpEntity<String>(null, headers);
+
+        String uri =
+                String.format("/company/%s/persons-with-significant-control/super-secure/%s",companyNumber,notification_id);
+        ResponseEntity<SuperSecure> response = restTemplate.exchange(uri,
+                HttpMethod.GET, request, SuperSecure.class, companyNumber, notification_id);
+
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
     }
 
     @And("a PSC exists for {string} for Corporate Entity")
