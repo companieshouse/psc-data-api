@@ -13,14 +13,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.companieshouse.api.exception.ResourceNotFoundException;
-import uk.gov.companieshouse.api.psc.CorporateEntity;
-import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
-import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
-import uk.gov.companieshouse.api.psc.Individual;
-import uk.gov.companieshouse.api.psc.IndividualBeneficialOwner;
-import uk.gov.companieshouse.api.psc.LegalPerson;
-import uk.gov.companieshouse.api.psc.LegalPersonBeneficialOwner;
-import uk.gov.companieshouse.api.psc.SuperSecure;
+import uk.gov.companieshouse.api.psc.*;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
@@ -80,6 +73,31 @@ public class CompanyPscController {
             SuperSecure superSecure =
                     pscService.getSuperSecurePsc(companyNumber, notificationId);
             return new ResponseEntity<>(superSecure, HttpStatus.OK);
+        } catch (ResourceNotFoundException resourceNotFoundException) {
+            LOGGER.error(resourceNotFoundException.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (DataAccessException exception) {
+            LOGGER.error(exception.getMessage());
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    /**
+     * Get the data object for given company profile number.
+     *
+     * @param companyNumber The number of the company
+     * @return ResponseEntity
+     */
+    @GetMapping("super-secure-beneficial-owner/{notification_id}")
+    public ResponseEntity<SuperSecureBeneficialOwner> getSuperSecureBeneficialOwnerPscData(
+            @PathVariable("company_number") String companyNumber,
+            @PathVariable("notification_id") String notificationId) {
+        LOGGER.info(String.format("Getting PSC data with company number %s", companyNumber));
+        try {
+            LOGGER.info(String.format("Retrieving PSC with company number %s", companyNumber));
+            SuperSecureBeneficialOwner superSecureBeneficialOwner =
+                    pscService.getSuperSecureBeneficialOwnerPsc(companyNumber, notificationId);
+            return new ResponseEntity<>(superSecureBeneficialOwner, HttpStatus.OK);
         } catch (ResourceNotFoundException resourceNotFoundException) {
             LOGGER.error(resourceNotFoundException.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
