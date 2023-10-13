@@ -11,8 +11,6 @@ Feature: Get super secure beneficial owner
       | company_number | notificationId              | result                                     |
       | 34777776       | ZfTs9WeeqpXTqf6dc6FZ4C0H0ZX | Super_secure_BO_get_request_result         |
 
-
-
   Scenario Outline: Get super secure beneficial owner when sending get request without Eric headers
 
     Given Psc data api service is running

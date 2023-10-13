@@ -286,7 +286,7 @@ public class CompanyPscTransformer {
 
 
             superSecureBeneficialOwner.setDescription(SuperSecureBeneficialOwner
-                    .DescriptionEnum.SUPER_SECURE_SUPER_SECURE_BENEFICIAL_OWNERS);
+                    .DescriptionEnum.SUPER_SECURE_BENEFICIAL_OWNER);
 
             if (pscDocument.getData().getCeased() != null) {
                 superSecureBeneficialOwner.setCeased(pscDocument.getData().getCeased());
