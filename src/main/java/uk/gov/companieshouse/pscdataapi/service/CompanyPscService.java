@@ -12,7 +12,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 import uk.gov.companieshouse.api.InternalApiClient;
 import uk.gov.companieshouse.api.exception.ResourceNotFoundException;
-import uk.gov.companieshouse.api.psc.*;
+import uk.gov.companieshouse.api.psc.CorporateEntity;
+import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
+import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
+import uk.gov.companieshouse.api.psc.Individual;
+import uk.gov.companieshouse.api.psc.IndividualBeneficialOwner;
+import uk.gov.companieshouse.api.psc.LegalPerson;
+import uk.gov.companieshouse.api.psc.LegalPersonBeneficialOwner;
+import uk.gov.companieshouse.api.psc.SuperSecure;
+import uk.gov.companieshouse.api.psc.SuperSecureBeneficialOwner;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
@@ -166,7 +174,8 @@ public class CompanyPscService {
 
     /** Get PSC record. */
     /** and transform it into Super Secure Beneficial Owner.*/
-    public SuperSecureBeneficialOwner getSuperSecureBeneficialOwnerPsc(String companyNumber, String notificationId) {
+    public SuperSecureBeneficialOwner getSuperSecureBeneficialOwnerPsc(
+            String companyNumber, String notificationId) {
 
         try {
             Optional<PscDocument> pscDocument =
@@ -178,7 +187,8 @@ public class CompanyPscService {
                         "SuperSecureBeneficialOwner PSC document not found in Mongo with id "
                                 + notificationId);
             }
-            SuperSecureBeneficialOwner superSecureBeneficialOwner = transformer.transformPscDocToSuperSecureBeneficialOwner(pscDocument);
+            SuperSecureBeneficialOwner superSecureBeneficialOwner =
+                    transformer.transformPscDocToSuperSecureBeneficialOwner(pscDocument);
             if (superSecureBeneficialOwner == null) {
                 throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
                         "Failed to transform PSCDocument to SuperSecureBeneficialOwner");
