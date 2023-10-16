@@ -20,6 +20,7 @@ import uk.gov.companieshouse.api.psc.LegalPerson;
 import uk.gov.companieshouse.api.psc.LegalPersonBeneficialOwner;
 import uk.gov.companieshouse.api.psc.SensitiveData;
 import uk.gov.companieshouse.api.psc.SuperSecure;
+import uk.gov.companieshouse.api.psc.SuperSecureBeneficialOwner;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.data.IndividualPscRoles;
 import uk.gov.companieshouse.pscdataapi.data.SecurePscRoles;
@@ -267,6 +268,49 @@ public class CompanyPscTransformer {
             return superSecure;
         } else {
             logger.error("Skipped transforming pscDoc to SuperSecure");
+            throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,"PscDocument not found");
+        }
+    }
+
+    /**
+     * Transform Super Secure Beneficial Owner PSC.
+     * @param optionalPscDocument PSC.
+     * @return PSC mongo Document.
+     */
+
+    public SuperSecureBeneficialOwner transformPscDocToSuperSecureBeneficialOwner(
+            Optional<PscDocument> optionalPscDocument) throws TransformerException {
+
+        logger.info("Attempting to transform pscDocument to SuperSecureBeneficialOwner");
+
+        if (optionalPscDocument.isPresent()) {
+            PscDocument pscDocument = optionalPscDocument.get();
+
+            SuperSecureBeneficialOwner superSecureBeneficialOwner =
+                    new SuperSecureBeneficialOwner();
+
+            if (pscDocument.getData().getEtag() != null) {
+                superSecureBeneficialOwner.setEtag(pscDocument.getData().getEtag());
+            }
+
+            superSecureBeneficialOwner
+                    .setKind(SuperSecureBeneficialOwner.KindEnum.SUPER_SECURE_BENEFICIAL_OWNER);
+
+
+            superSecureBeneficialOwner.setDescription(SuperSecureBeneficialOwner
+                    .DescriptionEnum.SUPER_SECURE_BENEFICIAL_OWNER);
+
+            if (pscDocument.getData().getCeased() != null) {
+                superSecureBeneficialOwner.setCeased(pscDocument.getData().getCeased());
+            }
+
+            if (pscDocument.getData().getLinks() != null) {
+                superSecureBeneficialOwner.setLinks(pscDocument.getData().getLinks());
+            }
+
+            return superSecureBeneficialOwner;
+        } else {
+            logger.error("Skipped transforming pscDoc to SuperSecureBeneficialOwner");
             throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,"PscDocument not found");
         }
     }

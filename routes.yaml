@@ -10,6 +10,6 @@ routes:
   6: ^/company/(.*)/persons-with-significant-control/legal-person/(.*)
   7: ^/company/(.*)/persons-with-significant-control/corporate-entity/(.*)
   8: ^/company/(.*)/persons-with-significant-control/super-secure/(.*)
-
   9: ^/company/(.*)/persons-with-significant-control/legal-person-beneficial-owner/(.*)
+  10: ^/company/(.*)/persons-with-significant-control/super-secure-beneficial-owner/(.*)
 
