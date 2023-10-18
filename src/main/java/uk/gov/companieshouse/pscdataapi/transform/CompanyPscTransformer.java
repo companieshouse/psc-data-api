@@ -129,10 +129,33 @@ public class CompanyPscTransformer {
                 individual.setLinks(pscDocument.getData().getLinks());
             }
 
-            Optional<PscSensitiveData> sensitiveDateOptional = Optional.ofNullable(pscDocument.getSensitiveData());
-            Optional<DateOfBirth> dateOfBirthOptional = sensitiveDateOptional.map(PscSensitiveData::getDateOfBirth);
-            DateOfBirth dateOfBirth = dateOfBirthOptional.map(dob -> mapDateOfBirth(dob, registerView)).orElse(null);
-            individual.setDateOfBirth(dateOfBirth);
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            if (pscDocument.getSensitiveData().getDateOfBirth() != null) {
+                DateOfBirth dateOfBirthValues = new DateOfBirth();
+
+                if (pscDocument.getSensitiveData().getDateOfBirth().getDay() != null) {
+                    dateOfBirthValues.setDay(pscDocument.getSensitiveData().getDateOfBirth().getDay());
+                }
+
+                if (pscDocument.getSensitiveData().getDateOfBirth().getMonth() != null) {
+                    dateOfBirthValues.setMonth(pscDocument.getSensitiveData().getDateOfBirth().getMonth());
+                }
+
+                if (pscDocument.getSensitiveData().getDateOfBirth().getYear() != null) {
+                    dateOfBirthValues.setYear(pscDocument.getSensitiveData().getDateOfBirth().getYear());
+                }
+                DateOfBirth dateOfBirth = Optional.of(dateOfBirthValues).map(dob -> mapDateOfBirth(dob, registerView)).orElse(null);
+
+                individual.setDateOfBirth(dateOfBirth);
+            }
+
+
+
+//            Optional<PscSensitiveData> sensitiveDateOptional = Optional.ofNullable(pscDocument.getSensitiveData());
+//            Optional<DateOfBirth> dateOfBirthOptional = sensitiveDateOptional.map(PscSensitiveData::getDateOfBirth);
+//            DateOfBirth dateOfBirth = dateOfBirthOptional.map(dob -> mapDateOfBirth(dob, registerView)).orElse(null);
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
             return individual;
         } else {

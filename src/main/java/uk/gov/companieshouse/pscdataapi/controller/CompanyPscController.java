@@ -4,14 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import uk.gov.companieshouse.api.exception.ResourceNotFoundException;
 import uk.gov.companieshouse.api.psc.CorporateEntity;
 import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
@@ -172,14 +165,15 @@ public class CompanyPscController {
     @GetMapping("individual/{notification_id}")
     public ResponseEntity<Individual> getIndividualPscData(
             @PathVariable("company_number") String companyNumber,
-            @PathVariable("notification_id") String notificationId) {
+            @PathVariable("notification_id") String notificationId,
+            @RequestParam(required = false, name = "register_view") Boolean registerView) {
         LOGGER.info(String.format("Getting PSC data with company number %s", companyNumber));
         try {
 
             LOGGER.info(String.format(
                     "Retrieving PSC with company number %s",
                     companyNumber));
-            Individual individual = pscService.getIndividualPsc(companyNumber , notificationId);
+            Individual individual = pscService.getIndividualPsc(companyNumber , notificationId , registerView);
             return new ResponseEntity<>(individual, HttpStatus.OK);
         } catch (ResourceNotFoundException resourceNotFoundException) {
             LOGGER.error(resourceNotFoundException.getMessage());
