@@ -52,7 +52,7 @@ public class CompanyPscTransformer {
      * @param optionalPscDocument PSC.
      * @return PSC mongo Document.
      */
-    public Individual transformPscDocToIndividual(Optional<PscDocument> optionalPscDocument)
+    public Individual transformPscDocToIndividual(Optional<PscDocument> optionalPscDocument, Boolean registerView)
             throws TransformerException {
 
         logger.info("Attempting to transform pscDocument to individual");
@@ -128,12 +128,25 @@ public class CompanyPscTransformer {
             if (pscDocument.getData().getLinks() != null) {
                 individual.setLinks(pscDocument.getData().getLinks());
             }
+
+            Optional<PscSensitiveData> sensitiveDateOptional = Optional.ofNullable(pscDocument.getSensitiveData());
+            Optional<DateOfBirth> dateOfBirthOptional = sensitiveDateOptional.map(PscSensitiveData::getDateOfBirth);
+            DateOfBirth dateOfBirth = dateOfBirthOptional.map(dob -> mapDateOfBirth(dob, registerView)).orElse(null);
+            individual.setDateOfBirth(dateOfBirth);
+
             return individual;
         } else {
             logger.error("Skipped transforming pscDoc to individual");
             throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,"PscDocument not found");
         }
 
+    }
+
+    private DateOfBirth mapDateOfBirth(DateOfBirth dob, Boolean registerView) {
+        if(registerView == false){
+            dob.setDay(null);
+        }
+        return dob;
     }
 
     /**
