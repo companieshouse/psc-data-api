@@ -144,12 +144,12 @@ public class CompanyPscTransformer {
                 if (pscDocument.getSensitiveData().getDateOfBirth().getYear() != null) {
                     dateOfBirthValues.setYear(pscDocument.getSensitiveData().getDateOfBirth().getYear());
                 }
-                DateOfBirth dateOfBirth = Optional.of(dateOfBirthValues).map(dob -> mapDateOfBirth(dob, registerView)).orElse(null);
 
-                individual.setDateOfBirth(dateOfBirth);
+                //DateOfBirth dateOfBirth = Optional.of(dateOfBirthValues).map(dob -> mapDateOfBirth(dob, registerView)).orElse(null);
+                dateOfBirthValues = mapDateOfBirth(dateOfBirthValues,registerView);
+
+                individual.setDateOfBirth(dateOfBirthValues);
             }
-
-
 
 //            Optional<PscSensitiveData> sensitiveDateOptional = Optional.ofNullable(pscDocument.getSensitiveData());
 //            Optional<DateOfBirth> dateOfBirthOptional = sensitiveDateOptional.map(PscSensitiveData::getDateOfBirth);
