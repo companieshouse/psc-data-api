@@ -19,6 +19,7 @@ import uk.gov.companieshouse.api.psc.Individual;
 import uk.gov.companieshouse.api.psc.IndividualBeneficialOwner;
 import uk.gov.companieshouse.api.psc.LegalPerson;
 import uk.gov.companieshouse.api.psc.LegalPersonBeneficialOwner;
+import uk.gov.companieshouse.api.psc.ListSummary;
 import uk.gov.companieshouse.api.psc.SuperSecure;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
@@ -341,5 +342,32 @@ public class CompanyPscService {
             throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
                     "Unexpected error occurred while fetching PSC document");
         }
+    }
+
+    /** Get PSC record. */
+    /** and transform it into an List Summary PSC.*/
+    public ListSummary getListSummaryPsc(String companyNumber) {
+        try {
+            Optional<PscDocument> pscDocument =
+                    repository.findById(companyNumber);
+
+            if (pscDocument.isEmpty()) {
+                throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
+                        "ListSummary PSC document not found in Mongo with id"
+                                + companyNumber);
+            }
+            ListSummary listSummary =
+                    transformer.transformPscDocToListSummary(pscDocument);
+            if (listSummary == null) {
+                throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
+                        "Failed to transform PSCDocument to Legal Person Beneficial Owner");
+            }
+            return listSummary;
+        } catch (Exception exception) {
+            logger.error(exception.getMessage());
+            throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
+                    "Unexpected error occurred while fetching PSC document");
+        }
+
     }
 }

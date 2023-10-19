@@ -39,6 +39,8 @@ class CompanyPscControllerTest {
     private static final String PUT_URL =
             "/company/123456789/persons-with-significant-control/123456789/full_record";
 
+    private static final String GET_List_Summary_URL =
+            "/company/123456789/persons-with-significant-control/";
     private static final String GET_URL =
             "/company/123456789/persons-with-significant-control/individual/123456789";
 
@@ -88,6 +90,8 @@ class CompanyPscControllerTest {
 
     private LegalPerson legalPerson;
     private LegalPersonBeneficialOwner legalPersonBeneficialOwner;
+
+    private ListSummary listSummary;
 
     private String dateString;
 
@@ -667,6 +671,70 @@ class CompanyPscControllerTest {
         verify(companyPscService).getLegalPersonBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID);
 
     }
+
+    @Test
+    @DisplayName(
+            "GET request returns a 200 response when List Summary PSC found")
+    void getListSummaryPSCFound() throws Exception {
+        when(companyPscService
+                .getListSummaryPsc(MOCK_COMPANY_NUMBER))
+                .thenReturn(listSummary);
+
+        mockMvc.perform(get(GET_List_Summary_URL)
+                        .header("ERIC-Identity", "SOME_IDENTITY")
+                        .header("ERIC-Identity-Type", "key")
+                        .contentType(APPLICATION_JSON)
+                        .header("x-request-id", "123456")
+                        .header("ERIC-Authorised-Key-Roles", "*")
+                        .header("ERIC-Authorised-Key-Privileges", "internal-app"))
+                .andExpect(status().isOk());
+
+        verify(companyPscService).getListSummaryPsc(MOCK_COMPANY_NUMBER);
+
+    }
+
+    @Test
+    @DisplayName(
+            "GET request returns a 503 response when service is unavailable")
+    void getListSummaryPSCDocumentWhenServiceIsDown() throws Exception {
+        when(companyPscService
+                .getListSummaryPsc(MOCK_COMPANY_NUMBER))
+                .thenThrow(ServiceUnavailableException.class);
+
+        mockMvc.perform(get(GET_List_Summary_URL)
+                        .header("ERIC-Identity", "SOME_IDENTITY")
+                        .header("ERIC-Identity-Type", "key")
+                        .contentType(APPLICATION_JSON)
+                        .header("x-request-id", "123456")
+                        .header("ERIC-Authorised-Key-Roles", "*")
+                        .header("ERIC-Authorised-Key-Privileges", "internal-app"))
+                .andExpect(status().isInternalServerError());
+
+        verify(companyPscService).getListSummaryPsc(MOCK_COMPANY_NUMBER);
+
+    }
+
+    @Test
+    @DisplayName(
+            "GET request returns a 404 response when Resource is not found")
+    void getListSummaryPSCDocumentWhenResourceNotFound() throws Exception {
+        when(companyPscService
+                .getListSummaryPsc(MOCK_COMPANY_NUMBER))
+                .thenThrow(ResourceNotFoundException.class);
+
+        mockMvc.perform(get(GET_List_Summary_URL)
+                        .header("ERIC-Identity", "SOME_IDENTITY")
+                        .header("ERIC-Identity-Type", "key")
+                        .contentType(APPLICATION_JSON)
+                        .header("x-request-id", "123456")
+                        .header("ERIC-Authorised-Key-Roles", "*")
+                        .header("ERIC-Authorised-Key-Privileges", "internal-app"))
+                .andExpect(status().isNotFound());
+
+        verify(companyPscService).getListSummaryPsc(MOCK_COMPANY_NUMBER);
+
+    }
+
 
 
 

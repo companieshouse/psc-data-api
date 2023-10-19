@@ -9,6 +9,7 @@ import javax.xml.transform.TransformerException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import uk.gov.companieshouse.api.appointment.PrincipalOfficeAddress;
 import uk.gov.companieshouse.api.exception.ResourceNotFoundException;
 import uk.gov.companieshouse.api.psc.CorporateEntity;
 import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
@@ -18,6 +19,7 @@ import uk.gov.companieshouse.api.psc.Individual;
 import uk.gov.companieshouse.api.psc.IndividualBeneficialOwner;
 import uk.gov.companieshouse.api.psc.LegalPerson;
 import uk.gov.companieshouse.api.psc.LegalPersonBeneficialOwner;
+import uk.gov.companieshouse.api.psc.ListSummary;
 import uk.gov.companieshouse.api.psc.SensitiveData;
 import uk.gov.companieshouse.api.psc.SuperSecure;
 import uk.gov.companieshouse.logging.Logger;
@@ -729,6 +731,174 @@ public class CompanyPscTransformer {
             logger.error("Skipped transforming pscDoc to Legal Person");
             throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,"PscDocument not found");
         }
+
+
+    }
+
+    /**
+     * Transform List Summary.
+     * @param optionalPscDocument PSC.
+     * @return PSC mongo Document.
+     */
+    public ListSummary transformPscDocToListSummary(Optional<PscDocument> optionalPscDocument) {
+        logger.info("Attempting to transform pscDocument to ListSummary");
+
+        if (optionalPscDocument.isPresent()) {
+            PscDocument pscDocument = optionalPscDocument.get();
+            ListSummary listSummary =
+                    new ListSummary();
+            if (pscDocument.getData().getEtag() != null) {
+                listSummary.setEtag(pscDocument.getData().getEtag());
+            }
+            if (pscDocument.getDeltaAt() != null) {
+                listSummary.setNotifiedOn(LocalDate
+                        .parse(pscDocument.getDeltaAt(),dateTimeFormatter));
+            }
+
+            listSummary.setKind(listSummary.getKind());
+
+            if (pscDocument.getData().getName() != null) {
+                listSummary.setName(pscDocument.getData().getName());
+            }
+            if (pscDocument.getData().getNameElements() != null) {
+                NameElements nameElements = new NameElements();
+                if (pscDocument.getData().getNameElements().getTitle() != null) {
+                    nameElements.setTitle(pscDocument.getData().getNameElements().getTitle());
+                }
+                if (pscDocument.getData().getNameElements().getForename() != null) {
+                    nameElements.setForename(pscDocument.getData().getNameElements().getForename());
+                }
+                if (pscDocument.getData().getNameElements().getMiddleName() != null) {
+                    nameElements.setMiddleName(pscDocument.getData()
+                            .getNameElements().getMiddleName());
+                }
+                if (pscDocument.getData().getNameElements().getSurname() != null) {
+                    nameElements.setSurname(pscDocument.getData().getNameElements().getSurname());
+                }
+                listSummary.setNameElements(nameElements);
+            }
+            if (pscDocument.getData().getAddress() != null) {
+                Address address = new Address();
+
+                if (pscDocument.getData().getAddress().getAddressLine1() != null) {
+                    address.setAddressLine1(pscDocument.getData().getAddress().getAddressLine1());
+                }
+                if (pscDocument.getData().getAddress().getAddressLine2() != null) {
+                    address.setAddressLine2(pscDocument.getData().getAddress().getAddressLine2());
+                }
+                if (pscDocument.getData().getAddress().getCountry() != null) {
+                    address.setCountry(pscDocument.getData().getAddress().getCountry());
+                }
+                if (pscDocument.getData().getAddress().getLocality() != null) {
+                    address.setLocality(pscDocument.getData().getAddress().getLocality());
+                }
+                if (pscDocument.getData().getAddress().getPostalCode() != null) {
+                    address.setPostalCode(pscDocument.getData().getAddress().getPostalCode());
+                }
+                if (pscDocument.getData().getAddress().getPremises() != null) {
+                    address.setPremises(pscDocument.getData().getAddress().getPremises());
+                }
+                if (pscDocument.getData().getAddress().getRegion() != null) {
+                    address.setRegion(pscDocument.getData().getAddress().getRegion());
+                }
+                if (pscDocument.getData().getAddress().getCareOf() != null) {
+                    address.setCareOf(pscDocument.getData().getAddress().getCareOf());
+                }
+                if (pscDocument.getData().getAddress().getPoBox() != null) {
+                    address.setPoBox(pscDocument.getData().getAddress().getPoBox());
+                }
+                listSummary.setAddress(address);
+            }
+            if (pscDocument.getData().getNaturesOfControl() != null) {
+                listSummary
+                        .setNaturesOfControl(pscDocument.getData().getNaturesOfControl());
+            }
+            if (pscDocument.getData().getLinks() != null) {
+                listSummary.setLinks(pscDocument.getData().getLinks());
+            }
+            //more fields
+            if (pscDocument.getIdentification() != null) {
+                Identification identification = new Identification();
+                if (pscDocument.getIdentification().getCountryRegistered() != null) {
+                    identification.setCountryRegistered(
+                            pscDocument.getIdentification().getCountryRegistered());
+                }
+                if (pscDocument.getIdentification().getLegalAuthority() != null) {
+                    identification.setLegalAuthority(
+                            pscDocument.getIdentification().getLegalAuthority());
+                }
+                if (pscDocument.getIdentification().getLegalForm() != null) {
+                    identification.setLegalForm(
+                            pscDocument.getIdentification().getLegalForm());
+                }
+                if (pscDocument.getIdentification().getPlaceRegistered() != null) {
+                    identification.setPlaceRegistered(
+                            pscDocument.getIdentification().getPlaceRegistered());
+                }
+                if (pscDocument.getIdentification().getRegistrationNumber() != null) {
+                    identification.setRegistrationNumber(
+                            pscDocument.getIdentification().getRegistrationNumber());
+                }
+                listSummary.setIdentification(identification);
+            }
+            if (pscDocument.getData().getCeasedOn() != null) {
+                listSummary.setCeasedOn(pscDocument.getData().getCeasedOn());
+            }
+            if (pscDocument.getData().getSanctioned() != null) {
+                listSummary.setIsSanctioned(pscDocument.getData().getSanctioned());
+            }
+            if (pscDocument.getData().getNationality() != null) {
+                listSummary.setNationality(pscDocument.getData().getNationality());
+            }
+            if (pscDocument.getData().getCountryOfResidence() != null) {
+                listSummary.setCountryOfResidence(pscDocument.getData().getCountryOfResidence());
+            }
+            if (pscDocument.getData().getDescription() != null) {
+                listSummary.setDescription(
+                        ListSummary.DescriptionEnum.SUPER_SECURE_PERSONS_WITH_SIGNIFICANT_CONTROL);
+            }
+            PrincipalOfficeAddress principalOfficeAddress = new PrincipalOfficeAddress();
+
+            if (pscDocument.getData().getAddress().getAddressLine1() != null) {
+                principalOfficeAddress.setAddressLine1(
+                        pscDocument.getData().getAddress().getAddressLine1());
+            }
+            if (pscDocument.getData().getAddress().getAddressLine2() != null) {
+                principalOfficeAddress.setAddressLine2(
+                        pscDocument.getData().getAddress().getAddressLine2());
+            }
+            if (pscDocument.getData().getAddress().getCountry() != null) {
+                principalOfficeAddress.setCountry(pscDocument.getData().getAddress().getCountry());
+            }
+            if (pscDocument.getData().getAddress().getLocality() != null) {
+                principalOfficeAddress.setLocality(
+                        pscDocument.getData().getAddress().getLocality());
+            }
+            if (pscDocument.getData().getAddress().getPostalCode() != null) {
+                principalOfficeAddress.setPostalCode(
+                        pscDocument.getData().getAddress().getPostalCode());
+            }
+            if (pscDocument.getData().getAddress().getPremises() != null) {
+                principalOfficeAddress
+                        .setPremises(pscDocument.getData().getAddress().getPremises());
+            }
+            if (pscDocument.getData().getAddress().getRegion() != null) {
+                principalOfficeAddress.setRegion(pscDocument.getData().getAddress().getRegion());
+            }
+            if (pscDocument.getData().getAddress().getCareOf() != null) {
+                principalOfficeAddress.setCareOf(pscDocument.getData().getAddress().getCareOf());
+            }
+            if (pscDocument.getData().getAddress().getPoBox() != null) {
+                principalOfficeAddress.setPoBox(pscDocument.getData().getAddress().getPoBox());
+            }
+            listSummary.setPrincipalOfficeAddress(principalOfficeAddress);
+
+            return listSummary;
+        } else {
+            logger.error("Skipped transforming pscDoc to ListSummary");
+            throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,"PscDocument not found");
+        }
+
 
 
     }

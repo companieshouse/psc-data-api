@@ -20,6 +20,7 @@ import uk.gov.companieshouse.api.psc.Individual;
 import uk.gov.companieshouse.api.psc.IndividualBeneficialOwner;
 import uk.gov.companieshouse.api.psc.LegalPerson;
 import uk.gov.companieshouse.api.psc.LegalPersonBeneficialOwner;
+import uk.gov.companieshouse.api.psc.ListSummary;
 import uk.gov.companieshouse.api.psc.SuperSecure;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
@@ -256,6 +257,31 @@ public class CompanyPscController {
             LegalPersonBeneficialOwner legalPersonBeneficialOwner =
                     pscService.getLegalPersonBeneficialOwnerPsc(companyNumber, notificationId);
             return new ResponseEntity<>(legalPersonBeneficialOwner, HttpStatus.OK);
+        } catch (ResourceNotFoundException resourceNotFoundException) {
+            LOGGER.error(resourceNotFoundException.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (DataAccessException exception) {
+            LOGGER.error(exception.getMessage());
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+
+    /**
+     * Get the data object for given company profile number.
+     *
+     * @param companyNumber The number of the company
+     * @return ResponseEntity
+     */
+    @GetMapping()
+    public ResponseEntity<ListSummary> getLegalPersonBeneficialOwnerPscData(
+            @PathVariable("company_number") String companyNumber) {
+        LOGGER.info(String.format("Getting PSC data with company number %s", companyNumber));
+        try {
+            LOGGER.info(String.format("Retrieving PSC with company number %s", companyNumber));
+            ListSummary listSummary =
+                    pscService.getListSummaryPsc(companyNumber);
+            return new ResponseEntity<>(listSummary, HttpStatus.OK);
         } catch (ResourceNotFoundException resourceNotFoundException) {
             LOGGER.error(resourceNotFoundException.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
