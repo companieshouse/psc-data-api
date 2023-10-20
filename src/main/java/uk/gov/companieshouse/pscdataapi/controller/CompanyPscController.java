@@ -4,24 +4,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import uk.gov.companieshouse.api.exception.ResourceNotFoundException;
-import uk.gov.companieshouse.api.psc.CorporateEntity;
-import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
-import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
-import uk.gov.companieshouse.api.psc.Individual;
-import uk.gov.companieshouse.api.psc.IndividualBeneficialOwner;
-import uk.gov.companieshouse.api.psc.LegalPerson;
-import uk.gov.companieshouse.api.psc.LegalPersonBeneficialOwner;
-import uk.gov.companieshouse.api.psc.ListSummary;
-import uk.gov.companieshouse.api.psc.SuperSecure;
+import uk.gov.companieshouse.api.psc.*;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
@@ -273,15 +258,22 @@ public class CompanyPscController {
      * @param companyNumber The number of the company
      * @return ResponseEntity
      */
-    @GetMapping()
-    public ResponseEntity<ListSummary> getLegalPersonBeneficialOwnerPscData(
-            @PathVariable("company_number") String companyNumber) {
-        LOGGER.info(String.format("Getting PSC data with company number %s", companyNumber));
+    @GetMapping("")
+    public ResponseEntity<PscList> searchPscListSummary(
+            @PathVariable String company_number,
+            @RequestParam(value = "items_per_page", required = false, defaultValue = "25") Integer itemsPerPage,
+            @RequestParam(value = "start_index", required = false, defaultValue = "0") final Integer startIndex,
+            @RequestParam(value = "register_view", required = false) boolean registerView) {
+        itemsPerPage = Math.min(itemsPerPage, 100);
         try {
-            LOGGER.info(String.format("Retrieving PSC with company number %s", companyNumber));
-            ListSummary listSummary =
-                    pscService.getListSummaryPsc(companyNumber);
-            return new ResponseEntity<>(listSummary, HttpStatus.OK);
+            LOGGER.info(String.format("Retrieving psc list data for company number %s, start index %d, items per page %d", company_number,
+                    startIndex,
+                    itemsPerPage));
+            PscList pscList = pscService.retrievePscListSummaryFromDb(company_number,
+                    startIndex,
+                    registerView,
+                    itemsPerPage);
+            return new ResponseEntity<>(pscList, HttpStatus.OK);
         } catch (ResourceNotFoundException resourceNotFoundException) {
             LOGGER.error(resourceNotFoundException.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -290,5 +282,6 @@ public class CompanyPscController {
             return ResponseEntity.internalServerError().build();
         }
     }
+
 
 }

@@ -5,6 +5,8 @@ import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -12,15 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import uk.gov.companieshouse.api.InternalApiClient;
 import uk.gov.companieshouse.api.exception.ResourceNotFoundException;
-import uk.gov.companieshouse.api.psc.CorporateEntity;
-import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
-import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
-import uk.gov.companieshouse.api.psc.Individual;
-import uk.gov.companieshouse.api.psc.IndividualBeneficialOwner;
-import uk.gov.companieshouse.api.psc.LegalPerson;
-import uk.gov.companieshouse.api.psc.LegalPersonBeneficialOwner;
-import uk.gov.companieshouse.api.psc.ListSummary;
-import uk.gov.companieshouse.api.psc.SuperSecure;
+import uk.gov.companieshouse.api.psc.*;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
@@ -344,30 +338,49 @@ public class CompanyPscService {
         }
     }
 
-    /** Get PSC record. */
-    /** and transform it into an List Summary PSC.*/
-    public ListSummary getListSummaryPsc(String companyNumber) {
-        try {
-            Optional<PscDocument> pscDocument =
-                    repository.findById(companyNumber);
 
-            if (pscDocument.isEmpty()) {
-                throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
-                        "ListSummary PSC document not found in Mongo with id"
-                                + companyNumber);
-            }
-            ListSummary listSummary =
-                    transformer.transformPscDocToListSummary(pscDocument);
-            if (listSummary == null) {
-                throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
-                        "Failed to transform PSCDocument to Legal Person Beneficial Owner");
-            }
-            return listSummary;
-        } catch (Exception exception) {
-            logger.error(exception.getMessage());
-            throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
-                    "Unexpected error occurred while fetching PSC document");
+    public PscList retrievePscListSummaryFromDb (String companyNumber, Integer startIndex,
+                                                 boolean registerView, Integer itemsPerPage) {
+
+        if (registerView) {
+            return retrievePscDocumentListFromDbRegisterView(companyNumber, startIndex, itemsPerPage);
         }
+
+        Optional<List<PscDocument>> PscDocumentListOptional = repository.getPscDocumentList(companyNumber, startIndex, itemsPerPage);
+        List<PscDocument> pscDocuments = PscDocumentListOptional.filter(docs -> !docs.isEmpty()).orElseThrow(() ->
+                new ResourceNotFoundException(HttpStatus.NOT_FOUND, String.format(
+                        "Resource not found for company number: %s", companyNumber)));
+
+        return createPscDocumentList(pscDocuments, startIndex, itemsPerPage, companyNumber, registerView);
+
+
+    }
+
+    private PscList retrievePscDocumentListFromDbRegisterView(String companyNumber, Integer startIndex, Integer itemsPerPage) {
+        logger.info(String.format("In register view for company number: %s", companyNumber));
+
+        Optional<List<PscDocument>> PscListOptional = repository.getListSummaryRegisterView(companyNumber, startIndex,
+                 itemsPerPage);
+        List<PscDocument> pscStatementDocuments = PscListOptional.filter(docs -> !docs.isEmpty()).orElseThrow(() ->
+                new ResourceNotFoundException(HttpStatus.NOT_FOUND, String.format(
+                        "Resource not found for company number: %s", companyNumber)));
+
+        return createPscDocumentList(pscStatementDocuments, startIndex, itemsPerPage, companyNumber, true);
+
+    }
+
+    private PscList createPscDocumentList(List<PscDocument> pscDocuments,
+                                          Integer startIndex, Integer itemsPerPage,
+                                          String companyNumber, boolean registerView) {
+        PscList pscList = new PscList();
+
+        List<ListSummary> documents = pscDocuments.stream().map(PscDocument::getData).collect(Collectors.toList());
+
+        pscList.setItemsPerPage(itemsPerPage);
+        pscList.setStartIndex(startIndex);
+
+        pscList.setItems(documents);
+        return pscList;
 
     }
 }
