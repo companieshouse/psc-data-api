@@ -6,7 +6,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import uk.gov.companieshouse.api.exception.ResourceNotFoundException;
-import uk.gov.companieshouse.api.psc.*;
+import uk.gov.companieshouse.api.psc.CorporateEntity;
+import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
+import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
+import uk.gov.companieshouse.api.psc.Individual;
+import uk.gov.companieshouse.api.psc.IndividualBeneficialOwner;
+import uk.gov.companieshouse.api.psc.LegalPerson;
+import uk.gov.companieshouse.api.psc.LegalPersonBeneficialOwner;
+import uk.gov.companieshouse.api.psc.SuperSecure;
+import uk.gov.companieshouse.api.psc.SuperSecureBeneficialOwner;
+import uk.gov.companieshouse.api.psc.PscList;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
@@ -255,7 +264,7 @@ public class CompanyPscController {
     /**
      * Get the data object for given company profile number.
      *
-     * @param companyNumber The number of the company
+     * @param company_number The number of the company
      * @return ResponseEntity
      */
     @GetMapping("")

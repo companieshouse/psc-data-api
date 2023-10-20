@@ -14,7 +14,17 @@ import org.springframework.transaction.annotation.Transactional;
 
 import uk.gov.companieshouse.api.InternalApiClient;
 import uk.gov.companieshouse.api.exception.ResourceNotFoundException;
-import uk.gov.companieshouse.api.psc.*;
+import uk.gov.companieshouse.api.psc.CorporateEntity;
+import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
+import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
+import uk.gov.companieshouse.api.psc.Individual;
+import uk.gov.companieshouse.api.psc.IndividualBeneficialOwner;
+import uk.gov.companieshouse.api.psc.LegalPerson;
+import uk.gov.companieshouse.api.psc.LegalPersonBeneficialOwner;
+import uk.gov.companieshouse.api.psc.ListSummary;
+import uk.gov.companieshouse.api.psc.SuperSecure;
+import uk.gov.companieshouse.api.psc.SuperSecureBeneficialOwner;
+import uk.gov.companieshouse.api.psc.PscList;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
