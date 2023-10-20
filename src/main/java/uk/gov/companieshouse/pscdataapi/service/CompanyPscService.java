@@ -177,6 +177,35 @@ public class CompanyPscService {
     }
 
     /** Get PSC record. */
+    /** and transform it into Super Secure Beneficial Owner.*/
+    public SuperSecureBeneficialOwner getSuperSecureBeneficialOwnerPsc(
+            String companyNumber, String notificationId) {
+
+        try {
+            Optional<PscDocument> pscDocument =
+                    repository.getPscByCompanyNumberAndId(companyNumber, notificationId)
+                            .filter(document -> document.getData().getKind()
+                                    .equals("super-secure-beneficial-owner"));
+            if (pscDocument.isEmpty()) {
+                throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
+                        "SuperSecureBeneficialOwner PSC document not found in Mongo with id "
+                                + notificationId);
+            }
+            SuperSecureBeneficialOwner superSecureBeneficialOwner =
+                    transformer.transformPscDocToSuperSecureBeneficialOwner(pscDocument);
+            if (superSecureBeneficialOwner == null) {
+                throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
+                        "Failed to transform PSCDocument to SuperSecureBeneficialOwner");
+            }
+            return superSecureBeneficialOwner;
+        } catch (Exception exception) {
+            logger.error(exception.getMessage());
+            throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
+                    "Unexpected error occurred while fetching PSC document");
+        }
+    }
+
+    /** Get PSC record. */
     /** and transform it into an individual PSC.*/
     public Individual getIndividualPsc(String companyNumber, String notificationId) {
 

@@ -1,0 +1,10 @@
+{
+  "ceased": false,
+  "description": "super-secure-beneficial-owner",
+  "etag": "string",
+  "kind": "super-secure-beneficial-owner",
+  "links": {
+    "self": "/company/34777776/persons-with-significant-control/super-secure-beneficial-owner/ZfTs9WeeqpXTqf6dc6FZ4C0H0ZZ",
+    "statement": "string"
+  }
+}

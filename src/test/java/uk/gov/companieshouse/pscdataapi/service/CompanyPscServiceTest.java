@@ -363,6 +363,42 @@ class CompanyPscServiceTest {
             service.getSuperSecurePsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
         });
     }
+
+    @Test
+    public void GetSuperSecureBeneficialOwnerPscReturn200() throws TransformerException {
+        document.getData().setKind("super-secure-beneficial-owner");
+        SuperSecureBeneficialOwner superSecureBeneficialOwner = new SuperSecureBeneficialOwner();
+        when(repository.getPscByCompanyNumberAndId(MOCK_COMPANY_NUMBER,NOTIFICATION_ID)).thenReturn(Optional.of(document));
+        when(transformer.transformPscDocToSuperSecureBeneficialOwner(Optional.of(document)))
+                .thenReturn(superSecureBeneficialOwner);
+
+        SuperSecureBeneficialOwner result = service
+                .getSuperSecureBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
+
+        assertEquals(superSecureBeneficialOwner,result);
+    }
+
+    @Test
+    public void GetSuperSecureBeneficialOwnerPscReturn404() {
+        when(repository.getPscByCompanyNumberAndId(MOCK_COMPANY_NUMBER,NOTIFICATION_ID)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> {
+            service.getSuperSecureBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
+        });
+    }
+
+    @Test
+    public void GetWrongTypeSuperSecureBeneficialOwnerPscReturn404() {
+        when(repository.getPscByCompanyNumberAndId(MOCK_COMPANY_NUMBER,NOTIFICATION_ID)
+                .filter(document -> document.getData().getKind()
+                        .equals("WRONG KIND")))
+                .thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> {
+            service.getSuperSecureBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
+        });
+    }
+
     @Test
     public void GetCorporateEntityPscReturn200() throws TransformerException {
         document.getData().setKind("corporate-entity-person-with-significant-control");
