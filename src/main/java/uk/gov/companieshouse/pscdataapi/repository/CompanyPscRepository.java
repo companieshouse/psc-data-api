@@ -20,8 +20,10 @@ public interface CompanyPscRepository extends MongoRepository<PscDocument, Strin
     Optional<PscDocument> findPscByCompanyNumber(String companyNumber);
 
 
-    Optional<List<PscDocument>> getPscDocumentList(String companyNumber, Integer startIndex, Integer itemsPerPage);
+    Optional<List<PscDocument>> getPscDocumentList(String companyNumber,
+                                                   Integer startIndex, Integer itemsPerPage);
 
 
-    Optional<List<PscDocument>> getListSummaryRegisterView(String companyNumber, Integer startIndex, Integer itemsPerPage);
+    Optional<List<PscDocument>> getListSummaryRegisterView(
+            String companyNumber, Integer startIndex, Integer itemsPerPage);
 }

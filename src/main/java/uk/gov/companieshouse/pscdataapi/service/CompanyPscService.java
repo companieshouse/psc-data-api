@@ -22,9 +22,9 @@ import uk.gov.companieshouse.api.psc.IndividualBeneficialOwner;
 import uk.gov.companieshouse.api.psc.LegalPerson;
 import uk.gov.companieshouse.api.psc.LegalPersonBeneficialOwner;
 import uk.gov.companieshouse.api.psc.ListSummary;
+import uk.gov.companieshouse.api.psc.PscList;
 import uk.gov.companieshouse.api.psc.SuperSecure;
 import uk.gov.companieshouse.api.psc.SuperSecureBeneficialOwner;
-import uk.gov.companieshouse.api.psc.PscList;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
@@ -349,33 +349,43 @@ public class CompanyPscService {
     }
 
 
-    public PscList retrievePscListSummaryFromDb (String companyNumber, Integer startIndex,
+    /** Get PSC List from database. */
+
+    public PscList retrievePscListSummaryFromDb(String companyNumber, Integer startIndex,
                                                  boolean registerView, Integer itemsPerPage) {
 
         if (registerView) {
-            return retrievePscDocumentListFromDbRegisterView(companyNumber, startIndex, itemsPerPage);
+            return retrievePscDocumentListFromDbRegisterView(
+                    companyNumber, startIndex, itemsPerPage);
         }
 
-        Optional<List<PscDocument>> PscDocumentListOptional = repository.getPscDocumentList(companyNumber, startIndex, itemsPerPage);
-        List<PscDocument> pscDocuments = PscDocumentListOptional.filter(docs -> !docs.isEmpty()).orElseThrow(() ->
+        Optional<List<PscDocument>> pscDocumentListOptional =
+                repository.getPscDocumentList(companyNumber, startIndex, itemsPerPage);
+        List<PscDocument> pscDocuments = pscDocumentListOptional
+                .filter(docs -> !docs.isEmpty()).orElseThrow(() ->
                 new ResourceNotFoundException(HttpStatus.NOT_FOUND, String.format(
                         "Resource not found for company number: %s", companyNumber)));
 
-        return createPscDocumentList(pscDocuments, startIndex, itemsPerPage, companyNumber, registerView);
+        return createPscDocumentList(pscDocuments,
+                startIndex, itemsPerPage, companyNumber, registerView);
 
 
     }
 
-    private PscList retrievePscDocumentListFromDbRegisterView(String companyNumber, Integer startIndex, Integer itemsPerPage) {
+    private PscList retrievePscDocumentListFromDbRegisterView(
+            String companyNumber, Integer startIndex, Integer itemsPerPage) {
         logger.info(String.format("In register view for company number: %s", companyNumber));
 
-        Optional<List<PscDocument>> PscListOptional = repository.getListSummaryRegisterView(companyNumber, startIndex,
+        Optional<List<PscDocument>> pscListOptional = repository
+                .getListSummaryRegisterView(companyNumber, startIndex,
                  itemsPerPage);
-        List<PscDocument> pscStatementDocuments = PscListOptional.filter(docs -> !docs.isEmpty()).orElseThrow(() ->
+        List<PscDocument> pscStatementDocuments = pscListOptional
+                .filter(docs -> !docs.isEmpty()).orElseThrow(() ->
                 new ResourceNotFoundException(HttpStatus.NOT_FOUND, String.format(
                         "Resource not found for company number: %s", companyNumber)));
 
-        return createPscDocumentList(pscStatementDocuments, startIndex, itemsPerPage, companyNumber, true);
+        return createPscDocumentList(pscStatementDocuments,
+                startIndex, itemsPerPage, companyNumber, true);
 
     }
 
@@ -384,7 +394,8 @@ public class CompanyPscService {
                                           String companyNumber, boolean registerView) {
         PscList pscList = new PscList();
 
-        List<ListSummary> documents = pscDocuments.stream().map(PscDocument::getData).collect(Collectors.toList());
+        List<ListSummary> documents = pscDocuments.stream()
+                .map(PscDocument::getData).collect(Collectors.toList());
 
         pscList.setItemsPerPage(itemsPerPage);
         pscList.setStartIndex(startIndex);

@@ -735,6 +735,11 @@ public class CompanyPscTransformer {
 
     }
 
+    /**
+     * Transform List Summary.
+     * @param optionalPscDocument PSC.
+     * @return PSC mongo Document.
+     */
     public ListSummary transformPscDocToListSummary(Optional<PscDocument> optionalPscDocument) {
         logger.info("Attempting to transform pscDocument to ListSummary");
 
