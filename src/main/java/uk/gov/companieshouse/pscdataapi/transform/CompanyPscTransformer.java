@@ -151,9 +151,6 @@ public class CompanyPscTransformer {
                 individual.setDateOfBirth(dateOfBirthValues);
             }
 
-//            Optional<PscSensitiveData> sensitiveDateOptional = Optional.ofNullable(pscDocument.getSensitiveData());
-//            Optional<DateOfBirth> dateOfBirthOptional = sensitiveDateOptional.map(PscSensitiveData::getDateOfBirth);
-//            DateOfBirth dateOfBirth = dateOfBirthOptional.map(dob -> mapDateOfBirth(dob, registerView)).orElse(null);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

@@ -46,6 +46,8 @@ class CompanyPscServiceTest {
 
     private static final String MOCK_COMPANY_NUMBER = "1234567";
 
+    private static final Boolean MOCK_REGISTER_VIEW = true;
+
     @Mock
     private Logger logger;
 
@@ -209,9 +211,9 @@ class CompanyPscServiceTest {
         Individual individual = new Individual();
         when(repository.getPscByCompanyNumberAndId(MOCK_COMPANY_NUMBER, NOTIFICATION_ID))
                 .thenReturn(Optional.of(document));
-        when(transformer.transformPscDocToIndividual(Optional.of(document))).thenReturn(individual);
+        when(transformer.transformPscDocToIndividual(Optional.of(document),MOCK_REGISTER_VIEW)).thenReturn(individual);
 
-        Individual result = service.getIndividualPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
+        Individual result = service.getIndividualPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID,MOCK_REGISTER_VIEW);
 
         assertEquals(individual,result);
     }
@@ -222,7 +224,7 @@ class CompanyPscServiceTest {
                 .thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> {
-            service.getIndividualPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
+            service.getIndividualPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID,false);
         });
     }
 
@@ -232,7 +234,7 @@ class CompanyPscServiceTest {
                 .thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> {
-            service.getIndividualPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
+            service.getIndividualPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID,false);
         });
     }
 
