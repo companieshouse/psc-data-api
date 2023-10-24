@@ -166,7 +166,7 @@ public class CompanyPscController {
     public ResponseEntity<Individual> getIndividualPscData(
             @PathVariable("company_number") String companyNumber,
             @PathVariable("notification_id") String notificationId,
-            @RequestParam(required = false, name = "register_view") Boolean registerView) {
+            @RequestParam(required = false, name = "register_view", defaultValue = "false") Boolean registerView) {
         LOGGER.info(String.format("Getting PSC data with company number %s", companyNumber));
         try {
 
