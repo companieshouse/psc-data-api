@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import net.bytebuddy.implementation.bind.annotation.Super;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -46,7 +45,9 @@ class CompanyPscServiceTest {
 
     private static final String MOCK_COMPANY_NUMBER = "1234567";
 
-    private static final Boolean MOCK_REGISTER_VIEW = true;
+    private static final Boolean MOCK_REGISTER_TRUE = true;
+
+    private static final Boolean MOCK_REGISTER_FALSE = false;
 
     @Mock
     private Logger logger;
@@ -207,13 +208,25 @@ class CompanyPscServiceTest {
     }
 
     @Test
-    public void GetIndividualPscReturn200() throws TransformerException {
+    public void GetIndividualPscReturn200WhenRegisterViewIsTrue() throws TransformerException {
         Individual individual = new Individual();
         when(repository.getPscByCompanyNumberAndId(MOCK_COMPANY_NUMBER, NOTIFICATION_ID))
                 .thenReturn(Optional.of(document));
-        when(transformer.transformPscDocToIndividual(Optional.of(document),MOCK_REGISTER_VIEW)).thenReturn(individual);
+        when(transformer.transformPscDocToIndividual(Optional.of(document), MOCK_REGISTER_TRUE)).thenReturn(individual);
 
-        Individual result = service.getIndividualPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID,MOCK_REGISTER_VIEW);
+        Individual result = service.getIndividualPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID, MOCK_REGISTER_TRUE);
+
+        assertEquals(individual,result);
+    }
+
+    @Test
+    public void GetIndividualPscReturn200WhenRegisterViewIsFalse() throws TransformerException {
+        Individual individual = new Individual();
+        when(repository.getPscByCompanyNumberAndId(MOCK_COMPANY_NUMBER, NOTIFICATION_ID))
+                .thenReturn(Optional.of(document));
+        when(transformer.transformPscDocToIndividual(Optional.of(document), MOCK_REGISTER_FALSE)).thenReturn(individual);
+
+        Individual result = service.getIndividualPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID, MOCK_REGISTER_FALSE);
 
         assertEquals(individual,result);
     }
