@@ -469,6 +469,7 @@ class CompanyPscControllerTest {
         mockMvc.perform(get(GET_URL)
                         .header("ERIC-Identity", "SOME_IDENTITY")
                         .header("ERIC-Identity-Type", "key")
+                        .param("register_view", "true")
                         .contentType(APPLICATION_JSON)
                         .header("x-request-id", "123456")
                         .header("ERIC-Authorised-Key-Roles", "*")
