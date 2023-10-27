@@ -237,7 +237,7 @@ class CompanyPscServiceTest {
                 .thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> {
-            service.getIndividualPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID,false);
+            service.getIndividualPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID,MOCK_REGISTER_FALSE);
         });
     }
 
@@ -247,7 +247,7 @@ class CompanyPscServiceTest {
                 .thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> {
-            service.getIndividualPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID,false);
+            service.getIndividualPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID,MOCK_REGISTER_FALSE);
         });
     }
 
@@ -256,11 +256,11 @@ class CompanyPscServiceTest {
         document.getData().setKind("individual-beneficial-owner");
         IndividualBeneficialOwner individualBeneficialOwner = new IndividualBeneficialOwner();
         when(repository.findById(NOTIFICATION_ID)).thenReturn(Optional.of(document));
-        when(transformer.transformPscDocToIndividualBeneficialOwner(Optional.of(document)))
+        when(transformer.transformPscDocToIndividualBeneficialOwner(Optional.of(document),MOCK_REGISTER_FALSE))
                 .thenReturn(individualBeneficialOwner);
 
         IndividualBeneficialOwner result = service
-                .getIndividualBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
+                .getIndividualBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID,MOCK_REGISTER_FALSE);
 
         assertEquals(individualBeneficialOwner,result);
     }
@@ -270,7 +270,7 @@ class CompanyPscServiceTest {
         when(repository.findById(NOTIFICATION_ID)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> {
-            service.getIndividualBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
+            service.getIndividualBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID,MOCK_REGISTER_FALSE);
         });
     }
 
@@ -282,7 +282,7 @@ class CompanyPscServiceTest {
                 .thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> {
-            service.getIndividualBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
+            service.getIndividualBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID,MOCK_REGISTER_FALSE);
         });
     }
     @Test

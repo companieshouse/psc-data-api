@@ -129,7 +129,6 @@ public class CompanyPscTransformer {
                 individual.setLinks(pscDocument.getData().getLinks());
             }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             if (pscDocument.getSensitiveData().getDateOfBirth() != null) {
                 DateOfBirth dateOfBirthValues = new DateOfBirth();
 
@@ -145,15 +144,10 @@ public class CompanyPscTransformer {
                     dateOfBirthValues.setYear(pscDocument.getSensitiveData().getDateOfBirth().getYear());
                 }
 
-                //DateOfBirth dateOfBirth = Optional.of(dateOfBirthValues).map(dob -> mapDateOfBirth(dob, registerView)).orElse(null);
                 dateOfBirthValues = mapDateOfBirth(dateOfBirthValues,registerView);
 
                 individual.setDateOfBirth(dateOfBirthValues);
             }
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
             return individual;
         } else {
             logger.error("Skipped transforming pscDoc to individual");
@@ -175,7 +169,7 @@ public class CompanyPscTransformer {
      * @return PSC mongo Document.
      */
     public IndividualBeneficialOwner transformPscDocToIndividualBeneficialOwner(
-            Optional<PscDocument> optionalPscDocument) throws TransformerException {
+            Optional<PscDocument> optionalPscDocument,Boolean registerView) throws TransformerException {
 
         logger.info("Attempting to transform pscDocument to IndividualBeneficialOwner");
 
@@ -256,6 +250,25 @@ public class CompanyPscTransformer {
                 individualBeneficialOwner.setIsSanctioned(pscDocument.getData().getSanctioned());
             }
 
+            if (pscDocument.getSensitiveData().getDateOfBirth() != null) {
+                DateOfBirth dateOfBirthValues = new DateOfBirth();
+
+                if (pscDocument.getSensitiveData().getDateOfBirth().getDay() != null) {
+                    dateOfBirthValues.setDay(pscDocument.getSensitiveData().getDateOfBirth().getDay());
+                }
+
+                if (pscDocument.getSensitiveData().getDateOfBirth().getMonth() != null) {
+                    dateOfBirthValues.setMonth(pscDocument.getSensitiveData().getDateOfBirth().getMonth());
+                }
+
+                if (pscDocument.getSensitiveData().getDateOfBirth().getYear() != null) {
+                    dateOfBirthValues.setYear(pscDocument.getSensitiveData().getDateOfBirth().getYear());
+                }
+
+                dateOfBirthValues = mapDateOfBirth(dateOfBirthValues,registerView);
+
+                individualBeneficialOwner.setDateOfBirth(dateOfBirthValues);
+            }
             return individualBeneficialOwner;
         } else {
             logger.error("Skipped transforming pscDoc to individualBeneficialOwner");
