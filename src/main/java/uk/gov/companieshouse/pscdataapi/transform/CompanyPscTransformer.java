@@ -52,7 +52,8 @@ public class CompanyPscTransformer {
      * @param optionalPscDocument PSC.
      * @return PSC mongo Document.
      */
-    public Individual transformPscDocToIndividual(Optional<PscDocument> optionalPscDocument, Boolean registerView)
+    public Individual transformPscDocToIndividual(
+            Optional<PscDocument> optionalPscDocument, Boolean registerView)
             throws TransformerException {
 
         logger.info("Attempting to transform pscDocument to individual");
@@ -133,15 +134,18 @@ public class CompanyPscTransformer {
                 DateOfBirth dateOfBirthValues = new DateOfBirth();
 
                 if (pscDocument.getSensitiveData().getDateOfBirth().getDay() != null) {
-                    dateOfBirthValues.setDay(pscDocument.getSensitiveData().getDateOfBirth().getDay());
+                    dateOfBirthValues.setDay(pscDocument
+                            .getSensitiveData().getDateOfBirth().getDay());
                 }
 
                 if (pscDocument.getSensitiveData().getDateOfBirth().getMonth() != null) {
-                    dateOfBirthValues.setMonth(pscDocument.getSensitiveData().getDateOfBirth().getMonth());
+                    dateOfBirthValues.setMonth(pscDocument
+                            .getSensitiveData().getDateOfBirth().getMonth());
                 }
 
                 if (pscDocument.getSensitiveData().getDateOfBirth().getYear() != null) {
-                    dateOfBirthValues.setYear(pscDocument.getSensitiveData().getDateOfBirth().getYear());
+                    dateOfBirthValues.setYear(pscDocument
+                            .getSensitiveData().getDateOfBirth().getYear());
                 }
 
                 dateOfBirthValues = mapDateOfBirth(dateOfBirthValues,registerView);
@@ -157,7 +161,7 @@ public class CompanyPscTransformer {
     }
 
     private DateOfBirth mapDateOfBirth(DateOfBirth dob, Boolean registerView) {
-        if(registerView == false){
+        if (registerView == false) {
             dob.setDay(null);
         }
         return dob;
@@ -169,7 +173,8 @@ public class CompanyPscTransformer {
      * @return PSC mongo Document.
      */
     public IndividualBeneficialOwner transformPscDocToIndividualBeneficialOwner(
-            Optional<PscDocument> optionalPscDocument,Boolean registerView) throws TransformerException {
+            Optional<PscDocument> optionalPscDocument,
+            Boolean registerView) throws TransformerException {
 
         logger.info("Attempting to transform pscDocument to IndividualBeneficialOwner");
 
@@ -254,15 +259,18 @@ public class CompanyPscTransformer {
                 DateOfBirth dateOfBirthValues = new DateOfBirth();
 
                 if (pscDocument.getSensitiveData().getDateOfBirth().getDay() != null) {
-                    dateOfBirthValues.setDay(pscDocument.getSensitiveData().getDateOfBirth().getDay());
+                    dateOfBirthValues.setDay(pscDocument
+                            .getSensitiveData().getDateOfBirth().getDay());
                 }
 
                 if (pscDocument.getSensitiveData().getDateOfBirth().getMonth() != null) {
-                    dateOfBirthValues.setMonth(pscDocument.getSensitiveData().getDateOfBirth().getMonth());
+                    dateOfBirthValues.setMonth(pscDocument
+                            .getSensitiveData().getDateOfBirth().getMonth());
                 }
 
                 if (pscDocument.getSensitiveData().getDateOfBirth().getYear() != null) {
-                    dateOfBirthValues.setYear(pscDocument.getSensitiveData().getDateOfBirth().getYear());
+                    dateOfBirthValues.setYear(pscDocument
+                            .getSensitiveData().getDateOfBirth().getYear());
                 }
 
                 dateOfBirthValues = mapDateOfBirth(dateOfBirthValues,registerView);
