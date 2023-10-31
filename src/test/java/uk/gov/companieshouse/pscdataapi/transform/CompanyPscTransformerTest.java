@@ -55,43 +55,6 @@ class CompanyPscTransformerTest {
 
     @BeforeEach
     public void setUp() {
-        OffsetDateTime date = OffsetDateTime.now();
-        request = new FullRecordCompanyPSCApi();
-        InternalData internal = new InternalData();
-        ExternalData external = new ExternalData();
-        Data data = new Data();
-        external.setNotificationId(NOTIFICATION_ID);
-        external.setData(data);
-        data.setKind("individual-person-with-significant-control");
-        internal.setDeltaAt(date);
-        request.setInternalData(internal);
-        request.setExternalData(external);
-        document = new PscDocument();
-        document.setUpdated(new Updated().setAt(LocalDate.now()));
-        final DateTimeFormatter dateTimeFormatter =
-                DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSSSSS");
-        dateString = date.format(dateTimeFormatter);
-        document.setCompanyNumber(MOCK_COMPANY_NUMBER);
-        document.setPscId("1234");
-        PscData pscData = new PscData();
-        pscData.setKind("individual-person-with-significant-control");
-        document.setNotificationId(MOCK_COMPANY_NUMBER);
-        document.setData(pscData);
-        uk.gov.companieshouse.pscdataapi.models.DateOfBirth dob = new DateOfBirth();
-        dob.setDay(21);
-        dob.setMonth(12);
-        dob.setYear(1943);
-        PscSensitiveData sensitiveData = new PscSensitiveData();
-        sensitiveData.setDateOfBirth(dob);
-        document.setSensitiveData(sensitiveData);
-        Identification identification = new Identification();
-        identification.setCountryRegistered("x");
-        identification.setLegalForm("x");
-        identification.setPlaceRegistered("x");
-        identification.setLegalAuthority("x");
-        identification.setRegistrationNumber("x");
-        document.setIdentification(identification);
-
 
     }
 
@@ -148,7 +111,7 @@ class CompanyPscTransformerTest {
         // given
         PscDocument expectedDocument = TestHelper.buildPscDocument(INDIVIDUAL_KIND, REGISTER_VIEW_FALSE);
         // when
-        Individual result = pscTransformer.transformPscDocToIndividual(Optional.of(document), REGISTER_VIEW_FALSE);
+        Individual result = pscTransformer.transformPscDocToIndividual(Optional.of(TestHelper.createPscDocument(document)), REGISTER_VIEW_FALSE);
         // then
         assertThat(result.getDateOfBirth(), is(expectedDocument.getSensitiveData().getDateOfBirth()));
     }
@@ -158,8 +121,9 @@ class CompanyPscTransformerTest {
         // given
         PscDocument expectedDocument = TestHelper.buildPscDocument(INDIVIDUAL_KIND, REGISTER_VIEW_TRUE);
         // when
-        Individual result = pscTransformer.transformPscDocToIndividual(Optional.of(document), REGISTER_VIEW_TRUE);
+        Individual result = pscTransformer.transformPscDocToIndividual(Optional.of(TestHelper.createPscDocument(document)), REGISTER_VIEW_TRUE);
         // then
         assertThat(result.getDateOfBirth(), is(expectedDocument.getSensitiveData().getDateOfBirth()));
     }
+
 }
