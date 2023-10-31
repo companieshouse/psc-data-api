@@ -129,35 +129,44 @@ public class CompanyPscTransformer {
             if (pscDocument.getData().getLinks() != null) {
                 individual.setLinks(pscDocument.getData().getLinks());
             }
+            DateOfBirth getDateOfBirthMapping = mappingDateOfBirth(
+                    optionalPscDocument, registerView);
+            individual.setDateOfBirth(getDateOfBirthMapping);
 
-            if (pscDocument.getSensitiveData().getDateOfBirth() != null) {
-                DateOfBirth dateOfBirthValues = new DateOfBirth();
-
-                if (pscDocument.getSensitiveData().getDateOfBirth().getDay() != null) {
-                    dateOfBirthValues.setDay(pscDocument
-                            .getSensitiveData().getDateOfBirth().getDay());
-                }
-
-                if (pscDocument.getSensitiveData().getDateOfBirth().getMonth() != null) {
-                    dateOfBirthValues.setMonth(pscDocument
-                            .getSensitiveData().getDateOfBirth().getMonth());
-                }
-
-                if (pscDocument.getSensitiveData().getDateOfBirth().getYear() != null) {
-                    dateOfBirthValues.setYear(pscDocument
-                            .getSensitiveData().getDateOfBirth().getYear());
-                }
-
-                dateOfBirthValues = mapDateOfBirth(dateOfBirthValues,registerView);
-
-                individual.setDateOfBirth(dateOfBirthValues);
-            }
             return individual;
         } else {
             logger.error("Skipped transforming pscDoc to individual");
             throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,"PscDocument not found");
         }
 
+    }
+
+    private DateOfBirth mappingDateOfBirth(
+            Optional<PscDocument> optionalPscDocument, Boolean registerView) {
+        PscDocument pscDocument = optionalPscDocument.get();
+        DateOfBirth dateOfBirthValues = null;
+        if (pscDocument.getSensitiveData().getDateOfBirth() != null) {
+            dateOfBirthValues = new DateOfBirth();
+
+            if (pscDocument.getSensitiveData().getDateOfBirth().getDay() != null) {
+                dateOfBirthValues.setDay(pscDocument
+                        .getSensitiveData().getDateOfBirth().getDay());
+            }
+
+            if (pscDocument.getSensitiveData().getDateOfBirth().getMonth() != null) {
+                dateOfBirthValues.setMonth(pscDocument
+                        .getSensitiveData().getDateOfBirth().getMonth());
+            }
+
+            if (pscDocument.getSensitiveData().getDateOfBirth().getYear() != null) {
+                dateOfBirthValues.setYear(pscDocument
+                        .getSensitiveData().getDateOfBirth().getYear());
+            }
+
+            dateOfBirthValues = mapDateOfBirth(dateOfBirthValues,registerView);
+        }
+
+        return dateOfBirthValues;
     }
 
     private DateOfBirth mapDateOfBirth(DateOfBirth dob, Boolean registerView) {
@@ -254,29 +263,10 @@ public class CompanyPscTransformer {
             if (pscDocument.getData().getSanctioned() != null) {
                 individualBeneficialOwner.setIsSanctioned(pscDocument.getData().getSanctioned());
             }
+            DateOfBirth getDateOfBirthMapping = mappingDateOfBirth(
+                    optionalPscDocument, registerView);
+            individualBeneficialOwner.setDateOfBirth(getDateOfBirthMapping);
 
-            if (pscDocument.getSensitiveData().getDateOfBirth() != null) {
-                DateOfBirth dateOfBirthValues = new DateOfBirth();
-
-                if (pscDocument.getSensitiveData().getDateOfBirth().getDay() != null) {
-                    dateOfBirthValues.setDay(pscDocument
-                            .getSensitiveData().getDateOfBirth().getDay());
-                }
-
-                if (pscDocument.getSensitiveData().getDateOfBirth().getMonth() != null) {
-                    dateOfBirthValues.setMonth(pscDocument
-                            .getSensitiveData().getDateOfBirth().getMonth());
-                }
-
-                if (pscDocument.getSensitiveData().getDateOfBirth().getYear() != null) {
-                    dateOfBirthValues.setYear(pscDocument
-                            .getSensitiveData().getDateOfBirth().getYear());
-                }
-
-                dateOfBirthValues = mapDateOfBirth(dateOfBirthValues,registerView);
-
-                individualBeneficialOwner.setDateOfBirth(dateOfBirthValues);
-            }
             return individualBeneficialOwner;
         } else {
             logger.error("Skipped transforming pscDoc to individualBeneficialOwner");
