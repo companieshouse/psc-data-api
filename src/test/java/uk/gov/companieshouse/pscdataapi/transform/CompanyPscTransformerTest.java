@@ -42,7 +42,7 @@ class CompanyPscTransformerTest {
     @Test
     void testIndividualPscIsTransformedSuccessfullyWhenRegisterViewTrue() throws FailedToTransformException {
         // given
-        fullRecordCompanyPSCApi = TestHelper.buildFullRecordPsc(INDIVIDUAL_KIND);
+        fullRecordCompanyPSCApi = TestHelper.buildFullRecordPsc(INDIVIDUAL_KIND, REGISTER_VIEW_TRUE);
         PscDocument expectedDocument = TestHelper.buildPscDocument(INDIVIDUAL_KIND, REGISTER_VIEW_TRUE);
         // when
         PscDocument result = pscTransformer.transformPsc(NOTIFICATION_ID, fullRecordCompanyPSCApi);
@@ -54,13 +54,13 @@ class CompanyPscTransformerTest {
         assertThat(result.getDeltaAt(), is(expectedDocument.getDeltaAt()));
         assertThat(result.getUpdated().getAt(), is(expectedDocument.getUpdated().getAt()));
         assertThat(result.getUpdatedBy(), is(expectedDocument.getUpdatedBy()));
-        //add line here to check registerview behaviour
+        assertThat(result.getSensitiveData().getDateOfBirth(),is(expectedDocument.getSensitiveData().getDateOfBirth()));
     }
 
     @Test
     void testIndividualPscIsTransformedSuccessfullyWhenRegisterViewFalse() throws FailedToTransformException {
         // given
-        fullRecordCompanyPSCApi = TestHelper.buildFullRecordPsc(INDIVIDUAL_KIND);
+        fullRecordCompanyPSCApi = TestHelper.buildFullRecordPsc(INDIVIDUAL_KIND, REGISTER_VIEW_FALSE);
         PscDocument expectedDocument = TestHelper.buildPscDocument(INDIVIDUAL_KIND, REGISTER_VIEW_FALSE);
         // when
         PscDocument result = pscTransformer.transformPsc(NOTIFICATION_ID, fullRecordCompanyPSCApi);
@@ -72,13 +72,13 @@ class CompanyPscTransformerTest {
         assertThat(result.getDeltaAt(), is(expectedDocument.getDeltaAt()));
         assertThat(result.getUpdated().getAt(), is(expectedDocument.getUpdated().getAt()));
         assertThat(result.getUpdatedBy(), is(expectedDocument.getUpdatedBy()));
-        //add line here to check registerview behaviour
+        assertThat(result.getSensitiveData().getDateOfBirth(),is(expectedDocument.getSensitiveData().getDateOfBirth()));
     }
 
     @Test
     void testCorporatePscIsTransformedSuccessfully() throws FailedToTransformException {
         // given
-        fullRecordCompanyPSCApi = TestHelper.buildFullRecordPsc(CORPORATE_KIND);
+        fullRecordCompanyPSCApi = TestHelper.buildFullRecordPsc(CORPORATE_KIND, REGISTER_VIEW_TRUE);
         PscDocument expectedDocument = TestHelper.buildPscDocument(CORPORATE_KIND, REGISTER_VIEW_TRUE);
         // when
         PscDocument result = pscTransformer.transformPsc(NOTIFICATION_ID, fullRecordCompanyPSCApi);
@@ -93,7 +93,7 @@ class CompanyPscTransformerTest {
     @Test
     void testSecurePscIsTransformedSuccessfully() throws FailedToTransformException {
         // given
-        fullRecordCompanyPSCApi = TestHelper.buildFullRecordPsc(SECURE_KIND);
+        fullRecordCompanyPSCApi = TestHelper.buildFullRecordPsc(SECURE_KIND, REGISTER_VIEW_TRUE);
         PscDocument expectedDocument = TestHelper.buildPscDocument(SECURE_KIND, REGISTER_VIEW_TRUE);
         // when
         PscDocument result = pscTransformer.transformPsc(NOTIFICATION_ID, fullRecordCompanyPSCApi);

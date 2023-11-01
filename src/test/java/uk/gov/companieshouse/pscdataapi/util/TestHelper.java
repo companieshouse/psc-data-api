@@ -35,7 +35,7 @@ public class TestHelper {
     public static final String X_REQUEST_ID = "654321";
 
 
-    public static FullRecordCompanyPSCApi buildFullRecordPsc(String kind) {
+    public static FullRecordCompanyPSCApi buildFullRecordPsc(String kind, Boolean registerView) {
         FullRecordCompanyPSCApi output  = new FullRecordCompanyPSCApi();
 
         ExternalData externalData = new ExternalData();
@@ -60,7 +60,12 @@ public class TestHelper {
         
         SensitiveData sensitiveData = new SensitiveData();
         uk.gov.companieshouse.api.psc.DateOfBirth dateOfBirth = new uk.gov.companieshouse.api.psc.DateOfBirth();
-        dateOfBirth.setDay(21);
+        if(registerView == false){
+            dateOfBirth.setDay(null);
+        }
+        else{
+            dateOfBirth.setDay(21);
+        }
         dateOfBirth.setMonth(12);
         dateOfBirth.setYear(1943);
         sensitiveData.setDateOfBirth(dateOfBirth);
