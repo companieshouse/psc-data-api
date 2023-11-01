@@ -32,6 +32,7 @@ import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
 import uk.gov.companieshouse.pscdataapi.config.CucumberContext;
 import uk.gov.companieshouse.pscdataapi.models.*;
 import uk.gov.companieshouse.pscdataapi.models.Address;
+import uk.gov.companieshouse.pscdataapi.models.DateOfBirth;
 import uk.gov.companieshouse.pscdataapi.models.NameElements;
 import uk.gov.companieshouse.pscdataapi.transform.CompanyPscTransformer;
 import uk.gov.companieshouse.pscdataapi.util.FileReaderUtil;
@@ -648,6 +649,12 @@ public class PscDataSteps {
         nameElements.setMiddleName("tom");
         nameElements.setSurname("JONES");
         pscData.setNameElements(nameElements);
+        DateOfBirth dateOfBirth = new DateOfBirth();
+        dateOfBirth.setDay(2);
+        dateOfBirth.setMonth(03);
+        dateOfBirth.setYear(1994);
+        pscSensitiveData.setDateOfBirth(dateOfBirth);
+        document.setSensitiveData(pscSensitiveData);
         Links links = new Links();
         links.setSelf("/company/34777772/persons-with-significant-control/individual/ZfTs9WeeqpXTqf6dc6FZ4C0H0ZZ");
         links.setStatements("string");
@@ -762,6 +769,7 @@ public class PscDataSteps {
     public void aPSCExistsForForIndividualBeneficialOwner(String companyNumber) throws JsonProcessingException {
         String pscDataFile = FileReaderUtil.readFile("src/itest/resources/json/input/"+companyNumber+".json");
         PscData pscData = objectMapper.readValue(pscDataFile, PscData.class);
+        PscSensitiveData pscSensitiveData = objectMapper.readValue(pscDataFile, PscSensitiveData.class);
         PscDocument document = new PscDocument();
 
         document.setId("ZfTs9WeeqpXTqf6dc6FZ4C0H0ZX");
@@ -773,6 +781,12 @@ public class PscDataSteps {
         pscData.setNationality("British");
         pscData.setSanctioned(true);
         pscData.setKind("individual-beneficial-owner");
+        DateOfBirth dateOfBirth = new DateOfBirth();
+        dateOfBirth.setDay(2);
+        dateOfBirth.setMonth(03);
+        dateOfBirth.setYear(1994);
+        pscSensitiveData.setDateOfBirth(dateOfBirth);
+        document.setSensitiveData(pscSensitiveData);
 
 
         document.setData(pscData);

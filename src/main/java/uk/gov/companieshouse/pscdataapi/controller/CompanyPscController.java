@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.companieshouse.api.exception.ResourceNotFoundException;
 import uk.gov.companieshouse.api.psc.CorporateEntity;
@@ -172,14 +173,17 @@ public class CompanyPscController {
     @GetMapping("individual/{notification_id}")
     public ResponseEntity<Individual> getIndividualPscData(
             @PathVariable("company_number") String companyNumber,
-            @PathVariable("notification_id") String notificationId) {
+            @PathVariable("notification_id") String notificationId,
+            @RequestParam(required = false, name = "register_view",
+                    defaultValue = "false") Boolean registerView) {
         LOGGER.info(String.format("Getting PSC data with company number %s", companyNumber));
         try {
 
             LOGGER.info(String.format(
                     "Retrieving PSC with company number %s",
                     companyNumber));
-            Individual individual = pscService.getIndividualPsc(companyNumber , notificationId);
+            Individual individual = pscService
+                    .getIndividualPsc(companyNumber , notificationId , registerView);
             return new ResponseEntity<>(individual, HttpStatus.OK);
         } catch (ResourceNotFoundException resourceNotFoundException) {
             LOGGER.error(resourceNotFoundException.getMessage());
@@ -200,12 +204,15 @@ public class CompanyPscController {
     @GetMapping("individual-beneficial-owner/{notification_id}")
     public ResponseEntity<IndividualBeneficialOwner> getIndividualBeneficialOwnerPscData(
             @PathVariable("company_number") String companyNumber,
-            @PathVariable("notification_id") String notificationId) {
+            @PathVariable("notification_id") String notificationId,
+            @RequestParam(required = false, name = "register_view",
+                    defaultValue = "false") Boolean registerView) {
         LOGGER.info(String.format("Getting PSC data with company number %s", companyNumber));
         try {
             LOGGER.info(String.format("Retrieving PSC with company number %s", companyNumber));
             IndividualBeneficialOwner individualBeneficialOwner =
-                    pscService.getIndividualBeneficialOwnerPsc(companyNumber, notificationId);
+                    pscService.getIndividualBeneficialOwnerPsc(
+                            companyNumber, notificationId, registerView);
             return new ResponseEntity<>(individualBeneficialOwner, HttpStatus.OK);
         } catch (ResourceNotFoundException resourceNotFoundException) {
             LOGGER.error(resourceNotFoundException.getMessage());
