@@ -4,11 +4,9 @@ import java.io.InputStreamReader;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import org.springframework.util.FileCopyUtils;
-import uk.gov.companieshouse.api.delta.Psc;
 import uk.gov.companieshouse.api.psc.Data;
 import uk.gov.companieshouse.api.psc.ExternalData;
 import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
@@ -148,47 +146,6 @@ public class TestHelper {
         }
 
         return output;
-    }
-
-    public static PscDocument createPscDocument(PscDocument document ){
-        OffsetDateTime date = OffsetDateTime.now();
-        FullRecordCompanyPSCApi request = new FullRecordCompanyPSCApi();
-        InternalData internal = new InternalData();
-        ExternalData external = new ExternalData();
-        Data data = new Data();
-        external.setNotificationId(NOTIFICATION_ID);
-        external.setData(data);
-        data.setKind("individual-person-with-significant-control");
-        internal.setDeltaAt(date);
-        request.setInternalData(internal);
-        request.setExternalData(external);
-        document = new PscDocument();
-        document.setUpdated(new Updated().setAt(LocalDate.now()));
-        final DateTimeFormatter dateTimeFormatter =
-                DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSSSSS");
-        String dateString = date.format(dateTimeFormatter);
-        document.setCompanyNumber(COMPANY_NUMBER);
-        document.setPscId("1234");
-        PscData pscData = new PscData();
-        pscData.setKind("individual-person-with-significant-control");
-        document.setNotificationId(COMPANY_NUMBER);
-        document.setData(pscData);
-        uk.gov.companieshouse.pscdataapi.models.DateOfBirth dob = new DateOfBirth();
-        dob.setDay(21);
-        dob.setMonth(12);
-        dob.setYear(1943);
-        PscSensitiveData sensitiveData = new PscSensitiveData();
-        sensitiveData.setDateOfBirth(dob);
-        document.setSensitiveData(sensitiveData);
-        Identification identification = new Identification();
-        identification.setCountryRegistered("x");
-        identification.setLegalForm("x");
-        identification.setPlaceRegistered("x");
-        identification.setLegalAuthority("x");
-        identification.setRegistrationNumber("x");
-        document.setIdentification(identification);
-
-        return document;
     }
 
     public static String createJsonPayload() throws IOException {

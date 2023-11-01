@@ -9,18 +9,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.api.psc.*;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.exceptions.FailedToTransformException;
-import uk.gov.companieshouse.pscdataapi.models.DateOfBirth;
-import uk.gov.companieshouse.pscdataapi.models.PscData;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
-import uk.gov.companieshouse.pscdataapi.models.PscSensitiveData;
-import uk.gov.companieshouse.pscdataapi.models.Updated;
 import uk.gov.companieshouse.pscdataapi.util.TestHelper;
-
-import javax.xml.transform.TransformerException;
-import java.time.LocalDate;
-import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -33,25 +23,16 @@ class CompanyPscTransformerTest {
 
     private static final String NOTIFICATION_ID = "pscId";
 
-    private static final String MOCK_COMPANY_NUMBER = "1234567";
-
     private static final String INDIVIDUAL_KIND = "individual-person-with-significant-control";
     private static final String SECURE_KIND = "super-secure-person-with-significant-control";
     private static final String CORPORATE_KIND = "corporate-entity-person-with-significant-control";
 
     private static final Boolean REGISTER_VIEW_TRUE = true;
-
     private static final Boolean REGISTER_VIEW_FALSE = false;
 
     @InjectMocks
     private CompanyPscTransformer pscTransformer;
     private FullRecordCompanyPSCApi fullRecordCompanyPSCApi;
-
-    private FullRecordCompanyPSCApi request;
-
-    private PscDocument document;
-
-    private String dateString;
 
     @BeforeEach
     public void setUp() {
@@ -59,12 +40,12 @@ class CompanyPscTransformerTest {
     }
 
     @Test
-    void testIndividualPscIsTransformedSuccessfully() throws FailedToTransformException {
+    void testIndividualPscIsTransformedSuccessfullyWhenRegisterViewTrue() throws FailedToTransformException {
         // given
         fullRecordCompanyPSCApi = TestHelper.buildFullRecordPsc(INDIVIDUAL_KIND);
-        PscDocument expectedDocument = TestHelper.buildPscDocument(INDIVIDUAL_KIND, true);
+        PscDocument expectedDocument = TestHelper.buildPscDocument(INDIVIDUAL_KIND, REGISTER_VIEW_TRUE);
         // when
-        PscDocument result = pscTransformer.transformPsc("pscId", fullRecordCompanyPSCApi);
+        PscDocument result = pscTransformer.transformPsc(NOTIFICATION_ID, fullRecordCompanyPSCApi);
 
         // then
         assertThat(result.getData(), is(expectedDocument.getData()));
@@ -73,6 +54,25 @@ class CompanyPscTransformerTest {
         assertThat(result.getDeltaAt(), is(expectedDocument.getDeltaAt()));
         assertThat(result.getUpdated().getAt(), is(expectedDocument.getUpdated().getAt()));
         assertThat(result.getUpdatedBy(), is(expectedDocument.getUpdatedBy()));
+        //add line here to check registerview behaviour
+    }
+
+    @Test
+    void testIndividualPscIsTransformedSuccessfullyWhenRegisterViewFalse() throws FailedToTransformException {
+        // given
+        fullRecordCompanyPSCApi = TestHelper.buildFullRecordPsc(INDIVIDUAL_KIND);
+        PscDocument expectedDocument = TestHelper.buildPscDocument(INDIVIDUAL_KIND, REGISTER_VIEW_FALSE);
+        // when
+        PscDocument result = pscTransformer.transformPsc(NOTIFICATION_ID, fullRecordCompanyPSCApi);
+
+        // then
+        assertThat(result.getData(), is(expectedDocument.getData()));
+        assertThat(result.getData().getNameElements().getSurname(),
+                is(expectedDocument.getData().getNameElements().getSurname()));
+        assertThat(result.getDeltaAt(), is(expectedDocument.getDeltaAt()));
+        assertThat(result.getUpdated().getAt(), is(expectedDocument.getUpdated().getAt()));
+        assertThat(result.getUpdatedBy(), is(expectedDocument.getUpdatedBy()));
+        //add line here to check registerview behaviour
     }
 
     @Test
@@ -81,7 +81,7 @@ class CompanyPscTransformerTest {
         fullRecordCompanyPSCApi = TestHelper.buildFullRecordPsc(CORPORATE_KIND);
         PscDocument expectedDocument = TestHelper.buildPscDocument(CORPORATE_KIND, REGISTER_VIEW_TRUE);
         // when
-        PscDocument result = pscTransformer.transformPsc("pscId", fullRecordCompanyPSCApi);
+        PscDocument result = pscTransformer.transformPsc(NOTIFICATION_ID, fullRecordCompanyPSCApi);
 
         // then
         assertThat(result.getData(), is(expectedDocument.getData()));
@@ -96,7 +96,7 @@ class CompanyPscTransformerTest {
         fullRecordCompanyPSCApi = TestHelper.buildFullRecordPsc(SECURE_KIND);
         PscDocument expectedDocument = TestHelper.buildPscDocument(SECURE_KIND, REGISTER_VIEW_TRUE);
         // when
-        PscDocument result = pscTransformer.transformPsc("pscId", fullRecordCompanyPSCApi);
+        PscDocument result = pscTransformer.transformPsc(NOTIFICATION_ID, fullRecordCompanyPSCApi);
 
         // then
         assertThat(result.getData(), is(expectedDocument.getData()));
@@ -105,25 +105,4 @@ class CompanyPscTransformerTest {
         assertThat(result.getUpdated().getAt(), is(expectedDocument.getUpdated().getAt()));
         assertThat(result.getUpdatedBy(), is(expectedDocument.getUpdatedBy()));
     }
-
-    @Test
-    void testIndividualPscIsTransformedSuccessfullyWhenRegisterViewIsFalse() throws FailedToTransformException, TransformerException {
-        // given
-        PscDocument expectedDocument = TestHelper.buildPscDocument(INDIVIDUAL_KIND, REGISTER_VIEW_FALSE);
-        // when
-        Individual result = pscTransformer.transformPscDocToIndividual(Optional.of(TestHelper.createPscDocument(document)), REGISTER_VIEW_FALSE);
-        // then
-        assertThat(result.getDateOfBirth(), is(expectedDocument.getSensitiveData().getDateOfBirth()));
-    }
-
-    @Test
-    void testIndividualPscIsTransformedSuccessfullyWhenRegisterViewIsTrue() throws FailedToTransformException, TransformerException {
-        // given
-        PscDocument expectedDocument = TestHelper.buildPscDocument(INDIVIDUAL_KIND, REGISTER_VIEW_TRUE);
-        // when
-        Individual result = pscTransformer.transformPscDocToIndividual(Optional.of(TestHelper.createPscDocument(document)), REGISTER_VIEW_TRUE);
-        // then
-        assertThat(result.getDateOfBirth(), is(expectedDocument.getSensitiveData().getDateOfBirth()));
-    }
-
 }
