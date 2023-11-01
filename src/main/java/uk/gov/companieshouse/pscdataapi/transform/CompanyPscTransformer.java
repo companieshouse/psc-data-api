@@ -151,6 +151,7 @@ public class CompanyPscTransformer {
             if (pscDocument.getSensitiveData().getDateOfBirth().getDay() != null) {
                 dateOfBirthValues.setDay(pscDocument
                         .getSensitiveData().getDateOfBirth().getDay());
+                dateOfBirthValues = mapDateOfBirth(dateOfBirthValues,registerView);
             }
 
             if (pscDocument.getSensitiveData().getDateOfBirth().getMonth() != null) {
@@ -163,7 +164,6 @@ public class CompanyPscTransformer {
                         .getSensitiveData().getDateOfBirth().getYear());
             }
 
-            dateOfBirthValues = mapDateOfBirth(dateOfBirthValues,registerView);
         }
 
         return dateOfBirthValues;
