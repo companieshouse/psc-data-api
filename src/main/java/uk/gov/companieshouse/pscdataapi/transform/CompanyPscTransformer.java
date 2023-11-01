@@ -740,13 +740,13 @@ public class CompanyPscTransformer {
      * @param optionalPscDocument PSC.
      * @return PSC mongo Document.
      */
-    public ListSummary transformPscDocToListSummary(Optional<PscDocument> optionalPscDocument) {
+    public ListSummary transformPscDocToListSummary(Optional<PscDocument>  optionalPscDocument) {
         logger.info("Attempting to transform pscDocument to ListSummary");
 
+        ListSummary listSummary = new ListSummary();
         if (optionalPscDocument.isPresent()) {
             PscDocument pscDocument = optionalPscDocument.get();
-            ListSummary listSummary =
-                    new ListSummary();
+
             if (pscDocument.getData().getEtag() != null) {
                 listSummary.setEtag(pscDocument.getData().getEtag());
             }
@@ -898,6 +898,8 @@ public class CompanyPscTransformer {
             logger.error("Skipped transforming pscDoc to ListSummary");
             throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,"PscDocument not found");
         }
+
+
 
 
 

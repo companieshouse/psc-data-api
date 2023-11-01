@@ -4,17 +4,12 @@ import java.io.InputStreamReader;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.util.Collections;
 import java.util.List;
 
+import com.github.dockerjava.api.model.Link;
 import org.springframework.util.FileCopyUtils;
-import uk.gov.companieshouse.api.psc.Data;
-import uk.gov.companieshouse.api.psc.ExternalData;
-import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
-import uk.gov.companieshouse.api.psc.Identification;
-import uk.gov.companieshouse.api.psc.InternalData;
-import uk.gov.companieshouse.api.psc.ItemLinkTypes;
-import uk.gov.companieshouse.api.psc.SensitiveData;
-import uk.gov.companieshouse.api.psc.UsualResidentialAddress;
+import uk.gov.companieshouse.api.psc.*;
 import uk.gov.companieshouse.pscdataapi.models.Address;
 import uk.gov.companieshouse.pscdataapi.models.DateOfBirth;
 import uk.gov.companieshouse.pscdataapi.models.Links;
@@ -140,5 +135,24 @@ public class TestHelper {
                 ClassLoader.getSystemClassLoader().getResourceAsStream("psc_payload.json"));
 
         return FileCopyUtils.copyToString(exampleJsonPayload);
+    }
+
+    public PscList createPscList() {
+        ListSummary listSummary = new ListSummary();
+        PscList pscList = new PscList();
+        pscList.setItems(Collections.singletonList(listSummary));
+        pscList.setActiveCount(1);
+        pscList.setCeasedCount(1);
+        pscList.setTotalResults(2);
+        pscList.setStartIndex(0);
+        pscList.setItemsPerPage(25);
+        pscList.setLinks(createLinks());
+        return pscList;
+    }
+
+    private Links createLinks() {
+        Links links = new Links();
+        links.setSelf(String.format("/company/%s/persons-with-significant-control-statements", COMPANY_NUMBER));
+        return links;
     }
 }

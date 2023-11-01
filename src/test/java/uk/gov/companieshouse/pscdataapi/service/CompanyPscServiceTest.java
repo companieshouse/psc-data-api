@@ -1,13 +1,16 @@
 package uk.gov.companieshouse.pscdataapi.service;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import net.bytebuddy.implementation.bind.annotation.Super;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -19,6 +22,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.api.exception.ResourceNotFoundException;
+import uk.gov.companieshouse.api.model.PscStatementDocument;
 import uk.gov.companieshouse.api.psc.*;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
@@ -29,12 +33,15 @@ import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 import uk.gov.companieshouse.pscdataapi.models.Updated;
 import uk.gov.companieshouse.pscdataapi.repository.CompanyPscRepository;
 import uk.gov.companieshouse.pscdataapi.transform.CompanyPscTransformer;
+import uk.gov.companieshouse.pscdataapi.util.TestHelper;
 
 import javax.xml.transform.TransformerException;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -442,5 +449,30 @@ class CompanyPscServiceTest {
             service.getLegalPersonBeneficialOwnerPsc(MOCK_COMPANY_NUMBER, NOTIFICATION_ID);
         });
     }
+
+    @Test
+    void whenNoStatementsExistGetStatementListShouldThrow() throws JsonProcessingException {
+
+        when(repository.getPscDocumentList(anyString(), anyInt(), anyInt())).thenReturn(Optional.of(new ArrayList<PscDocument>()));
+        assertThrows(ResourceNotFoundException.class, ()-> service.retrievePscListSummaryFromDb( MOCK_COMPANY_NUMBER, 0, false,25));
+    }
+
+    @Test
+    void statementListReturnedByCompanyNumberFromRepository() throws ResourceNotFoundException, IOException {
+        PscDocument expectedPscDocument = new PscDocument();
+        TestHelper testHelper = new TestHelper();
+        PscList expectedPscList = testHelper.createPscList();
+        //document.setData(expectedPscDocument.getData());
+
+
+        when(repository.getPscDocumentList(anyString(), anyInt(), anyInt())).thenReturn(Optional.of(Collections.singletonList(document)));
+
+        PscList PscDocumentList = service.retrievePscListSummaryFromDb(MOCK_COMPANY_NUMBER,0, false,25);
+
+        assertEquals(expectedPscList, PscDocumentList);
+        verify(service, times(1)).retrievePscListSummaryFromDb(MOCK_COMPANY_NUMBER,0, false, 25);
+        verify(repository, times(1)).getPscDocumentList(MOCK_COMPANY_NUMBER, 0, 25);
+    }
+
 
 }

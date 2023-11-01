@@ -20,10 +20,24 @@ public interface CompanyPscRepository extends MongoRepository<PscDocument, Strin
     Optional<PscDocument> findPscByCompanyNumber(String companyNumber);
 
 
+    @Aggregation(pipeline = {
+            "{'$match': { 'company_number': ?0} } }",
+            "{'$sort': {'data.notified_on': -1, 'data.ceased_on': -1 } }",
+            "{'$skip': ?1}",
+            "{'$limit': ?2}",
+            })
     Optional<List<PscDocument>> getPscDocumentList(String companyNumber,
                                                    Integer startIndex, Integer itemsPerPage);
 
 
+    @Aggregation(pipeline = {
+            "{'$match': { 'company_number' : ?0, "
+                    + "$or:[ { '" + "data.ceased_on': { $gte : { \"$date\" : \"?2\" }} },"
+                    + "{ 'data.ceased_on': {$exists: false }} ]} }",
+            "{'$sort': {'data.notified_on': -1, 'data.ceased_on': -1 } }",
+            "{'$skip': ?1}",
+            "{'$limit': ?3}",
+            })
     Optional<List<PscDocument>> getListSummaryRegisterView(
             String companyNumber, Integer startIndex, Integer itemsPerPage);
 }

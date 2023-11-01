@@ -3,6 +3,7 @@ package uk.gov.companieshouse.pscdataapi.service;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -359,8 +360,8 @@ public class CompanyPscService {
                     companyNumber, startIndex, itemsPerPage);
         }
 
-        Optional<List<PscDocument>> pscDocumentListOptional =
-                repository.getPscDocumentList(companyNumber, startIndex, itemsPerPage);
+        Optional<List<PscDocument>> pscDocumentListOptional = repository
+                .getPscDocumentList(companyNumber, startIndex, itemsPerPage);
         List<PscDocument> pscDocuments = pscDocumentListOptional
                 .filter(docs -> !docs.isEmpty()).orElseThrow(() ->
                 new ResourceNotFoundException(HttpStatus.NOT_FOUND, String.format(
@@ -394,12 +395,26 @@ public class CompanyPscService {
                                           String companyNumber, boolean registerView) {
         PscList pscList = new PscList();
 
-        List<ListSummary> documents = pscDocuments.stream()
-                .map(PscDocument::getData).collect(Collectors.toList());
+        List<ListSummary> documents = new ArrayList<>();
+        for (PscDocument pscDocument : pscDocuments) {
+            ListSummary listSummary = transformer.transformPscDocToListSummary(
+                    Optional.ofNullable(pscDocument));
+
+            System.out.println(listSummary);
+
+            pscList.addItemsItem(
+                    transformer.transformPscDocToListSummary(
+                            Optional.ofNullable(pscDocument)));
+            documents.add(
+                    transformer.transformPscDocToListSummary(
+                            Optional.ofNullable(pscDocument)));
+
+        }
+
+        System.out.println(documents.get(0));
 
         pscList.setItemsPerPage(itemsPerPage);
         pscList.setStartIndex(startIndex);
-
         pscList.setItems(documents);
         return pscList;
 
