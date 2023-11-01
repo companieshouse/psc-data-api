@@ -32,6 +32,7 @@ import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
 import uk.gov.companieshouse.pscdataapi.config.CucumberContext;
 import uk.gov.companieshouse.pscdataapi.models.*;
 import uk.gov.companieshouse.pscdataapi.models.Address;
+import uk.gov.companieshouse.pscdataapi.models.DateOfBirth;
 import uk.gov.companieshouse.pscdataapi.models.NameElements;
 import uk.gov.companieshouse.pscdataapi.transform.CompanyPscTransformer;
 import uk.gov.companieshouse.pscdataapi.util.FileReaderUtil;
@@ -389,6 +390,114 @@ public class PscDataSteps {
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
     }
 
+    @And("a PSC exists for {string} for Super Secure Beneficial Owner")
+    public void aPSCExistsForForSuperSecureBeneficialOwner(String companyNumber) throws JsonProcessingException {
+        String pscDataFile = FileReaderUtil.readFile("src/itest/resources/json/input/"+companyNumber+".json");
+        PscData pscData = objectMapper.readValue(pscDataFile, PscData.class);
+        PscDocument document = new PscDocument();
+
+        document.setId("ZfTs9WeeqpXTqf6dc6FZ4C0H0ZX");
+        document.setCompanyNumber(companyNumber);
+        document.setPscId("ZfTs9WeeqpXTqf6dc6FZ4C0H0ZX");
+        document.setDeltaAt("20231120084745378000");
+        pscData.setEtag("string");
+        pscData.setKind("super-secure-beneficial-owner");
+        pscData.setDescription("super-secure-beneficial-owner");
+        Links links = new Links();
+        links.setSelf("/company/34777776/persons-with-significant-control/super-secure-beneficial-owner/ZfTs9WeeqpXTqf6dc6FZ4C0H0ZZ");
+        links.setStatements("string");
+        pscData.setLinks(links);
+        pscData.setCeased(false);
+
+
+        document.setData(pscData);
+
+        mongoTemplate.save(document);
+        assertThat(companyPscRepository.getPscByCompanyNumberAndId(companyNumber,"ZfTs9WeeqpXTqf6dc6FZ4C0H0ZX")).isNotEmpty();
+    }
+
+    @When("a Get request is sent for {string} and {string} for Super Secure Beneficial Owner")
+    public void aGetRequestIsSentForAndForSuperSecureBeneficialOwner(String companyNumber, String notification_id) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+
+        this.contextId = "5234234234";
+        CucumberContext.CONTEXT.set("contextId", this.contextId);
+        headers.set("x-request-id", this.contextId);
+        headers.set("ERIC-Identity", "TEST-IDENTITY");
+        headers.set("ERIC-Identity-Type", "key");
+        headers.set("ERIC-Authorised-Key-Roles", "*");
+
+        HttpEntity<String> request = new HttpEntity<String>(null, headers);
+
+        String uri =
+                String.format("/company/%s/persons-with-significant-control/super-secure-beneficial-owner/%s",companyNumber,notification_id);
+        ResponseEntity<SuperSecureBeneficialOwner> response = restTemplate.exchange(uri,
+                HttpMethod.GET, request, SuperSecureBeneficialOwner.class, companyNumber, notification_id);
+
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+        CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
+    }
+
+    @And("the Get call response body should match {string} file for Super Secure Beneficial Owner")
+    public void theGetCallResponseBodyShouldMatchFileForSuperSecureBeneficialOwner(String result) throws IOException {
+        String data = FileCopyUtils.copyToString(new InputStreamReader(new FileInputStream("src/itest/resources/json/output/" + result + ".json")));
+        SuperSecureBeneficialOwner expected = objectMapper.readValue(data, SuperSecureBeneficialOwner.class);
+
+        SuperSecureBeneficialOwner actual = CucumberContext.CONTEXT.get("getResponseBody");
+
+        assertThat(actual.getDescription()).isEqualTo(expected.getDescription());
+        assertThat(actual.getCeased()).isEqualTo(expected.getCeased());
+        assertThat(actual.getKind()).isEqualTo(expected.getKind());
+
+    }
+
+    @When("a Get request is sent for {string} and {string} without ERIC headers for Super Secure Beneficial Owner")
+    public void aGetRequestIsSentForAndWithoutERICHeadersForSuperSecureBeneficialOwner(String companyNumber, String notification_id) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+
+        this.contextId = "5234234234";
+        CucumberContext.CONTEXT.set("contextId", this.contextId);
+        headers.set("x-request-id", this.contextId);
+
+
+        HttpEntity<String> request = new HttpEntity<String>(null, headers);
+
+        String uri =
+                String.format("/company/%s/persons-with-significant-control/super-secure-beneficial-owner/%s",companyNumber,notification_id);
+        ResponseEntity<SuperSecureBeneficialOwner> response = restTemplate.exchange(uri,
+                HttpMethod.GET, request, SuperSecureBeneficialOwner.class, companyNumber, notification_id);
+
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+        CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
+    }
+
+    @When("a Get request has been sent for {string} and {string} for Super Secure Beneficial Owner")
+    public void aGetRequestHasBeenSentForAndForSuperSecureBeneficialOwner(String companyNumber, String notification_id) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+
+        this.contextId = "5234234234";
+        CucumberContext.CONTEXT.set("contextId", this.contextId);
+        headers.set("x-request-id", this.contextId);
+        headers.set("ERIC-Identity", "TEST-IDENTITY");
+        headers.set("ERIC-Identity-Type", "key");
+        headers.set("ERIC-Authorised-Key-Roles", "*");
+
+        HttpEntity<String> request = new HttpEntity<String>(null, headers);
+
+        String uri =
+                String.format("/company/%s/persons-with-significant-control/super-secure-beneficial-owner/%s",companyNumber,notification_id);
+        ResponseEntity<SuperSecureBeneficialOwner> response = restTemplate.exchange(uri,
+                HttpMethod.GET, request, SuperSecureBeneficialOwner.class, companyNumber, notification_id);
+
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+    }
+
     @And("a PSC exists for {string} for Corporate Entity")
     public void aPSCExistsForCorporateEntity(String companyNumber) throws JsonProcessingException {
         String pscDataFile = FileReaderUtil.readFile("src/itest/resources/json/input/"+companyNumber+".json");
@@ -540,6 +649,12 @@ public class PscDataSteps {
         nameElements.setMiddleName("tom");
         nameElements.setSurname("JONES");
         pscData.setNameElements(nameElements);
+        DateOfBirth dateOfBirth = new DateOfBirth();
+        dateOfBirth.setDay(2);
+        dateOfBirth.setMonth(03);
+        dateOfBirth.setYear(1994);
+        pscSensitiveData.setDateOfBirth(dateOfBirth);
+        document.setSensitiveData(pscSensitiveData);
         Links links = new Links();
         links.setSelf("/company/34777772/persons-with-significant-control/individual/ZfTs9WeeqpXTqf6dc6FZ4C0H0ZZ");
         links.setStatements("string");
@@ -654,6 +769,7 @@ public class PscDataSteps {
     public void aPSCExistsForForIndividualBeneficialOwner(String companyNumber) throws JsonProcessingException {
         String pscDataFile = FileReaderUtil.readFile("src/itest/resources/json/input/"+companyNumber+".json");
         PscData pscData = objectMapper.readValue(pscDataFile, PscData.class);
+        PscSensitiveData pscSensitiveData = objectMapper.readValue(pscDataFile, PscSensitiveData.class);
         PscDocument document = new PscDocument();
 
         document.setId("ZfTs9WeeqpXTqf6dc6FZ4C0H0ZX");
@@ -665,6 +781,12 @@ public class PscDataSteps {
         pscData.setNationality("British");
         pscData.setSanctioned(true);
         pscData.setKind("individual-beneficial-owner");
+        DateOfBirth dateOfBirth = new DateOfBirth();
+        dateOfBirth.setDay(2);
+        dateOfBirth.setMonth(03);
+        dateOfBirth.setYear(1994);
+        pscSensitiveData.setDateOfBirth(dateOfBirth);
+        document.setSensitiveData(pscSensitiveData);
 
 
         document.setData(pscData);

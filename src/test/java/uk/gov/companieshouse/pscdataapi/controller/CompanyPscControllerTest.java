@@ -1,6 +1,5 @@
 package uk.gov.companieshouse.pscdataapi.controller;
 
-import io.cucumber.java.sl.In;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -23,6 +22,7 @@ import uk.gov.companieshouse.pscdataapi.util.TestHelper;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
+
 import java.util.Collections;
 import java.util.Optional;
 
@@ -34,7 +34,6 @@ import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -65,11 +64,18 @@ class CompanyPscControllerTest {
     private static final String GET_Legal_Person_Beneficial_Owner_URL =
             "/company/123456789/persons-with-significant-control/legal-person-beneficial-owner/123456789";
 
+    private static final String GET_SuperSecureBeneficialOwner_URL =
+            "/company/123456789/persons-with-significant-control/super-secure-beneficial-owner/123456789";
+
     private static final String X_REQUEST_ID = "123456";
 
     private static final String MOCK_COMPANY_NUMBER = "123456789";
 
     private static final String MOCK_NOTIFICATION_ID = "123456789";
+
+    private static final Boolean MOCK_REGISTER_VIEW_TRUE = true;
+
+    private static final Boolean MOCK_REGISTER_VIEW_FALSE = false;
 
     private static final String ERIC_IDENTITY = "Test-Identity";
     private static final String ERIC_IDENTITY_TYPE = "key";
@@ -83,6 +89,8 @@ class CompanyPscControllerTest {
     private PscDocument document;
 
     private SuperSecure superSecure;
+
+    private SuperSecureBeneficialOwner superSecureBeneficialOwner;
 
     private Individual individual;
 
@@ -222,6 +230,72 @@ class CompanyPscControllerTest {
     }
 
     @Test
+    @DisplayName("Return 401 for Super Secure Beneficial Owner when no api key is present")
+    void getSuperSecureBeneficialOwnerPSCWhenNoApiKeyPresent() throws Exception {
+        mockMvc.perform(get(GET_SuperSecureBeneficialOwner_URL)).andExpect(status().isUnauthorized());
+
+        verify(companyPscService
+                ,times(0)).getSuperSecureBeneficialOwnerPsc( "123456789",MOCK_NOTIFICATION_ID);
+    }
+
+    @Test
+    @DisplayName(
+            "GET request returns a 200 response when Super Secure Beneficial Owner PSC found")
+    void getSuperSecureBeneficialOwnerPSCFound() throws Exception {
+        when(companyPscService.getSuperSecureBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID)).thenReturn(superSecureBeneficialOwner);
+
+        mockMvc.perform(get(GET_SuperSecureBeneficialOwner_URL)
+                        .header("ERIC-Identity", "SOME_IDENTITY")
+                        .header("ERIC-Identity-Type", "key")
+                        .contentType(APPLICATION_JSON)
+                        .header("x-request-id", "123456")
+                        .header("ERIC-Authorised-Key-Roles", "*")
+                        .header("ERIC-Authorised-Key-Privileges", "internal-app"))
+                .andExpect(status().isOk());
+
+        verify(companyPscService).getSuperSecureBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID);
+
+    }
+
+    @Test
+    @DisplayName(
+            "GET request returns a 503 response when service is unavailable")
+    void getSuperSecureBeneficialOwnerPSCDocumentWhenServiceIsDown() throws Exception {
+        when(companyPscService.getSuperSecureBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID)).thenThrow(ServiceUnavailableException.class);
+
+        mockMvc.perform(get(GET_SuperSecureBeneficialOwner_URL)
+                        .header("ERIC-Identity", "SOME_IDENTITY")
+                        .header("ERIC-Identity-Type", "key")
+                        .contentType(APPLICATION_JSON)
+                        .header("x-request-id", "123456")
+                        .header("ERIC-Authorised-Key-Roles", "*")
+                        .header("ERIC-Authorised-Key-Privileges", "internal-app"))
+                .andExpect(status().isInternalServerError());
+
+        verify(companyPscService).getSuperSecureBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID);
+
+    }
+
+    @Test
+    @DisplayName(
+            "GET request returns a 404 response when Resource is not found")
+    void getSuperSecureBeneficialOwnerPSCDocumentWhenResourceNotFound() throws Exception {
+        when(companyPscService.getSuperSecureBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID)).thenThrow(ResourceNotFoundException.class);
+
+        mockMvc.perform(get(GET_SuperSecureBeneficialOwner_URL)
+                        .header("ERIC-Identity", "SOME_IDENTITY")
+                        .header("ERIC-Identity-Type", "key")
+                        .contentType(APPLICATION_JSON)
+                        .header("x-request-id", "123456")
+                        .header("ERIC-Authorised-Key-Roles", "*")
+                        .header("ERIC-Authorised-Key-Privileges", "internal-app"))
+                .andExpect(status().isNotFound());
+
+        verify(companyPscService).getSuperSecureBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID);
+
+    }
+
+    @Test
     @DisplayName("Return 401 for Corporate Entity when no api key is present")
     void getCorporateEntityPSCWhenNoApiKeyPresent() throws Exception {
         mockMvc.perform(get(GET_CorporateEntity_URL)).andExpect(status().isUnauthorized());
@@ -356,14 +430,14 @@ class CompanyPscControllerTest {
         mockMvc.perform(get(GET_URL)).andExpect(status().isUnauthorized());
 
         verify(companyPscService
-                ,times(0)).getIndividualPsc( "123456789",MOCK_NOTIFICATION_ID);
+                ,times(0)).getIndividualPsc( "123456789",MOCK_NOTIFICATION_ID, MOCK_REGISTER_VIEW_TRUE);
     }
 
     @Test
     @DisplayName(
             "GET request returns a 200 response when Individual PSC found")
     void getIndividualPSCFound() throws Exception {
-        when(companyPscService.getIndividualPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID)).thenReturn(individual);
+        when(companyPscService.getIndividualPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID, MOCK_REGISTER_VIEW_FALSE)).thenReturn(individual);
 
         mockMvc.perform(get(GET_URL)
                         .header("ERIC-Identity", "SOME_IDENTITY")
@@ -374,7 +448,7 @@ class CompanyPscControllerTest {
                         .header("ERIC-Authorised-Key-Privileges", "internal-app"))
                 .andExpect(status().isOk());
 
-        verify(companyPscService).getIndividualPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID);
+        verify(companyPscService).getIndividualPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID, MOCK_REGISTER_VIEW_FALSE);
 
     }
 
@@ -382,18 +456,19 @@ class CompanyPscControllerTest {
     @DisplayName(
             "GET request returns a 503 response when service is unavailable")
     void getIndividualPSCDocumentWhenServiceIsDown() throws Exception {
-        when(companyPscService.getIndividualPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID)).thenThrow(ServiceUnavailableException.class);
+        when(companyPscService.getIndividualPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID, MOCK_REGISTER_VIEW_TRUE)).thenThrow(ServiceUnavailableException.class);
 
         mockMvc.perform(get(GET_URL)
                         .header("ERIC-Identity", "SOME_IDENTITY")
                         .header("ERIC-Identity-Type", "key")
+                        .param("register_view", "true")
                         .contentType(APPLICATION_JSON)
                         .header("x-request-id", "123456")
                         .header("ERIC-Authorised-Key-Roles", "*")
                         .header("ERIC-Authorised-Key-Privileges", "internal-app"))
                 .andExpect(status().isInternalServerError());
 
-        verify(companyPscService).getIndividualPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID);
+        verify(companyPscService).getIndividualPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID, MOCK_REGISTER_VIEW_TRUE);
 
     }
 
@@ -401,18 +476,19 @@ class CompanyPscControllerTest {
     @DisplayName(
             "GET request returns a 404 response when Resource is not found")
     void getIndividualPSCDocumentWhenResourceNotFound() throws Exception {
-        when(companyPscService.getIndividualPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID)).thenThrow(ResourceNotFoundException.class);
+        when(companyPscService.getIndividualPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID, MOCK_REGISTER_VIEW_TRUE)).thenThrow(ResourceNotFoundException.class);
 
         mockMvc.perform(get(GET_URL)
                         .header("ERIC-Identity", "SOME_IDENTITY")
                         .header("ERIC-Identity-Type", "key")
+                        .param("register_view", "true")
                         .contentType(APPLICATION_JSON)
                         .header("x-request-id", "123456")
                         .header("ERIC-Authorised-Key-Roles", "*")
                         .header("ERIC-Authorised-Key-Privileges", "internal-app"))
                 .andExpect(status().isNotFound());
 
-        verify(companyPscService).getIndividualPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID);
+        verify(companyPscService).getIndividualPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID, MOCK_REGISTER_VIEW_TRUE);
 
     }
 
@@ -424,7 +500,7 @@ class CompanyPscControllerTest {
 
         verify(companyPscService
                 ,times(0))
-                .getIndividualBeneficialOwnerPsc( "123456789",MOCK_NOTIFICATION_ID);
+                .getIndividualBeneficialOwnerPsc( "123456789",MOCK_NOTIFICATION_ID,MOCK_REGISTER_VIEW_FALSE);
     }
 
     @Test
@@ -432,19 +508,20 @@ class CompanyPscControllerTest {
             "GET request returns a 200 response when IBO PSC found")
     void getIndividualBeneficialOwnerPSCFound() throws Exception {
         when(companyPscService
-                .getIndividualBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID))
+                .getIndividualBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID,MOCK_REGISTER_VIEW_FALSE))
                 .thenReturn(individualBeneficialOwner);
 
         mockMvc.perform(get(GET_IndividualBeneficialOwner_URL)
                         .header("ERIC-Identity", "SOME_IDENTITY")
                         .header("ERIC-Identity-Type", "key")
+                        .param("register_view", "true")
                         .contentType(APPLICATION_JSON)
                         .header("x-request-id", "123456")
                         .header("ERIC-Authorised-Key-Roles", "*")
                         .header("ERIC-Authorised-Key-Privileges", "internal-app"))
                 .andExpect(status().isOk());
 
-        verify(companyPscService).getIndividualBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID);
+        verify(companyPscService).getIndividualBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID,MOCK_REGISTER_VIEW_TRUE);
 
     }
 
@@ -453,7 +530,7 @@ class CompanyPscControllerTest {
             "GET request returns a 503 response when service is unavailable")
     void getIndividualBeneficialOwnerPSCDocumentWhenServiceIsDown() throws Exception {
         when(companyPscService
-                .getIndividualBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID))
+                .getIndividualBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID,MOCK_REGISTER_VIEW_FALSE))
                 .thenThrow(ServiceUnavailableException.class);
 
         mockMvc.perform(get(GET_IndividualBeneficialOwner_URL)
@@ -465,7 +542,7 @@ class CompanyPscControllerTest {
                         .header("ERIC-Authorised-Key-Privileges", "internal-app"))
                 .andExpect(status().isInternalServerError());
 
-        verify(companyPscService).getIndividualBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID);
+        verify(companyPscService).getIndividualBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID,MOCK_REGISTER_VIEW_FALSE);
 
     }
 
@@ -474,7 +551,7 @@ class CompanyPscControllerTest {
             "GET request returns a 404 response when Resource is not found")
     void getIndividualBeneficialOwnerPSCDocumentWhenResourceNotFound() throws Exception {
         when(companyPscService
-                .getIndividualBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID))
+                .getIndividualBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID,MOCK_REGISTER_VIEW_FALSE))
                 .thenThrow(ResourceNotFoundException.class);
 
         mockMvc.perform(get(GET_IndividualBeneficialOwner_URL)
@@ -486,7 +563,7 @@ class CompanyPscControllerTest {
                         .header("ERIC-Authorised-Key-Privileges", "internal-app"))
                 .andExpect(status().isNotFound());
 
-        verify(companyPscService).getIndividualBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID);
+        verify(companyPscService).getIndividualBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID,MOCK_REGISTER_VIEW_FALSE);
 
     }
 

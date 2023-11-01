@@ -22,6 +22,7 @@ import uk.gov.companieshouse.api.psc.LegalPersonBeneficialOwner;
 import uk.gov.companieshouse.api.psc.ListSummary;
 import uk.gov.companieshouse.api.psc.SensitiveData;
 import uk.gov.companieshouse.api.psc.SuperSecure;
+import uk.gov.companieshouse.api.psc.SuperSecureBeneficialOwner;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.data.IndividualPscRoles;
 import uk.gov.companieshouse.pscdataapi.data.SecurePscRoles;
@@ -53,7 +54,8 @@ public class CompanyPscTransformer {
      * @param optionalPscDocument PSC.
      * @return PSC mongo Document.
      */
-    public Individual transformPscDocToIndividual(Optional<PscDocument> optionalPscDocument)
+    public Individual transformPscDocToIndividual(
+            Optional<PscDocument> optionalPscDocument, Boolean registerView)
             throws TransformerException {
 
         logger.info("Attempting to transform pscDocument to individual");
@@ -129,6 +131,10 @@ public class CompanyPscTransformer {
             if (pscDocument.getData().getLinks() != null) {
                 individual.setLinks(pscDocument.getData().getLinks());
             }
+            DateOfBirth getDateOfBirthMapping = mappingDateOfBirth(
+                    optionalPscDocument, registerView);
+            individual.setDateOfBirth(getDateOfBirthMapping);
+
             return individual;
         } else {
             logger.error("Skipped transforming pscDoc to individual");
@@ -137,13 +143,49 @@ public class CompanyPscTransformer {
 
     }
 
+    private DateOfBirth mappingDateOfBirth(
+            Optional<PscDocument> optionalPscDocument, Boolean registerView) {
+        PscDocument pscDocument = optionalPscDocument.get();
+        DateOfBirth dateOfBirthValues = null;
+        if (pscDocument.getSensitiveData().getDateOfBirth() != null) {
+            dateOfBirthValues = new DateOfBirth();
+
+            if (pscDocument.getSensitiveData().getDateOfBirth().getDay() != null) {
+                dateOfBirthValues.setDay(pscDocument
+                        .getSensitiveData().getDateOfBirth().getDay());
+                dateOfBirthValues = mapDateOfBirth(dateOfBirthValues,registerView);
+            }
+
+            if (pscDocument.getSensitiveData().getDateOfBirth().getMonth() != null) {
+                dateOfBirthValues.setMonth(pscDocument
+                        .getSensitiveData().getDateOfBirth().getMonth());
+            }
+
+            if (pscDocument.getSensitiveData().getDateOfBirth().getYear() != null) {
+                dateOfBirthValues.setYear(pscDocument
+                        .getSensitiveData().getDateOfBirth().getYear());
+            }
+
+        }
+
+        return dateOfBirthValues;
+    }
+
+    private DateOfBirth mapDateOfBirth(DateOfBirth dob, Boolean registerView) {
+        if (registerView == false) {
+            dob.setDay(null);
+        }
+        return dob;
+    }
+
     /**
      * Transform Individual Beneficial Owner PSC.
      * @param optionalPscDocument PSC.
      * @return PSC mongo Document.
      */
     public IndividualBeneficialOwner transformPscDocToIndividualBeneficialOwner(
-            Optional<PscDocument> optionalPscDocument) throws TransformerException {
+            Optional<PscDocument> optionalPscDocument,
+            Boolean registerView) throws TransformerException {
 
         logger.info("Attempting to transform pscDocument to IndividualBeneficialOwner");
 
@@ -223,6 +265,9 @@ public class CompanyPscTransformer {
             if (pscDocument.getData().getSanctioned() != null) {
                 individualBeneficialOwner.setIsSanctioned(pscDocument.getData().getSanctioned());
             }
+            DateOfBirth getDateOfBirthMapping = mappingDateOfBirth(
+                    optionalPscDocument, registerView);
+            individualBeneficialOwner.setDateOfBirth(getDateOfBirthMapping);
 
             return individualBeneficialOwner;
         } else {
@@ -269,6 +314,49 @@ public class CompanyPscTransformer {
             return superSecure;
         } else {
             logger.error("Skipped transforming pscDoc to SuperSecure");
+            throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,"PscDocument not found");
+        }
+    }
+
+    /**
+     * Transform Super Secure Beneficial Owner PSC.
+     * @param optionalPscDocument PSC.
+     * @return PSC mongo Document.
+     */
+
+    public SuperSecureBeneficialOwner transformPscDocToSuperSecureBeneficialOwner(
+            Optional<PscDocument> optionalPscDocument) throws TransformerException {
+
+        logger.info("Attempting to transform pscDocument to SuperSecureBeneficialOwner");
+
+        if (optionalPscDocument.isPresent()) {
+            PscDocument pscDocument = optionalPscDocument.get();
+
+            SuperSecureBeneficialOwner superSecureBeneficialOwner =
+                    new SuperSecureBeneficialOwner();
+
+            if (pscDocument.getData().getEtag() != null) {
+                superSecureBeneficialOwner.setEtag(pscDocument.getData().getEtag());
+            }
+
+            superSecureBeneficialOwner
+                    .setKind(SuperSecureBeneficialOwner.KindEnum.SUPER_SECURE_BENEFICIAL_OWNER);
+
+
+            superSecureBeneficialOwner.setDescription(SuperSecureBeneficialOwner
+                    .DescriptionEnum.SUPER_SECURE_BENEFICIAL_OWNER);
+
+            if (pscDocument.getData().getCeased() != null) {
+                superSecureBeneficialOwner.setCeased(pscDocument.getData().getCeased());
+            }
+
+            if (pscDocument.getData().getLinks() != null) {
+                superSecureBeneficialOwner.setLinks(pscDocument.getData().getLinks());
+            }
+
+            return superSecureBeneficialOwner;
+        } else {
+            logger.error("Skipped transforming pscDoc to SuperSecureBeneficialOwner");
             throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,"PscDocument not found");
         }
     }

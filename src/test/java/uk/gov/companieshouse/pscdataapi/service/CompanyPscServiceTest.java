@@ -10,8 +10,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import net.bytebuddy.implementation.bind.annotation.Super;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -52,6 +54,10 @@ class CompanyPscServiceTest {
     private static final String NOTIFICATION_ID = "pscId";
 
     private static final String MOCK_COMPANY_NUMBER = "1234567";
+
+    private static final Boolean MOCK_REGISTER_TRUE = true;
+
+    private static final Boolean MOCK_REGISTER_FALSE = false;
 
     @Mock
     private Logger logger;
@@ -212,13 +218,25 @@ class CompanyPscServiceTest {
     }
 
     @Test
-    public void GetIndividualPscReturn200() throws TransformerException {
+    public void GetIndividualPscReturn200WhenRegisterViewIsTrue() throws TransformerException {
         Individual individual = new Individual();
         when(repository.getPscByCompanyNumberAndId(MOCK_COMPANY_NUMBER, NOTIFICATION_ID))
                 .thenReturn(Optional.of(document));
-        when(transformer.transformPscDocToIndividual(Optional.of(document))).thenReturn(individual);
+        when(transformer.transformPscDocToIndividual(Optional.of(document), MOCK_REGISTER_TRUE)).thenReturn(individual);
 
-        Individual result = service.getIndividualPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
+        Individual result = service.getIndividualPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID, MOCK_REGISTER_TRUE);
+
+        assertEquals(individual,result);
+    }
+
+    @Test
+    public void GetIndividualPscReturn200WhenRegisterViewIsFalse() throws TransformerException {
+        Individual individual = new Individual();
+        when(repository.getPscByCompanyNumberAndId(MOCK_COMPANY_NUMBER, NOTIFICATION_ID))
+                .thenReturn(Optional.of(document));
+        when(transformer.transformPscDocToIndividual(Optional.of(document), MOCK_REGISTER_FALSE)).thenReturn(individual);
+
+        Individual result = service.getIndividualPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID, MOCK_REGISTER_FALSE);
 
         assertEquals(individual,result);
     }
@@ -229,7 +247,7 @@ class CompanyPscServiceTest {
                 .thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> {
-            service.getIndividualPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
+            service.getIndividualPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID,MOCK_REGISTER_FALSE);
         });
     }
 
@@ -239,7 +257,7 @@ class CompanyPscServiceTest {
                 .thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> {
-            service.getIndividualPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
+            service.getIndividualPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID,MOCK_REGISTER_FALSE);
         });
     }
 
@@ -248,11 +266,11 @@ class CompanyPscServiceTest {
         document.getData().setKind("individual-beneficial-owner");
         IndividualBeneficialOwner individualBeneficialOwner = new IndividualBeneficialOwner();
         when(repository.findById(NOTIFICATION_ID)).thenReturn(Optional.of(document));
-        when(transformer.transformPscDocToIndividualBeneficialOwner(Optional.of(document)))
+        when(transformer.transformPscDocToIndividualBeneficialOwner(Optional.of(document),MOCK_REGISTER_FALSE))
                 .thenReturn(individualBeneficialOwner);
 
         IndividualBeneficialOwner result = service
-                .getIndividualBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
+                .getIndividualBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID,MOCK_REGISTER_FALSE);
 
         assertEquals(individualBeneficialOwner,result);
     }
@@ -262,7 +280,7 @@ class CompanyPscServiceTest {
         when(repository.findById(NOTIFICATION_ID)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> {
-            service.getIndividualBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
+            service.getIndividualBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID,MOCK_REGISTER_FALSE);
         });
     }
 
@@ -274,7 +292,7 @@ class CompanyPscServiceTest {
                 .thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> {
-            service.getIndividualBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
+            service.getIndividualBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID,MOCK_REGISTER_FALSE);
         });
     }
     @Test
@@ -370,6 +388,42 @@ class CompanyPscServiceTest {
             service.getSuperSecurePsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
         });
     }
+
+    @Test
+    public void GetSuperSecureBeneficialOwnerPscReturn200() throws TransformerException {
+        document.getData().setKind("super-secure-beneficial-owner");
+        SuperSecureBeneficialOwner superSecureBeneficialOwner = new SuperSecureBeneficialOwner();
+        when(repository.getPscByCompanyNumberAndId(MOCK_COMPANY_NUMBER,NOTIFICATION_ID)).thenReturn(Optional.of(document));
+        when(transformer.transformPscDocToSuperSecureBeneficialOwner(Optional.of(document)))
+                .thenReturn(superSecureBeneficialOwner);
+
+        SuperSecureBeneficialOwner result = service
+                .getSuperSecureBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
+
+        assertEquals(superSecureBeneficialOwner,result);
+    }
+
+    @Test
+    public void GetSuperSecureBeneficialOwnerPscReturn404() {
+        when(repository.getPscByCompanyNumberAndId(MOCK_COMPANY_NUMBER,NOTIFICATION_ID)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> {
+            service.getSuperSecureBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
+        });
+    }
+
+    @Test
+    public void GetWrongTypeSuperSecureBeneficialOwnerPscReturn404() {
+        when(repository.getPscByCompanyNumberAndId(MOCK_COMPANY_NUMBER,NOTIFICATION_ID)
+                .filter(document -> document.getData().getKind()
+                        .equals("WRONG KIND")))
+                .thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> {
+            service.getSuperSecureBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
+        });
+    }
+
     @Test
     public void GetCorporateEntityPscReturn200() throws TransformerException {
         document.getData().setKind("corporate-entity-person-with-significant-control");

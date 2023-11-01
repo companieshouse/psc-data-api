@@ -30,7 +30,7 @@ public class TestHelper {
     public static final String X_REQUEST_ID = "654321";
 
 
-    public static FullRecordCompanyPSCApi buildFullRecordPsc(String kind) {
+    public static FullRecordCompanyPSCApi buildFullRecordPsc(String kind, Boolean registerView) {
         FullRecordCompanyPSCApi output  = new FullRecordCompanyPSCApi();
 
         ExternalData externalData = new ExternalData();
@@ -54,7 +54,16 @@ public class TestHelper {
         }
         
         SensitiveData sensitiveData = new SensitiveData();
-        sensitiveData.setDateOfBirth(new uk.gov.companieshouse.api.psc.DateOfBirth());
+        uk.gov.companieshouse.api.psc.DateOfBirth dateOfBirth = new uk.gov.companieshouse.api.psc.DateOfBirth();
+        if(registerView == false){
+            dateOfBirth.setDay(null);
+        }
+        else{
+            dateOfBirth.setDay(21);
+        }
+        dateOfBirth.setMonth(12);
+        dateOfBirth.setYear(1943);
+        sensitiveData.setDateOfBirth(dateOfBirth);
         externalData.setData(data);
         externalData.setSensitiveData(sensitiveData);
         externalData.setNotificationId("id");
@@ -81,7 +90,7 @@ public class TestHelper {
         return output;
     }
 
-    public static PscDocument buildPscDocument(String kind) {
+    public static PscDocument buildPscDocument(String kind, Boolean registerView) {
         PscDocument output = new PscDocument();
 
         PscData data = new PscData();
@@ -103,7 +112,16 @@ public class TestHelper {
 
         if(kind.contains("individual")) {
             PscSensitiveData sensitiveData = new PscSensitiveData();
-            sensitiveData.setDateOfBirth(new DateOfBirth());
+            DateOfBirth dateOfBirth = new DateOfBirth();
+            if(registerView == false){
+                dateOfBirth.setDay(null);
+            }
+            else {
+                dateOfBirth.setDay(21);
+            }
+            dateOfBirth.setMonth(12);
+            dateOfBirth.setYear(1943);
+            sensitiveData.setDateOfBirth(dateOfBirth);
             sensitiveData.setUsualResidentialAddress(new Address());
             output.setSensitiveData(sensitiveData);
             NameElements nameElements = new NameElements();
