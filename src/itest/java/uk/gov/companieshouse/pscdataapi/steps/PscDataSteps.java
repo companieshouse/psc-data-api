@@ -27,6 +27,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.companieshouse.pscdataapi.config.AbstractMongoConfig.mongoDBContainer;
 
 import org.springframework.util.FileCopyUtils;
+import uk.gov.companieshouse.api.delta.Psc;
 import uk.gov.companieshouse.api.psc.*;
 import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
 import uk.gov.companieshouse.pscdataapi.config.CucumberContext;
@@ -530,13 +531,13 @@ public class PscDataSteps {
         List<String> list = new ArrayList<>();
         list.add("part-right-to-share-surplus-assets-75-to-100-percent");
         pscData.setNaturesOfControl(list);
-        Identification identification = new Identification();
+        PscIdentification identification = new PscIdentification();
         identification.setRegistrationNumber("string");
         identification.setPlaceRegistered("string");
         identification.setCountryRegistered("string");
         identification.setLegalAuthority("string");
         identification.setLegalForm("string");
-        document.setIdentification(identification);
+        pscData.setIdentification(identification);
 
         document.setData(pscData);
 

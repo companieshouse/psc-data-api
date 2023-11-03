@@ -22,10 +22,7 @@ import uk.gov.companieshouse.api.psc.*;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
-import uk.gov.companieshouse.pscdataapi.models.Created;
-import uk.gov.companieshouse.pscdataapi.models.PscData;
-import uk.gov.companieshouse.pscdataapi.models.PscDocument;
-import uk.gov.companieshouse.pscdataapi.models.Updated;
+import uk.gov.companieshouse.pscdataapi.models.*;
 import uk.gov.companieshouse.pscdataapi.repository.CompanyPscRepository;
 import uk.gov.companieshouse.pscdataapi.transform.CompanyPscTransformer;
 
@@ -95,7 +92,7 @@ class CompanyPscServiceTest {
         pscData.setKind("individual-person-with-significant-control");
         document.setNotificationId(MOCK_COMPANY_NUMBER);
         document.setData(pscData);
-        Identification identification = new Identification();
+        PscIdentification identification = new PscIdentification();
         identification.setCountryRegistered("x");
         identification.setLegalForm("x");
         identification.setPlaceRegistered("x");

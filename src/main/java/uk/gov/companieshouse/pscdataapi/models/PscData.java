@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Objects;
 
 import org.springframework.data.mongodb.core.mapping.Field;
+import uk.gov.companieshouse.api.delta.Psc;
 import uk.gov.companieshouse.api.psc.Identification;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -52,6 +53,9 @@ public class PscData {
 
     @Field("links")
     private Links links;
+
+    @Field("identification")
+    private PscIdentification identification;
 
 
     public LocalDate getCeasedOn() {
@@ -102,6 +106,13 @@ public class PscData {
         this.countryOfResidence = countryOfResidence;
     }
 
+    public PscIdentification getIdentification() {
+        return identification;
+    }
+
+    public void setIdentification(PscIdentification identification) {
+        this.identification = identification;
+    }
 
     public Boolean getServiceAddressIsSameAsRegisteredOfficeAddress() {
         return serviceAddressIsSameAsRegisteredOfficeAddress;
@@ -206,6 +217,8 @@ public class PscData {
                 + nameElements
                 + ", links="
                 + links
+                + ", identification="
+                + identification
                 + '}';
     }
 
@@ -232,7 +245,8 @@ public class PscData {
                 && Objects.equals(ceased, pscData.ceased)
                 && Objects.equals(naturesOfControl, pscData.naturesOfControl)
                 && Objects.equals(nameElements, pscData.nameElements)
-                && Objects.equals(links, pscData.links);
+                && Objects.equals(links, pscData.links)
+                && Objects.equals(identification, pscData.identification);
     }
 
 
@@ -241,6 +255,6 @@ public class PscData {
         return Objects.hash(ceasedOn, etag, address, name, nationality, countryOfResidence,
                 kind, description, serviceAddressIsSameAsRegisteredOfficeAddress,
                 isSanctioned, ceased, naturesOfControl,
-                nameElements, links);
+                nameElements, links, identification);
     }
 }

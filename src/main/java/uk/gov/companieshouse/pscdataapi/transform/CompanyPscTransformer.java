@@ -24,13 +24,7 @@ import uk.gov.companieshouse.api.psc.SuperSecureBeneficialOwner;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.data.IndividualPscRoles;
 import uk.gov.companieshouse.pscdataapi.data.SecurePscRoles;
-import uk.gov.companieshouse.pscdataapi.models.Address;
-import uk.gov.companieshouse.pscdataapi.models.DateOfBirth;
-import uk.gov.companieshouse.pscdataapi.models.NameElements;
-import uk.gov.companieshouse.pscdataapi.models.PscData;
-import uk.gov.companieshouse.pscdataapi.models.PscDocument;
-import uk.gov.companieshouse.pscdataapi.models.PscSensitiveData;
-import uk.gov.companieshouse.pscdataapi.models.Updated;
+import uk.gov.companieshouse.pscdataapi.models.*;
 
 import uk.gov.companieshouse.pscdataapi.util.PscTransformationHelper;
 
@@ -424,7 +418,7 @@ public class CompanyPscTransformer {
                 corporateEntity.setAddress(address);
             }
             if (pscDocument.getIdentification() != null) {
-                Identification identification = new Identification();
+                PscIdentification identification = new PscIdentification();
                 if (pscDocument.getIdentification().getPlaceRegistered() != null) {
                     identification.setPlaceRegistered(
                             pscDocument.getIdentification().getPlaceRegistered());
@@ -480,7 +474,9 @@ public class CompanyPscTransformer {
         pscDocument.setUpdated(new Updated().setAt(LocalDate.now()));
         pscDocument.setUpdatedBy(requestBody.getInternalData().getUpdatedBy());
         pscDocument.setData(transformDataFields(requestBody));
-        pscDocument.setIdentification(requestBody.getExternalData().getData().getIdentification());
+
+        PscIdentification pscIdentification = new PscIdentification(requestBody.getExternalData().getData().getIdentification());
+        pscDocument.setIdentification(pscIdentification);
 
         String kind = requestBody.getExternalData().getData().getKind();
 
@@ -525,6 +521,7 @@ public class CompanyPscTransformer {
         data.setSanctioned(requestBody.getExternalData().getData().getIsSanctioned());
         data.setServiceAddressIsSameAsRegisteredOfficeAddress(requestBody.getExternalData()
                     .getData().getServiceAddressSameAsRegisteredOfficeAddress());
+        //data.setIdentification(new PscIdentification(requestBody.getExternalData().getData().getIdentification()));
         return data;
     }
 
