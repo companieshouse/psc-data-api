@@ -13,11 +13,11 @@
   "ceased_on": "2021-11-02T08:47:45",
   "etag": "string",
   "identification": {
-    "country_registered": "string",
-    "legal_authority": "string",
-    "legal_form": "string",
-    "place_registered": "string",
-    "registration_number": "string"
+    "country_registered": "United Kingdom",
+    "legal_authority": "Cardiff",
+    "legal_form": "PSCX",
+    "place_registered": "Cardiff",
+    "registration_number": "123456"
   },
   "kind": "corporate-entity-person-with-significant-control",
   "links": {

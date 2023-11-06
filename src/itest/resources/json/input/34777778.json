@@ -40,6 +40,11 @@
         "premises" : "SA",
         "region" : "sa_region"
       },
+      "legal_authority": "Cardiff",
+      "legal_form": "PSCX",
+      "country_registered": "United Kingdom",
+      "registration_number": "123456",
+      "place_registered": "Cardiff",
       "natures_of_control": [
         "part-right-to-share-surplus-assets-75-to-100-percent"
       ],

@@ -532,11 +532,11 @@ public class PscDataSteps {
         list.add("part-right-to-share-surplus-assets-75-to-100-percent");
         pscData.setNaturesOfControl(list);
         PscIdentification identification = new PscIdentification();
-        identification.setRegistrationNumber("string");
-        identification.setPlaceRegistered("string");
-        identification.setCountryRegistered("string");
-        identification.setLegalAuthority("string");
-        identification.setLegalForm("string");
+        identification.setRegistrationNumber("123456");
+        identification.setPlaceRegistered("Cardiff");
+        identification.setCountryRegistered("United Kingdom");
+        identification.setLegalAuthority("Cardiff");
+        identification.setLegalForm("PSCX");
         pscData.setIdentification(identification);
 
         document.setData(pscData);
