@@ -100,13 +100,14 @@ public class TestHelper {
         }
 
         output.setNotificationId("id");
-        output.setData(data);
+        //output.setData(data);
         output.setPscId("pscId");
         output.setCompanyNumber("1234567");
         output.setDeltaAt("20220112000000000000");
         Updated updated = new Updated();
         updated.setAt(LocalDate.now());
         output.setUpdated(updated);
+        data.setIdentification(new PscIdentification());
 
         if(kind.contains("individual")) {
             PscSensitiveData sensitiveData = new PscSensitiveData();
@@ -132,7 +133,7 @@ public class TestHelper {
             PscIdentification identification = new PscIdentification();
             identification.setLegalForm("Form");
             identification.setLegalAuthority("Authority");
-            output.setIdentification(identification);
+            data.setIdentification(identification);
         } else if(kind.contains("corporate")) {
             PscIdentification identification = new PscIdentification();
             identification.setLegalForm("Form");
@@ -140,8 +141,10 @@ public class TestHelper {
             identification.setCountryRegistered("Wales");
             identification.setPlaceRegistered("Cardiff");
             identification.setRegistrationNumber("16102009");
-            output.setIdentification(identification);
+            data.setIdentification(identification);
         }
+
+        output.setData(data);
 
         return output;
     }

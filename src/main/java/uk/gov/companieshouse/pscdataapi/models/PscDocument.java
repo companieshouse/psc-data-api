@@ -43,8 +43,6 @@ public class PscDocument {
     @Field("sensitive_data")
     private PscSensitiveData sensitiveData;
 
-    @Field("identification")
-    private PscIdentification identification;
 
     public String getId() {
         return id;
@@ -126,13 +124,6 @@ public class PscDocument {
         this.sensitiveData = sensitiveData;
     }
 
-    public PscIdentification getIdentification() {
-        return identification;
-    }
-
-    public void setIdentification(PscIdentification identification) {
-        this.identification = identification;
-    }
 
     @Override
     public String toString() {
@@ -163,8 +154,6 @@ public class PscDocument {
                 + data
                 + ", sensitiveData="
                 + sensitiveData
-                + ", identification="
-                + identification
                 + '}';
     }
 
@@ -186,13 +175,12 @@ public class PscDocument {
                 && Objects.equals(created, that.created)
                 && Objects.equals(updated, that.updated)
                 && Objects.equals(data, that.data)
-                && Objects.equals(sensitiveData, that.sensitiveData)
-                && Objects.equals(identification, that.identification);
+                && Objects.equals(sensitiveData, that.sensitiveData);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(id, pscId, deltaAt, notificationId, companyNumber,
-                updatedBy, created, updated, data, sensitiveData, identification);
+                updatedBy, created, updated, data, sensitiveData);
     }
 }

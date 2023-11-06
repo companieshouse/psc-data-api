@@ -91,15 +91,14 @@ class CompanyPscServiceTest {
         PscData pscData = new PscData();
         pscData.setKind("individual-person-with-significant-control");
         document.setNotificationId(MOCK_COMPANY_NUMBER);
-        document.setData(pscData);
         PscIdentification identification = new PscIdentification();
         identification.setCountryRegistered("x");
         identification.setLegalForm("x");
         identification.setPlaceRegistered("x");
         identification.setLegalAuthority("x");
         identification.setRegistrationNumber("x");
-        document.setIdentification(identification);
-
+        pscData.setIdentification(identification);
+        document.setData(pscData);
 
     }
 

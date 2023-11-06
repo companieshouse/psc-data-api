@@ -417,26 +417,26 @@ public class CompanyPscTransformer {
                 }
                 corporateEntity.setAddress(address);
             }
-            if (pscDocument.getIdentification() != null) {
+            if (pscDocument.getData().getIdentification() != null) {
                 PscIdentification identification = new PscIdentification();
-                if (pscDocument.getIdentification().getPlaceRegistered() != null) {
+                if (pscDocument.getData().getIdentification().getPlaceRegistered() != null) {
                     identification.setPlaceRegistered(
-                            pscDocument.getIdentification().getPlaceRegistered());
+                            pscDocument.getData().getIdentification().getPlaceRegistered());
                 }
-                if (pscDocument.getIdentification().getLegalAuthority() != null) {
+                if (pscDocument.getData().getIdentification().getLegalAuthority() != null) {
                     identification.setLegalAuthority(
-                            pscDocument.getIdentification().getLegalAuthority());
+                            pscDocument.getData().getIdentification().getLegalAuthority());
                 }
-                if (pscDocument.getIdentification().getRegistrationNumber() != null) {
+                if (pscDocument.getData().getIdentification().getRegistrationNumber() != null) {
                     identification.setRegistrationNumber(
-                            pscDocument.getIdentification().getRegistrationNumber());
+                            pscDocument.getData().getIdentification().getRegistrationNumber());
                 }
-                if (pscDocument.getIdentification().getCountryRegistered() != null) {
+                if (pscDocument.getData().getIdentification().getCountryRegistered() != null) {
                     identification.setCountryRegistered(
-                            pscDocument.getIdentification().getCountryRegistered());
+                            pscDocument.getData().getIdentification().getCountryRegistered());
                 }
-                if (pscDocument.getIdentification().getLegalForm() != null) {
-                    identification.setLegalForm(pscDocument.getIdentification().getLegalForm());
+                if (pscDocument.getData().getIdentification().getLegalForm() != null) {
+                    identification.setLegalForm(pscDocument.getData().getIdentification().getLegalForm());
                 }
                 corporateEntity.setIdentification(identification);
             }
@@ -475,8 +475,8 @@ public class CompanyPscTransformer {
         pscDocument.setUpdatedBy(requestBody.getInternalData().getUpdatedBy());
         pscDocument.setData(transformDataFields(requestBody));
 
-        PscIdentification pscIdentification = new PscIdentification(requestBody.getExternalData().getData().getIdentification());
-        pscDocument.setIdentification(pscIdentification);
+        //PscIdentification pscIdentification = new PscIdentification(requestBody.getExternalData().getData().getIdentification());
+        //pscDocument.setIdentification(pscIdentification);
 
         String kind = requestBody.getExternalData().getData().getKind();
 
@@ -521,7 +521,7 @@ public class CompanyPscTransformer {
         data.setSanctioned(requestBody.getExternalData().getData().getIsSanctioned());
         data.setServiceAddressIsSameAsRegisteredOfficeAddress(requestBody.getExternalData()
                     .getData().getServiceAddressSameAsRegisteredOfficeAddress());
-        //data.setIdentification(new PscIdentification(requestBody.getExternalData().getData().getIdentification()));
+        data.setIdentification(new PscIdentification(requestBody.getExternalData().getData().getIdentification()));
         return data;
     }
 
@@ -607,27 +607,27 @@ public class CompanyPscTransformer {
                 corporateEntityBeneficialOwner
                         .setIsSanctioned(pscDocument.getData().getSanctioned());
             }
-            if (pscDocument.getIdentification() != null) {
-                Identification identification = new Identification();
-                if (pscDocument.getIdentification().getCountryRegistered() != null) {
+            if (pscDocument.getData().getIdentification() != null) {
+                PscIdentification identification = new PscIdentification();
+                if (pscDocument.getData().getIdentification().getCountryRegistered() != null) {
                     identification.setCountryRegistered(
-                            pscDocument.getIdentification().getCountryRegistered());
+                            pscDocument.getData().getIdentification().getCountryRegistered());
                 }
-                if (pscDocument.getIdentification().getLegalAuthority() != null) {
+                if (pscDocument.getData().getIdentification().getLegalAuthority() != null) {
                     identification.setLegalAuthority(
-                            pscDocument.getIdentification().getLegalAuthority());
+                            pscDocument.getData().getIdentification().getLegalAuthority());
                 }
-                if (pscDocument.getIdentification().getLegalForm() != null) {
+                if (pscDocument.getData().getIdentification().getLegalForm() != null) {
                     identification.setLegalForm(
-                            pscDocument.getIdentification().getLegalForm());
+                            pscDocument.getData().getIdentification().getLegalForm());
                 }
-                if (pscDocument.getIdentification().getPlaceRegistered() != null) {
+                if (pscDocument.getData().getIdentification().getPlaceRegistered() != null) {
                     identification.setPlaceRegistered(
-                            pscDocument.getIdentification().getPlaceRegistered());
+                            pscDocument.getData().getIdentification().getPlaceRegistered());
                 }
-                if (pscDocument.getIdentification().getRegistrationNumber() != null) {
+                if (pscDocument.getData().getIdentification().getRegistrationNumber() != null) {
                     identification.setRegistrationNumber(
-                            pscDocument.getIdentification().getRegistrationNumber());
+                            pscDocument.getData().getIdentification().getRegistrationNumber());
                 }
                 corporateEntityBeneficialOwner.setIdentification(identification);
             }
@@ -703,15 +703,15 @@ public class CompanyPscTransformer {
             if (pscDocument.getData().getLinks() != null) {
                 legalPerson.setLinks(pscDocument.getData().getLinks());
             }
-            if (pscDocument.getIdentification() != null) {
-                Identification identification = new Identification();
-                if (pscDocument.getIdentification().getLegalAuthority() != null) {
+            if (pscDocument.getData().getIdentification() != null) {
+                PscIdentification identification = new PscIdentification();
+                if (pscDocument.getData().getIdentification().getLegalAuthority() != null) {
                     identification.setLegalAuthority(
-                            pscDocument.getIdentification().getLegalAuthority());
+                            pscDocument.getData().getIdentification().getLegalAuthority());
                 }
-                if (pscDocument.getIdentification().getLegalForm() != null) {
+                if (pscDocument.getData().getIdentification().getLegalForm() != null) {
                     identification.setLegalForm(
-                            pscDocument.getIdentification().getLegalForm());
+                            pscDocument.getData().getIdentification().getLegalForm());
                 }
                 legalPerson.setIdentification(identification);
             }
@@ -791,15 +791,15 @@ public class CompanyPscTransformer {
             if (pscDocument.getData().getLinks() != null) {
                 legalPersonBeneficialOwner.setLinks(pscDocument.getData().getLinks());
             }
-            if (pscDocument.getIdentification() != null) {
-                Identification identification = new Identification();
-                if (pscDocument.getIdentification().getLegalAuthority() != null) {
+            if (pscDocument.getData().getIdentification() != null) {
+                PscIdentification identification = new PscIdentification();
+                if (pscDocument.getData().getIdentification().getLegalAuthority() != null) {
                     identification.setLegalAuthority(
-                            pscDocument.getIdentification().getLegalAuthority());
+                            pscDocument.getData().getIdentification().getLegalAuthority());
                 }
-                if (pscDocument.getIdentification().getLegalForm() != null) {
+                if (pscDocument.getData().getIdentification().getLegalForm() != null) {
                     identification.setLegalForm(
-                            pscDocument.getIdentification().getLegalForm());
+                            pscDocument.getData().getIdentification().getLegalForm());
                 }
                 legalPersonBeneficialOwner.setIdentification(identification);
             }
