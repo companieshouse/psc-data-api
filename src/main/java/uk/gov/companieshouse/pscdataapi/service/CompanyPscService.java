@@ -5,6 +5,7 @@ import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -14,10 +15,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import uk.gov.companieshouse.api.InternalApiClient;
+import uk.gov.companieshouse.api.api.CompanyMetricsApiService;
+import uk.gov.companieshouse.api.appointment.PrincipalOfficeAddress;
 import uk.gov.companieshouse.api.exception.ResourceNotFoundException;
+import uk.gov.companieshouse.api.metrics.MetricsApi;
+import uk.gov.companieshouse.api.metrics.RegisterApi;
+import uk.gov.companieshouse.api.metrics.RegistersApi;
 import uk.gov.companieshouse.api.psc.CorporateEntity;
 import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
 import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
+import uk.gov.companieshouse.api.psc.Identification;
 import uk.gov.companieshouse.api.psc.Individual;
 import uk.gov.companieshouse.api.psc.IndividualBeneficialOwner;
 import uk.gov.companieshouse.api.psc.LegalPerson;
@@ -30,7 +37,11 @@ import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
 import uk.gov.companieshouse.pscdataapi.exceptions.ServiceUnavailableException;
+import uk.gov.companieshouse.pscdataapi.models.Address;
 import uk.gov.companieshouse.pscdataapi.models.Created;
+import uk.gov.companieshouse.pscdataapi.models.Links;
+import uk.gov.companieshouse.pscdataapi.models.NameElements;
+import uk.gov.companieshouse.pscdataapi.models.PscData;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 import uk.gov.companieshouse.pscdataapi.repository.CompanyPscRepository;
 import uk.gov.companieshouse.pscdataapi.transform.CompanyPscTransformer;
@@ -53,6 +64,8 @@ public class CompanyPscService {
     ChsKafkaApiService chsKafkaApiService;
     @Autowired
     InternalApiClient internalApiClient;
+    @Autowired
+    CompanyMetricsApiService companyMetricsApiService;
 
     /**
      * Save or update a natural disqualification.
@@ -387,8 +400,11 @@ public class CompanyPscService {
     public PscList retrievePscListSummaryFromDb(String companyNumber, Integer startIndex,
                                                  boolean registerView, Integer itemsPerPage) {
 
+        Optional<MetricsApi> companyMetrics =
+                companyMetricsApiService.getCompanyMetrics(companyNumber);
+
         if (registerView) {
-            return retrievePscDocumentListFromDbRegisterView(
+            return retrievePscDocumentListFromDbRegisterView(companyMetrics,
                     companyNumber, startIndex, itemsPerPage);
         }
 
@@ -400,55 +416,227 @@ public class CompanyPscService {
                         "Resource not found for company number: %s", companyNumber)));
 
         return createPscDocumentList(pscDocuments,
-                startIndex, itemsPerPage, companyNumber, registerView);
+                startIndex, itemsPerPage, companyNumber, registerView, companyMetrics);
 
 
     }
 
-    private PscList retrievePscDocumentListFromDbRegisterView(
+    /** Get PSC List from database. */
+    public PscList retrievePscDocumentListFromDbRegisterView(Optional<MetricsApi> companyMetrics,
             String companyNumber, Integer startIndex, Integer itemsPerPage) {
+
         logger.info(String.format("In register view for company number: %s", companyNumber));
+        MetricsApi metricsData;
+        try {
+            metricsData = companyMetrics.get();
+        } catch (NoSuchElementException ex) {
+            throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
+                    String.format("No company metrics data found for company number: %s",
+                            companyNumber));
+        }
+        String registerMovedTo = Optional.ofNullable(metricsData)
+                .map(MetricsApi::getRegisters)
+                .map(RegistersApi::getPersonsWithSignificantControl)
+                .map(RegisterApi::getRegisterMovedTo)
+                .orElseThrow(() -> new ResourceNotFoundException(HttpStatus.NOT_FOUND,
+                        String.format("company %s not on public register", companyNumber)));
 
-        Optional<List<PscDocument>> pscListOptional = repository
-                .getListSummaryRegisterView(companyNumber, startIndex,
-                 itemsPerPage);
-        List<PscDocument> pscStatementDocuments = pscListOptional
-                .filter(docs -> !docs.isEmpty()).orElseThrow(() ->
-                new ResourceNotFoundException(HttpStatus.NOT_FOUND, String.format(
-                        "Resource not found for company number: %s", companyNumber)));
 
-        return createPscDocumentList(pscStatementDocuments,
-                startIndex, itemsPerPage, companyNumber, true);
+        if (registerMovedTo.equals("public-register")) {
+            Optional<List<PscDocument>> pscListOptional = repository
+                    .getListSummaryRegisterView(companyNumber, startIndex,
+                            metricsData.getRegisters().getPersonsWithSignificantControl()
+                                    .getMovedOn(),
+                            itemsPerPage);
+            List<PscDocument> pscStatementDocuments = pscListOptional
+                    .filter(docs -> !docs.isEmpty()).orElseThrow(() ->
+                            new ResourceNotFoundException(HttpStatus.NOT_FOUND, String.format(
+                                    "Resource not found for company number: %s", companyNumber)));
+
+            return createPscDocumentList(pscStatementDocuments,
+                    startIndex, itemsPerPage, companyNumber, true, companyMetrics);
+        } else {
+            throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
+                    String.format("company %s not on public register", companyNumber));
+
+        }
+
+
 
     }
 
     private PscList createPscDocumentList(List<PscDocument> pscDocuments,
                                           Integer startIndex, Integer itemsPerPage,
-                                          String companyNumber, boolean registerView) {
+                                          String companyNumber, boolean registerView,
+                                          Optional<MetricsApi> companyMetrics) {
         PscList pscList = new PscList();
 
+        List<PscData> pscData = pscDocuments.stream()
+                .map(PscDocument::getData).collect(Collectors.toList());
         List<ListSummary> documents = new ArrayList<>();
+
         for (PscDocument pscDocument : pscDocuments) {
-            ListSummary listSummary = transformer.transformPscDocToListSummary(
-                    Optional.ofNullable(pscDocument));
-
-            System.out.println(listSummary);
-
-            pscList.addItemsItem(
-                    transformer.transformPscDocToListSummary(
-                            Optional.ofNullable(pscDocument)));
-            documents.add(
-                    transformer.transformPscDocToListSummary(
-                            Optional.ofNullable(pscDocument)));
+            ListSummary listSummary = transformPscDocToListSummary2(pscDocument);
+            documents.add(listSummary);
 
         }
 
-        System.out.println(documents.get(0));
+        companyMetrics.ifPresentOrElse(metricsApi -> {
+            try {
+                if (registerView) {
+                    Long withdrawnCount = pscData.stream()
+                            .filter(document -> document.getCeasedOn() != null).count();
 
+                    pscList.setCeasedCount(withdrawnCount.intValue());
+                    pscList.setTotalResults(metricsApi.getCounts()
+                            .getPersonsWithSignificantControl().getActiveStatementsCount()
+                            + pscList.getCeasedCount());
+                    pscList.setActiveCount(metricsApi.getCounts()
+                            .getPersonsWithSignificantControl().getActiveStatementsCount());
+                } else {
+                    pscList.setActiveCount(metricsApi.getCounts()
+                            .getPersonsWithSignificantControl().getActiveStatementsCount());
+                    pscList.setCeasedCount(metricsApi.getCounts()
+                            .getPersonsWithSignificantControl().getWithdrawnStatementsCount());
+                    pscList.setTotalResults(metricsApi.getCounts()
+                            .getPersonsWithSignificantControl().getStatementsCount());
+                }
+            } catch (NullPointerException exp) {
+                logger.error(String.format(
+                        "No PSC data in metrics for company number %s", companyNumber));
+            }
+        }, () -> {
+                logger.info(String.format(
+                        "No company metrics counts data found for company number: %s",
+                        companyNumber));
+            });
+
+        Links links = new Links();
+        links.setSelf(String.format("/company/%s/persons-with-significant-control", companyNumber));
         pscList.setItemsPerPage(itemsPerPage);
+        pscList.setLinks(links);
         pscList.setStartIndex(startIndex);
         pscList.setItems(documents);
         return pscList;
 
+    }
+
+    private ListSummary transformPscDocToListSummary2(PscDocument  pscDocument) {
+
+        ListSummary listSummary = new ListSummary();
+
+        PscData getDocument = pscDocument.getData();
+
+        if (getDocument.getEtag() != null) {
+            listSummary.setEtag(getDocument.getEtag());
+        }
+        listSummary.setKind(listSummary.getKind());
+
+        if (getDocument.getName() != null) {
+            listSummary.setName(getDocument.getName());
+        }
+        if (getDocument.getNameElements() != null) {
+            NameElements nameElements = new NameElements();
+            if (getDocument.getNameElements().getTitle() != null) {
+                nameElements.setTitle(getDocument.getNameElements().getTitle());
+            }
+            if (getDocument.getNameElements().getForename() != null) {
+                nameElements.setForename(getDocument.getNameElements().getForename());
+            }
+            if (getDocument.getNameElements().getMiddleName() != null) {
+                nameElements.setMiddleName(getDocument
+                        .getNameElements().getMiddleName());
+            }
+            if (getDocument.getNameElements().getSurname() != null) {
+                nameElements.setSurname(getDocument.getNameElements().getSurname());
+            }
+            listSummary.setNameElements(nameElements);
+        }
+        if (getDocument.getAddress() != null) {
+            Address address = new Address();
+
+            if (getDocument.getAddress().getAddressLine1() != null) {
+                address.setAddressLine1(getDocument.getAddress().getAddressLine1());
+            }
+            if (getDocument.getAddress().getAddressLine2() != null) {
+                address.setAddressLine2(getDocument.getAddress().getAddressLine2());
+            }
+            if (getDocument.getAddress().getCountry() != null) {
+                address.setCountry(getDocument.getAddress().getCountry());
+            }
+            if (getDocument.getAddress().getLocality() != null) {
+                address.setLocality(getDocument.getAddress().getLocality());
+            }
+            if (getDocument.getAddress().getPostalCode() != null) {
+                address.setPostalCode(getDocument.getAddress().getPostalCode());
+            }
+            if (getDocument.getAddress().getPremises() != null) {
+                address.setPremises(getDocument.getAddress().getPremises());
+            }
+            if (getDocument.getAddress().getRegion() != null) {
+                address.setRegion(getDocument.getAddress().getRegion());
+            }
+            if (getDocument.getAddress().getCareOf() != null) {
+                address.setCareOf(getDocument.getAddress().getCareOf());
+            }
+            if (getDocument.getAddress().getPoBox() != null) {
+                address.setPoBox(getDocument.getAddress().getPoBox());
+            }
+            listSummary.setAddress(address);
+            listSummary.setPrincipalOfficeAddress(address);
+        }
+        if (getDocument.getNaturesOfControl() != null) {
+            listSummary
+                    .setNaturesOfControl(getDocument.getNaturesOfControl());
+        }
+        if (getDocument.getLinks() != null) {
+            listSummary.setLinks(getDocument.getLinks());
+        }
+        if (getDocument.getCeasedOn() != null) {
+            listSummary.setCeasedOn(getDocument.getCeasedOn());
+        }
+        if (getDocument.getSanctioned() != null) {
+            listSummary.setIsSanctioned(getDocument.getSanctioned());
+        }
+        if (getDocument.getNationality() != null) {
+            listSummary.setNationality(getDocument.getNationality());
+        }
+        if (getDocument.getCountryOfResidence() != null) {
+            listSummary.setCountryOfResidence(getDocument.getCountryOfResidence());
+        }
+        if (getDocument.getDescription() != null) {
+            listSummary.setDescription(
+                    ListSummary.DescriptionEnum.SUPER_SECURE_PERSONS_WITH_SIGNIFICANT_CONTROL);
+        }
+        if (pscDocument.getIdentification() != null) {
+            Identification identification = new Identification();
+            if (pscDocument.getIdentification().getCountryRegistered() != null) {
+                identification.setCountryRegistered(
+                        pscDocument.getIdentification().getCountryRegistered());
+            }
+            if (pscDocument.getIdentification().getLegalAuthority() != null) {
+                identification.setLegalAuthority(
+                        pscDocument.getIdentification().getLegalAuthority());
+            }
+            if (pscDocument.getIdentification().getLegalForm() != null) {
+                identification.setLegalForm(
+                        pscDocument.getIdentification().getLegalForm());
+            }
+            if (pscDocument.getIdentification().getPlaceRegistered() != null) {
+                identification.setPlaceRegistered(
+                        pscDocument.getIdentification().getPlaceRegistered());
+            }
+            if (pscDocument.getIdentification().getRegistrationNumber() != null) {
+                identification.setRegistrationNumber(
+                        pscDocument.getIdentification().getRegistrationNumber());
+            }
+            if (pscDocument.getData().getNaturesOfControl() != null) {
+                listSummary
+                        .setNaturesOfControl(pscDocument.getData().getNaturesOfControl());
+            }
+            listSummary.setIdentification(identification);
+        }
+
+        return listSummary;
     }
 }

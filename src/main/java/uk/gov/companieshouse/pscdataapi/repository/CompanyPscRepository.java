@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.pscdataapi.repository;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -39,5 +40,5 @@ public interface CompanyPscRepository extends MongoRepository<PscDocument, Strin
             "{'$limit': ?3}",
             })
     Optional<List<PscDocument>> getListSummaryRegisterView(
-            String companyNumber, Integer startIndex, Integer itemsPerPage);
+            String companyNumber, Integer startIndex, OffsetDateTime movedOn, Integer itemsPerPage);
 }

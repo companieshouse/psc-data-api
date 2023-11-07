@@ -9,7 +9,9 @@ import java.util.List;
 
 import com.github.dockerjava.api.model.Link;
 import org.springframework.util.FileCopyUtils;
+import uk.gov.companieshouse.api.metrics.*;
 import uk.gov.companieshouse.api.psc.*;
+import uk.gov.companieshouse.api.psc.InternalData;
 import uk.gov.companieshouse.pscdataapi.models.Address;
 import uk.gov.companieshouse.pscdataapi.models.DateOfBirth;
 import uk.gov.companieshouse.pscdataapi.models.Links;
@@ -157,6 +159,13 @@ public class TestHelper {
 
     public PscList createPscList() {
         ListSummary listSummary = new ListSummary();
+        Identification identification = new Identification();
+        identification.setPlaceRegistered("x");
+        identification.setCountryRegistered("x");
+        identification.setRegistrationNumber("x");
+        identification.setLegalAuthority("x");
+        identification.setLegalForm("x");
+        listSummary.setIdentification(identification);
         PscList pscList = new PscList();
         pscList.setItems(Collections.singletonList(listSummary));
         pscList.setActiveCount(1);
@@ -168,9 +177,110 @@ public class TestHelper {
         return pscList;
     }
 
+    private ListSummary createListSummary() {
+        ListSummary listSummary = new ListSummary();
+        listSummary.setEtag("string");
+        listSummary.setName("string");
+        NameElements nameElements = new NameElements();
+        nameElements.setTitle("Mr");
+        nameElements.setForename("Forname");
+        nameElements.setMiddleName("Middle");
+        nameElements.setSurname("Surname");
+        listSummary.setNameElements(nameElements);
+        Address address = new Address();
+        address.setAddressLine1("1 street");
+        address.setAddressLine2("2 street");
+        address.setCountry("uk");
+        address.setRegion("south");
+        address.setPremises("prem");
+        address.setPoBox("po");
+        address.setLocality("Local");
+        address.setCareOf("care");
+        address.setPostalCode("post");
+        listSummary.setAddress(address);
+        listSummary.setCeasedOn(LocalDate.now());
+        listSummary.setIsSanctioned(true);
+        listSummary.setNationality("British");
+        listSummary.setCountryOfResidence("Uk");
+        listSummary.setDescription(ListSummary.DescriptionEnum
+                .SUPER_SECURE_PERSONS_WITH_SIGNIFICANT_CONTROL);
+        listSummary.setPrincipalOfficeAddress(address);
+        return listSummary;
+    }
+
     private Links createLinks() {
         Links links = new Links();
-        links.setSelf(String.format("/company/%s/persons-with-significant-control-statements", COMPANY_NUMBER));
+        links.setSelf(String.format("/company/%s/persons-with-significant-control", "1234567"));
         return links;
+    }
+
+    public MetricsApi createMetrics() {
+        MetricsApi metrics = new MetricsApi();
+        CountsApi counts = new CountsApi();
+        PscApi pscs = new PscApi();
+        pscs.setActiveStatementsCount(1);
+        pscs.setWithdrawnStatementsCount(1);
+        pscs.setStatementsCount(2);
+        counts.setPersonsWithSignificantControl(pscs);
+        metrics.setCounts(counts);
+        return metrics;
+    }
+
+    public PscList createPscListWithNoMetrics() {
+        ListSummary listSummary = new ListSummary();
+        Identification identification = new Identification();
+        identification.setPlaceRegistered("x");
+        identification.setCountryRegistered("x");
+        identification.setRegistrationNumber("x");
+        identification.setLegalAuthority("x");
+        identification.setLegalForm("x");
+        listSummary.setIdentification(identification);
+        PscList pscList = new PscList();
+        pscList.setItems(Collections.singletonList(listSummary));
+        pscList.setStartIndex(0);
+        pscList.setItemsPerPage(25);
+        pscList.setLinks(createLinks());
+        return pscList;
+    }
+
+    public PscList createPscListRegisterView() {
+        ListSummary listSummary = new ListSummary();
+        Identification identification = new Identification();
+        identification.setPlaceRegistered("x");
+        identification.setCountryRegistered("x");
+        identification.setRegistrationNumber("x");
+        identification.setLegalAuthority("x");
+        identification.setLegalForm("x");
+        listSummary.setIdentification(identification);
+        PscList pscList = new PscList();
+        pscList.setItems(Collections.singletonList(listSummary));
+        pscList.setActiveCount(1);
+        pscList.setCeasedCount(0);
+        pscList.setTotalResults(1);
+        pscList.setStartIndex(0);
+        pscList.setItemsPerPage(25);
+        pscList.setLinks(createLinks());
+        return pscList;
+    }
+
+    public MetricsApi createMetricsRegisterView() {
+        MetricsApi metrics = new MetricsApi();
+        CountsApi counts = new CountsApi();
+        PscApi pscs = new PscApi();
+        pscs.setActiveStatementsCount(1);
+        pscs.setWithdrawnStatementsCount(0);
+        pscs.setStatementsCount(1);
+        counts.setPersonsWithSignificantControl(pscs);
+        metrics.setCounts(counts);
+
+        RegistersApi registers = new RegistersApi();
+        RegisterApi pscStatements = new RegisterApi();
+        pscStatements.setRegisterMovedTo("public-register");
+        String date = "2020-12-20T06:00:00Z";
+        OffsetDateTime dt = OffsetDateTime.parse(date);
+        pscStatements.setMovedOn(dt);
+        registers.setPersonsWithSignificantControl(pscStatements);
+        metrics.setRegisters(registers);
+        return metrics;
     }
 }
