@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import uk.gov.companieshouse.api.api.CompanyMetricsApiService;
 import uk.gov.companieshouse.api.exception.ResourceNotFoundException;
 import uk.gov.companieshouse.api.psc.CorporateEntity;
 import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
@@ -39,6 +40,7 @@ public class CompanyPscController {
 
     @Autowired
     CompanyPscService pscService;
+
 
     private static final Logger LOGGER = LoggerFactory.getLogger("psc-data-api");
 
@@ -308,7 +310,7 @@ public class CompanyPscController {
      */
     @GetMapping("")
     public ResponseEntity<PscList> searchPscListSummary(
-            @PathVariable String companyNumber,
+            @PathVariable("company_number") String companyNumber,
             @RequestParam(
                     value = "items_per_page",
                     required = false, defaultValue = "25") Integer itemsPerPage,
@@ -332,7 +334,7 @@ public class CompanyPscController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         } catch (DataAccessException exception) {
             LOGGER.error(exception.getMessage());
-            return ResponseEntity.internalServerError().build();
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build();
         }
     }
 

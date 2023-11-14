@@ -1,19 +1,61 @@
 Feature: Get list summary
 
-  Scenario Outline: Get list summary successfully
+  Scenario Outline: Processing Psc List GET request successfully
+
     Given Psc data api service is running
     And a PSC exists for "<company_number>" for List summary
     When a Get request is sent for "<company_number>" for  List summary
-    And the Get call response body should match "<result>" file for List Summary
     Then I should receive 200 status code
+    And the Get call response body should match "<result>" file for List Summary
 
     Examples:
-      | company_number | notificationId              | result                                     |
-      | 34777777       | ZfTs9WeeqpXTqf6dc6FZ4C0H0ZX | Super_secure_get_request_result        |
+      | company_number | result                       |
+      | 34777777       | psc_list_34777777            |
 
 
 
-  Scenario Outline: Get super secure when sending get request without Eric headers
+  Scenario Outline: Processing Psc List GET register view request successfully
+
+    Given Psc data api service is running
+    And a PSC exists for "<companyNumber>" for List summary
+    And Company Metrics API is available for company number "<companyNumber>"
+    When a Get request is sent for "<companyNumber>" for  List summary
+    Then I should receive 200 status code
+    And the Get call response body should match "<result>" file for List Summary
+
+    Examples:
+      | companyNumber | result                                     |
+      | 34777777      | psc_list_34777777_register_view_true       |
+
+
+  Scenario Outline: Processing Psc List GET register view request unsuccessfully
+  when metrics is unavailable
+
+    Given Psc data api service is running
+    And a PSC exists for "<company_number>" for List summary
+    And Company Metrics API is unavailable
+    When I send a GET statement list request for company number in register view "<company_number>"
+    Then I should receive 404 status code
+
+    Examples:
+      | company_number |
+      | 34777777       |
+
+
+  Scenario Outline: Processing Psc List GET register view request unsuccessfully
+  when no company psc statements in public register
+
+    Given Psc data api service is running
+    And nothing is persisted to the database
+    And Company Metrics API is available for company number "<company_number>"
+    When a Get request is sent for "<company_number>" for  List summary
+    Then I should receive 404 status code
+
+    Examples:
+      | company_number |
+      | 34777777       |
+
+  Scenario Outline: Get Psc List when sending get request without Eric headers
 
     Given Psc data api service is running
     And a PSC exists for "<company_number>" for List summary
@@ -21,15 +63,17 @@ Feature: Get list summary
     Then I should receive 401 status code
 
     Examples:
-      | company_number | notificationId              |
-      | 34777777       | ZfTs9WeeqpXTqf6dc6FZ4C0H0ZX |
+      | company_number |
+      | 34777777       |
 
-  Scenario Outline: Get PSC for super secure unsuccessfully - PSC resource does not exist
-    Given a PSC does not exist for "<company_number>"
-    When a Get request has been sent for "<company_number>" for List summary
-    Then I should receive 404 status code
+  Scenario Outline: Get PSC unsuccessfully while database is down
+    Given Psc data api service is running
+    And a PSC does not exist for "<company_number>"
+    And the database is down
+    When a Get request is sent for "<company_number>" for  List summary
+    Then I should receive 503 status code
 
     Examples:
-      | company_number | notificationId              |
-      | 34777777       | ZfTs9WeeqpXTqf6dc6FZ4C0H0ZX |
+      | company_number |
+      | 34777777       |
 

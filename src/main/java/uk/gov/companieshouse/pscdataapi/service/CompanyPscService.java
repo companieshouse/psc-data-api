@@ -54,6 +54,7 @@ public class CompanyPscService {
     private final DateTimeFormatter dateTimeFormatter =
             DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSSSSS");
 
+
     @Autowired
     private Logger logger;
     @Autowired
@@ -395,8 +396,9 @@ public class CompanyPscService {
     }
 
 
-    /** Get PSC List from database. */
 
+
+    /** Get PSC List from database. */
     public PscList retrievePscListSummaryFromDb(String companyNumber, Integer startIndex,
                                                  boolean registerView, Integer itemsPerPage) {
 

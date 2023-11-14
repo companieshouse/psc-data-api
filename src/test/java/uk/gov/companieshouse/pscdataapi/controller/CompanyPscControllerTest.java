@@ -767,7 +767,7 @@ class CompanyPscControllerTest {
                         .header("ERIC-Identity", "SOME_IDENTITY")
                         .header("ERIC-Identity-Type", "key")
                         //.contentType(APPLICATION_JSON)
-                        .header("x-request-id", "123456")
+//                        .header("x-request-id", "123456")
                         .header("ERIC-Authorised-Key-Roles", "*")
                         .header("ERIC-Authorised-Key-Privileges", "internal-app")
                         .header("items_per_page", 5)
@@ -809,7 +809,5 @@ class CompanyPscControllerTest {
                         .header("ERIC-IDENTITY-TYPE", ERIC_IDENTITY_TYPE))
                 .andExpect(status().isOk());
     }
-
-
 
 }

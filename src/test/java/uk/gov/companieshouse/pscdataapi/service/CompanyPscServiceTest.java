@@ -22,6 +22,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.api.api.CompanyMetricsApiService;
 import uk.gov.companieshouse.api.exception.ResourceNotFoundException;
@@ -78,6 +79,7 @@ class CompanyPscServiceTest {
     @Captor
     private ArgumentCaptor<String> dateCaptor;
 
+    @Spy
     @InjectMocks
     private CompanyPscService service;
 
@@ -515,7 +517,7 @@ class CompanyPscServiceTest {
     }
 
     @Test
-    void whenNoStatementsExistGetStatementListShouldThrow() throws JsonProcessingException {
+    void whenNoPSCExistGetPSCListShouldThrow() throws JsonProcessingException {
 
         when(repository.getPscDocumentList(anyString(), anyInt(), anyInt())).thenReturn(Optional.of(new ArrayList<PscDocument>()));
         assertThrows(ResourceNotFoundException.class, ()-> service.retrievePscListSummaryFromDb( MOCK_COMPANY_NUMBER, 0, false,25));
@@ -572,7 +574,7 @@ class CompanyPscServiceTest {
     }
 
     @Test
-    void whenCompanyNotInPublicRegisterGetStatementListShouldThrow() throws ResourceNotFoundException, IOException {
+    void whenCompanyNotInPublicRegisterGetPSCListShouldThrow() throws ResourceNotFoundException, IOException {
         MetricsApi metricsApi = testHelper.createMetrics();
         RegistersApi registersApi = new RegistersApi();
         metricsApi.setRegisters(registersApi);
@@ -587,6 +589,7 @@ class CompanyPscServiceTest {
         String expectedMessage = "company 1234567 not on public register";
         String actualMessage = ex.getMessage();
         assertTrue(actualMessage.contains(expectedMessage));
+        verify(service, times(1)).retrievePscListSummaryFromDb(MOCK_COMPANY_NUMBER,0, true, 25);
         verify(repository, times(0)).getListSummaryRegisterView(MOCK_COMPANY_NUMBER, 0, OffsetDateTime.parse("2020-12-20T06:00Z"), 25);
     }
 
