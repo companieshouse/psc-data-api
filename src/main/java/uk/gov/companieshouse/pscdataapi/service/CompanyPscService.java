@@ -478,10 +478,17 @@ public class CompanyPscService {
         List<ListSummary> documents = new ArrayList<>();
 
         for (PscDocument pscDocument : pscDocuments) {
-            ListSummary listSummary = transformPscDocToListSummary2(pscDocument);
+            ListSummary listSummary = transformPscDocToListSummary(pscDocument);
             documents.add(listSummary);
 
         }
+
+        Links links = new Links();
+        links.setSelf(String.format("/company/%s/persons-with-significant-control", companyNumber));
+        pscList.setItemsPerPage(itemsPerPage);
+        pscList.setLinks(links);
+        pscList.setStartIndex(startIndex);
+        pscList.setItems(documents);
 
         companyMetrics.ifPresentOrElse(metricsApi -> {
             try {
@@ -513,17 +520,12 @@ public class CompanyPscService {
                         companyNumber));
             });
 
-        Links links = new Links();
-        links.setSelf(String.format("/company/%s/persons-with-significant-control", companyNumber));
-        pscList.setItemsPerPage(itemsPerPage);
-        pscList.setLinks(links);
-        pscList.setStartIndex(startIndex);
-        pscList.setItems(documents);
+
         return pscList;
 
     }
 
-    private ListSummary transformPscDocToListSummary2(PscDocument  pscDocument) {
+    private ListSummary transformPscDocToListSummary(PscDocument  pscDocument) {
 
         ListSummary listSummary = new ListSummary();
 
