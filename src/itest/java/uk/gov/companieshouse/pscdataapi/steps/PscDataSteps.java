@@ -536,7 +536,7 @@ public class PscDataSteps {
         identification.setCountryRegistered("string");
         identification.setLegalAuthority("string");
         identification.setLegalForm("string");
-        document.setIdentification(identification);
+        document.setIdentification(new PscIdentification(identification));
 
         document.setData(pscData);
 

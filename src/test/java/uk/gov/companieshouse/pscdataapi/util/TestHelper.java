@@ -15,14 +15,7 @@ import uk.gov.companieshouse.api.psc.InternalData;
 import uk.gov.companieshouse.api.psc.ItemLinkTypes;
 import uk.gov.companieshouse.api.psc.SensitiveData;
 import uk.gov.companieshouse.api.psc.UsualResidentialAddress;
-import uk.gov.companieshouse.pscdataapi.models.Address;
-import uk.gov.companieshouse.pscdataapi.models.DateOfBirth;
-import uk.gov.companieshouse.pscdataapi.models.Links;
-import uk.gov.companieshouse.pscdataapi.models.NameElements;
-import uk.gov.companieshouse.pscdataapi.models.PscData;
-import uk.gov.companieshouse.pscdataapi.models.PscDocument;
-import uk.gov.companieshouse.pscdataapi.models.PscSensitiveData;
-import uk.gov.companieshouse.pscdataapi.models.Updated;
+import uk.gov.companieshouse.pscdataapi.models.*;
 
 public class TestHelper {
     public static final String INDIVIDUAL_KIND = "individual-person-with-significant-control";
@@ -139,7 +132,7 @@ public class TestHelper {
             Identification identification = new Identification();
             identification.setLegalForm("Form");
             identification.setLegalAuthority("Authority");
-            output.setIdentification(identification);
+            output.setIdentification(new PscIdentification(identification));
         } else if(kind.contains("corporate")) {
             Identification identification = new Identification();
             identification.setLegalForm("Form");
@@ -147,7 +140,7 @@ public class TestHelper {
             identification.setCountryRegistered("Wales");
             identification.setPlaceRegistered("Cardiff");
             identification.setRegistrationNumber("16102009");
-            output.setIdentification(identification);
+            output.setIdentification(new PscIdentification(identification));
         }
 
         return output;

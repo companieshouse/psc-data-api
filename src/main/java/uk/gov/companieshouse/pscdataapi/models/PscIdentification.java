@@ -119,4 +119,3 @@ public class PscIdentification {
                 legalForm, legalAuthority, countryRegistered, placeRegistered, registrationNumber);
     }
 }
-
