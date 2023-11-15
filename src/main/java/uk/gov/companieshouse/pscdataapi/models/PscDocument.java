@@ -44,7 +44,7 @@ public class PscDocument {
     private PscSensitiveData sensitiveData;
 
     @Field("identification")
-    private Identification identification;
+    private PscIdentification identification;
 
     public String getId() {
         return id;
@@ -126,11 +126,11 @@ public class PscDocument {
         this.sensitiveData = sensitiveData;
     }
 
-    public Identification getIdentification() {
+    public PscIdentification getIdentification() {
         return identification;
     }
 
-    public void setIdentification(Identification identification) {
+    public void setIdentification(PscIdentification identification) {
         this.identification = identification;
     }
 
