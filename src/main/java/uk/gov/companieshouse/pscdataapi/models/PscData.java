@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Objects;
 
 import org.springframework.data.mongodb.core.mapping.Field;
-import uk.gov.companieshouse.api.psc.Identification;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PscData {
