@@ -527,8 +527,6 @@ public class CompanyPscTransformer {
         data.setSanctioned(requestBody.getExternalData().getData().getIsSanctioned());
         data.setServiceAddressIsSameAsRegisteredOfficeAddress(requestBody.getExternalData()
                     .getData().getServiceAddressSameAsRegisteredOfficeAddress());
-//        data.setIdentification(new PscIdentification(
-//                requestBody.getExternalData().getData().getIdentification()));
         return data;
     }
 

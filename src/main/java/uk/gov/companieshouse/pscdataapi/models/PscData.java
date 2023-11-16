@@ -53,10 +53,6 @@ public class PscData {
     @Field("links")
     private Links links;
 
-//    @Field("identification")
-//    private PscIdentification identification;
-
-
     public LocalDate getCeasedOn() {
         return ceasedOn;
     }
@@ -172,14 +168,6 @@ public class PscData {
         this.ceased = ceased;
     }
 
-//    public PscIdentification getIdentification() {
-//        return identification;
-//    }
-//
-//    public void setIdentification(PscIdentification identification) {
-//        this.identification = identification;
-//    }
-
     @Override
     public String toString() {
         return "PscData{"
@@ -217,8 +205,6 @@ public class PscData {
                 + nameElements
                 + ", links="
                 + links
-//                + ", identification="
-//                + identification
                 + '}';
     }
 
@@ -246,19 +232,13 @@ public class PscData {
                 && Objects.equals(naturesOfControl, pscData.naturesOfControl)
                 && Objects.equals(nameElements, pscData.nameElements)
                 && Objects.equals(links, pscData.links);
-               // && Objects.equals(identification, pscData.identification);
     }
-
 
     @Override
     public int hashCode() {
         return Objects.hash(ceasedOn, etag, address, name, nationality, countryOfResidence,
                 kind, description, serviceAddressIsSameAsRegisteredOfficeAddress,
                 isSanctioned, ceased, naturesOfControl,
-                nameElements, links
-
-                //,identification
-
-        );
+                nameElements, links);
     }
 }
