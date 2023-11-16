@@ -55,6 +55,13 @@
         "surname" : "JONES",
         "forename" : "PHIL",
         "middlename" : "tom"
+      },
+      "identification" : {
+        "legal_authority": "Cardiff",
+        "legal_form": "PSCX",
+        "country_registered" : "United Kingdom",
+        "registration_number" : "123456",
+        "place_registered" : "Cardiff"
       }
     }
   }

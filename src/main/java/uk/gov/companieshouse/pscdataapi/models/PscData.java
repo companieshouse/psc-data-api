@@ -52,7 +52,6 @@ public class PscData {
     @Field("links")
     private Links links;
 
-
     public LocalDate getCeasedOn() {
         return ceasedOn;
     }
@@ -233,7 +232,6 @@ public class PscData {
                 && Objects.equals(nameElements, pscData.nameElements)
                 && Objects.equals(links, pscData.links);
     }
-
 
     @Override
     public int hashCode() {
