@@ -12,10 +12,10 @@ import org.springframework.util.FileCopyUtils;
 import uk.gov.companieshouse.api.metrics.*;
 import uk.gov.companieshouse.api.psc.*;
 import uk.gov.companieshouse.api.psc.InternalData;
-import uk.gov.companieshouse.api.psc.ItemLinkTypes;
-import uk.gov.companieshouse.api.psc.SensitiveData;
-import uk.gov.companieshouse.api.psc.UsualResidentialAddress;
 import uk.gov.companieshouse.pscdataapi.models.*;
+import uk.gov.companieshouse.pscdataapi.models.Address;
+import uk.gov.companieshouse.pscdataapi.models.DateOfBirth;
+import uk.gov.companieshouse.pscdataapi.models.NameElements;
 
 public class TestHelper {
     public static final String INDIVIDUAL_KIND = "individual-person-with-significant-control";
@@ -183,7 +183,7 @@ public class TestHelper {
         nameElements.setMiddleName("Middle");
         nameElements.setSurname("Surname");
         listSummary.setNameElements(nameElements);
-        Address address = new Address();
+        uk.gov.companieshouse.api.psc.Address address = new uk.gov.companieshouse.api.psc.Address();
         address.setAddressLine1("1 street");
         address.setAddressLine2("2 street");
         address.setCountry("uk");

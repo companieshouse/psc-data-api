@@ -526,11 +526,21 @@ class CompanyPscServiceTest {
         PscList expectedPscList = testHelper.createPscList();
         PscData pscData = new PscData();
         document.setData(pscData);
+        ListSummary listSummary = new ListSummary();
+        Identification identification = new Identification();
+        identification.setPlaceRegistered("x");
+        identification.setCountryRegistered("x");
+        identification.setRegistrationNumber("x");
+        identification.setLegalAuthority("x");
+        identification.setLegalForm("x");
+        listSummary.setIdentification(identification);
 
 
         when(companyMetricsApiService.getCompanyMetrics(MOCK_COMPANY_NUMBER))
                 .thenReturn(Optional.ofNullable(testHelper.createMetrics()));
         when(repository.getPscDocumentList(anyString(), anyInt(), anyInt())).thenReturn(Optional.of(Collections.singletonList(document)));
+        when(transformer.transformPscDocToListSummary(document))
+                .thenReturn(listSummary);
 
         PscList PscDocumentList = service.retrievePscListSummaryFromDb(MOCK_COMPANY_NUMBER,0, false,25);
 
@@ -543,11 +553,25 @@ class CompanyPscServiceTest {
         PscList expectedPscList = testHelper.createPscListWithNoMetrics();
         PscData pscData = new PscData();
         document.setData(pscData);
+        document.setId("1234");
+
+        ListSummary listSummary = new ListSummary();
+        Identification identification = new Identification();
+        identification.setPlaceRegistered("x");
+        identification.setCountryRegistered("x");
+        identification.setRegistrationNumber("x");
+        identification.setLegalAuthority("x");
+        identification.setLegalForm("x");
+        listSummary.setIdentification(identification);
+
 
 
         when(companyMetricsApiService.getCompanyMetrics(MOCK_COMPANY_NUMBER))
                 .thenReturn(Optional.empty());
         when(repository.getPscDocumentList(anyString(), anyInt(), anyInt())).thenReturn(Optional.of(Collections.singletonList(document)));
+
+        when(transformer.transformPscDocToListSummary(document))
+                .thenReturn(listSummary);
 
         PscList PscDocumentList = service.retrievePscListSummaryFromDb(MOCK_COMPANY_NUMBER,0, false,25);
 

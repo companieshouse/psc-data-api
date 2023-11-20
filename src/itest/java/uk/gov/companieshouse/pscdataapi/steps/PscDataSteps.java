@@ -1317,8 +1317,9 @@ public class PscDataSteps {
 
     @And("Company Metrics API is available for company number {string}")
     public void companyMetricsAPIIsAvailableForCompanyNumber(String companyNumber) throws IOException {
-        File metricsFile = new ClassPathResource("resources/json/input/company_metrics_34777777.json").getFile();
-        MetricsApi metrics = objectMapper.readValue(metricsFile, MetricsApi.class);
+
+        String data = FileCopyUtils.copyToString(new InputStreamReader(new FileInputStream("src/itest/resources/json/input/company_metrics_34777777.json")));
+        MetricsApi metrics = objectMapper.readValue(data, MetricsApi.class);
         Optional<MetricsApi> metricsApi = Optional.ofNullable(metrics);
 
 
