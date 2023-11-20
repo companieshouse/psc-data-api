@@ -822,6 +822,130 @@ public class CompanyPscTransformer {
             throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,"PscDocument not found");
         }
     }
+
+    /**
+     * Transform Legal person Beneficial Owner.
+     * @param pscDocument PSC.
+     * @return ListSummary mongo Document.
+     */
+    public ListSummary transformPscDocToListSummary(PscDocument  pscDocument) {
+
+        ListSummary listSummary = new ListSummary();
+
+        PscData getDocument = pscDocument.getData();
+
+        if (getDocument.getEtag() != null) {
+            listSummary.setEtag(getDocument.getEtag());
+        }
+        listSummary.setKind(listSummary.getKind());
+
+        if (getDocument.getName() != null) {
+            listSummary.setName(getDocument.getName());
+        }
+        if (getDocument.getNameElements() != null) {
+            NameElements nameElements = new NameElements();
+            if (getDocument.getNameElements().getTitle() != null) {
+                nameElements.setTitle(getDocument.getNameElements().getTitle());
+            }
+            if (getDocument.getNameElements().getForename() != null) {
+                nameElements.setForename(getDocument.getNameElements().getForename());
+            }
+            if (getDocument.getNameElements().getMiddleName() != null) {
+                nameElements.setMiddleName(getDocument
+                        .getNameElements().getMiddleName());
+            }
+            if (getDocument.getNameElements().getSurname() != null) {
+                nameElements.setSurname(getDocument.getNameElements().getSurname());
+            }
+            listSummary.setNameElements(nameElements);
+        }
+        if (getDocument.getAddress() != null) {
+            Address address = new Address();
+
+            if (getDocument.getAddress().getAddressLine1() != null) {
+                address.setAddressLine1(getDocument.getAddress().getAddressLine1());
+            }
+            if (getDocument.getAddress().getAddressLine2() != null) {
+                address.setAddressLine2(getDocument.getAddress().getAddressLine2());
+            }
+            if (getDocument.getAddress().getCountry() != null) {
+                address.setCountry(getDocument.getAddress().getCountry());
+            }
+            if (getDocument.getAddress().getLocality() != null) {
+                address.setLocality(getDocument.getAddress().getLocality());
+            }
+            if (getDocument.getAddress().getPostalCode() != null) {
+                address.setPostalCode(getDocument.getAddress().getPostalCode());
+            }
+            if (getDocument.getAddress().getPremises() != null) {
+                address.setPremises(getDocument.getAddress().getPremises());
+            }
+            if (getDocument.getAddress().getRegion() != null) {
+                address.setRegion(getDocument.getAddress().getRegion());
+            }
+            if (getDocument.getAddress().getCareOf() != null) {
+                address.setCareOf(getDocument.getAddress().getCareOf());
+            }
+            if (getDocument.getAddress().getPoBox() != null) {
+                address.setPoBox(getDocument.getAddress().getPoBox());
+            }
+            listSummary.setAddress(convertAddress(address));
+            listSummary.setPrincipalOfficeAddress(convertAddress(address));
+        }
+        if (getDocument.getNaturesOfControl() != null) {
+            listSummary
+                    .setNaturesOfControl(getDocument.getNaturesOfControl());
+        }
+        if (getDocument.getLinks() != null) {
+            listSummary.setLinks(getDocument.getLinks());
+        }
+        if (getDocument.getCeasedOn() != null) {
+            listSummary.setCeasedOn(getDocument.getCeasedOn());
+        }
+        if (getDocument.getSanctioned() != null) {
+            listSummary.setIsSanctioned(getDocument.getSanctioned());
+        }
+        if (getDocument.getNationality() != null) {
+            listSummary.setNationality(getDocument.getNationality());
+        }
+        if (getDocument.getCountryOfResidence() != null) {
+            listSummary.setCountryOfResidence(getDocument.getCountryOfResidence());
+        }
+        if (getDocument.getDescription() != null) {
+            listSummary.setDescription(
+                    ListSummary.DescriptionEnum.SUPER_SECURE_PERSONS_WITH_SIGNIFICANT_CONTROL);
+        }
+        if (pscDocument.getIdentification() != null) {
+            Identification identification = new Identification();
+            if (pscDocument.getIdentification().getCountryRegistered() != null) {
+                identification.setCountryRegistered(
+                        pscDocument.getIdentification().getCountryRegistered());
+            }
+            if (pscDocument.getIdentification().getLegalAuthority() != null) {
+                identification.setLegalAuthority(
+                        pscDocument.getIdentification().getLegalAuthority());
+            }
+            if (pscDocument.getIdentification().getLegalForm() != null) {
+                identification.setLegalForm(
+                        pscDocument.getIdentification().getLegalForm());
+            }
+            if (pscDocument.getIdentification().getPlaceRegistered() != null) {
+                identification.setPlaceRegistered(
+                        pscDocument.getIdentification().getPlaceRegistered());
+            }
+            if (pscDocument.getIdentification().getRegistrationNumber() != null) {
+                identification.setRegistrationNumber(
+                        pscDocument.getIdentification().getRegistrationNumber());
+            }
+            if (pscDocument.getData().getNaturesOfControl() != null) {
+                listSummary
+                        .setNaturesOfControl(pscDocument.getData().getNaturesOfControl());
+            }
+            listSummary.setIdentification(identification);
+        }
+
+        return listSummary;
+    }
     
     private uk.gov.companieshouse.api.psc.Address convertAddress(
                 uk.gov.companieshouse.pscdataapi.models.Address inputAddress) {
