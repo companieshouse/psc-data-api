@@ -7,10 +7,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import uk.gov.companieshouse.api.exception.ResourceNotFoundException;
 import uk.gov.companieshouse.api.exception.ServiceUnavailableException;
 import uk.gov.companieshouse.api.psc.*;
+import uk.gov.companieshouse.pscdataapi.models.Links;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 import uk.gov.companieshouse.pscdataapi.models.Updated;
 import uk.gov.companieshouse.pscdataapi.service.CompanyPscService;
@@ -19,6 +22,9 @@ import uk.gov.companieshouse.pscdataapi.util.TestHelper;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
+
+import java.util.Collections;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -36,6 +42,8 @@ class CompanyPscControllerTest {
     private static final String PUT_URL =
             "/company/123456789/persons-with-significant-control/123456789/full_record";
 
+    private static final String GET_List_Summary_URL =
+            "/company/123456789/persons-with-significant-control/";
     private static final String GET_URL =
             "/company/123456789/persons-with-significant-control/individual/123456789";
 
@@ -95,6 +103,10 @@ class CompanyPscControllerTest {
     private LegalPerson legalPerson;
     private LegalPersonBeneficialOwner legalPersonBeneficialOwner;
 
+    private ListSummary listSummary;
+
+    private TestHelper testHelper;
+
     private String dateString;
 
     @MockBean
@@ -108,6 +120,7 @@ class CompanyPscControllerTest {
 
     @BeforeEach
     public void setUp() {
+        testHelper = new TestHelper();
         OffsetDateTime date = OffsetDateTime.now();
         request = new FullRecordCompanyPSCApi();
         InternalData internal = new InternalData();
@@ -743,6 +756,58 @@ class CompanyPscControllerTest {
 
     }
 
+    @Test
+    void callPscStatementListGetRequestWithParams() throws Exception {
+        when(companyPscService.retrievePscListSummaryFromDb(MOCK_COMPANY_NUMBER, 2, false, 5))
+                .thenReturn(testHelper.createPscList());
 
+        mockMvc.perform(MockMvcRequestBuilders
+                        .get(GET_List_Summary_URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("ERIC-Identity", "SOME_IDENTITY")
+                        .header("ERIC-Identity-Type", "key")
+                        //.contentType(APPLICATION_JSON)
+//                        .header("x-request-id", "123456")
+                        .header("ERIC-Authorised-Key-Roles", "*")
+                        .header("ERIC-Authorised-Key-Privileges", "internal-app")
+                        .header("items_per_page", 5)
+                        .header("start_index", 2))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void callPscStatementListGetRequestWithRegisterView() throws Exception {
+        when(companyPscService.retrievePscListSummaryFromDb(MOCK_COMPANY_NUMBER, 2, true, 5))
+                .thenReturn(testHelper.createPscList());
+
+        mockMvc.perform(MockMvcRequestBuilders
+                        .get(GET_List_Summary_URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("ERIC-Identity", "SOME_IDENTITY")
+                        .header("ERIC-Identity-Type", "key")
+                        //.contentType(APPLICATION_JSON)
+                        .header("x-request-id", "123456")
+                        .header("ERIC-Authorised-Key-Roles", "*")
+                        .header("ERIC-Authorised-Key-Privileges", "internal-app")
+                        .header("items_per_page", 5)
+                        .header("start_index", 2))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void callPscStatementListGetRequestNoParams() throws Exception {
+        when(companyPscService.retrievePscListSummaryFromDb(MOCK_COMPANY_NUMBER, 0, false, 25))
+                .thenReturn(testHelper.createPscList());
+
+        mockMvc.perform(MockMvcRequestBuilders
+                        .get(GET_List_Summary_URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("x-request-id", "123456")
+                        .header("ERIC-Authorised-Key-Roles", "*")
+                        .header("ERIC-Authorised-Key-Privileges", "internal-app")
+                        .header("ERIC-IDENTITY", ERIC_IDENTITY)
+                        .header("ERIC-IDENTITY-TYPE", ERIC_IDENTITY_TYPE))
+                .andExpect(status().isOk());
+    }
 
 }

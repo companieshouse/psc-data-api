@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import uk.gov.companieshouse.api.api.CompanyMetricsApiService;
 import uk.gov.companieshouse.api.exception.ResourceNotFoundException;
 import uk.gov.companieshouse.api.psc.CorporateEntity;
 import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
@@ -21,6 +22,7 @@ import uk.gov.companieshouse.api.psc.Individual;
 import uk.gov.companieshouse.api.psc.IndividualBeneficialOwner;
 import uk.gov.companieshouse.api.psc.LegalPerson;
 import uk.gov.companieshouse.api.psc.LegalPersonBeneficialOwner;
+import uk.gov.companieshouse.api.psc.PscList;
 import uk.gov.companieshouse.api.psc.SuperSecure;
 import uk.gov.companieshouse.api.psc.SuperSecureBeneficialOwner;
 import uk.gov.companieshouse.logging.Logger;
@@ -38,6 +40,7 @@ public class CompanyPscController {
 
     @Autowired
     CompanyPscService pscService;
+
 
     private static final Logger LOGGER = LoggerFactory.getLogger("psc-data-api");
 
@@ -297,5 +300,43 @@ public class CompanyPscController {
             return ResponseEntity.internalServerError().build();
         }
     }
+
+
+    /**
+     * Get the data object for given company profile number.
+     *
+     * @param companyNumber The number of the company
+     * @return ResponseEntity
+     */
+    @GetMapping("")
+    public ResponseEntity<PscList> searchPscListSummary(
+            @PathVariable("company_number") String companyNumber,
+            @RequestParam(
+                    value = "items_per_page",
+                    required = false, defaultValue = "25") Integer itemsPerPage,
+            @RequestParam(
+                    value = "start_index",
+                    required = false, defaultValue = "0") final Integer startIndex,
+            @RequestParam(
+                    value = "register_view", required = false) boolean registerView) {
+        itemsPerPage = Math.min(itemsPerPage, 100);
+        try {
+            LOGGER.info(String.format(
+                    "Retrieving psc list data for company number %s",
+                    companyNumber));
+            PscList pscList = pscService.retrievePscListSummaryFromDb(companyNumber,
+                    startIndex,
+                    registerView,
+                    itemsPerPage);
+            return new ResponseEntity<>(pscList, HttpStatus.OK);
+        } catch (ResourceNotFoundException resourceNotFoundException) {
+            LOGGER.error(resourceNotFoundException.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (DataAccessException exception) {
+            LOGGER.error(exception.getMessage());
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build();
+        }
+    }
+
 
 }

@@ -1,12 +1,18 @@
 package uk.gov.companieshouse.pscdataapi.service;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import net.bytebuddy.implementation.bind.annotation.Super;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -16,8 +22,13 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.companieshouse.api.api.CompanyMetricsApiService;
 import uk.gov.companieshouse.api.exception.ResourceNotFoundException;
+import uk.gov.companieshouse.api.metrics.MetricsApi;
+import uk.gov.companieshouse.api.metrics.RegistersApi;
+import uk.gov.companieshouse.api.model.PscStatementDocument;
 import uk.gov.companieshouse.api.psc.*;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
@@ -25,12 +36,16 @@ import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
 import uk.gov.companieshouse.pscdataapi.models.*;
 import uk.gov.companieshouse.pscdataapi.repository.CompanyPscRepository;
 import uk.gov.companieshouse.pscdataapi.transform.CompanyPscTransformer;
+import uk.gov.companieshouse.pscdataapi.util.TestHelper;
 
 import javax.xml.transform.TransformerException;
 
+import static com.mongodb.internal.connection.tlschannel.util.Util.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -61,15 +76,22 @@ class CompanyPscServiceTest {
     @Captor
     private ArgumentCaptor<String> dateCaptor;
 
+    @Spy
     @InjectMocks
     private CompanyPscService service;
+
+    @Mock
+    CompanyMetricsApiService companyMetricsApiService;
 
     private FullRecordCompanyPSCApi request;
     private PscDocument document;
     private String dateString;
 
+    private TestHelper testHelper;
+
     @BeforeEach
     public void setUp() {
+        testHelper = new TestHelper();
         OffsetDateTime date = OffsetDateTime.now();
         request = new FullRecordCompanyPSCApi();
         InternalData internal = new InternalData();
@@ -489,6 +511,83 @@ class CompanyPscServiceTest {
         assertThrows(ResourceNotFoundException.class, () -> {
             service.getLegalPersonBeneficialOwnerPsc(MOCK_COMPANY_NUMBER, NOTIFICATION_ID);
         });
+    }
+
+    @Test
+    void whenNoPSCExistGetPSCListShouldThrow() throws JsonProcessingException {
+
+        when(repository.getPscDocumentList(anyString(), anyInt(), anyInt())).thenReturn(Optional.of(new ArrayList<PscDocument>()));
+        assertThrows(ResourceNotFoundException.class, ()-> service.retrievePscListSummaryFromDb( MOCK_COMPANY_NUMBER, 0, false,25));
+    }
+
+    @Test
+    void pscListReturnedByCompanyNumberFromRepository() throws ResourceNotFoundException, IOException {
+        TestHelper testHelper = new TestHelper();
+        PscList expectedPscList = testHelper.createPscList();
+        PscData pscData = new PscData();
+        document.setData(pscData);
+
+
+        when(companyMetricsApiService.getCompanyMetrics(MOCK_COMPANY_NUMBER))
+                .thenReturn(Optional.ofNullable(testHelper.createMetrics()));
+        when(repository.getPscDocumentList(anyString(), anyInt(), anyInt())).thenReturn(Optional.of(Collections.singletonList(document)));
+
+        PscList PscDocumentList = service.retrievePscListSummaryFromDb(MOCK_COMPANY_NUMBER,0, false,25);
+
+        assertEquals(expectedPscList, PscDocumentList);
+        verify(repository, times(1)).getPscDocumentList(MOCK_COMPANY_NUMBER, 0, 25);
+    }
+
+    @Test
+    void pscListWithNoMetricsReturnedByCompanyNumberFromRepository() throws ResourceNotFoundException, IOException {
+        PscList expectedPscList = testHelper.createPscListWithNoMetrics();
+        PscData pscData = new PscData();
+        document.setData(pscData);
+
+
+        when(companyMetricsApiService.getCompanyMetrics(MOCK_COMPANY_NUMBER))
+                .thenReturn(Optional.empty());
+        when(repository.getPscDocumentList(anyString(), anyInt(), anyInt())).thenReturn(Optional.of(Collections.singletonList(document)));
+
+        PscList PscDocumentList = service.retrievePscListSummaryFromDb(MOCK_COMPANY_NUMBER,0, false,25);
+
+        assertEquals(expectedPscList, PscDocumentList);
+        verify(repository, times(1)).getPscDocumentList(MOCK_COMPANY_NUMBER, 0, 25);
+    }
+
+    @Test
+    void whenNoMetricsDataFoundForCompanyInRegisterViewShouldThrow() throws ResourceNotFoundException, IOException {
+        when(companyMetricsApiService.getCompanyMetrics(MOCK_COMPANY_NUMBER))
+                .thenReturn(Optional.empty());
+
+        Exception ex = assertThrows(ResourceNotFoundException.class, () -> {
+            service.retrievePscListSummaryFromDb(MOCK_COMPANY_NUMBER,0, true,25);
+        });
+
+        String expectedMessage = "No company metrics data found for company number: 1234567";
+        String actualMessage = ex.getMessage();
+        assertTrue(actualMessage.contains(expectedMessage));
+        verify(repository, times(0)).getListSummaryRegisterView(MOCK_COMPANY_NUMBER, 0, OffsetDateTime.parse("2020-12-20T06:00Z"), 25);
+    }
+
+    @Test
+    void whenCompanyNotInPublicRegisterGetPSCListShouldThrow() throws ResourceNotFoundException, IOException {
+        MetricsApi metricsApi = testHelper.createMetrics();
+        RegistersApi registersApi = new RegistersApi();
+        metricsApi.setRegisters(registersApi);
+
+        when(companyMetricsApiService.getCompanyMetrics(MOCK_COMPANY_NUMBER))
+                .thenReturn(Optional.ofNullable(metricsApi));
+
+        Exception ex = assertThrows(ResourceNotFoundException.class, () -> {
+            service.retrievePscListSummaryFromDb(MOCK_COMPANY_NUMBER,0, true,25);
+        });
+
+        String expectedMessage = "company 1234567 not on public register";
+        String actualMessage = ex.getMessage();
+        assertTrue(actualMessage.contains(expectedMessage));
+        verify(service, times(1)).retrievePscListSummaryFromDb(MOCK_COMPANY_NUMBER,0, true, 25);
+        verify(repository, times(0)).getListSummaryRegisterView(MOCK_COMPANY_NUMBER, 0, OffsetDateTime.parse("2020-12-20T06:00Z"), 25);
     }
 
 }

@@ -11,6 +11,8 @@ chs:
       url: ${CHS_KAFKA_API_URL:localhost}
       resource-changed:
         uri: ${PSC_API_RESOURCE_CHANGED_URI:/private/resource-changed}
+    metrics:
+      url: ${API_LOCAL_URL:localhost}
 
 logger:
   namespace: psc-data-api

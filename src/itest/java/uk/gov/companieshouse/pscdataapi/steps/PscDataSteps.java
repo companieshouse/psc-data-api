@@ -11,22 +11,24 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import net.bytebuddy.implementation.bind.annotation.Super;
 import org.assertj.core.api.Assertions;
+import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.anyString;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.companieshouse.pscdataapi.config.AbstractMongoConfig.mongoDBContainer;
 
 import org.springframework.util.FileCopyUtils;
+import uk.gov.companieshouse.api.api.CompanyMetricsApiService;
+import uk.gov.companieshouse.api.metrics.MetricsApi;
+import uk.gov.companieshouse.api.model.PscStatementDocument;
 import uk.gov.companieshouse.api.psc.*;
 import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
 import uk.gov.companieshouse.pscdataapi.config.CucumberContext;
@@ -42,10 +44,7 @@ import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 import uk.gov.companieshouse.pscdataapi.repository.CompanyPscRepository;
 import uk.gov.companieshouse.pscdataapi.service.CompanyPscService;
 import javax.xml.transform.TransformerException;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -53,6 +52,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.logging.Logger;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -80,6 +80,9 @@ public class PscDataSteps {
 
     @Autowired
     private CompanyPscTransformer transformer;
+
+    @Mock
+    private CompanyMetricsApiService companyMetricsApiService;
 
     private final String COMPANY_NUMBER = "34777772";
     private final String NOTIFICATION_ID = "ZfTs9WeeqpXTqf6dc6FZ4C0H0ZZ";
@@ -1187,5 +1190,146 @@ public class PscDataSteps {
 
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
     }
+
+    @And("a PSC exists for {string} for List summary")
+    public void aPSCExistsForForListSummary(String companyNumber) throws JsonProcessingException {
+        String pscDataFile = FileReaderUtil.readFile("src/itest/resources/json/input/"+companyNumber+".json");
+        PscData pscData = objectMapper.readValue(pscDataFile, PscData.class);
+        PscDocument document = new PscDocument();
+
+        document.setId("ZfTs9WeeqpXTqf6dc6FZ4C0H0ZX");
+        document.setCompanyNumber(companyNumber);
+
+        PscDocument document2 = new PscDocument();
+        document2.setId("ZfTs9WeeqpXTqf6dc6FZ4C0H0ZZ");
+        document2.setCompanyNumber(companyNumber);
+        document2.setData(pscData);
+
+        document.setData(pscData);
+
+        mongoTemplate.save(document2);
+        mongoTemplate.save(document);
+        assertThat(companyPscRepository.getPscByCompanyNumberAndId(companyNumber,"ZfTs9WeeqpXTqf6dc6FZ4C0H0ZX")).isNotEmpty();
+    }
+
+    @When("a Get request is sent for {string} for  List summary")
+    public void aGetRequestIsSentForForListSummary(String companyNumber) throws IOException {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+
+        this.contextId = "5234234234";
+        CucumberContext.CONTEXT.set("contextId", this.contextId);
+        headers.set("x-request-id", this.contextId);
+        headers.set("ERIC-Identity", "TEST-IDENTITY");
+        headers.set("ERIC-Identity-Type", "key");
+        headers.set("ERIC-Authorised-Key-Roles", "*");
+
+        HttpEntity<String> request = new HttpEntity<String>(null, headers);
+
+        String uri =
+                "/company/{company_number}/persons-with-significant-control/";
+        ResponseEntity<PscList> response = restTemplate.exchange(uri,
+                HttpMethod.GET, request, PscList.class, companyNumber);
+
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+        CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
+    }
+
+    @And("the Get call response body should match {string} file for List Summary")
+    public void theGetCallResponseBodyShouldMatchFileForListSummary(String result) throws IOException {
+        String data = FileCopyUtils.copyToString(new InputStreamReader(new FileInputStream("src/itest/resources/json/output/psc_list_34777777_register_view_true.json")));
+        PscList expected = objectMapper.readValue(data, PscList.class);
+
+        PscList actual = CucumberContext.CONTEXT.get("getResponseBody");
+
+        assertThat(expected.getItemsPerPage()).isEqualTo(actual.getItemsPerPage());
+        assertThat(expected.getItems()).isEqualTo(actual.getItems());
+        assertThat(expected.getLinks()).isEqualTo(actual.getLinks());
+
+    }
+
+    @When("a Get request is sent for {string} without ERIC headers for List summary")
+    public void aGetRequestIsSentForWithoutERICHeadersForListSummary(String companyNumber) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+
+        this.contextId = "5234234234";
+        CucumberContext.CONTEXT.set("contextId", this.contextId);
+        headers.set("x-request-id", this.contextId);
+
+
+        HttpEntity<String> request = new HttpEntity<String>(null, headers);
+
+        String uri =
+                String.format("/company/%s/persons-with-significant-control/",companyNumber);
+        ResponseEntity<PscList> response = restTemplate.exchange(uri,
+                HttpMethod.GET, request, PscList.class, companyNumber );
+
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+        CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
+    }
+
+    @When("a Get request has been sent for {string} for List summary")
+    public void aGetRequestHasBeenSentForForListSummary(String companyNumber) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+
+        this.contextId = "5234234234";
+        CucumberContext.CONTEXT.set("contextId", this.contextId);
+        headers.set("x-request-id", this.contextId);
+        headers.set("ERIC-Identity", "TEST-IDENTITY");
+        headers.set("ERIC-Identity-Type", "key");
+        headers.set("ERIC-Authorised-Key-Roles", "*");
+
+        HttpEntity<String> request = new HttpEntity<String>(null, headers);
+
+        String uri =
+                String.format("/company/%s/persons-with-significant-control/",companyNumber);
+        ResponseEntity<PscList> response = restTemplate.exchange(uri,
+                HttpMethod.GET, request, PscList.class, companyNumber);
+
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+    }
+
+    @When("I send a GET statement list request for company number in register view {string}")
+    public void iSendAGETStatementListRequestForCompanyNumberInRegisterView(String companyNumber) throws IOException {
+
+        String uri = "/company/{company_number}/persons-with-significant-control?register_view=true";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("ERIC-Identity", "TEST-IDENTITY");
+        headers.set("ERIC-Identity-Type", "key");
+        headers.set("ERIC-Authorised-Key-Roles", "*");
+        HttpEntity<String> request = new HttpEntity<String>(null, headers);
+        ResponseEntity<PscList> response;
+        try {
+            response = restTemplate.exchange(uri, HttpMethod.GET, request,
+                    PscList.class, companyNumber);
+        } catch (Exception ex) {
+            response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+        CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
+    }
+
+    @And("Company Metrics API is available for company number {string}")
+    public void companyMetricsAPIIsAvailableForCompanyNumber(String companyNumber) throws IOException {
+        File metricsFile = new ClassPathResource("resources/json/input/company_metrics_34777777.json").getFile();
+        MetricsApi metrics = objectMapper.readValue(metricsFile, MetricsApi.class);
+        Optional<MetricsApi> metricsApi = Optional.ofNullable(metrics);
+
+
+        when(companyMetricsApiService.getCompanyMetrics("")).thenReturn(metricsApi);
+    }
+
+
+    @And("Company Metrics API is unavailable")
+    public void companyMetricsAPIIsUnavailable() throws IOException {
+        when(companyMetricsApiService.getCompanyMetrics("")).thenReturn(Optional.empty());
+    }
+
 }
 
