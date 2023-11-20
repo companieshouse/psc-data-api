@@ -33,10 +33,7 @@ import uk.gov.companieshouse.api.psc.*;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
-import uk.gov.companieshouse.pscdataapi.models.Created;
-import uk.gov.companieshouse.pscdataapi.models.PscData;
-import uk.gov.companieshouse.pscdataapi.models.PscDocument;
-import uk.gov.companieshouse.pscdataapi.models.Updated;
+import uk.gov.companieshouse.pscdataapi.models.*;
 import uk.gov.companieshouse.pscdataapi.repository.CompanyPscRepository;
 import uk.gov.companieshouse.pscdataapi.transform.CompanyPscTransformer;
 import uk.gov.companieshouse.pscdataapi.util.TestHelper;
@@ -123,7 +120,7 @@ class CompanyPscServiceTest {
         identification.setPlaceRegistered("x");
         identification.setLegalAuthority("x");
         identification.setRegistrationNumber("x");
-        document.setIdentification(identification);
+        document.setIdentification(new PscIdentification(identification));
 
 
     }

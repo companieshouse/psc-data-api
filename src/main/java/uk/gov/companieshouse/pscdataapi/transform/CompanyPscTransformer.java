@@ -26,14 +26,15 @@ import uk.gov.companieshouse.api.psc.SuperSecureBeneficialOwner;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.data.IndividualPscRoles;
 import uk.gov.companieshouse.pscdataapi.data.SecurePscRoles;
+
 import uk.gov.companieshouse.pscdataapi.models.Address;
 import uk.gov.companieshouse.pscdataapi.models.DateOfBirth;
 import uk.gov.companieshouse.pscdataapi.models.NameElements;
 import uk.gov.companieshouse.pscdataapi.models.PscData;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
+import uk.gov.companieshouse.pscdataapi.models.PscIdentification;
 import uk.gov.companieshouse.pscdataapi.models.PscSensitiveData;
 import uk.gov.companieshouse.pscdataapi.models.Updated;
-
 import uk.gov.companieshouse.pscdataapi.util.PscTransformationHelper;
 
 
@@ -123,7 +124,7 @@ public class CompanyPscTransformer {
                 if (pscDocument.getData().getAddress().getPoBox() != null) {
                     address.setPoBox(pscDocument.getData().getAddress().getPoBox());
                 }
-                individual.setAddress(address);
+                individual.setAddress(convertAddress(address));
             }
             if (pscDocument.getData().getNaturesOfControl() != null) {
                 individual.setNaturesOfControl(pscDocument.getData().getNaturesOfControl());
@@ -250,7 +251,7 @@ public class CompanyPscTransformer {
                 if (pscDocument.getData().getAddress().getPoBox() != null) {
                     address.setPoBox(pscDocument.getData().getAddress().getPoBox());
                 }
-                individualBeneficialOwner.setAddress(address);
+                individualBeneficialOwner.setAddress(convertToBoAddress(address));
             }
             if (pscDocument.getData().getNaturesOfControl() != null) {
                 individualBeneficialOwner
@@ -423,7 +424,7 @@ public class CompanyPscTransformer {
                 if (pscDocument.getData().getAddress().getPoBox() != null) {
                     address.setPoBox(pscDocument.getData().getAddress().getPoBox());
                 }
-                corporateEntity.setAddress(address);
+                corporateEntity.setAddress(convertAddress(address));
             }
             if (pscDocument.getIdentification() != null) {
                 Identification identification = new Identification();
@@ -482,7 +483,8 @@ public class CompanyPscTransformer {
         pscDocument.setUpdated(new Updated().setAt(LocalDate.now()));
         pscDocument.setUpdatedBy(requestBody.getInternalData().getUpdatedBy());
         pscDocument.setData(transformDataFields(requestBody));
-        pscDocument.setIdentification(requestBody.getExternalData().getData().getIdentification());
+        pscDocument.setIdentification(new PscIdentification(
+                requestBody.getExternalData().getData().getIdentification()));
 
         String kind = requestBody.getExternalData().getData().getKind();
 
@@ -599,7 +601,7 @@ public class CompanyPscTransformer {
                 if (pscDocument.getData().getAddress().getPoBox() != null) {
                     address.setPoBox(pscDocument.getData().getAddress().getPoBox());
                 }
-                corporateEntityBeneficialOwner.setAddress(address);
+                corporateEntityBeneficialOwner.setAddress(convertToBoAddress(address));
             }
             if (pscDocument.getData().getNaturesOfControl() != null) {
                 corporateEntityBeneficialOwner
@@ -699,7 +701,7 @@ public class CompanyPscTransformer {
                 if (pscDocument.getData().getAddress().getPoBox() != null) {
                     address.setPoBox(pscDocument.getData().getAddress().getPoBox());
                 }
-                legalPerson.setAddress(address);
+                legalPerson.setAddress(convertAddress(address));
             }
             if (pscDocument.getData().getNaturesOfControl() != null) {
                 legalPerson
@@ -787,7 +789,7 @@ public class CompanyPscTransformer {
                 if (pscDocument.getData().getAddress().getPoBox() != null) {
                     address.setPoBox(pscDocument.getData().getAddress().getPoBox());
                 }
-                legalPersonBeneficialOwner.setAddress(address);
+                legalPersonBeneficialOwner.setAddress(convertToBoAddress(address));
             }
             if (pscDocument.getData().getNaturesOfControl() != null) {
                 legalPersonBeneficialOwner
@@ -819,8 +821,36 @@ public class CompanyPscTransformer {
             logger.error("Skipped transforming pscDoc to Legal Person");
             throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,"PscDocument not found");
         }
-
-
+    }
+    
+    private uk.gov.companieshouse.api.psc.Address convertAddress(
+                uk.gov.companieshouse.pscdataapi.models.Address inputAddress) {
+        uk.gov.companieshouse.api.psc.Address address = 
+                new uk.gov.companieshouse.api.psc.Address();
+        address.setAddressLine1(inputAddress.getAddressLine1());
+        address.setAddressLine2(inputAddress.getAddressLine2());
+        address.setCountry(inputAddress.getCountry());
+        address.setLocality(inputAddress.getLocality());
+        address.setPoBox(inputAddress.getPoBox());
+        address.setPostalCode(inputAddress.getPostalCode());
+        address.setPremises(inputAddress.getPremises());
+        address.setRegion(inputAddress.getRegion());
+        return address;
+    }
+    
+    private uk.gov.companieshouse.api.psc.BeneficialOwnerAddress convertToBoAddress(
+                uk.gov.companieshouse.pscdataapi.models.Address inputAddress) {
+        uk.gov.companieshouse.api.psc.BeneficialOwnerAddress address = 
+                new uk.gov.companieshouse.api.psc.BeneficialOwnerAddress();
+        address.setAddressLine1(inputAddress.getAddressLine1());
+        address.setAddressLine2(inputAddress.getAddressLine2());
+        address.setCountry(inputAddress.getCountry());
+        address.setLocality(inputAddress.getLocality());
+        address.setPoBox(inputAddress.getPoBox());
+        address.setPostalCode(inputAddress.getPostalCode());
+        address.setPremises(inputAddress.getPremises());
+        address.setRegion(inputAddress.getRegion());
+        return address;
     }
 
 }
