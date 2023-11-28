@@ -5,7 +5,6 @@ import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -16,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import uk.gov.companieshouse.api.InternalApiClient;
 import uk.gov.companieshouse.api.api.CompanyMetricsApiService;
-import uk.gov.companieshouse.api.appointment.PrincipalOfficeAddress;
 import uk.gov.companieshouse.api.exception.ResourceNotFoundException;
 import uk.gov.companieshouse.api.metrics.MetricsApi;
 import uk.gov.companieshouse.api.metrics.RegisterApi;
@@ -24,7 +22,6 @@ import uk.gov.companieshouse.api.metrics.RegistersApi;
 import uk.gov.companieshouse.api.psc.CorporateEntity;
 import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
 import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
-import uk.gov.companieshouse.api.psc.Identification;
 import uk.gov.companieshouse.api.psc.Individual;
 import uk.gov.companieshouse.api.psc.IndividualBeneficialOwner;
 import uk.gov.companieshouse.api.psc.LegalPerson;
@@ -37,15 +34,13 @@ import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
 import uk.gov.companieshouse.pscdataapi.exceptions.ServiceUnavailableException;
-import uk.gov.companieshouse.pscdataapi.models.Address;
+import uk.gov.companieshouse.pscdataapi.logging.DataMapHolder;
 import uk.gov.companieshouse.pscdataapi.models.Created;
 import uk.gov.companieshouse.pscdataapi.models.Links;
-import uk.gov.companieshouse.pscdataapi.models.NameElements;
 import uk.gov.companieshouse.pscdataapi.models.PscData;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 import uk.gov.companieshouse.pscdataapi.repository.CompanyPscRepository;
 import uk.gov.companieshouse.pscdataapi.transform.CompanyPscTransformer;
-
 
 
 @Service
@@ -53,7 +48,6 @@ public class CompanyPscService {
 
     private final DateTimeFormatter dateTimeFormatter =
             DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSSSSS");
-
 
     @Autowired
     private Logger logger;
@@ -69,7 +63,7 @@ public class CompanyPscService {
     CompanyMetricsApiService companyMetricsApiService;
 
     /**
-     * Save or update a natural disqualification.
+     * Save or update a PSC.
      * @param contextId     Id used for chsKafkaCall.
      * @param requestBody   Data to be saved.
      */
@@ -94,7 +88,8 @@ public class CompanyPscService {
                     notificationId, requestBody.getExternalData().getData().getKind());
 
         } else {
-            logger.info("PSC not persisted as the record provided is not the latest record.");
+            logger.info("PSC not persisted as the record provided is not the latest record.",
+                    DataMapHolder.getLogMap());
         }
     }
 
@@ -107,8 +102,8 @@ public class CompanyPscService {
 
     /**
      * Save or update the mongo record.
-     * @param contextId Chs kafka id.
-     * @param notificationId Mongo id.
+     * @param contextId Chs kafka Id.
+     * @param notificationId Mongo Id.
      * @param document  Transformed Data.
      */
     private void save(String contextId, String notificationId,
@@ -124,9 +119,9 @@ public class CompanyPscService {
             repository.save(document);
             logger.info(String.format(
                     "Company PSC record is updated in MongoDb for context id: %s and id: %s",
-                    contextId, notificationId));
-        } catch (IllegalArgumentException illegalArgumentEx) {
-            throw new BadRequestException(illegalArgumentEx.getMessage());
+                    contextId, notificationId), DataMapHolder.getLogMap());
+        } catch (IllegalArgumentException ex) {
+            throw new BadRequestException(ex.getMessage());
         }
     }
 
@@ -138,8 +133,8 @@ public class CompanyPscService {
     private Created getCreatedFromCurrentRecord(String notificationId) {
         try {
             return repository.findById(notificationId).map(PscDocument::getCreated).orElse(null);
-        } catch (Exception exception) {
-            logger.error("exception thrown: " + exception.getMessage());
+        } catch (Exception ex) {
+            logger.error(ex.getMessage(), DataMapHolder.getLogMap());
             return null;
         }
     }
@@ -153,254 +148,284 @@ public class CompanyPscService {
                         "Resource not found for company number: %s", companyNumber)));
     }
 
-    /** Delete PSC record. */
+    /**
+     * Delete PSC record.
+     * @param companyNumber Company number.
+     * @param notificationId Mongo Id.
+     */
     @Transactional
     public void deletePsc(String companyNumber,String notificationId)
             throws ResourceNotFoundException {
         PscDocument pscDocument = getPscDocument(companyNumber, notificationId);
-
         repository.delete(pscDocument);
         logger.info(String.format("PSC record with company number %s has been deleted",
-                companyNumber));
+                companyNumber), DataMapHolder.getLogMap());
     }
 
-    /** Get PSC record. */
-    /** and transform it into Super Secure.*/
+    /** Get PSC record and transform it into a Super Secure PSC.
+     * @param companyNumber Company number.
+     * @param notificationId Mongo Id.
+     * @return Super Secure PSC object.
+     */
     public SuperSecure getSuperSecurePsc(String companyNumber, String notificationId) {
-
         try {
             Optional<PscDocument> pscDocument =
                     repository.getPscByCompanyNumberAndId(companyNumber, notificationId)
                             .filter(document -> document.getData().getKind()
                                     .equals("super-secure-person-with-significant-control"));
-            if (pscDocument.isEmpty()) {
+            if (pscDocument.isPresent()) {
+                SuperSecure superSecure = transformer
+                        .transformPscDocToSuperSecure(pscDocument.get());
+                if (superSecure == null) {
+                    throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
+                            "Failed to transform PSCDocument to SuperSecure");
+                }
+                return superSecure;
+            } else {
                 throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
-                        "SuperSecure PSC document not found in Mongo with id "
-                                + notificationId);
+                        "SuperSecure PSC document not found in Mongo with id " + notificationId);
             }
-            SuperSecure superSecure = transformer.transformPscDocToSuperSecure(pscDocument);
-            if (superSecure == null) {
-                throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
-                        "Failed to transform PSCDocument to SuperSecure");
-            }
-            return superSecure;
-        } catch (Exception exception) {
-            logger.error(exception.getMessage());
+        } catch (Exception ex) {
+            logger.error(ex.getMessage(), DataMapHolder.getLogMap());
             throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
                     "Unexpected error occurred while fetching PSC document");
         }
     }
 
-    /** Get PSC record. */
-    /** and transform it into Super Secure Beneficial Owner.*/
+    /** Get PSC record and transform it into a Super Secure Beneficial Owner PSC.
+     * @param companyNumber Company number.
+     * @param notificationId Mongo Id.
+     * @return Super Secure Beneficial Owner PSC object.
+     */
     public SuperSecureBeneficialOwner getSuperSecureBeneficialOwnerPsc(
             String companyNumber, String notificationId) {
-
         try {
             Optional<PscDocument> pscDocument =
                     repository.getPscByCompanyNumberAndId(companyNumber, notificationId)
                             .filter(document -> document.getData().getKind()
                                     .equals("super-secure-beneficial-owner"));
-            if (pscDocument.isEmpty()) {
+            if (pscDocument.isPresent()) {
+                SuperSecureBeneficialOwner superSecureBeneficialOwner =
+                        transformer.transformPscDocToSuperSecureBeneficialOwner(pscDocument.get());
+                if (superSecureBeneficialOwner == null) {
+                    throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
+                            "Failed to transform PSCDocument to SuperSecureBeneficialOwner");
+                }
+                return superSecureBeneficialOwner;
+            } else {
                 throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
                         "SuperSecureBeneficialOwner PSC document not found in Mongo with id "
                                 + notificationId);
             }
-            SuperSecureBeneficialOwner superSecureBeneficialOwner =
-                    transformer.transformPscDocToSuperSecureBeneficialOwner(pscDocument);
-            if (superSecureBeneficialOwner == null) {
-                throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
-                        "Failed to transform PSCDocument to SuperSecureBeneficialOwner");
-            }
-            return superSecureBeneficialOwner;
-        } catch (Exception exception) {
-            logger.error(exception.getMessage());
+        } catch (Exception ex) {
+            logger.error(ex.getMessage(), DataMapHolder.getLogMap());
             throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
                     "Unexpected error occurred while fetching PSC document");
         }
     }
 
-    /** Get PSC record. */
-    /** and transform it into an individual PSC.*/
+    /** Get PSC record and transform it into an Individual PSC.
+     * @param companyNumber Company number.
+     * @param notificationId Mongo Id.
+     * @param registerView Register View permission.
+     * @return Individual PSC object.
+     */
     public Individual getIndividualPsc(
-            String companyNumber, String notificationId,Boolean registerView) {
-
+            String companyNumber, String notificationId, Boolean registerView) {
         try {
             Optional<PscDocument> pscDocument =
                     repository.getPscByCompanyNumberAndId(companyNumber, notificationId)
                             .filter(document -> document.getData().getKind()
                                     .equals("individual-person-with-significant-control"));
-            if (pscDocument.isEmpty()) {
+            if (pscDocument.isPresent()) {
+                Individual individual = transformer
+                        .transformPscDocToIndividual(pscDocument.get(), registerView);
+                if (individual == null) {
+                    throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
+                            "Failed to transform PSCDocument to Individual");
+                }
+                return individual;
+            } else {
                 throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
-                        "Individual PSC document not found in Mongo with id "
-                                + notificationId);
+                        "Individual PSC document not found in Mongo with id " + notificationId);
             }
-            Individual individual = transformer
-                    .transformPscDocToIndividual(pscDocument, registerView);
-            if (individual == null) {
-                throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
-                        "Failed to transform PSCDocument to Individual");
-            }
-            return individual;
-        } catch (Exception exception) {
-            logger.error(exception.getMessage());
+        } catch (Exception ex) {
+            logger.error(ex.getMessage(), DataMapHolder.getLogMap());
             throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
                     "Unexpected error occurred while fetching PSC document");
         }
     }
 
-    /** Get PSC record. */
-    /** and transform it into corporate entity PSC.*/
+    /** Get PSC record and transform it into a Corporate Entity PSC.
+     * @param companyNumber Company number.
+     * @param notificationId Mongo Id.
+     * @return Corporate Entity PSC object.
+     */
     public CorporateEntity getCorporateEntityPsc(String companyNumber, String notificationId) {
-
         try {
             Optional<PscDocument> pscDocument =
                     repository.getPscByCompanyNumberAndId(companyNumber, notificationId)
                             .filter(document -> document.getData().getKind()
                                     .equals("corporate-entity-person-with-significant-control")
                                     && document.getCompanyNumber().equals(companyNumber));
-            if (pscDocument.isEmpty()) {
+            if (pscDocument.isPresent()) {
+                CorporateEntity corporateEntity =
+                        transformer.transformPscDocToCorporateEntity(pscDocument.get());
+                if (corporateEntity == null) {
+                    throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
+                            "Failed to transform PSCDocument to Corporate Entity");
+                }
+                return corporateEntity;
+            } else {
                 throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
                         "Corporate Entity PSC document not found in Mongo with id "
                                 + notificationId);
             }
-            CorporateEntity corporateEntity =
-                    transformer.transformPscDocToCorporateEntity(pscDocument);
-            if (corporateEntity == null) {
-                throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
-                        "Failed to transform PSCDocument to Corporate Entity");
-            }
-            return corporateEntity;
-
-        } catch (Exception exception) {
-            logger.error(exception.getMessage());
+        } catch (Exception ex) {
+            logger.error(ex.getMessage(), DataMapHolder.getLogMap());
             throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
                     "Unexpected error occurred while fetching PSC document");
         }
     }
 
-    /** and transform it into an individualBeneficialOwner PSC.*/
+    /** Get PSC record and transform it into an Individual Beneficial Owner PSC.
+     * @param companyNumber Company number.
+     * @param notificationId Mongo Id.
+     * @param registerView Register View permission.
+     * @return Individual Beneficial Owner PSC object.
+     */
     public IndividualBeneficialOwner getIndividualBeneficialOwnerPsc(
             String companyNumber, String notificationId,Boolean registerView) {
         try {
-            Optional<PscDocument> pscDocument =
-                    repository.findById(notificationId)
-                            .filter(document -> document.getData().getKind()
-                                    .equals("individual-beneficial-owner")
-                                    && document.getCompanyNumber().equals(companyNumber));
-            if (pscDocument.isEmpty()) {
+            Optional<PscDocument> pscDocument = repository.findById(notificationId)
+                    .filter(document -> document.getData().getKind()
+                            .equals("individual-beneficial-owner")
+                            && document.getCompanyNumber().equals(companyNumber));
+            if (pscDocument.isPresent()) {
+                IndividualBeneficialOwner individualBeneficialOwner = transformer
+                        .transformPscDocToIndividualBeneficialOwner(pscDocument.get(),registerView);
+                if (individualBeneficialOwner == null) {
+                    throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
+                            "Failed to transform PSCDocument to IndividualBeneficialOwner");
+                }
+                return individualBeneficialOwner;
+            } else {
                 throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
                         "Individual Beneficial Owner PSC document not found in Mongo with id"
                                 + notificationId);
             }
-            IndividualBeneficialOwner individualBeneficialOwner =
-                    transformer
-                            .transformPscDocToIndividualBeneficialOwner(pscDocument,registerView);
-            if (individualBeneficialOwner == null) {
-                throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
-                        "Failed to transform PSCDocument to IndividualBeneficialOwner");
-            }
-            return individualBeneficialOwner;
-
-        } catch (Exception exception) {
-            logger.error(exception.getMessage());
+        } catch (Exception ex) {
+            logger.error(ex.getMessage(), DataMapHolder.getLogMap());
             throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
                     "Unexpected error occurred while fetching PSC document");
         }
     }
 
-    /** Get PSC record. */
-    /** and transform it into an CorporateEntityBeneficialOwner PSC.*/
+    /** Get PSC record and transform it into a Corporate Entity Beneficial Owner PSC.
+     * @param companyNumber Company number.
+     * @param notificationId Mongo Id.
+     * @return Corporate Entity Beneficial Owner PSC object.
+     */
     public CorporateEntityBeneficialOwner getCorporateEntityBeneficialOwnerPsc(
             String companyNumber, String notificationId) {
         try {
-            Optional<PscDocument> pscDocument =
-                    repository.findById(notificationId)
+            Optional<PscDocument> pscDocument = repository.findById(notificationId)
                             .filter(document -> document.getData().getKind()
                                     .equals("corporate-entity-beneficial-owner")
                                     && document.getCompanyNumber().equals(companyNumber));
-            if (pscDocument.isEmpty()) {
+            if (pscDocument.isPresent()) {
+                CorporateEntityBeneficialOwner corporateEntityBeneficialOwner =
+                        transformer.transformPscDocToCorporateEntityBeneficialOwner(
+                                pscDocument.get());
+                if (corporateEntityBeneficialOwner == null) {
+                    throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
+                            "Failed to transform PSCDocument to "
+                                    + "CorporateEntityBeneficialOwnerOwner");
+                }
+                return corporateEntityBeneficialOwner;
+            } else {
                 throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
                         "Corporate Entity Beneficial Owner PSC document not found in Mongo with id"
                                 + notificationId);
             }
-            CorporateEntityBeneficialOwner corporateEntityBeneficialOwner =
-                    transformer.transformPscDocToCorporateEntityBeneficialOwner(pscDocument);
-            if (corporateEntityBeneficialOwner == null) {
-                throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
-                        "Failed to transform PSCDocument to CorporateEntityBeneficialOwnerOwner");
-            }
-            return corporateEntityBeneficialOwner;
-        } catch (Exception exception) {
-            logger.error(exception.getMessage());
+        } catch (Exception ex) {
+            logger.error(ex.getMessage(), DataMapHolder.getLogMap());
             throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
                     "Unexpected error occurred while fetching PSC document");
         }
     }
 
-    /** Get PSC record. */
-    /** and transform it into an Legal person PSC.*/
+    /** Get PSC record and transform it into a Legal Person PSC.
+     * @param companyNumber Company number.
+     * @param notificationId Mongo Id.
+     * @return Legal Person PSC object.
+     */
     public LegalPerson getLegalPersonPsc(String companyNumber, String notificationId) {
         try {
-            Optional<PscDocument> pscDocument =
-                    repository.findById(notificationId)
+            Optional<PscDocument> pscDocument = repository.findById(notificationId)
                             .filter(document -> document.getData().getKind()
                                     .equals("legal-person-person-with-significant-control")
                                     && document.getCompanyNumber().equals(companyNumber));
-            if (pscDocument.isEmpty()) {
+            if (pscDocument.isPresent()) {
+                LegalPerson legalPerson =
+                        transformer.transformPscDocToLegalPerson(pscDocument.get());
+                if (legalPerson == null) {
+                    throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
+                            "Failed to transform PSCDocument to Legal Person");
+                }
+                return legalPerson;
+            } else {
                 throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
-                        "Legal person PSC document not found in Mongo with id"
-                                + notificationId);
+                        "Legal person PSC document not found in Mongo with id" + notificationId);
             }
-            LegalPerson legalPerson =
-                    transformer.transformPscDocToLegalPerson(pscDocument);
-            if (legalPerson == null) {
-                throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
-                        "Failed to transform PSCDocument to Legal Person");
-            }
-            return legalPerson;
-        } catch (Exception exception) {
-            logger.error(exception.getMessage());
+        } catch (Exception ex) {
+            logger.error(ex.getMessage(), DataMapHolder.getLogMap());
             throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
                     "Unexpected error occurred while fetching PSC document");
         }
     }
 
-    /** Get PSC record. */
-    /** and transform it into an Legal person Beneficial Owner PSC.*/
+    /** Get PSC record and transform it into a Legal Person Beneficial Owner PSC.
+     * @param companyNumber Company number.
+     * @param notificationId Mongo Id.
+     * @return Legal Person Beneficial Owner PSC object.
+     */
     public LegalPersonBeneficialOwner getLegalPersonBeneficialOwnerPsc(
             String companyNumber, String notificationId) {
         try {
-            Optional<PscDocument> pscDocument =
-                    repository.findById(notificationId)
+            Optional<PscDocument> pscDocument = repository.findById(notificationId)
                             .filter(document -> document.getData().getKind()
                                     .equals("legal-person-beneficial-owner")
                                     && document.getCompanyNumber().equals(companyNumber));
-            if (pscDocument.isEmpty()) {
+            if (pscDocument.isPresent()) {
+                LegalPersonBeneficialOwner legalPersonBeneficialOwner =
+                        transformer.transformPscDocToLegalPersonBeneficialOwner(pscDocument.get());
+                if (legalPersonBeneficialOwner == null) {
+                    throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
+                            "Failed to transform PSCDocument to Legal Person Beneficial Owner");
+                }
+                return legalPersonBeneficialOwner;
+            } else {
                 throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
                         "Legal person beneficial owner PSC document not found in Mongo with id"
                                 + notificationId);
             }
-            LegalPersonBeneficialOwner legalPersonBeneficialOwner =
-                    transformer.transformPscDocToLegalPersonBeneficialOwner(pscDocument);
-            if (legalPersonBeneficialOwner == null) {
-                throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
-                        "Failed to transform PSCDocument to Legal Person Beneficial Owner");
-            }
-            return legalPersonBeneficialOwner;
-        } catch (Exception exception) {
-            logger.error(exception.getMessage());
+        } catch (Exception ex) {
+            logger.error(ex.getMessage(), DataMapHolder.getLogMap());
             throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
                     "Unexpected error occurred while fetching PSC document");
         }
     }
 
-
-
-
-    /** Get PSC List from database. */
+    /** Get PSC List from database.
+     * @param companyNumber Company number.
+     * @param startIndex Start index.
+     * @param registerView Register View permission.
+     * @param itemsPerPage Items per page.
+     * @return PscList object.
+     */
     public PscList retrievePscListSummaryFromDb(String companyNumber, Integer startIndex,
-                                                 boolean registerView, Integer itemsPerPage) {
+                                                boolean registerView, Integer itemsPerPage) {
 
         Optional<MetricsApi> companyMetrics =
                 companyMetricsApiService.getCompanyMetrics(companyNumber);
@@ -414,29 +439,28 @@ public class CompanyPscService {
                 .getPscDocumentList(companyNumber, startIndex, itemsPerPage);
         List<PscDocument> pscDocuments = pscDocumentListOptional
                 .filter(docs -> !docs.isEmpty()).orElseThrow(() ->
-                new ResourceNotFoundException(HttpStatus.NOT_FOUND, String.format(
-                        "Resource not found for company number: %s", companyNumber)));
+                        new ResourceNotFoundException(HttpStatus.NOT_FOUND, String.format(
+                                "Resource not found for company number: %s", companyNumber)));
 
         return createPscDocumentList(pscDocuments,
-                startIndex, itemsPerPage, companyNumber, registerView, companyMetrics);
-
-
+                startIndex, itemsPerPage, companyNumber, false, companyMetrics);
     }
 
     /** Get PSC List from database. */
-    public PscList retrievePscDocumentListFromDbRegisterView(Optional<MetricsApi> companyMetrics,
+    private PscList retrievePscDocumentListFromDbRegisterView(Optional<MetricsApi> companyMetrics,
             String companyNumber, Integer startIndex, Integer itemsPerPage) {
 
-        logger.info(String.format("In register view for company number: %s", companyNumber));
+        logger.info(String.format("In register view for company number: %s", companyNumber),
+                DataMapHolder.getLogMap());
         MetricsApi metricsData;
-        try {
+        if (companyMetrics.isPresent()) {
             metricsData = companyMetrics.get();
-        } catch (NoSuchElementException ex) {
+        } else {
             throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
                     String.format("No company metrics data found for company number: %s",
                             companyNumber));
         }
-        String registerMovedTo = Optional.ofNullable(metricsData)
+        String registerMovedTo = Optional.of(metricsData)
                 .map(MetricsApi::getRegisters)
                 .map(RegistersApi::getPersonsWithSignificantControl)
                 .map(RegisterApi::getRegisterMovedTo)
@@ -462,9 +486,6 @@ public class CompanyPscService {
                     String.format("company %s not on public register", companyNumber));
 
         }
-
-
-
     }
 
     private PscList createPscDocumentList(List<PscDocument> pscDocuments,
@@ -480,7 +501,6 @@ public class CompanyPscService {
         for (PscDocument pscDocument : pscDocuments) {
             ListSummary listSummary = this.transformer.transformPscDocToListSummary(pscDocument);
             documents.add(listSummary);
-
         }
 
         Links links = new Links();
@@ -493,10 +513,10 @@ public class CompanyPscService {
         companyMetrics.ifPresentOrElse(metricsApi -> {
             try {
                 if (registerView) {
-                    Long withdrawnCount = pscData.stream()
+                    long withdrawnCount = pscData.stream()
                             .filter(document -> document.getCeasedOn() != null).count();
 
-                    pscList.setCeasedCount(withdrawnCount.intValue());
+                    pscList.setCeasedCount((int) withdrawnCount);
                     pscList.setTotalResults(metricsApi.getCounts()
                             .getPersonsWithSignificantControl().getActiveStatementsCount()
                             + pscList.getCeasedCount());
@@ -511,19 +531,14 @@ public class CompanyPscService {
                             .getPersonsWithSignificantControl().getStatementsCount());
                 }
             } catch (NullPointerException exp) {
-                logger.error(String.format(
-                        "No PSC data in metrics for company number %s", companyNumber));
+                logger.error(String.format("No PSC data in metrics for company number %s",
+                        companyNumber), DataMapHolder.getLogMap());
             }
-        }, () -> {
-                logger.info(String.format(
-                        "No company metrics counts data found for company number: %s",
-                        companyNumber));
-            });
-
+        }, () -> logger.info(String.format(
+                "No company metrics counts data found for company number: %s",
+                companyNumber), DataMapHolder.getLogMap()));
 
         return pscList;
-
     }
-
 
 }

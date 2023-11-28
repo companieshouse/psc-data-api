@@ -3,14 +3,9 @@ package uk.gov.companieshouse.pscdataapi.transform;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Optional;
-import javax.xml.transform.TransformerException;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-import uk.gov.companieshouse.api.appointment.PrincipalOfficeAddress;
-import uk.gov.companieshouse.api.exception.ResourceNotFoundException;
 import uk.gov.companieshouse.api.psc.CorporateEntity;
 import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
 import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
@@ -26,7 +21,7 @@ import uk.gov.companieshouse.api.psc.SuperSecureBeneficialOwner;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.data.IndividualPscRoles;
 import uk.gov.companieshouse.pscdataapi.data.SecurePscRoles;
-
+import uk.gov.companieshouse.pscdataapi.logging.DataMapHolder;
 import uk.gov.companieshouse.pscdataapi.models.Address;
 import uk.gov.companieshouse.pscdataapi.models.DateOfBirth;
 import uk.gov.companieshouse.pscdataapi.models.NameElements;
@@ -38,8 +33,6 @@ import uk.gov.companieshouse.pscdataapi.models.Updated;
 import uk.gov.companieshouse.pscdataapi.util.PscTransformationHelper;
 
 
-
-
 @Component
 public class CompanyPscTransformer {
 
@@ -49,425 +42,200 @@ public class CompanyPscTransformer {
     private final DateTimeFormatter dateTimeFormatter =
             DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSSSSS");
 
-
     /**
      * Transform Individual PSC.
-     * @param optionalPscDocument PSC.
+     * @param pscDocument PSC.
      * @return PSC mongo Document.
      */
     public Individual transformPscDocToIndividual(
-            Optional<PscDocument> optionalPscDocument, Boolean registerView)
-            throws TransformerException {
-
-        logger.info("Attempting to transform pscDocument to individual");
-
-        if (optionalPscDocument.isPresent()) {
-            PscDocument pscDocument = optionalPscDocument.get();
-            Individual individual = new Individual();
-            if (pscDocument.getData().getEtag() != null) {
-                individual.setEtag(pscDocument.getData().getEtag());
-            }
-            if (pscDocument.getDeltaAt() != null) {
-                individual.setNotifiedOn(LocalDate
-                        .parse(pscDocument.getDeltaAt(),dateTimeFormatter));
-            }
-            individual.setKind(Individual.KindEnum.INDIVIDUAL_PERSON_WITH_SIGNIFICANT_CONTROL);
-            if (pscDocument.getData().getCountryOfResidence() != null) {
-                individual.setCountryOfResidence(pscDocument.getData().getCountryOfResidence());
-            }
-            if (pscDocument.getData().getName() != null) {
-                individual.setName(pscDocument.getData().getName());
-            }
-            if (pscDocument.getData().getNameElements() != null) {
-                NameElements nameElements = new NameElements();
-                if (pscDocument.getData().getNameElements().getTitle() != null) {
-                    nameElements.setTitle(pscDocument.getData().getNameElements().getTitle());
-                }
-                if (pscDocument.getData().getNameElements().getForename() != null) {
-                    nameElements.setForename(pscDocument.getData().getNameElements().getForename());
-                }
-                if (pscDocument.getData().getNameElements().getMiddleName() != null) {
-                    nameElements.setMiddleName(pscDocument.getData()
-                            .getNameElements().getMiddleName());
-                }
-                if (pscDocument.getData().getNameElements().getSurname() != null) {
-                    nameElements.setSurname(pscDocument.getData().getNameElements().getSurname());
-                }
-                individual.setNameElements(nameElements);
-            }
-            if (pscDocument.getData().getAddress() != null) {
-                Address address = new Address();
-                if (pscDocument.getData().getAddress().getAddressLine1() != null) {
-                    address.setAddressLine1(pscDocument.getData().getAddress().getAddressLine1());
-                }
-                if (pscDocument.getData().getAddress().getAddressLine2() != null) {
-                    address.setAddressLine2(pscDocument.getData().getAddress().getAddressLine2());
-                }
-                if (pscDocument.getData().getAddress().getCountry() != null) {
-                    address.setCountry(pscDocument.getData().getAddress().getCountry());
-                }
-                if (pscDocument.getData().getAddress().getLocality() != null) {
-                    address.setLocality(pscDocument.getData().getAddress().getLocality());
-                }
-                if (pscDocument.getData().getAddress().getPostalCode() != null) {
-                    address.setPostalCode(pscDocument.getData().getAddress().getPostalCode());
-                }
-                if (pscDocument.getData().getAddress().getPremises() != null) {
-                    address.setPremises(pscDocument.getData().getAddress().getPremises());
-                }
-                if (pscDocument.getData().getAddress().getRegion() != null) {
-                    address.setRegion(pscDocument.getData().getAddress().getRegion());
-                }
-                if (pscDocument.getData().getAddress().getCareOf() != null) {
-                    address.setCareOf(pscDocument.getData().getAddress().getCareOf());
-                }
-                if (pscDocument.getData().getAddress().getPoBox() != null) {
-                    address.setPoBox(pscDocument.getData().getAddress().getPoBox());
-                }
-                individual.setAddress(convertAddress(address));
-            }
-            if (pscDocument.getData().getNaturesOfControl() != null) {
-                individual.setNaturesOfControl(pscDocument.getData().getNaturesOfControl());
-            }
-            if (pscDocument.getData().getLinks() != null) {
-                individual.setLinks(pscDocument.getData().getLinks());
-            }
-            DateOfBirth getDateOfBirthMapping = mappingDateOfBirth(
-                    optionalPscDocument, registerView);
-            individual.setDateOfBirth(getDateOfBirthMapping);
-
-            return individual;
-        } else {
-            logger.error("Skipped transforming pscDoc to individual");
-            throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,"PscDocument not found");
-        }
-
-    }
-
-    private DateOfBirth mappingDateOfBirth(
-            Optional<PscDocument> optionalPscDocument, Boolean registerView) {
-        PscDocument pscDocument = optionalPscDocument.get();
-        DateOfBirth dateOfBirthValues = null;
-        if (pscDocument.getSensitiveData().getDateOfBirth() != null) {
-            dateOfBirthValues = new DateOfBirth();
-
-            if (pscDocument.getSensitiveData().getDateOfBirth().getDay() != null) {
-                dateOfBirthValues.setDay(pscDocument
-                        .getSensitiveData().getDateOfBirth().getDay());
-                dateOfBirthValues = mapDateOfBirth(dateOfBirthValues,registerView);
-            }
-
-            if (pscDocument.getSensitiveData().getDateOfBirth().getMonth() != null) {
-                dateOfBirthValues.setMonth(pscDocument
-                        .getSensitiveData().getDateOfBirth().getMonth());
-            }
-
-            if (pscDocument.getSensitiveData().getDateOfBirth().getYear() != null) {
-                dateOfBirthValues.setYear(pscDocument
-                        .getSensitiveData().getDateOfBirth().getYear());
-            }
-
-        }
-
-        return dateOfBirthValues;
-    }
-
-    private DateOfBirth mapDateOfBirth(DateOfBirth dob, Boolean registerView) {
-        if (registerView == false) {
-            dob.setDay(null);
-        }
-        return dob;
+            PscDocument pscDocument, Boolean registerView) {
+        logger.info("Attempting to transform pscDocument to Individual",
+                DataMapHolder.getLogMap());
+        Individual individual = new Individual();
+        individual.setEtag(pscDocument.getData().getEtag());
+        individual.setNotifiedOn(LocalDate.parse(pscDocument.getDeltaAt(),dateTimeFormatter));
+        individual.setKind(Individual.KindEnum.INDIVIDUAL_PERSON_WITH_SIGNIFICANT_CONTROL);
+        individual.setCountryOfResidence(pscDocument.getData().getCountryOfResidence());
+        individual.setName(pscDocument.getData().getName());
+        individual.setNameElements(mapNameElements(pscDocument.getData().getNameElements()));
+        individual.setAddress(mapAddress(pscDocument.getData().getAddress()));
+        individual.setNaturesOfControl(pscDocument.getData().getNaturesOfControl());
+        individual.setLinks(pscDocument.getData().getLinks());
+        individual.setDateOfBirth(mapDateOfBirth(
+                pscDocument.getSensitiveData().getDateOfBirth(), registerView));
+        return individual;
     }
 
     /**
      * Transform Individual Beneficial Owner PSC.
-     * @param optionalPscDocument PSC.
+     * @param pscDocument PSC.
      * @return PSC mongo Document.
      */
     public IndividualBeneficialOwner transformPscDocToIndividualBeneficialOwner(
-            Optional<PscDocument> optionalPscDocument,
-            Boolean registerView) throws TransformerException {
+            PscDocument pscDocument, Boolean registerView) {
+        logger.info("Attempting to transform pscDocument to IndividualBeneficialOwner",
+                DataMapHolder.getLogMap());
+        IndividualBeneficialOwner individualBo = new IndividualBeneficialOwner();
+        individualBo.setEtag(pscDocument.getData().getEtag());
+        individualBo.setNotifiedOn(LocalDate.parse(pscDocument.getDeltaAt(),dateTimeFormatter));
+        individualBo.setKind(IndividualBeneficialOwner.KindEnum.INDIVIDUAL_BENEFICIAL_OWNER);
+        individualBo.setName(pscDocument.getData().getName());
+        individualBo.setNameElements(mapNameElements(pscDocument.getData().getNameElements()));
+        individualBo.setAddress(mapBoAddress(pscDocument.getData().getAddress()));
+        individualBo.setNaturesOfControl(pscDocument.getData().getNaturesOfControl());
+        individualBo.setLinks(pscDocument.getData().getLinks());
+        individualBo.setNationality(pscDocument.getData().getNationality());
+        individualBo.setIsSanctioned(pscDocument.getData().getSanctioned());
+        individualBo.setDateOfBirth(mapDateOfBirth(
+                pscDocument.getSensitiveData().getDateOfBirth(), registerView));
+        return individualBo;
+    }
 
-        logger.info("Attempting to transform pscDocument to IndividualBeneficialOwner");
+    /**
+     * Transform Corporate Entity PSC.
+     * @param pscDocument PSC.
+     * @return PSC mongo Document.
+     */
+    public CorporateEntity transformPscDocToCorporateEntity(PscDocument pscDocument) {
+        logger.info("Attempting to transform pscDocument to CorporateEntity",
+                DataMapHolder.getLogMap());
+        CorporateEntity corporateEntity = new CorporateEntity();
+        corporateEntity.setEtag(pscDocument.getData().getEtag());
+        corporateEntity.setNotifiedOn((pscDocument.getDeltaAt() != null)
+                ? LocalDate.parse(pscDocument.getDeltaAt(),dateTimeFormatter) : null);
+        corporateEntity.setCeasedOn(pscDocument.getData().getCeasedOn());
+        corporateEntity.setKind(CorporateEntity
+                .KindEnum.CORPORATE_ENTITY_PERSON_WITH_SIGNIFICANT_CONTROL);
+        corporateEntity.setName(pscDocument.getData().getName());
+        corporateEntity.setLinks(pscDocument.getData().getLinks());
+        corporateEntity.setAddress(mapAddress(pscDocument.getData().getAddress()));
+        corporateEntity.setIdentification(
+                mapIdentification(pscDocument.getIdentification(), "corporate"));
+        corporateEntity.setNaturesOfControl(pscDocument.getData().getNaturesOfControl());
+        return corporateEntity;
+    }
 
-        if (optionalPscDocument.isPresent()) {
-            PscDocument pscDocument = optionalPscDocument.get();
-            IndividualBeneficialOwner individualBeneficialOwner = new IndividualBeneficialOwner();
-            if (pscDocument.getData().getEtag() != null) {
-                individualBeneficialOwner.setEtag(pscDocument.getData().getEtag());
-            }
-            if (pscDocument.getDeltaAt() != null) {
-                individualBeneficialOwner.setNotifiedOn(LocalDate
-                        .parse(pscDocument.getDeltaAt(),dateTimeFormatter));
-            }
-            individualBeneficialOwner
-                    .setKind(IndividualBeneficialOwner.KindEnum.INDIVIDUAL_BENEFICIAL_OWNER);
-            if (pscDocument.getData().getName() != null) {
-                individualBeneficialOwner.setName(pscDocument.getData().getName());
-            }
-            if (pscDocument.getData().getNameElements() != null) {
-                NameElements nameElements = new NameElements();
-                if (pscDocument.getData().getNameElements().getTitle() != null) {
-                    nameElements.setTitle(pscDocument.getData().getNameElements().getTitle());
-                }
-                if (pscDocument.getData().getNameElements().getForename() != null) {
-                    nameElements.setForename(pscDocument.getData().getNameElements().getForename());
-                }
-                if (pscDocument.getData().getNameElements().getMiddleName() != null) {
-                    nameElements.setMiddleName(pscDocument.getData()
-                            .getNameElements().getMiddleName());
-                }
-                if (pscDocument.getData().getNameElements().getSurname() != null) {
-                    nameElements.setSurname(pscDocument.getData().getNameElements().getSurname());
-                }
-                individualBeneficialOwner.setNameElements(nameElements);
-            }
-            if (pscDocument.getData().getAddress() != null) {
-                Address address = new Address();
-                if (pscDocument.getData().getAddress().getAddressLine1() != null) {
-                    address.setAddressLine1(pscDocument.getData().getAddress().getAddressLine1());
-                }
-                if (pscDocument.getData().getAddress().getAddressLine2() != null) {
-                    address.setAddressLine2(pscDocument.getData().getAddress().getAddressLine2());
-                }
-                if (pscDocument.getData().getAddress().getCountry() != null) {
-                    address.setCountry(pscDocument.getData().getAddress().getCountry());
-                }
-                if (pscDocument.getData().getAddress().getLocality() != null) {
-                    address.setLocality(pscDocument.getData().getAddress().getLocality());
-                }
-                if (pscDocument.getData().getAddress().getPostalCode() != null) {
-                    address.setPostalCode(pscDocument.getData().getAddress().getPostalCode());
-                }
-                if (pscDocument.getData().getAddress().getPremises() != null) {
-                    address.setPremises(pscDocument.getData().getAddress().getPremises());
-                }
-                if (pscDocument.getData().getAddress().getRegion() != null) {
-                    address.setRegion(pscDocument.getData().getAddress().getRegion());
-                }
-                if (pscDocument.getData().getAddress().getCareOf() != null) {
-                    address.setCareOf(pscDocument.getData().getAddress().getCareOf());
-                }
-                if (pscDocument.getData().getAddress().getPoBox() != null) {
-                    address.setPoBox(pscDocument.getData().getAddress().getPoBox());
-                }
-                individualBeneficialOwner.setAddress(convertToBoAddress(address));
-            }
-            if (pscDocument.getData().getNaturesOfControl() != null) {
-                individualBeneficialOwner
-                        .setNaturesOfControl(pscDocument.getData().getNaturesOfControl());
-            }
-            if (pscDocument.getData().getLinks() != null) {
-                individualBeneficialOwner.setLinks(pscDocument.getData().getLinks());
-            }
-            if (pscDocument.getData().getNationality() != null) {
-                individualBeneficialOwner.setNationality(pscDocument.getData().getNationality());
-            }
-            if (pscDocument.getData().getSanctioned() != null) {
-                individualBeneficialOwner.setIsSanctioned(pscDocument.getData().getSanctioned());
-            }
-            DateOfBirth getDateOfBirthMapping = mappingDateOfBirth(
-                    optionalPscDocument, registerView);
-            individualBeneficialOwner.setDateOfBirth(getDateOfBirthMapping);
+    /**
+     * Transform Corporate Entity Beneficial Owner PSC.
+     * @param pscDocument PSC.
+     * @return PSC mongo Document.
+     */
+    public CorporateEntityBeneficialOwner transformPscDocToCorporateEntityBeneficialOwner(
+            PscDocument pscDocument) {
+        logger.info("Attempting to transform pscDocument to CorporateEntityBeneficialOwner",
+                DataMapHolder.getLogMap());
+        CorporateEntityBeneficialOwner corporateEntityBo = new CorporateEntityBeneficialOwner();
+        corporateEntityBo.setEtag(pscDocument.getData().getEtag());
+        corporateEntityBo.setNotifiedOn(LocalDate.parse(pscDocument.getDeltaAt(),
+                dateTimeFormatter));
+        corporateEntityBo.setKind(CorporateEntityBeneficialOwner
+                        .KindEnum.CORPORATE_ENTITY_BENEFICIAL_OWNER);
+        corporateEntityBo.setName(pscDocument.getData().getName());
+        corporateEntityBo.setAddress(mapBoAddress(pscDocument.getData().getAddress()));
+        corporateEntityBo.setNaturesOfControl(pscDocument.getData().getNaturesOfControl());
+        corporateEntityBo.setLinks(pscDocument.getData().getLinks());
+        corporateEntityBo.setIsSanctioned(pscDocument.getData().getSanctioned());
+        corporateEntityBo.setIdentification(mapIdentification(
+                pscDocument.getIdentification(), "corporate"));
+        return corporateEntityBo;
+    }
 
-            return individualBeneficialOwner;
-        } else {
-            logger.error("Skipped transforming pscDoc to individualBeneficialOwner");
-            throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,"PscDocument not found");
-        }
+    /**
+     * Transform Legal person PSC.
+     * @param pscDocument PSC.
+     * @return PSC mongo Document.
+     */
+    public LegalPerson transformPscDocToLegalPerson(PscDocument pscDocument) {
+        logger.info("Attempting to transform pscDocument to LegalPerson",
+                DataMapHolder.getLogMap());
+        LegalPerson legalPerson = new LegalPerson();
+        legalPerson.setEtag(pscDocument.getData().getEtag());
+        legalPerson.setNotifiedOn(LocalDate.parse(pscDocument.getDeltaAt(),dateTimeFormatter));
+        legalPerson.setKind(LegalPerson
+                        .KindEnum.LEGAL_PERSON_PERSON_WITH_SIGNIFICANT_CONTROL);
+        legalPerson.setName(pscDocument.getData().getName());
+        legalPerson.setAddress(mapAddress(pscDocument.getData().getAddress()));
+        legalPerson.setNaturesOfControl(pscDocument.getData().getNaturesOfControl());
+        legalPerson.setLinks(pscDocument.getData().getLinks());
+        legalPerson.setIdentification(mapIdentification(
+                pscDocument.getIdentification(), "legal"));
+        legalPerson.setCeasedOn(pscDocument.getData().getCeasedOn());
+        return legalPerson;
+    }
 
+    /**
+     * Transform Legal person Beneficial Owner PSC.
+     * @param pscDocument PSC.
+     * @return PSC mongo Document.
+     */
+    public LegalPersonBeneficialOwner transformPscDocToLegalPersonBeneficialOwner(
+            PscDocument pscDocument) {
+        logger.info("Attempting to transform pscDocument to LegalPersonBeneficialOwner",
+                DataMapHolder.getLogMap());
+        LegalPersonBeneficialOwner legalPersonBo = new LegalPersonBeneficialOwner();
+        legalPersonBo.setEtag(pscDocument.getData().getEtag());
+        legalPersonBo.setNotifiedOn(LocalDate.parse(pscDocument.getDeltaAt(),dateTimeFormatter));
+        legalPersonBo.setKind(LegalPersonBeneficialOwner
+                        .KindEnum.LEGAL_PERSON_BENEFICIAL_OWNER);
+        legalPersonBo.setName(pscDocument.getData().getName());
+        legalPersonBo.setAddress(mapBoAddress(pscDocument.getData().getAddress()));
+        legalPersonBo.setNaturesOfControl(pscDocument.getData().getNaturesOfControl());
+        legalPersonBo.setLinks(pscDocument.getData().getLinks());
+        legalPersonBo.setIdentification(mapIdentification(
+                pscDocument.getIdentification(), "legal"));
+        legalPersonBo.setCeasedOn(pscDocument.getData().getCeasedOn());
+        legalPersonBo.setIsSanctioned(pscDocument.getData().getSanctioned());
+        return legalPersonBo;
     }
 
     /**
      * Transform Super Secure PSC.
-     * @param optionalPscDocument PSC.
+     * @param pscDocument PSC.
      * @return PSC mongo Document.
      */
-
-    public SuperSecure transformPscDocToSuperSecure(
-            Optional<PscDocument> optionalPscDocument) throws TransformerException {
-
-        logger.info("Attempting to transform pscDocument to SuperSecure");
-
-        if (optionalPscDocument.isPresent()) {
-            PscDocument pscDocument = optionalPscDocument.get();
-            SuperSecure superSecure = new SuperSecure();
-
-            if (pscDocument.getData().getEtag() != null) {
-                superSecure.setEtag(pscDocument.getData().getEtag());
-            }
-
-            superSecure
-                    .setKind(SuperSecure.KindEnum.SUPER_SECURE_PERSON_WITH_SIGNIFICANT_CONTROL);
-
-
-            superSecure.setDescription(SuperSecure
-                            .DescriptionEnum.SUPER_SECURE_PERSONS_WITH_SIGNIFICANT_CONTROL);
-
-            if (pscDocument.getData().getCeased() != null) {
-                superSecure.setCeased(pscDocument.getData().getCeased());
-            }
-
-            if (pscDocument.getData().getLinks() != null) {
-                superSecure.setLinks(pscDocument.getData().getLinks());
-            }
-
-            return superSecure;
-        } else {
-            logger.error("Skipped transforming pscDoc to SuperSecure");
-            throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,"PscDocument not found");
-        }
+    public SuperSecure transformPscDocToSuperSecure(PscDocument pscDocument) {
+        logger.info("Attempting to transform pscDocument to SuperSecure",
+                DataMapHolder.getLogMap());
+        SuperSecure superSecure = new SuperSecure();
+        superSecure.setEtag(pscDocument.getData().getEtag());
+        superSecure
+                .setKind(SuperSecure.KindEnum.SUPER_SECURE_PERSON_WITH_SIGNIFICANT_CONTROL);
+        superSecure.setDescription(SuperSecure
+                .DescriptionEnum.SUPER_SECURE_PERSONS_WITH_SIGNIFICANT_CONTROL);
+        superSecure.setCeased(pscDocument.getData().getCeased());
+        superSecure.setLinks(pscDocument.getData().getLinks());
+        return superSecure;
     }
 
     /**
      * Transform Super Secure Beneficial Owner PSC.
-     * @param optionalPscDocument PSC.
+     * @param pscDocument PSC.
      * @return PSC mongo Document.
      */
-
     public SuperSecureBeneficialOwner transformPscDocToSuperSecureBeneficialOwner(
-            Optional<PscDocument> optionalPscDocument) throws TransformerException {
-
-        logger.info("Attempting to transform pscDocument to SuperSecureBeneficialOwner");
-
-        if (optionalPscDocument.isPresent()) {
-            PscDocument pscDocument = optionalPscDocument.get();
-
-            SuperSecureBeneficialOwner superSecureBeneficialOwner =
-                    new SuperSecureBeneficialOwner();
-
-            if (pscDocument.getData().getEtag() != null) {
-                superSecureBeneficialOwner.setEtag(pscDocument.getData().getEtag());
-            }
-
-            superSecureBeneficialOwner
-                    .setKind(SuperSecureBeneficialOwner.KindEnum.SUPER_SECURE_BENEFICIAL_OWNER);
-
-
-            superSecureBeneficialOwner.setDescription(SuperSecureBeneficialOwner
-                    .DescriptionEnum.SUPER_SECURE_BENEFICIAL_OWNER);
-
-            if (pscDocument.getData().getCeased() != null) {
-                superSecureBeneficialOwner.setCeased(pscDocument.getData().getCeased());
-            }
-
-            if (pscDocument.getData().getLinks() != null) {
-                superSecureBeneficialOwner.setLinks(pscDocument.getData().getLinks());
-            }
-
-            return superSecureBeneficialOwner;
-        } else {
-            logger.error("Skipped transforming pscDoc to SuperSecureBeneficialOwner");
-            throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,"PscDocument not found");
-        }
-    }
-
-
-    /**
-     * Transform Corporate Entity PSC.
-     * @param optionalPscDocument PSC.
-     * @return PSC mongo Document.
-     */
-    public CorporateEntity transformPscDocToCorporateEntity(
-            Optional<PscDocument> optionalPscDocument) throws TransformerException {
-
-        logger.info("Attempting to transform pscDocument to corporate entity");
-
-        if (optionalPscDocument.isPresent()) {
-            PscDocument pscDocument = optionalPscDocument.get();
-            CorporateEntity corporateEntity = new CorporateEntity();
-            if (pscDocument.getData().getEtag() != null) {
-                corporateEntity.setEtag(pscDocument.getData().getEtag());
-            }
-            if (pscDocument.getDeltaAt() != null) {
-                corporateEntity.setNotifiedOn(LocalDate
-                        .parse(pscDocument.getDeltaAt(),dateTimeFormatter));
-            }
-            if (pscDocument.getData().getCeasedOn() != null) {
-                corporateEntity.setCeasedOn(pscDocument.getData().getCeasedOn());
-            }
-            corporateEntity.setKind(CorporateEntity
-                    .KindEnum.CORPORATE_ENTITY_PERSON_WITH_SIGNIFICANT_CONTROL);
-
-            if (pscDocument.getData().getName() != null) {
-                corporateEntity.setName(pscDocument.getData().getName());
-            }
-            if (pscDocument.getData().getLinks() != null) {
-                corporateEntity.setLinks(pscDocument.getData().getLinks());
-            }
-            if (pscDocument.getData().getAddress() != null) {
-                Address address = new Address();
-                if (pscDocument.getData().getAddress().getAddressLine1() != null) {
-                    address.setAddressLine1(pscDocument.getData().getAddress().getAddressLine1());
-                }
-                if (pscDocument.getData().getAddress().getAddressLine2() != null) {
-                    address.setAddressLine2(pscDocument.getData().getAddress().getAddressLine2());
-                }
-                if (pscDocument.getData().getAddress().getCountry() != null) {
-                    address.setCountry(pscDocument.getData().getAddress().getCountry());
-                }
-                if (pscDocument.getData().getAddress().getLocality() != null) {
-                    address.setLocality(pscDocument.getData().getAddress().getLocality());
-                }
-                if (pscDocument.getData().getAddress().getPostalCode() != null) {
-                    address.setPostalCode(pscDocument.getData().getAddress().getPostalCode());
-                }
-                if (pscDocument.getData().getAddress().getPremises() != null) {
-                    address.setPremises(pscDocument.getData().getAddress().getPremises());
-                }
-                if (pscDocument.getData().getAddress().getRegion() != null) {
-                    address.setRegion(pscDocument.getData().getAddress().getRegion());
-                }
-                if (pscDocument.getData().getAddress().getCareOf() != null) {
-                    address.setCareOf(pscDocument.getData().getAddress().getCareOf());
-                }
-                if (pscDocument.getData().getAddress().getPoBox() != null) {
-                    address.setPoBox(pscDocument.getData().getAddress().getPoBox());
-                }
-                corporateEntity.setAddress(convertAddress(address));
-            }
-            if (pscDocument.getIdentification() != null) {
-                Identification identification = new Identification();
-                if (pscDocument.getIdentification().getPlaceRegistered() != null) {
-                    identification.setPlaceRegistered(
-                            pscDocument.getIdentification().getPlaceRegistered());
-                }
-                if (pscDocument.getIdentification().getLegalAuthority() != null) {
-                    identification.setLegalAuthority(
-                            pscDocument.getIdentification().getLegalAuthority());
-                }
-                if (pscDocument.getIdentification().getRegistrationNumber() != null) {
-                    identification.setRegistrationNumber(
-                            pscDocument.getIdentification().getRegistrationNumber());
-                }
-                if (pscDocument.getIdentification().getCountryRegistered() != null) {
-                    identification.setCountryRegistered(
-                            pscDocument.getIdentification().getCountryRegistered());
-                }
-                if (pscDocument.getIdentification().getLegalForm() != null) {
-                    identification.setLegalForm(pscDocument.getIdentification().getLegalForm());
-                }
-                corporateEntity.setIdentification(identification);
-            }
-            if (pscDocument.getData().getNaturesOfControl() != null) {
-                corporateEntity.setNaturesOfControl(pscDocument.getData().getNaturesOfControl());
-            }
-            return corporateEntity;
-        } else {
-            logger.error("Skipped transforming pscDoc to corporate entity");
-            throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,"PscDocument not found");
-        }
+            PscDocument pscDocument) {
+        logger.info("Attempting to transform pscDocument to SuperSecureBeneficialOwner",
+                DataMapHolder.getLogMap());
+        SuperSecureBeneficialOwner superSecureBo = new SuperSecureBeneficialOwner();
+        superSecureBo.setEtag(pscDocument.getData().getEtag());
+        superSecureBo
+                .setKind(SuperSecureBeneficialOwner.KindEnum.SUPER_SECURE_BENEFICIAL_OWNER);
+        superSecureBo.setDescription(SuperSecureBeneficialOwner
+                .DescriptionEnum.SUPER_SECURE_BENEFICIAL_OWNER);
+        superSecureBo.setCeased(pscDocument.getData().getCeased());
+        superSecureBo.setLinks(pscDocument.getData().getLinks());
+        return superSecureBo;
     }
 
     /**
-     * Transform PSC.
+     * Transform PSC on insert.
      * @param notificationId PSC Id.
      * @param requestBody request payload.
      * @return PSC mongo Document.
      */
     public PscDocument transformPsc(String notificationId, FullRecordCompanyPSCApi requestBody) {
         PscDocument pscDocument = new PscDocument();
-        logger.info(String.format("transforming incoming payload with Id: %s", notificationId));
+        logger.info("Transforming incoming payload", DataMapHolder.getLogMap());
 
         pscDocument.setId(notificationId);
         pscDocument.setNotificationId(notificationId);
@@ -501,6 +269,37 @@ public class CompanyPscTransformer {
             pscDocument.getData().setAddress(serviceAddress);
         }
         return pscDocument;
+    }
+
+    /**
+     * Transform Legal person Beneficial Owner.
+     * @param pscDocument PSC.
+     * @return ListSummary mongo Document.
+     */
+    public ListSummary transformPscDocToListSummary(PscDocument  pscDocument) {
+        ListSummary listSummary = new ListSummary();
+        PscData pscData = pscDocument.getData();
+
+        listSummary.setEtag(pscData.getEtag());
+        listSummary.setKind(listSummary.getKind());
+        listSummary.setName(pscData.getName());
+        listSummary.setNameElements(mapNameElements(pscData.getNameElements()));
+        listSummary.setAddress(mapAddress(pscData.getAddress()));
+        listSummary.setPrincipalOfficeAddress(mapAddress(pscData.getAddress()));
+        listSummary.setNaturesOfControl(pscData.getNaturesOfControl());
+        listSummary.setLinks(pscData.getLinks());
+        listSummary.setCeasedOn(pscData.getCeasedOn());
+        listSummary.setIsSanctioned(pscData.getSanctioned());
+        listSummary.setNationality(pscData.getNationality());
+        listSummary.setCountryOfResidence(pscData.getCountryOfResidence());
+        if (pscDocument.getData().getDescription() != null) {
+            listSummary.setDescription(
+                    ListSummary.DescriptionEnum.SUPER_SECURE_PERSONS_WITH_SIGNIFICANT_CONTROL);
+        }
+        listSummary.setNaturesOfControl(pscData.getNaturesOfControl());
+        listSummary.setIdentification(mapIdentification(
+                pscDocument.getIdentification(), "list summary"));
+        return listSummary;
     }
 
     private PscSensitiveData transformSensitiveDataFields(FullRecordCompanyPSCApi requestBody) {
@@ -543,438 +342,92 @@ public class CompanyPscTransformer {
         data.setCeased(ceased);
     }
 
-    /**
-     * Transform Corporate Entity Beneficial Owner.
-     * @param optionalPscDocument PSC.
-     * @return PSC mongo Document.
-     */
-    public CorporateEntityBeneficialOwner transformPscDocToCorporateEntityBeneficialOwner(
-            Optional<PscDocument> optionalPscDocument) {
-        logger.info("Attempting to transform pscDocument to CorporateEntityBeneficialOwner");
-
-        if (optionalPscDocument.isPresent()) {
-            PscDocument pscDocument = optionalPscDocument.get();
-            CorporateEntityBeneficialOwner corporateEntityBeneficialOwner =
-                    new CorporateEntityBeneficialOwner();
-            if (pscDocument.getData().getEtag() != null) {
-                corporateEntityBeneficialOwner.setEtag(pscDocument.getData().getEtag());
+    private uk.gov.companieshouse.api.psc.DateOfBirth mapDateOfBirth(
+            DateOfBirth inputDateOfBirth, Boolean registerView) {
+        if (inputDateOfBirth != null) {
+            uk.gov.companieshouse.api.psc.DateOfBirth dateOfBirth =
+                    new uk.gov.companieshouse.api.psc.DateOfBirth();
+            if (registerView) {
+                dateOfBirth.setDay(inputDateOfBirth.getDay());
+            } else {
+                dateOfBirth.setDay(null);
             }
-            if (pscDocument.getDeltaAt() != null) {
-                corporateEntityBeneficialOwner.setNotifiedOn(LocalDate
-                        .parse(pscDocument.getDeltaAt(),dateTimeFormatter));
-            }
-            corporateEntityBeneficialOwner
-                    .setKind(CorporateEntityBeneficialOwner
-                            .KindEnum.CORPORATE_ENTITY_BENEFICIAL_OWNER);
-            if (pscDocument.getData().getName() != null) {
-                corporateEntityBeneficialOwner.setName(pscDocument.getData().getName());
-            }
-
-
-            if (pscDocument.getData().getAddress() != null) {
-                Address address = new Address();
-
-                if (pscDocument.getData().getAddress().getAddressLine1() != null) {
-                    address.setAddressLine1(pscDocument.getData().getAddress().getAddressLine1());
-                }
-                if (pscDocument.getData().getAddress().getAddressLine2() != null) {
-                    address.setAddressLine2(pscDocument.getData().getAddress().getAddressLine2());
-                }
-                if (pscDocument.getData().getAddress().getCountry() != null) {
-                    address.setCountry(pscDocument.getData().getAddress().getCountry());
-                }
-                if (pscDocument.getData().getAddress().getLocality() != null) {
-                    address.setLocality(pscDocument.getData().getAddress().getLocality());
-                }
-                if (pscDocument.getData().getAddress().getPostalCode() != null) {
-                    address.setPostalCode(pscDocument.getData().getAddress().getPostalCode());
-                }
-                if (pscDocument.getData().getAddress().getPremises() != null) {
-                    address.setPremises(pscDocument.getData().getAddress().getPremises());
-                }
-                if (pscDocument.getData().getAddress().getRegion() != null) {
-                    address.setRegion(pscDocument.getData().getAddress().getRegion());
-                }
-                if (pscDocument.getData().getAddress().getCareOf() != null) {
-                    address.setCareOf(pscDocument.getData().getAddress().getCareOf());
-                }
-                if (pscDocument.getData().getAddress().getPoBox() != null) {
-                    address.setPoBox(pscDocument.getData().getAddress().getPoBox());
-                }
-                corporateEntityBeneficialOwner.setAddress(convertToBoAddress(address));
-            }
-            if (pscDocument.getData().getNaturesOfControl() != null) {
-                corporateEntityBeneficialOwner
-                        .setNaturesOfControl(pscDocument.getData().getNaturesOfControl());
-            }
-            if (pscDocument.getData().getLinks() != null) {
-                corporateEntityBeneficialOwner.setLinks(pscDocument.getData().getLinks());
-            }
-            if (pscDocument.getData().getSanctioned() != null) {
-                corporateEntityBeneficialOwner
-                        .setIsSanctioned(pscDocument.getData().getSanctioned());
-            }
-            if (pscDocument.getIdentification() != null) {
-                Identification identification = new Identification();
-                if (pscDocument.getIdentification().getCountryRegistered() != null) {
-                    identification.setCountryRegistered(
-                            pscDocument.getIdentification().getCountryRegistered());
-                }
-                if (pscDocument.getIdentification().getLegalAuthority() != null) {
-                    identification.setLegalAuthority(
-                            pscDocument.getIdentification().getLegalAuthority());
-                }
-                if (pscDocument.getIdentification().getLegalForm() != null) {
-                    identification.setLegalForm(
-                            pscDocument.getIdentification().getLegalForm());
-                }
-                if (pscDocument.getIdentification().getPlaceRegistered() != null) {
-                    identification.setPlaceRegistered(
-                            pscDocument.getIdentification().getPlaceRegistered());
-                }
-                if (pscDocument.getIdentification().getRegistrationNumber() != null) {
-                    identification.setRegistrationNumber(
-                            pscDocument.getIdentification().getRegistrationNumber());
-                }
-                corporateEntityBeneficialOwner.setIdentification(identification);
-            }
-            return corporateEntityBeneficialOwner;
+            dateOfBirth.setMonth(inputDateOfBirth.getMonth());
+            dateOfBirth.setYear(inputDateOfBirth.getYear());
+            return dateOfBirth;
         } else {
-            logger.error("Skipped transforming pscDoc to CorporateEntityBeneficialOwner");
-            throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,"PscDocument not found");
-        }
-
-    }
-
-    /**
-     * Transform Legal person.
-     * @param optionalPscDocument PSC.
-     * @return PSC mongo Document.
-     */
-    public LegalPerson transformPscDocToLegalPerson(Optional<PscDocument> optionalPscDocument) {
-        logger.info("Attempting to transform pscDocument to Legal Person");
-
-        if (optionalPscDocument.isPresent()) {
-            PscDocument pscDocument = optionalPscDocument.get();
-            LegalPerson legalPerson =
-                    new LegalPerson();
-            if (pscDocument.getData().getEtag() != null) {
-                legalPerson.setEtag(pscDocument.getData().getEtag());
-            }
-            if (pscDocument.getDeltaAt() != null) {
-                legalPerson.setNotifiedOn(LocalDate
-                        .parse(pscDocument.getDeltaAt(),dateTimeFormatter));
-            }
-            legalPerson
-                    .setKind(LegalPerson
-                            .KindEnum.LEGAL_PERSON_PERSON_WITH_SIGNIFICANT_CONTROL);
-            if (pscDocument.getData().getName() != null) {
-                legalPerson.setName(pscDocument.getData().getName());
-            }
-            if (pscDocument.getData().getAddress() != null) {
-                Address address = new Address();
-
-                if (pscDocument.getData().getAddress().getAddressLine1() != null) {
-                    address.setAddressLine1(pscDocument.getData().getAddress().getAddressLine1());
-                }
-                if (pscDocument.getData().getAddress().getAddressLine2() != null) {
-                    address.setAddressLine2(pscDocument.getData().getAddress().getAddressLine2());
-                }
-                if (pscDocument.getData().getAddress().getCountry() != null) {
-                    address.setCountry(pscDocument.getData().getAddress().getCountry());
-                }
-                if (pscDocument.getData().getAddress().getLocality() != null) {
-                    address.setLocality(pscDocument.getData().getAddress().getLocality());
-                }
-                if (pscDocument.getData().getAddress().getPostalCode() != null) {
-                    address.setPostalCode(pscDocument.getData().getAddress().getPostalCode());
-                }
-                if (pscDocument.getData().getAddress().getPremises() != null) {
-                    address.setPremises(pscDocument.getData().getAddress().getPremises());
-                }
-                if (pscDocument.getData().getAddress().getRegion() != null) {
-                    address.setRegion(pscDocument.getData().getAddress().getRegion());
-                }
-                if (pscDocument.getData().getAddress().getCareOf() != null) {
-                    address.setCareOf(pscDocument.getData().getAddress().getCareOf());
-                }
-                if (pscDocument.getData().getAddress().getPoBox() != null) {
-                    address.setPoBox(pscDocument.getData().getAddress().getPoBox());
-                }
-                legalPerson.setAddress(convertAddress(address));
-            }
-            if (pscDocument.getData().getNaturesOfControl() != null) {
-                legalPerson
-                        .setNaturesOfControl(pscDocument.getData().getNaturesOfControl());
-            }
-            if (pscDocument.getData().getLinks() != null) {
-                legalPerson.setLinks(pscDocument.getData().getLinks());
-            }
-            if (pscDocument.getIdentification() != null) {
-                Identification identification = new Identification();
-                if (pscDocument.getIdentification().getLegalAuthority() != null) {
-                    identification.setLegalAuthority(
-                            pscDocument.getIdentification().getLegalAuthority());
-                }
-                if (pscDocument.getIdentification().getLegalForm() != null) {
-                    identification.setLegalForm(
-                            pscDocument.getIdentification().getLegalForm());
-                }
-                legalPerson.setIdentification(identification);
-            }
-            if (pscDocument.getData().getCeasedOn() != null) {
-                legalPerson.setCeasedOn(pscDocument.getData().getCeasedOn());
-            }
-            return legalPerson;
-        } else {
-            logger.error("Skipped transforming pscDoc to Legal Person");
-            throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,"PscDocument not found");
-        }
-        
-    }
-
-    /**
-     * Transform Legal person Beneficial Owner.
-     * @param optionalPscDocument PSC.
-     * @return PSC mongo Document.
-     */
-    public LegalPersonBeneficialOwner transformPscDocToLegalPersonBeneficialOwner(
-            Optional<PscDocument> optionalPscDocument) {
-        logger.info("Attempting to transform pscDocument to Legal Person Beneficial Owner");
-
-        if (optionalPscDocument.isPresent()) {
-            PscDocument pscDocument = optionalPscDocument.get();
-            LegalPersonBeneficialOwner legalPersonBeneficialOwner =
-                    new LegalPersonBeneficialOwner();
-            if (pscDocument.getData().getEtag() != null) {
-                legalPersonBeneficialOwner.setEtag(pscDocument.getData().getEtag());
-            }
-            if (pscDocument.getDeltaAt() != null) {
-                legalPersonBeneficialOwner.setNotifiedOn(LocalDate
-                        .parse(pscDocument.getDeltaAt(),dateTimeFormatter));
-            }
-            legalPersonBeneficialOwner
-                    .setKind(LegalPersonBeneficialOwner
-                            .KindEnum.LEGAL_PERSON_BENEFICIAL_OWNER);
-            if (pscDocument.getData().getName() != null) {
-                legalPersonBeneficialOwner.setName(pscDocument.getData().getName());
-            }
-            if (pscDocument.getData().getAddress() != null) {
-                Address address = new Address();
-
-                if (pscDocument.getData().getAddress().getAddressLine1() != null) {
-                    address.setAddressLine1(pscDocument.getData().getAddress().getAddressLine1());
-                }
-                if (pscDocument.getData().getAddress().getAddressLine2() != null) {
-                    address.setAddressLine2(pscDocument.getData().getAddress().getAddressLine2());
-                }
-                if (pscDocument.getData().getAddress().getCountry() != null) {
-                    address.setCountry(pscDocument.getData().getAddress().getCountry());
-                }
-                if (pscDocument.getData().getAddress().getLocality() != null) {
-                    address.setLocality(pscDocument.getData().getAddress().getLocality());
-                }
-                if (pscDocument.getData().getAddress().getPostalCode() != null) {
-                    address.setPostalCode(pscDocument.getData().getAddress().getPostalCode());
-                }
-                if (pscDocument.getData().getAddress().getPremises() != null) {
-                    address.setPremises(pscDocument.getData().getAddress().getPremises());
-                }
-                if (pscDocument.getData().getAddress().getRegion() != null) {
-                    address.setRegion(pscDocument.getData().getAddress().getRegion());
-                }
-                if (pscDocument.getData().getAddress().getCareOf() != null) {
-                    address.setCareOf(pscDocument.getData().getAddress().getCareOf());
-                }
-                if (pscDocument.getData().getAddress().getPoBox() != null) {
-                    address.setPoBox(pscDocument.getData().getAddress().getPoBox());
-                }
-                legalPersonBeneficialOwner.setAddress(convertToBoAddress(address));
-            }
-            if (pscDocument.getData().getNaturesOfControl() != null) {
-                legalPersonBeneficialOwner
-                        .setNaturesOfControl(pscDocument.getData().getNaturesOfControl());
-            }
-            if (pscDocument.getData().getLinks() != null) {
-                legalPersonBeneficialOwner.setLinks(pscDocument.getData().getLinks());
-            }
-            if (pscDocument.getIdentification() != null) {
-                Identification identification = new Identification();
-                if (pscDocument.getIdentification().getLegalAuthority() != null) {
-                    identification.setLegalAuthority(
-                            pscDocument.getIdentification().getLegalAuthority());
-                }
-                if (pscDocument.getIdentification().getLegalForm() != null) {
-                    identification.setLegalForm(
-                            pscDocument.getIdentification().getLegalForm());
-                }
-                legalPersonBeneficialOwner.setIdentification(identification);
-            }
-            if (pscDocument.getData().getCeasedOn() != null) {
-                legalPersonBeneficialOwner.setCeasedOn(pscDocument.getData().getCeasedOn());
-            }
-            if (pscDocument.getData().getSanctioned() != null) {
-                legalPersonBeneficialOwner.setIsSanctioned(pscDocument.getData().getSanctioned());
-            }
-            return legalPersonBeneficialOwner;
-        } else {
-            logger.error("Skipped transforming pscDoc to Legal Person");
-            throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,"PscDocument not found");
+            return null;
         }
     }
 
-    /**
-     * Transform Legal person Beneficial Owner.
-     * @param pscDocument PSC.
-     * @return ListSummary mongo Document.
-     */
-    public ListSummary transformPscDocToListSummary(PscDocument  pscDocument) {
+    private uk.gov.companieshouse.api.psc.Address mapAddress(
+            uk.gov.companieshouse.pscdataapi.models.Address inputAddress) {
+        if (inputAddress != null) {
+            uk.gov.companieshouse.api.psc.Address address =
+                    new uk.gov.companieshouse.api.psc.Address();
+            address.setAddressLine1(inputAddress.getAddressLine1());
+            address.setAddressLine2(inputAddress.getAddressLine2());
+            address.setCountry(inputAddress.getCountry());
+            address.setLocality(inputAddress.getLocality());
+            address.setPoBox(inputAddress.getPoBox());
+            address.setPostalCode(inputAddress.getPostalCode());
+            address.setPremises(inputAddress.getPremises());
+            address.setRegion(inputAddress.getRegion());
+            return address;
+        } else {
+            return null;
+        }
+    }
 
-        ListSummary listSummary = new ListSummary();
+    private uk.gov.companieshouse.api.psc.BeneficialOwnerAddress mapBoAddress(
+            uk.gov.companieshouse.pscdataapi.models.Address inputAddress) {
+        if (inputAddress != null) {
+            uk.gov.companieshouse.api.psc.BeneficialOwnerAddress address =
+                    new uk.gov.companieshouse.api.psc.BeneficialOwnerAddress();
+            address.setAddressLine1(inputAddress.getAddressLine1());
+            address.setAddressLine2(inputAddress.getAddressLine2());
+            address.setCountry(inputAddress.getCountry());
+            address.setLocality(inputAddress.getLocality());
+            address.setPoBox(inputAddress.getPoBox());
+            address.setPostalCode(inputAddress.getPostalCode());
+            address.setPremises(inputAddress.getPremises());
+            address.setRegion(inputAddress.getRegion());
+            return address;
+        } else {
+            return null;
+        }
+    }
 
-        PscData getDocument = pscDocument.getData();
+    private static uk.gov.companieshouse.api.psc.NameElements mapNameElements(
+            NameElements inputNameElements) {
+        if (inputNameElements != null) {
+            uk.gov.companieshouse.api.psc.NameElements nameElements =
+                    new uk.gov.companieshouse.api.psc.NameElements();
+            nameElements.setTitle(inputNameElements.getTitle());
+            nameElements.setForename(inputNameElements.getForename());
+            nameElements.setMiddleName(inputNameElements.getMiddleName());
+            nameElements.setSurname(inputNameElements.getSurname());
+            return nameElements;
+        } else {
+            return null;
+        }
+    }
 
-        if (getDocument.getEtag() != null) {
-            listSummary.setEtag(getDocument.getEtag());
-        }
-        listSummary.setKind(listSummary.getKind());
-
-        if (getDocument.getName() != null) {
-            listSummary.setName(getDocument.getName());
-        }
-        if (getDocument.getNameElements() != null) {
-            NameElements nameElements = new NameElements();
-            if (getDocument.getNameElements().getTitle() != null) {
-                nameElements.setTitle(getDocument.getNameElements().getTitle());
-            }
-            if (getDocument.getNameElements().getForename() != null) {
-                nameElements.setForename(getDocument.getNameElements().getForename());
-            }
-            if (getDocument.getNameElements().getMiddleName() != null) {
-                nameElements.setMiddleName(getDocument
-                        .getNameElements().getMiddleName());
-            }
-            if (getDocument.getNameElements().getSurname() != null) {
-                nameElements.setSurname(getDocument.getNameElements().getSurname());
-            }
-            listSummary.setNameElements(nameElements);
-        }
-        if (getDocument.getAddress() != null) {
-            Address address = new Address();
-
-            if (getDocument.getAddress().getAddressLine1() != null) {
-                address.setAddressLine1(getDocument.getAddress().getAddressLine1());
-            }
-            if (getDocument.getAddress().getAddressLine2() != null) {
-                address.setAddressLine2(getDocument.getAddress().getAddressLine2());
-            }
-            if (getDocument.getAddress().getCountry() != null) {
-                address.setCountry(getDocument.getAddress().getCountry());
-            }
-            if (getDocument.getAddress().getLocality() != null) {
-                address.setLocality(getDocument.getAddress().getLocality());
-            }
-            if (getDocument.getAddress().getPostalCode() != null) {
-                address.setPostalCode(getDocument.getAddress().getPostalCode());
-            }
-            if (getDocument.getAddress().getPremises() != null) {
-                address.setPremises(getDocument.getAddress().getPremises());
-            }
-            if (getDocument.getAddress().getRegion() != null) {
-                address.setRegion(getDocument.getAddress().getRegion());
-            }
-            if (getDocument.getAddress().getCareOf() != null) {
-                address.setCareOf(getDocument.getAddress().getCareOf());
-            }
-            if (getDocument.getAddress().getPoBox() != null) {
-                address.setPoBox(getDocument.getAddress().getPoBox());
-            }
-            listSummary.setAddress(convertAddress(address));
-            listSummary.setPrincipalOfficeAddress(convertAddress(address));
-        }
-        if (getDocument.getNaturesOfControl() != null) {
-            listSummary
-                    .setNaturesOfControl(getDocument.getNaturesOfControl());
-        }
-        if (getDocument.getLinks() != null) {
-            listSummary.setLinks(getDocument.getLinks());
-        }
-        if (getDocument.getCeasedOn() != null) {
-            listSummary.setCeasedOn(getDocument.getCeasedOn());
-        }
-        if (getDocument.getSanctioned() != null) {
-            listSummary.setIsSanctioned(getDocument.getSanctioned());
-        }
-        if (getDocument.getNationality() != null) {
-            listSummary.setNationality(getDocument.getNationality());
-        }
-        if (getDocument.getCountryOfResidence() != null) {
-            listSummary.setCountryOfResidence(getDocument.getCountryOfResidence());
-        }
-        if (getDocument.getDescription() != null) {
-            listSummary.setDescription(
-                    ListSummary.DescriptionEnum.SUPER_SECURE_PERSONS_WITH_SIGNIFICANT_CONTROL);
-        }
-        if (pscDocument.getIdentification() != null) {
+    private static Identification mapIdentification(
+            PscIdentification inputIdentification, String kindString) {
+        if (inputIdentification != null) {
             Identification identification = new Identification();
-            if (pscDocument.getIdentification().getCountryRegistered() != null) {
-                identification.setCountryRegistered(
-                        pscDocument.getIdentification().getCountryRegistered());
-            }
-            if (pscDocument.getIdentification().getLegalAuthority() != null) {
-                identification.setLegalAuthority(
-                        pscDocument.getIdentification().getLegalAuthority());
-            }
-            if (pscDocument.getIdentification().getLegalForm() != null) {
-                identification.setLegalForm(
-                        pscDocument.getIdentification().getLegalForm());
-            }
-            if (pscDocument.getIdentification().getPlaceRegistered() != null) {
-                identification.setPlaceRegistered(
-                        pscDocument.getIdentification().getPlaceRegistered());
-            }
-            if (pscDocument.getIdentification().getRegistrationNumber() != null) {
-                identification.setRegistrationNumber(
-                        pscDocument.getIdentification().getRegistrationNumber());
-            }
-            if (pscDocument.getData().getNaturesOfControl() != null) {
-                listSummary
-                        .setNaturesOfControl(pscDocument.getData().getNaturesOfControl());
-            }
-            listSummary.setIdentification(identification);
+            identification.setLegalAuthority(inputIdentification.getLegalAuthority());
+            identification.setLegalForm(inputIdentification.getLegalForm());
+            if (kindString.equals("corporate") || kindString.equals("list summary")) {
+                identification.setCountryRegistered(inputIdentification.getCountryRegistered());
+                identification.setPlaceRegistered(inputIdentification.getPlaceRegistered());
+                identification.setRegistrationNumber(inputIdentification.getRegistrationNumber());
+            } // else "legal"
+            return identification;
+        } else {
+            return null;
         }
-
-        return listSummary;
-    }
-    
-    private uk.gov.companieshouse.api.psc.Address convertAddress(
-                uk.gov.companieshouse.pscdataapi.models.Address inputAddress) {
-        uk.gov.companieshouse.api.psc.Address address = 
-                new uk.gov.companieshouse.api.psc.Address();
-        address.setAddressLine1(inputAddress.getAddressLine1());
-        address.setAddressLine2(inputAddress.getAddressLine2());
-        address.setCountry(inputAddress.getCountry());
-        address.setLocality(inputAddress.getLocality());
-        address.setPoBox(inputAddress.getPoBox());
-        address.setPostalCode(inputAddress.getPostalCode());
-        address.setPremises(inputAddress.getPremises());
-        address.setRegion(inputAddress.getRegion());
-        return address;
-    }
-    
-    private uk.gov.companieshouse.api.psc.BeneficialOwnerAddress convertToBoAddress(
-                uk.gov.companieshouse.pscdataapi.models.Address inputAddress) {
-        uk.gov.companieshouse.api.psc.BeneficialOwnerAddress address = 
-                new uk.gov.companieshouse.api.psc.BeneficialOwnerAddress();
-        address.setAddressLine1(inputAddress.getAddressLine1());
-        address.setAddressLine2(inputAddress.getAddressLine2());
-        address.setCountry(inputAddress.getCountry());
-        address.setLocality(inputAddress.getLocality());
-        address.setPoBox(inputAddress.getPoBox());
-        address.setPostalCode(inputAddress.getPostalCode());
-        address.setPremises(inputAddress.getPremises());
-        address.setRegion(inputAddress.getRegion());
-        return address;
     }
 
 }
