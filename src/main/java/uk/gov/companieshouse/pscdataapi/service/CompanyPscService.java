@@ -162,68 +162,6 @@ public class CompanyPscService {
                 companyNumber), DataMapHolder.getLogMap());
     }
 
-    /** Get PSC record and transform it into a Super Secure PSC.
-     * @param companyNumber Company number.
-     * @param notificationId Mongo Id.
-     * @return Super Secure PSC object.
-     */
-    public SuperSecure getSuperSecurePsc(String companyNumber, String notificationId) {
-        try {
-            Optional<PscDocument> pscDocument =
-                    repository.getPscByCompanyNumberAndId(companyNumber, notificationId)
-                            .filter(document -> document.getData().getKind()
-                                    .equals("super-secure-person-with-significant-control"));
-            if (pscDocument.isPresent()) {
-                SuperSecure superSecure = transformer
-                        .transformPscDocToSuperSecure(pscDocument.get());
-                if (superSecure == null) {
-                    throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
-                            "Failed to transform PSCDocument to SuperSecure");
-                }
-                return superSecure;
-            } else {
-                throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
-                        "SuperSecure PSC document not found in Mongo with id " + notificationId);
-            }
-        } catch (Exception ex) {
-            logger.error(ex.getMessage(), DataMapHolder.getLogMap());
-            throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
-                    "Unexpected error occurred while fetching PSC document");
-        }
-    }
-
-    /** Get PSC record and transform it into a Super Secure Beneficial Owner PSC.
-     * @param companyNumber Company number.
-     * @param notificationId Mongo Id.
-     * @return Super Secure Beneficial Owner PSC object.
-     */
-    public SuperSecureBeneficialOwner getSuperSecureBeneficialOwnerPsc(
-            String companyNumber, String notificationId) {
-        try {
-            Optional<PscDocument> pscDocument =
-                    repository.getPscByCompanyNumberAndId(companyNumber, notificationId)
-                            .filter(document -> document.getData().getKind()
-                                    .equals("super-secure-beneficial-owner"));
-            if (pscDocument.isPresent()) {
-                SuperSecureBeneficialOwner superSecureBeneficialOwner =
-                        transformer.transformPscDocToSuperSecureBeneficialOwner(pscDocument.get());
-                if (superSecureBeneficialOwner == null) {
-                    throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
-                            "Failed to transform PSCDocument to SuperSecureBeneficialOwner");
-                }
-                return superSecureBeneficialOwner;
-            } else {
-                throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
-                        "SuperSecureBeneficialOwner PSC document not found in Mongo with id "
-                                + notificationId);
-            }
-        } catch (Exception ex) {
-            logger.error(ex.getMessage(), DataMapHolder.getLogMap());
-            throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
-                    "Unexpected error occurred while fetching PSC document");
-        }
-    }
-
     /** Get PSC record and transform it into an Individual PSC.
      * @param companyNumber Company number.
      * @param notificationId Mongo Id.
@@ -256,38 +194,6 @@ public class CompanyPscService {
         }
     }
 
-    /** Get PSC record and transform it into a Corporate Entity PSC.
-     * @param companyNumber Company number.
-     * @param notificationId Mongo Id.
-     * @return Corporate Entity PSC object.
-     */
-    public CorporateEntity getCorporateEntityPsc(String companyNumber, String notificationId) {
-        try {
-            Optional<PscDocument> pscDocument =
-                    repository.getPscByCompanyNumberAndId(companyNumber, notificationId)
-                            .filter(document -> document.getData().getKind()
-                                    .equals("corporate-entity-person-with-significant-control")
-                                    && document.getCompanyNumber().equals(companyNumber));
-            if (pscDocument.isPresent()) {
-                CorporateEntity corporateEntity =
-                        transformer.transformPscDocToCorporateEntity(pscDocument.get());
-                if (corporateEntity == null) {
-                    throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
-                            "Failed to transform PSCDocument to Corporate Entity");
-                }
-                return corporateEntity;
-            } else {
-                throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
-                        "Corporate Entity PSC document not found in Mongo with id "
-                                + notificationId);
-            }
-        } catch (Exception ex) {
-            logger.error(ex.getMessage(), DataMapHolder.getLogMap());
-            throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
-                    "Unexpected error occurred while fetching PSC document");
-        }
-    }
-
     /** Get PSC record and transform it into an Individual Beneficial Owner PSC.
      * @param companyNumber Company number.
      * @param notificationId Mongo Id.
@@ -312,6 +218,38 @@ public class CompanyPscService {
             } else {
                 throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
                         "Individual Beneficial Owner PSC document not found in Mongo with id"
+                                + notificationId);
+            }
+        } catch (Exception ex) {
+            logger.error(ex.getMessage(), DataMapHolder.getLogMap());
+            throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
+                    "Unexpected error occurred while fetching PSC document");
+        }
+    }
+
+    /** Get PSC record and transform it into a Corporate Entity PSC.
+     * @param companyNumber Company number.
+     * @param notificationId Mongo Id.
+     * @return Corporate Entity PSC object.
+     */
+    public CorporateEntity getCorporateEntityPsc(String companyNumber, String notificationId) {
+        try {
+            Optional<PscDocument> pscDocument =
+                    repository.getPscByCompanyNumberAndId(companyNumber, notificationId)
+                            .filter(document -> document.getData().getKind()
+                                    .equals("corporate-entity-person-with-significant-control")
+                                    && document.getCompanyNumber().equals(companyNumber));
+            if (pscDocument.isPresent()) {
+                CorporateEntity corporateEntity =
+                        transformer.transformPscDocToCorporateEntity(pscDocument.get());
+                if (corporateEntity == null) {
+                    throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
+                            "Failed to transform PSCDocument to Corporate Entity");
+                }
+                return corporateEntity;
+            } else {
+                throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
+                        "Corporate Entity PSC document not found in Mongo with id "
                                 + notificationId);
             }
         } catch (Exception ex) {
@@ -417,6 +355,68 @@ public class CompanyPscService {
         }
     }
 
+    /** Get PSC record and transform it into a Super Secure PSC.
+     * @param companyNumber Company number.
+     * @param notificationId Mongo Id.
+     * @return Super Secure PSC object.
+     */
+    public SuperSecure getSuperSecurePsc(String companyNumber, String notificationId) {
+        try {
+            Optional<PscDocument> pscDocument =
+                    repository.getPscByCompanyNumberAndId(companyNumber, notificationId)
+                            .filter(document -> document.getData().getKind()
+                                    .equals("super-secure-person-with-significant-control"));
+            if (pscDocument.isPresent()) {
+                SuperSecure superSecure = transformer
+                        .transformPscDocToSuperSecure(pscDocument.get());
+                if (superSecure == null) {
+                    throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
+                            "Failed to transform PSCDocument to SuperSecure");
+                }
+                return superSecure;
+            } else {
+                throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
+                        "SuperSecure PSC document not found in Mongo with id " + notificationId);
+            }
+        } catch (Exception ex) {
+            logger.error(ex.getMessage(), DataMapHolder.getLogMap());
+            throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
+                    "Unexpected error occurred while fetching PSC document");
+        }
+    }
+
+    /** Get PSC record and transform it into a Super Secure Beneficial Owner PSC.
+     * @param companyNumber Company number.
+     * @param notificationId Mongo Id.
+     * @return Super Secure Beneficial Owner PSC object.
+     */
+    public SuperSecureBeneficialOwner getSuperSecureBeneficialOwnerPsc(
+            String companyNumber, String notificationId) {
+        try {
+            Optional<PscDocument> pscDocument =
+                    repository.getPscByCompanyNumberAndId(companyNumber, notificationId)
+                            .filter(document -> document.getData().getKind()
+                                    .equals("super-secure-beneficial-owner"));
+            if (pscDocument.isPresent()) {
+                SuperSecureBeneficialOwner superSecureBeneficialOwner =
+                        transformer.transformPscDocToSuperSecureBeneficialOwner(pscDocument.get());
+                if (superSecureBeneficialOwner == null) {
+                    throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
+                            "Failed to transform PSCDocument to SuperSecureBeneficialOwner");
+                }
+                return superSecureBeneficialOwner;
+            } else {
+                throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
+                        "SuperSecureBeneficialOwner PSC document not found in Mongo with id "
+                                + notificationId);
+            }
+        } catch (Exception ex) {
+            logger.error(ex.getMessage(), DataMapHolder.getLogMap());
+            throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
+                    "Unexpected error occurred while fetching PSC document");
+        }
+    }
+
     /** Get PSC List from database.
      * @param companyNumber Company number.
      * @param startIndex Start index.
@@ -446,7 +446,6 @@ public class CompanyPscService {
                 startIndex, itemsPerPage, companyNumber, false, companyMetrics);
     }
 
-    /** Get PSC List from database. */
     private PscList retrievePscDocumentListFromDbRegisterView(Optional<MetricsApi> companyMetrics,
             String companyNumber, Integer startIndex, Integer itemsPerPage) {
 
