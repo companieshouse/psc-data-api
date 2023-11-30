@@ -1,8 +1,8 @@
 package uk.gov.companieshouse.pscdataapi.api;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.times;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
