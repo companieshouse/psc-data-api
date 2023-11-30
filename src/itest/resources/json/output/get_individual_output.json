@@ -20,10 +20,10 @@
   "etag": "string",
   "kind": "individual-person-with-significant-control",
   "links": {
-    "self": "/company/34777772/persons-with-significant-control/individual/ZfTs9WeeqpXTqf6dc6FZ4C0H0ZZ",
+    "self": "/company/34777771/persons-with-significant-control/individual/ZfTs9WeeqpXTqf6dc6FZ4C0H0ZZ",
     "statement": "string"
   },
-  "name": "34777772",
+  "name": "34777771",
   "name_elements": {
     "forename": "PHIL",
     "other_forenames": "tom",

@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.companieshouse.api.api.CompanyMetricsApiService;
 import uk.gov.companieshouse.api.exception.ResourceNotFoundException;
 import uk.gov.companieshouse.api.psc.CorporateEntity;
 import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
@@ -29,99 +28,23 @@ import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
 import uk.gov.companieshouse.pscdataapi.exceptions.ServiceUnavailableException;
+import uk.gov.companieshouse.pscdataapi.logging.DataMapHolder;
 import uk.gov.companieshouse.pscdataapi.service.CompanyPscService;
 
 
 @RestController
-@RequestMapping(
-        path = "/company/{company_number}/persons-with-significant-control/",
+@RequestMapping(path = "/company/{company_number}/persons-with-significant-control/",
         produces = "application/json")
 public class CompanyPscController {
 
     @Autowired
     CompanyPscService pscService;
 
-
     private static final Logger LOGGER = LoggerFactory.getLogger("psc-data-api");
 
     /**
-     * Get the data object for given company profile number.
-     *
-     * @param companyNumber The number of the company
-     * @return ResponseEntity
-     */
-    @GetMapping("corporate-entity/{notification_id}")
-    public ResponseEntity<CorporateEntity> getCorporateEntityPscData(
-            @PathVariable("company_number") String companyNumber,
-            @PathVariable("notification_id") String notificationId) {
-        LOGGER.info(String.format("Getting PSC data with company number %s", companyNumber));
-        try {
-            LOGGER.info(String.format("Retrieving PSC with company number %s", companyNumber));
-            CorporateEntity corporateEntity =
-                    pscService.getCorporateEntityPsc(companyNumber, notificationId);
-            return new ResponseEntity<>(corporateEntity, HttpStatus.OK);
-        } catch (ResourceNotFoundException resourceNotFoundException) {
-            LOGGER.error(resourceNotFoundException.getMessage());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        } catch (DataAccessException exception) {
-            LOGGER.error(exception.getMessage());
-            return ResponseEntity.internalServerError().build();
-        }
-    }
-
-    /**
-     * Get the data object for given company profile number.
-     *
-     * @param companyNumber The number of the company
-     * @return ResponseEntity
-     */
-    @GetMapping("super-secure/{notification_id}")
-    public ResponseEntity<SuperSecure> getSuperSecurePscData(
-            @PathVariable("company_number") String companyNumber,
-            @PathVariable("notification_id") String notificationId) {
-        LOGGER.info(String.format("Getting PSC data with company number %s", companyNumber));
-        try {
-            LOGGER.info(String.format("Retrieving PSC with company number %s", companyNumber));
-            SuperSecure superSecure =
-                    pscService.getSuperSecurePsc(companyNumber, notificationId);
-            return new ResponseEntity<>(superSecure, HttpStatus.OK);
-        } catch (ResourceNotFoundException resourceNotFoundException) {
-            LOGGER.error(resourceNotFoundException.getMessage());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        } catch (DataAccessException exception) {
-            LOGGER.error(exception.getMessage());
-            return ResponseEntity.internalServerError().build();
-        }
-    }
-
-    /**
-     * Get the data object for given company profile number.
-     *
-     * @param companyNumber The number of the company
-     * @return ResponseEntity
-     */
-    @GetMapping("super-secure-beneficial-owner/{notification_id}")
-    public ResponseEntity<SuperSecureBeneficialOwner> getSuperSecureBeneficialOwnerPscData(
-            @PathVariable("company_number") String companyNumber,
-            @PathVariable("notification_id") String notificationId) {
-        LOGGER.info(String.format("Getting PSC data with company number %s", companyNumber));
-        try {
-            LOGGER.info(String.format("Retrieving PSC with company number %s", companyNumber));
-            SuperSecureBeneficialOwner superSecureBeneficialOwner =
-                    pscService.getSuperSecureBeneficialOwnerPsc(companyNumber, notificationId);
-            return new ResponseEntity<>(superSecureBeneficialOwner, HttpStatus.OK);
-        } catch (ResourceNotFoundException resourceNotFoundException) {
-            LOGGER.error(resourceNotFoundException.getMessage());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        } catch (DataAccessException exception) {
-            LOGGER.error(exception.getMessage());
-            return ResponseEntity.internalServerError().build();
-        }
-    }
-
-    /**
      * PUT endpoint for PSC record
-     * @param contextId context Id taken from header.
+     * @param contextId contextId taken from header.
      * @param request request payload.
      * @return response.
      * */
@@ -129,21 +52,29 @@ public class CompanyPscController {
     public ResponseEntity<Void> submitPscData(@RequestHeader("x-request-id") String contextId,
                                               @RequestBody final FullRecordCompanyPSCApi request) {
         try {
-            LOGGER.info("Payload received, inserting record...");
+            DataMapHolder.get()
+                    .companyNumber(request.getExternalData().getData().getCompanyNumber())
+                    .itemId(request.getExternalData().getPscId());
+        } catch (Exception ex) {
+            throw new BadRequestException("Basic fields not provided");
+        }
+        LOGGER.infoContext(contextId, "PUT request received", DataMapHolder.getLogMap());
+        try {
             pscService.insertPscRecord(contextId, request);
+            LOGGER.infoContext(contextId,"Successfully inserted PSC",
+                    DataMapHolder.getLogMap());
             return ResponseEntity.status(HttpStatus.CREATED).build();
-        } catch (ServiceUnavailableException exception) {
-            LOGGER.info(exception.getMessage());
+        } catch (ServiceUnavailableException ex) {
+            LOGGER.errorContext(contextId, ex, DataMapHolder.getLogMap());
             return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
-        } catch (BadRequestException exception) {
-            LOGGER.info(exception.getMessage());
+        } catch (BadRequestException ex) {
+            LOGGER.errorContext(contextId, ex, DataMapHolder.getLogMap());
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
 
     /**
-     * Delete the data object for given company profile number.
-     *
+     * Delete the data object for a company profile number.
      * @param companyNumber The number of the company
      * @return ResponseEntity
      */
@@ -151,25 +82,27 @@ public class CompanyPscController {
     public ResponseEntity<Void> deletePscData(
             @PathVariable("company_number") String companyNumber,
             @PathVariable("notification_id") String notificationId) {
-        LOGGER.info(String.format("Deleting PSC data with company number %s", companyNumber));
+        DataMapHolder.get()
+                .companyNumber(companyNumber)
+                .itemId(notificationId);
+        LOGGER.info(String.format("Deleting PSC data with company number %s", companyNumber),
+                DataMapHolder.getLogMap());
         try {
             pscService.deletePsc(companyNumber,notificationId);
-            LOGGER.info(String.format(
-                    "Successfully deleted PSC with company number %s",
-                    companyNumber));
+            LOGGER.info(String.format("Successfully deleted PSC with company number %s",
+                    companyNumber), DataMapHolder.getLogMap());
             return ResponseEntity.status(HttpStatus.OK).build();
-        } catch (ResourceNotFoundException resourceNotFoundException) {
-            LOGGER.error(resourceNotFoundException.getMessage());
+        } catch (ResourceNotFoundException ex) {
+            LOGGER.error(ex.getMessage(), DataMapHolder.getLogMap());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        } catch (ServiceUnavailableException exception) {
-            LOGGER.error(exception.getMessage());
+        } catch (ServiceUnavailableException ex) {
+            LOGGER.error(ex.getMessage(), DataMapHolder.getLogMap());
             return ResponseEntity.internalServerError().build();
         }
     }
 
     /**
-     * Get the data object for given company profile number.
-     *
+     * Get the data object for a company profile number for Individual PSC.
      * @param companyNumber The number of the company
      * @return ResponseEntity
      */
@@ -179,28 +112,26 @@ public class CompanyPscController {
             @PathVariable("notification_id") String notificationId,
             @RequestParam(required = false, name = "register_view",
                     defaultValue = "false") Boolean registerView) {
-        LOGGER.info(String.format("Getting PSC data with company number %s", companyNumber));
+        DataMapHolder.get()
+                .companyNumber(companyNumber)
+                .itemId(notificationId);
+        LOGGER.info(String.format("Getting PSC data with company number %s", companyNumber),
+                DataMapHolder.getLogMap());
         try {
-
-            LOGGER.info(String.format(
-                    "Retrieving PSC with company number %s",
-                    companyNumber));
             Individual individual = pscService
                     .getIndividualPsc(companyNumber , notificationId , registerView);
             return new ResponseEntity<>(individual, HttpStatus.OK);
-        } catch (ResourceNotFoundException resourceNotFoundException) {
-            LOGGER.error(resourceNotFoundException.getMessage());
+        } catch (ResourceNotFoundException ex) {
+            LOGGER.error(ex.getMessage(), DataMapHolder.getLogMap());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        } catch (DataAccessException exception) {
-            LOGGER.error(exception.getMessage());
+        } catch (DataAccessException ex) {
+            LOGGER.error(ex.getMessage(), DataMapHolder.getLogMap());
             return ResponseEntity.internalServerError().build();
         }
-
     }
 
     /**
-     * Get the data object for given company profile number.
-     *
+     * Get the data object for a company profile number for Individual Beneficial Owner PSC.
      * @param companyNumber The number of the company
      * @return ResponseEntity
      */
@@ -210,25 +141,54 @@ public class CompanyPscController {
             @PathVariable("notification_id") String notificationId,
             @RequestParam(required = false, name = "register_view",
                     defaultValue = "false") Boolean registerView) {
-        LOGGER.info(String.format("Getting PSC data with company number %s", companyNumber));
+        DataMapHolder.get()
+                .companyNumber(companyNumber)
+                .itemId(notificationId);
+        LOGGER.info(String.format("Getting PSC data with company number %s", companyNumber),
+                DataMapHolder.getLogMap());
         try {
-            LOGGER.info(String.format("Retrieving PSC with company number %s", companyNumber));
             IndividualBeneficialOwner individualBeneficialOwner =
                     pscService.getIndividualBeneficialOwnerPsc(
                             companyNumber, notificationId, registerView);
             return new ResponseEntity<>(individualBeneficialOwner, HttpStatus.OK);
-        } catch (ResourceNotFoundException resourceNotFoundException) {
-            LOGGER.error(resourceNotFoundException.getMessage());
+        } catch (ResourceNotFoundException ex) {
+            LOGGER.error(ex.getMessage(), DataMapHolder.getLogMap());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        } catch (DataAccessException exception) {
-            LOGGER.error(exception.getMessage());
+        } catch (DataAccessException ex) {
+            LOGGER.error(ex.getMessage(), DataMapHolder.getLogMap());
             return ResponseEntity.internalServerError().build();
         }
     }
 
     /**
-     * Get the data object for given company profile number.
-     *
+     * Get the data object for a company profile number for Corporate Entity PSC.
+     * @param companyNumber The number of the company
+     * @return ResponseEntity
+     */
+    @GetMapping("corporate-entity/{notification_id}")
+    public ResponseEntity<CorporateEntity> getCorporateEntityPscData(
+            @PathVariable("company_number") String companyNumber,
+            @PathVariable("notification_id") String notificationId) {
+        DataMapHolder.get()
+                .companyNumber(companyNumber)
+                .itemId(notificationId);
+        LOGGER.info(String.format("Getting PSC data with company number %s", companyNumber),
+                DataMapHolder.getLogMap());
+        try {
+            CorporateEntity corporateEntity =
+                    pscService.getCorporateEntityPsc(companyNumber, notificationId);
+            return new ResponseEntity<>(corporateEntity, HttpStatus.OK);
+        } catch (ResourceNotFoundException ex) {
+            LOGGER.error(ex.getMessage(), DataMapHolder.getLogMap());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (DataAccessException ex) {
+            LOGGER.error(ex.getMessage(), DataMapHolder.getLogMap());
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    /**
+     * Get the data object for a company profile number for Corporate Entity Beneficial Owner PSC.
      * @param companyNumber The number of the company
      * @return ResponseEntity
      */
@@ -236,23 +196,26 @@ public class CompanyPscController {
     public ResponseEntity<CorporateEntityBeneficialOwner> getCorporateEntityBeneficialOwnerPscData(
             @PathVariable("company_number") String companyNumber,
             @PathVariable("notification_id") String notificationId) {
-        LOGGER.info(String.format("Getting PSC data with company number %s", companyNumber));
+        DataMapHolder.get()
+                .companyNumber(companyNumber)
+                .itemId(notificationId);
+        LOGGER.info(String.format("Getting PSC data with company number %s", companyNumber),
+                DataMapHolder.getLogMap());
         try {
-            LOGGER.info(String.format("Retrieving PSC with company number %s", companyNumber));
             CorporateEntityBeneficialOwner corporateEntityBeneficialOwner =
                     pscService.getCorporateEntityBeneficialOwnerPsc(companyNumber, notificationId);
             return new ResponseEntity<>(corporateEntityBeneficialOwner, HttpStatus.OK);
-        } catch (ResourceNotFoundException resourceNotFoundException) {
-            LOGGER.error(resourceNotFoundException.getMessage());
+        } catch (ResourceNotFoundException ex) {
+            LOGGER.error(ex.getMessage(), DataMapHolder.getLogMap());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        } catch (DataAccessException exception) {
-            LOGGER.error(exception.getMessage());
+        } catch (DataAccessException ex) {
+            LOGGER.error(ex.getMessage(), DataMapHolder.getLogMap());
             return ResponseEntity.internalServerError().build();
         }
     }
 
     /**
-     * Get the data object for given company profile number.
+     * Get the data object for a company profile number for Legal Person PSC.
      *
      * @param companyNumber The number of the company
      * @return ResponseEntity
@@ -261,24 +224,26 @@ public class CompanyPscController {
     public ResponseEntity<LegalPerson> getLegalPersonPscData(
             @PathVariable("company_number") String companyNumber,
             @PathVariable("notification_id") String notificationId) {
-        LOGGER.info(String.format("Getting PSC data with company number %s", companyNumber));
+        DataMapHolder.get()
+                .companyNumber(companyNumber)
+                .itemId(notificationId);
+        LOGGER.info(String.format("Getting PSC data with company number %s", companyNumber),
+                DataMapHolder.getLogMap());
         try {
-            LOGGER.info(String.format("Retrieving PSC with company number %s", companyNumber));
             LegalPerson legalPerson =
                     pscService.getLegalPersonPsc(companyNumber, notificationId);
             return new ResponseEntity<>(legalPerson, HttpStatus.OK);
-        } catch (ResourceNotFoundException resourceNotFoundException) {
-            LOGGER.error(resourceNotFoundException.getMessage());
+        } catch (ResourceNotFoundException ex) {
+            LOGGER.error(ex.getMessage(), DataMapHolder.getLogMap());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        } catch (DataAccessException exception) {
-            LOGGER.error(exception.getMessage());
+        } catch (DataAccessException ex) {
+            LOGGER.error(ex.getMessage(), DataMapHolder.getLogMap());
             return ResponseEntity.internalServerError().build();
         }
     }
 
     /**
-     * Get the data object for given company profile number.
-     *
+     * Get the data object for a company profile number for Legal Person Beneficial Owner PSC.
      * @param companyNumber The number of the company
      * @return ResponseEntity
      */
@@ -286,57 +251,108 @@ public class CompanyPscController {
     public ResponseEntity<LegalPersonBeneficialOwner> getLegalPersonBeneficialOwnerPscData(
             @PathVariable("company_number") String companyNumber,
             @PathVariable("notification_id") String notificationId) {
-        LOGGER.info(String.format("Getting PSC data with company number %s", companyNumber));
+        DataMapHolder.get()
+                .companyNumber(companyNumber)
+                .itemId(notificationId);
+        LOGGER.info(String.format("Getting PSC data with company number %s", companyNumber),
+                DataMapHolder.getLogMap());
         try {
-            LOGGER.info(String.format("Retrieving PSC with company number %s", companyNumber));
             LegalPersonBeneficialOwner legalPersonBeneficialOwner =
                     pscService.getLegalPersonBeneficialOwnerPsc(companyNumber, notificationId);
             return new ResponseEntity<>(legalPersonBeneficialOwner, HttpStatus.OK);
-        } catch (ResourceNotFoundException resourceNotFoundException) {
-            LOGGER.error(resourceNotFoundException.getMessage());
+        } catch (ResourceNotFoundException ex) {
+            LOGGER.error(ex.getMessage(), DataMapHolder.getLogMap());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        } catch (DataAccessException exception) {
-            LOGGER.error(exception.getMessage());
+        } catch (DataAccessException ex) {
+            LOGGER.error(ex.getMessage(), DataMapHolder.getLogMap());
             return ResponseEntity.internalServerError().build();
         }
     }
 
+    /**
+     * Get the data object for a company profile number for Super Secure PSC.
+     * @param companyNumber The number of the company
+     * @return ResponseEntity
+     */
+    @GetMapping("super-secure/{notification_id}")
+    public ResponseEntity<SuperSecure> getSuperSecurePscData(
+            @PathVariable("company_number") String companyNumber,
+            @PathVariable("notification_id") String notificationId) {
+        DataMapHolder.get()
+                .companyNumber(companyNumber)
+                .itemId(notificationId);
+        LOGGER.info(String.format("Getting PSC data with company number %s", companyNumber),
+                DataMapHolder.getLogMap());
+        try {
+            SuperSecure superSecure =
+                    pscService.getSuperSecurePsc(companyNumber, notificationId);
+            return new ResponseEntity<>(superSecure, HttpStatus.OK);
+        } catch (ResourceNotFoundException ex) {
+            LOGGER.error(ex.getMessage(), DataMapHolder.getLogMap());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (DataAccessException ex) {
+            LOGGER.error(ex.getMessage(), DataMapHolder.getLogMap());
+            return ResponseEntity.internalServerError().build();
+        }
+    }
 
     /**
-     * Get the data object for given company profile number.
-     *
+     * Get the data object for a company profile number for Super Secure Beneficial Owner PSC.
+     * @param companyNumber The number of the company
+     * @return ResponseEntity
+     */
+    @GetMapping("super-secure-beneficial-owner/{notification_id}")
+    public ResponseEntity<SuperSecureBeneficialOwner> getSuperSecureBeneficialOwnerPscData(
+            @PathVariable("company_number") String companyNumber,
+            @PathVariable("notification_id") String notificationId) {
+        DataMapHolder.get()
+                .companyNumber(companyNumber)
+                .itemId(notificationId);
+        LOGGER.info(String.format("Getting PSC data with company number %s", companyNumber),
+                DataMapHolder.getLogMap());
+        try {
+            SuperSecureBeneficialOwner superSecureBeneficialOwner =
+                    pscService.getSuperSecureBeneficialOwnerPsc(companyNumber, notificationId);
+            return new ResponseEntity<>(superSecureBeneficialOwner, HttpStatus.OK);
+        } catch (ResourceNotFoundException ex) {
+            LOGGER.error(ex.getMessage(), DataMapHolder.getLogMap());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (DataAccessException ex) {
+            LOGGER.error(ex.getMessage(), DataMapHolder.getLogMap());
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    /**
+     * Get the PSC List Summary for a company profile number.
      * @param companyNumber The number of the company
      * @return ResponseEntity
      */
     @GetMapping("")
     public ResponseEntity<PscList> searchPscListSummary(
             @PathVariable("company_number") String companyNumber,
-            @RequestParam(
-                    value = "items_per_page",
+            @RequestParam(value = "items_per_page",
                     required = false, defaultValue = "25") Integer itemsPerPage,
-            @RequestParam(
-                    value = "start_index",
+            @RequestParam(value = "start_index",
                     required = false, defaultValue = "0") final Integer startIndex,
             @RequestParam(
                     value = "register_view", required = false) boolean registerView) {
+        DataMapHolder.get()
+                .companyNumber(companyNumber);
         itemsPerPage = Math.min(itemsPerPage, 100);
         try {
-            LOGGER.info(String.format(
-                    "Retrieving psc list data for company number %s",
-                    companyNumber));
-            PscList pscList = pscService.retrievePscListSummaryFromDb(companyNumber,
-                    startIndex,
-                    registerView,
-                    itemsPerPage);
+            LOGGER.info(String.format("Retrieving psc list data for company number %s",
+                    companyNumber), DataMapHolder.getLogMap());
+            PscList pscList = pscService.retrievePscListSummaryFromDb(
+                    companyNumber, startIndex, registerView, itemsPerPage);
             return new ResponseEntity<>(pscList, HttpStatus.OK);
-        } catch (ResourceNotFoundException resourceNotFoundException) {
-            LOGGER.error(resourceNotFoundException.getMessage());
+        } catch (ResourceNotFoundException ex) {
+            LOGGER.error(ex.getMessage(), DataMapHolder.getLogMap());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        } catch (DataAccessException exception) {
-            LOGGER.error(exception.getMessage());
+        } catch (DataAccessException ex) {
+            LOGGER.error(ex.getMessage(), DataMapHolder.getLogMap());
             return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build();
         }
     }
-
 
 }
