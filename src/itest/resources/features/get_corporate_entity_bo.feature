@@ -8,8 +8,8 @@ Feature: Get Corporate Entity Beneficial Owner
     Then I should receive 200 status code
 
     Examples:
-      | data              | company_number | notificationId              | result                  |
-      | get_corporate_bo  | 34777774       | ZfTs9WeeqpXTqf6dc6FZ4C0H0ZC | get_corporate_bo_output |
+      | data                    | company_number | notificationId              | result                         |
+      | get_corporate_entity_bo | 34777774       | ZfTs9WeeqpXTqf6dc6FZ4C0H0ZC | get_corporate_entity_bo_output |
 
 
   Scenario Outline: Get Corporate Entity Beneficial Owner when sending get request without Eric headers
@@ -19,8 +19,8 @@ Feature: Get Corporate Entity Beneficial Owner
     Then I should receive 401 status code
 
     Examples:
-      | data              | company_number | notificationId              |
-      | get_corporate_bo  | 34777774       | ZfTs9WeeqpXTqf6dc6FZ4C0H0ZC |
+      | data                    | company_number | notificationId              |
+      | get_corporate_entity_bo | 34777774       | ZfTs9WeeqpXTqf6dc6FZ4C0H0ZC |
 
   Scenario Outline: Get PSC unsuccessfully - PSC resource does not exist
     Given a PSC does not exist for "<company_number>"

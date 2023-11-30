@@ -119,7 +119,7 @@ class CompanyPscServiceTest {
     void insertBrandNewPscRecordSavesPsc() {
         when(repository.findUpdatedPsc(eq(NOTIFICATION_ID), dateCaptor.capture())).thenReturn(new ArrayList<>());
         when(repository.findById(NOTIFICATION_ID)).thenReturn(Optional.empty());
-        when(transformer.transformPsc(NOTIFICATION_ID, request)).thenReturn(document);
+        when(transformer.transformPscOnInsert(NOTIFICATION_ID, request)).thenReturn(document);
 
         service.insertPscRecord("", request);
 
@@ -135,7 +135,7 @@ class CompanyPscServiceTest {
         oldRecord.setCreated(new Created().setAt(date));
         when(repository.findUpdatedPsc(eq(NOTIFICATION_ID), dateCaptor.capture())).thenReturn(new ArrayList<>());
         when(repository.findById(NOTIFICATION_ID)).thenReturn(Optional.of(oldRecord));
-        when(transformer.transformPsc(NOTIFICATION_ID, request)).thenReturn(document);
+        when(transformer.transformPscOnInsert(NOTIFICATION_ID, request)).thenReturn(document);
 
         service.insertPscRecord("", request);
 
@@ -162,7 +162,7 @@ class CompanyPscServiceTest {
     void throwsBadRequestExceptionWhenNotGivenDocument() {
         when(repository.findUpdatedPsc(eq(NOTIFICATION_ID), any())).thenReturn(new ArrayList<>());
         when(repository.findById(NOTIFICATION_ID)).thenReturn(Optional.empty());
-        when(transformer.transformPsc(NOTIFICATION_ID, request)).thenReturn(document);
+        when(transformer.transformPscOnInsert(NOTIFICATION_ID, request)).thenReturn(document);
         when(repository.save(document)).thenThrow(new IllegalArgumentException());
 
         assertThrows(BadRequestException.class, () -> service.insertPscRecord("", request));
@@ -172,7 +172,7 @@ class CompanyPscServiceTest {
     void insertNewCreatedWhenCreatedCallToMongoFails() {
         when(repository.findUpdatedPsc(eq(NOTIFICATION_ID), any())).thenReturn(new ArrayList<>());
         when(repository.findById(NOTIFICATION_ID)).thenThrow(new RuntimeException());
-        when(transformer.transformPsc(NOTIFICATION_ID, request)).thenReturn(document);
+        when(transformer.transformPscOnInsert(NOTIFICATION_ID, request)).thenReturn(document);
 
         service.insertPscRecord("", request);
 

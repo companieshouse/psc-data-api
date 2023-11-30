@@ -8,8 +8,8 @@ Feature: Get corporate entity
     Then I should receive 200 status code
 
     Examples:
-      | data           | company_number | notificationId              | result               |
-      | get_corporate  | 34777773       | ZfTs9WeeqpXTqf6dc6FZ4C0H0ZX | get_corporate_output |
+      | data                 | company_number | notificationId              | result                      |
+      | get_corporate_entity | 34777773       | ZfTs9WeeqpXTqf6dc6FZ4C0H0ZX | get_corporate_entity_output |
 
 
   Scenario Outline: Get corporate entity when sending get request without Eric headers
@@ -19,8 +19,8 @@ Feature: Get corporate entity
     Then I should receive 401 status code
 
     Examples:
-      | data           | company_number | notificationId              |
-      | get_corporate  | 34777773       | ZfTs9WeeqpXTqf6dc6FZ4C0H0ZX |
+      | data                 | company_number | notificationId              |
+      | get_corporate_entity | 34777773       | ZfTs9WeeqpXTqf6dc6FZ4C0H0ZX |
 
   Scenario Outline: Get PSC for corporate entity unsuccessfully - PSC resource does not exist
     Given a PSC does not exist for "<company_number>"

@@ -80,7 +80,7 @@ public class CompanyPscService {
         boolean isLatestRecord = isLatestRecord(notificationId, requestBody
                 .getInternalData().getDeltaAt());
         if (isLatestRecord) {
-            PscDocument document = transformer.transformPsc(notificationId, requestBody);
+            PscDocument document = transformer.transformPscOnInsert(notificationId, requestBody);
 
             save(contextId, notificationId, document);
             chsKafkaApiService.invokeChsKafkaApi(contextId,
