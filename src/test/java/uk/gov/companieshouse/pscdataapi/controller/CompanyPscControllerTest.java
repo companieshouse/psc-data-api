@@ -152,6 +152,20 @@ class CompanyPscControllerTest {
     }
 
     @Test
+    void callPutRequestNoPrivileges() throws Exception {
+        doNothing()
+                .when(companyPscService).insertPscRecord(anyString(), isA(FullRecordCompanyPSCApi.class));
+
+        mockMvc.perform(put(PUT_URL)
+                        .contentType(APPLICATION_JSON)
+                        .header("x-request-id", X_REQUEST_ID)
+                        .header("ERIC-Identity", ERIC_IDENTITY)
+                        .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
+                        .content(TestHelper.createJsonPayload()))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     @DisplayName("Return 401 for Super Secure when no api key is present")
     void getSuperSecurePSCWhenNoApiKeyPresent() throws Exception {
         mockMvc.perform(get(GET_SuperSecure_URL)).andExpect(status().isUnauthorized());
@@ -308,6 +322,25 @@ class CompanyPscControllerTest {
                 .andExpect(status().isOk());
 
         verify(companyPscService).getCorporateEntityPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID);
+
+    }
+
+    @Test
+    @DisplayName(
+            "GET request returns a 200 response when Corporate Entity PSC found")
+    void getCorporateEntityPSCWithoutPrivileges() throws Exception {
+        when(companyPscService.getCorporateEntityPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID)).thenReturn(corporateEntity);
+
+        mockMvc.perform(get(GET_CorporateEntity_URL)
+                        .header("ERIC-Identity", ERIC_IDENTITY)
+                        .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
+                        .contentType(APPLICATION_JSON)
+                        .header("x-request-id", X_REQUEST_ID)
+                        .header("ERIC-Authorised-Key-Roles", "")
+                        .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH))
+                .andExpect(status().isForbidden());
+
+        verifyNoInteractions(companyPscService);
 
     }
 
