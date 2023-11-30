@@ -504,11 +504,11 @@ public class CompanyPscService {
                             .getPersonsWithSignificantControl().getActiveStatementsCount());
                 } else {
                     pscList.setActiveCount(metricsApi.getCounts()
-                            .getPersonsWithSignificantControl().getActiveStatementsCount());
+                            .getPersonsWithSignificantControl().getActivePscsCount());
                     pscList.setCeasedCount(metricsApi.getCounts()
-                            .getPersonsWithSignificantControl().getWithdrawnStatementsCount());
+                            .getPersonsWithSignificantControl().getCeasedPscsCount());
                     pscList.setTotalResults(metricsApi.getCounts()
-                            .getPersonsWithSignificantControl().getStatementsCount());
+                            .getPersonsWithSignificantControl().getTotalCount());
                 }
             } catch (NullPointerException exp) {
                 logger.error(String.format(

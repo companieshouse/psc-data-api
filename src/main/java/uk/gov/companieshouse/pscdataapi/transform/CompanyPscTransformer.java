@@ -837,7 +837,7 @@ public class CompanyPscTransformer {
         if (getDocument.getEtag() != null) {
             listSummary.setEtag(getDocument.getEtag());
         }
-        listSummary.setKind(listSummary.getKind());
+
 
         if (getDocument.getName() != null) {
             listSummary.setName(getDocument.getName());
@@ -892,61 +892,52 @@ public class CompanyPscTransformer {
             listSummary.setAddress(convertAddress(address));
             listSummary.setPrincipalOfficeAddress(convertAddress(address));
         }
-        if (getDocument.getNaturesOfControl() != null) {
-            listSummary
-                    .setNaturesOfControl(getDocument.getNaturesOfControl());
+
+        try {
+            listSummary.setKind(ListSummary.KindEnum.fromValue(getDocument.getKind()));
+        } catch (Exception ex) {
+            listSummary.setKind(null);
         }
-        if (getDocument.getLinks() != null) {
-            listSummary.setLinks(getDocument.getLinks());
-        }
-        if (getDocument.getCeasedOn() != null) {
-            listSummary.setCeasedOn(getDocument.getCeasedOn());
-        }
-        if (getDocument.getSanctioned() != null) {
-            listSummary.setIsSanctioned(getDocument.getSanctioned());
-        }
-        if (getDocument.getNationality() != null) {
-            listSummary.setNationality(getDocument.getNationality());
-        }
-        if (getDocument.getCountryOfResidence() != null) {
-            listSummary.setCountryOfResidence(getDocument.getCountryOfResidence());
-        }
-        if (getDocument.getDescription() != null) {
-            listSummary.setDescription(
-                    ListSummary.DescriptionEnum.SUPER_SECURE_PERSONS_WITH_SIGNIFICANT_CONTROL);
-        }
-        if (pscDocument.getIdentification() != null) {
-            Identification identification = new Identification();
-            if (pscDocument.getIdentification().getCountryRegistered() != null) {
-                identification.setCountryRegistered(
-                        pscDocument.getIdentification().getCountryRegistered());
-            }
-            if (pscDocument.getIdentification().getLegalAuthority() != null) {
-                identification.setLegalAuthority(
-                        pscDocument.getIdentification().getLegalAuthority());
-            }
-            if (pscDocument.getIdentification().getLegalForm() != null) {
-                identification.setLegalForm(
-                        pscDocument.getIdentification().getLegalForm());
-            }
-            if (pscDocument.getIdentification().getPlaceRegistered() != null) {
-                identification.setPlaceRegistered(
-                        pscDocument.getIdentification().getPlaceRegistered());
-            }
-            if (pscDocument.getIdentification().getRegistrationNumber() != null) {
-                identification.setRegistrationNumber(
-                        pscDocument.getIdentification().getRegistrationNumber());
-            }
-            if (pscDocument.getData().getNaturesOfControl() != null) {
-                listSummary
-                        .setNaturesOfControl(pscDocument.getData().getNaturesOfControl());
-            }
-            listSummary.setIdentification(identification);
+        try {
+            listSummary.setDescription(ListSummary.DescriptionEnum.fromValue(
+                    getDocument.getDescription()));
+        } catch (Exception ex) {
+            listSummary.setDescription(null);
         }
 
+        listSummary.setNaturesOfControl(getDocument.getNaturesOfControl());
+        listSummary.setLinks(getDocument.getLinks());
+        listSummary.setCeasedOn(getDocument.getCeasedOn());
+        listSummary.setIsSanctioned(getDocument.getSanctioned());
+        listSummary.setNationality(getDocument.getNationality());
+        listSummary.setCountryOfResidence(getDocument.getCountryOfResidence());
+
+
+        if (pscDocument.getIdentification() != null) {
+            Identification identification = new Identification();
+            identification.setCountryRegistered(
+                    pscDocument.getIdentification().getCountryRegistered());
+
+            identification.setLegalAuthority(
+                    pscDocument.getIdentification().getLegalAuthority());
+            identification.setLegalForm(
+                    pscDocument.getIdentification().getLegalForm());
+            identification.setPlaceRegistered(
+                    pscDocument.getIdentification().getPlaceRegistered());
+
+            identification.setRegistrationNumber(
+                    pscDocument.getIdentification().getRegistrationNumber());
+            listSummary.setIdentification(identification);
+        }
+        if (pscDocument.getData() != null) {
+            listSummary
+                    .setNaturesOfControl(pscDocument.getData().getNaturesOfControl());
+        }
         return listSummary;
     }
-    
+
+
+
     private uk.gov.companieshouse.api.psc.Address convertAddress(
                 uk.gov.companieshouse.pscdataapi.models.Address inputAddress) {
         uk.gov.companieshouse.api.psc.Address address = 

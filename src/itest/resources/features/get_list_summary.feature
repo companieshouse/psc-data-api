@@ -4,6 +4,7 @@ Feature: Get list summary
 
     Given Psc data api service is running
     And a PSC exists for "<company_number>" for List summary
+    And Company Metrics API is available for company number "<company_number>"
     When a Get request is sent for "<company_number>" for  List summary
     Then I should receive 200 status code
     And the Get call response body should match "<result>" file for List Summary
