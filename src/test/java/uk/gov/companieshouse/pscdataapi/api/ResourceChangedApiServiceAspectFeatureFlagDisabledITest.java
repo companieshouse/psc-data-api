@@ -7,8 +7,7 @@ import static org.mockito.Mockito.times;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.mockito.Mockito;
+import org.mockito.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -26,7 +25,7 @@ import uk.gov.companieshouse.pscdataapi.util.TestHelper;
 @SpringBootTest
 class ResourceChangedApiServiceAspectFeatureFlagDisabledITest {
 
-    @Autowired
+    @InjectMocks
     private ChsKafkaApiService chsKafkaService;
 
     @MockBean
@@ -46,7 +45,18 @@ class ResourceChangedApiServiceAspectFeatureFlagDisabledITest {
     @Mock
     private HttpClient httpClient;
 
+    @MockBean
+    private ChsKafkaApiService mapper;
+
+//    @Mock
+//    private ResourceChangedRequest resourceChangedRequest;
+
     private TestHelper testHelper;
+
+    @Captor
+    ArgumentCaptor<ChangedResource> changedResourceCaptor;
+
+
 
     @BeforeEach
     void setup() {
@@ -69,10 +79,9 @@ class ResourceChangedApiServiceAspectFeatureFlagDisabledITest {
 
         Assertions.assertThat(apiResponse).isNotNull();
 
-//        verify(apiClientService).getInternalApiClient();
-//        verify(internalApiClient).privateChangedResourceHandler();
-//        verify(privateChangedResourceHandler).postChangedResource("/resource-changed",
-//                changedResource);
-//        verify(changedResourcePost).execute();
+        //verify(apiClientService, times(1)).getInternalApiClient();
+        verify(internalApiClient).privateChangedResourceHandler();
+        verify(privateChangedResourceHandler,times(1)).postChangedResource(Mockito.any(), changedResourceCaptor.capture());
+        verify(changedResourcePost, times(1)).execute();
     }
 }
