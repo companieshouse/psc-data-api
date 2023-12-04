@@ -326,9 +326,12 @@ public class CompanyPscTransformer {
 
             if (externalData.getData() != null) {
                 Data data = externalData.getData();
-                pscDocument.setIdentification(new PscIdentification(data.getIdentification()));
+                if (data.getIdentification() != null) {
+                    pscDocument.setIdentification(new PscIdentification(data.getIdentification()));
+                }
 
-                pscDocument.setData(transformDataFields(data));
+                PscData pscData;
+                pscData = transformDataFields(data);
 
                 String kind = data.getKind();
                 if (IndividualPscRoles.includes(kind)) {
@@ -337,13 +340,15 @@ public class CompanyPscTransformer {
                                 externalData.getSensitiveData()));
                     }
 
-                    handleIndividualFields(data, pscDocument.getData());
+                    handleIndividualFields(data, pscData);
                 }
                 if (SecurePscRoles.includes(kind)) {
-                    handleSecureFields(data, pscDocument.getData());
+                    handleSecureFields(data, pscData);
                 } else {
-                    pscDocument.getData().setAddress(new Address(data.getServiceAddress()));
+                    pscData.setAddress(new Address(data.getServiceAddress()));
                 }
+
+                pscDocument.setData(pscData);
             }
         }
         if (requestBody.getInternalData() != null) {
@@ -387,7 +392,7 @@ public class CompanyPscTransformer {
 
     private void handleIndividualFields(Data data, PscData pscData) {
         pscData.setNameElements(new NameElements(data.getNameElements()));
-        data.setCountryOfResidence(data.getCountryOfResidence());
+        pscData.setCountryOfResidence(data.getCountryOfResidence());
     }
 
     private void handleSecureFields(Data data, PscData pscData) {
