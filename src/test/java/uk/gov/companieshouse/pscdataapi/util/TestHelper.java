@@ -36,6 +36,7 @@ public class TestHelper {
         Data data = new Data();
 
         externalData.setPscId("pscId");
+        // Not setting the notificationId as that is passed to the Transformer
         externalData.setCompanyNumber("1234567");
 
         InternalData internalData = new InternalData();
@@ -138,8 +139,8 @@ public class TestHelper {
         PscDocument output = new PscDocument();
         PscData data = new PscData();
 
-        output.setId("pscId");
-        output.setNotificationId("pscId");
+        output.setId("notificationId");
+        output.setNotificationId("notificationId");
         output.setPscId("pscId");
         output.setCompanyNumber("1234567");
         output.setDeltaAt("20220112000000000000");

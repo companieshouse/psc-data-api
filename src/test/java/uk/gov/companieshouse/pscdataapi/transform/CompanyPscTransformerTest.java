@@ -24,7 +24,7 @@ class CompanyPscTransformerTest {
     @Mock
     private Logger logger;
 
-    private static final String NOTIFICATION_ID = "pscId";
+    private static final String NOTIFICATION_ID = "notificationId";
 
     private static final String INDIVIDUAL_KIND = "individual-person-with-significant-control";
     private static final String CORPORATE_KIND = "corporate-entity-person-with-significant-control";
