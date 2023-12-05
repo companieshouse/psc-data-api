@@ -53,12 +53,13 @@ public class CompanyPscController {
                                               @RequestBody final FullRecordCompanyPSCApi request) {
         try {
             DataMapHolder.get()
-                    .companyNumber(request.getExternalData().getData().getCompanyNumber())
+                    .companyNumber(request.getExternalData().getCompanyNumber())
                     .itemId(request.getExternalData().getPscId());
         } catch (Exception ex) {
             throw new BadRequestException("Basic fields not provided");
         }
-        LOGGER.infoContext(contextId, "PUT request received", DataMapHolder.getLogMap());
+        LOGGER.infoContext(contextId, String.format("PUT request received with company number %s",
+                request.getExternalData().getCompanyNumber()), DataMapHolder.getLogMap());
         try {
             pscService.insertPscRecord(contextId, request);
             LOGGER.infoContext(contextId,"Successfully inserted PSC",

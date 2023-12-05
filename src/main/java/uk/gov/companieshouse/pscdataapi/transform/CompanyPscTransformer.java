@@ -317,12 +317,7 @@ public class CompanyPscTransformer {
         if (requestBody.getExternalData() != null) {
             ExternalData externalData = requestBody.getExternalData();
             pscDocument.setPscId(externalData.getPscId());
-
-            if (externalData.getCompanyNumber() != null) {
-                pscDocument.setCompanyNumber(externalData.getCompanyNumber());
-            } else {
-                pscDocument.setCompanyNumber(externalData.getData().getCompanyNumber());
-            }
+            pscDocument.setCompanyNumber(externalData.getCompanyNumber());
 
             if (externalData.getData() != null) {
                 Data data = externalData.getData();
