@@ -48,9 +48,6 @@ class ResourceChangedApiServiceAspectFeatureFlagDisabledITest {
     @MockBean
     private ChsKafkaApiService mapper;
 
-//    @Mock
-//    private ResourceChangedRequest resourceChangedRequest;
-
     private TestHelper testHelper;
 
     @Captor
@@ -68,7 +65,6 @@ class ResourceChangedApiServiceAspectFeatureFlagDisabledITest {
     void testThatKafkaApiShouldBeCalledWhenFeatureFlagDisabled()
             throws ApiErrorResponseException {
 
-        when(apiClientService.getInternalApiClient()).thenReturn(internalApiClient);
         when(internalApiClient.privateChangedResourceHandler()).thenReturn(
                 privateChangedResourceHandler);
         when(privateChangedResourceHandler.postChangedResource(Mockito.any(), Mockito.any())).thenReturn(
@@ -79,7 +75,6 @@ class ResourceChangedApiServiceAspectFeatureFlagDisabledITest {
 
         Assertions.assertThat(apiResponse).isNotNull();
 
-        //verify(apiClientService, times(1)).getInternalApiClient();
         verify(internalApiClient).privateChangedResourceHandler();
         verify(privateChangedResourceHandler,times(1)).postChangedResource(Mockito.any(), changedResourceCaptor.capture());
         verify(changedResourcePost, times(1)).execute();
