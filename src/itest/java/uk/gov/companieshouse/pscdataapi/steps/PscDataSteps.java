@@ -9,6 +9,7 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.assertj.core.api.Assertions;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import static org.mockito.Mockito.*;
@@ -63,7 +64,7 @@ public class PscDataSteps {
     private ChsKafkaApiService chsKafkaApiService;
     @Autowired
     private CompanyPscTransformer transformer;
-    @Autowired
+    @InjectMocks
     private CompanyPscService companyPscService;
 
     @Mock
@@ -1039,23 +1040,74 @@ public class PscDataSteps {
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
     }
 
-    @And("a PSC {string} exists for {string} for List summary")
-    public void aPSCExistsForForListSummary(String dataFile, String companyNumber) throws JsonProcessingException {
-        String pscDataFile = FileReaderUtil.readFile("src/itest/resources/json/input/" + dataFile + ".json");
-        PscData pscData = objectMapper.readValue(pscDataFile, PscData.class);
+    @And("a PSC exists for {string} for List summary")
+    public void aPSCExistsForForListSummary(String companyNumber) throws JsonProcessingException {
 
+        PscData pscData = new PscData();
         PscDocument document1 = new PscDocument();
+
         String notificationId1 = "ZfTs9WeeqpXTqf6dc6FZ4C0H0ZX";
         document1.setId(notificationId1);
         document1.setCompanyNumber(companyNumber);
+        document1.setPscId("ZfTs9WeeqpXTqf6dc6FZ4C0H0ZX");
+        pscData.setEtag("string");
+        pscData.setName("string");
+        pscData.setNationality("British");
+        pscData.setSanctioned(true);
+        pscData.setKind("corporate-entity-person-with-significant-control");
+        Links links = new Links();
+        links.setSelf("/company/34777772/persons-with-significant-control/corporate-entity/ZfTs9WeeqpXTqf6dc6FZ4C0H0ZX");
+        pscData.setLinks(links);
+        Address address = new Address();
+        address.setAddressLine1("ura_line1");
+        address.setAddressLine2("ura_line2");
+        address.setCareOf("ura_care_of");
+        address.setCountry("United Kingdom");
+        address.setLocality("Cardiff");
+        address.setPoBox("ura_po");
+        address.setPostalCode("CF2 1B6");
+        address.setPremises("URA");
+        address.setRegion("ura_region");
+        pscData.setAddress(address);
+        List<String> list = new ArrayList<>();
+        list.add("part-right-to-share-surplus-assets-75-to-100-percent");
+        pscData.setNaturesOfControl(list);
+        Identification identification = new Identification();
+        identification.setRegistrationNumber("string");
+        identification.setPlaceRegistered("string");
+        identification.setCountryRegistered("string");
+        identification.setLegalAuthority("string");
+        identification.setLegalForm("string");
+        document1.setIdentification(new PscIdentification(identification));
+
         document1.setData(pscData);
         mongoTemplate.save(document1);
 
+
+        PscData pscData2 = new PscData();
         PscDocument document2 = new PscDocument();
+
         String notificationId2 = "ZfTs9WeeqpXTqf6dc6FZ4C0H0ZVV";
         document2.setId(notificationId2);
         document2.setCompanyNumber(companyNumber);
-        document2.setData(pscData);
+        document2.setPscId("ZfTs9WeeqpXTqf6dc6FZ4C0H0Z0");
+        pscData2.setEtag("string");
+        pscData2.setName("string");
+        pscData2.setNationality("British");
+        pscData2.setSanctioned(true);
+        pscData2.setKind("corporate-entity-person-with-significant-control");
+        Links links2 = new Links();
+        links2.setSelf("/company/34777772/persons-with-significant-control/corporate-entity/ZfTs9WeeqpXTqf6dc6FZ4C0H0Z0");
+        pscData2.setLinks(links2);
+
+        pscData2.setAddress(address);
+        pscData2.setNaturesOfControl(list);
+        document2.setIdentification(new PscIdentification(identification));
+
+        document2.setData(pscData2);
+
+
+
         mongoTemplate.save(document2);
 
         assertThat(companyPscRepository.getPscByCompanyNumberAndId(companyNumber, notificationId1)).isNotEmpty();
@@ -1083,13 +1135,13 @@ public class PscDataSteps {
         CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
     }
 
+
     @And("the Get call response body should match file {string} for List Summary")
     public void theGetCallResponseBodyShouldMatchFileForListSummary(String result) throws IOException {
         String data = FileCopyUtils.copyToString(new InputStreamReader(
                 new FileInputStream("src/itest/resources/json/output/" + result + ".json")));
         PscList expected = objectMapper.readValue(data, PscList.class);
         PscList actual = CucumberContext.CONTEXT.get("getResponseBody");
-
         assertThat(expected.getItemsPerPage()).isEqualTo(actual.getItemsPerPage());
         assertThat(expected.getItems()).isEqualTo(actual.getItems());
         assertThat(expected.getLinks()).isEqualTo(actual.getLinks());

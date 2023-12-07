@@ -490,7 +490,7 @@ class CompanyPscServiceTest {
         when(companyMetricsApiService.getCompanyMetrics(MOCK_COMPANY_NUMBER))
                 .thenReturn(Optional.ofNullable(testHelper.createMetrics()));
         when(repository.getPscDocumentList(anyString(), anyInt(), anyInt())).thenReturn(Optional.of(Collections.singletonList(document)));
-        when(transformer.transformPscDocToListSummary(document))
+        when(transformer.transformPscDocToListSummary(document, false))
                 .thenReturn(listSummary);
 
         PscList PscDocumentList = service.retrievePscListSummaryFromDb(MOCK_COMPANY_NUMBER,0, false,25);
@@ -517,7 +517,7 @@ class CompanyPscServiceTest {
 
         when(repository.getPscDocumentList(anyString(), anyInt(), anyInt())).thenReturn(Optional.of(Collections.singletonList(document)));
 
-        when(transformer.transformPscDocToListSummary(document))
+        when(transformer.transformPscDocToListSummary(document, false))
                 .thenReturn(listSummary);
 
         PscList PscDocumentList = service.retrievePscListSummaryFromDb(MOCK_COMPANY_NUMBER,0, false,25);
