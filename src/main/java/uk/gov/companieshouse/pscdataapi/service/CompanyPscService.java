@@ -498,7 +498,8 @@ public class CompanyPscService {
         List<ListSummary> documents = new ArrayList<>();
 
         for (PscDocument pscDocument : pscDocuments) {
-            ListSummary listSummary = this.transformer.transformPscDocToListSummary(pscDocument, registerView);
+            ListSummary listSummary = this.transformer
+                    .transformPscDocToListSummary(pscDocument, registerView);
             documents.add(listSummary);
         }
 

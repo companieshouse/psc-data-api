@@ -309,8 +309,9 @@ public class CompanyPscTransformer {
             listSummary.setNaturesOfControl(pscData.getNaturesOfControl());
             listSummary.setCeased(pscData.getCeasedOn() != null);
         }
-        if(pscDocument.getSensitiveData() != null) {
-            listSummary.setDateOfBirth(mapDateOfBirth(pscDocument.getSensitiveData().getDateOfBirth(), registerView));
+        if (pscDocument.getSensitiveData() != null) {
+            listSummary.setDateOfBirth(mapDateOfBirth(pscDocument.getSensitiveData()
+                    .getDateOfBirth(), registerView));
         }
         listSummary.setIdentification(mapIdentification(
                 pscDocument.getIdentification(), "list summary"));
