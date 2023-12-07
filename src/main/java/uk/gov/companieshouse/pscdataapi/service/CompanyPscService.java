@@ -498,7 +498,7 @@ public class CompanyPscService {
         List<ListSummary> documents = new ArrayList<>();
 
         for (PscDocument pscDocument : pscDocuments) {
-            ListSummary listSummary = this.transformer.transformPscDocToListSummary(pscDocument);
+            ListSummary listSummary = this.transformer.transformPscDocToListSummary(pscDocument, registerView);
             documents.add(listSummary);
         }
 
@@ -517,17 +517,17 @@ public class CompanyPscService {
 
                     pscList.setCeasedCount((int) withdrawnCount);
                     pscList.setTotalResults(metricsApi.getCounts()
-                            .getPersonsWithSignificantControl().getActiveStatementsCount()
+                            .getPersonsWithSignificantControl().getActivePscsCount()
                             + pscList.getCeasedCount());
                     pscList.setActiveCount(metricsApi.getCounts()
-                            .getPersonsWithSignificantControl().getActiveStatementsCount());
+                            .getPersonsWithSignificantControl().getActivePscsCount());
                 } else {
                     pscList.setActiveCount(metricsApi.getCounts()
                             .getPersonsWithSignificantControl().getActivePscsCount());
                     pscList.setCeasedCount(metricsApi.getCounts()
                             .getPersonsWithSignificantControl().getCeasedPscsCount());
                     pscList.setTotalResults(metricsApi.getCounts()
-                            .getPersonsWithSignificantControl().getTotalCount());
+                            .getPersonsWithSignificantControl().getPscsCount());
                 }
             } catch (NullPointerException exp) {
                 logger.error(String.format("No PSC data in metrics for company number %s",

@@ -9,8 +9,8 @@ Feature: Get list summary
     And the Get call response body should match file "<result>" for List Summary
 
     Examples:
-      | data             | company_number | result          |
-      | get_super_secure | 34777777       | psc_list_output |
+      | company_number | result          |
+      | 34777777       | psc_list_output |
 
   Scenario Outline: Processing Psc List GET register view request successfully
     Given Psc data api service is running
@@ -21,8 +21,8 @@ Feature: Get list summary
     And the Get call response body should match file "<result>" for List Summary
 
     Examples:
-      | data             | metricsData          | companyNumber | result                        |
-      | get_super_secure | company_metrics_data | 34777777      | psc_list_register_view_output |
+      | metricsData          | companyNumber | result                        |
+      | company_metrics_data | 34777777      | psc_list_register_view_output |
 
 
   Scenario Outline: Processing Psc List GET register view request unsuccessfully
@@ -34,8 +34,8 @@ Feature: Get list summary
     Then I should receive 404 status code
 
     Examples:
-      | data             | company_number |
-      | get_super_secure | 34777777       |
+      | company_number |
+      | 34777777       |
 
   Scenario Outline: Processing Psc List GET register view request unsuccessfully
   when no company psc statements in public register

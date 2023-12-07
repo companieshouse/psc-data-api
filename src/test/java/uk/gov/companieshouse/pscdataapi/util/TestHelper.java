@@ -214,9 +214,9 @@ public class TestHelper {
         MetricsApi metrics = new MetricsApi();
         CountsApi counts = new CountsApi();
         PscApi pscs = new PscApi();
-        pscs.setActiveStatementsCount(1);
-        pscs.setWithdrawnStatementsCount(1);
-        pscs.setStatementsCount(2);
+        pscs.setActivePscsCount(1);
+        pscs.setCeasedPscsCount(1);
+        pscs.setPscsCount(2);
         counts.setPersonsWithSignificantControl(pscs);
         metrics.setCounts(counts);
         return metrics;

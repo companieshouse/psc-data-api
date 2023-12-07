@@ -274,7 +274,7 @@ public class CompanyPscTransformer {
      * @param pscDocument PSC.
      * @return ListSummary mongo Document.
      */
-    public ListSummary transformPscDocToListSummary(PscDocument pscDocument) {
+    public ListSummary transformPscDocToListSummary(PscDocument pscDocument, Boolean registerView) {
         ListSummary listSummary = new ListSummary();
 
 
@@ -295,8 +295,6 @@ public class CompanyPscTransformer {
                 listSummary.setDescription(null);
             }
 
-
-
             listSummary.setEtag(pscData.getEtag());
             listSummary.setName(pscData.getName());
             listSummary.setNameElements(mapNameElements(pscData.getNameElements()));
@@ -308,6 +306,11 @@ public class CompanyPscTransformer {
             listSummary.setIsSanctioned(pscData.getSanctioned());
             listSummary.setNationality(pscData.getNationality());
             listSummary.setCountryOfResidence(pscData.getCountryOfResidence());
+            listSummary.setNaturesOfControl(pscData.getNaturesOfControl());
+            listSummary.setCeased(pscData.getCeasedOn() != null);
+        }
+        if(pscDocument.getSensitiveData() != null) {
+            listSummary.setDateOfBirth(mapDateOfBirth(pscDocument.getSensitiveData().getDateOfBirth(), registerView));
         }
         listSummary.setIdentification(mapIdentification(
                 pscDocument.getIdentification(), "list summary"));

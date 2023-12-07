@@ -181,7 +181,7 @@ class CompanyPscTransformerTest {
     @Test
     void testEmptyListSummaryTransform(){
         ListSummary listSummary = pscTransformer
-                .transformPscDocToListSummary(new PscDocument());
+                .transformPscDocToListSummary(new PscDocument(), false);
         Assertions.assertNotNull(listSummary);
     }
 
@@ -195,9 +195,8 @@ class CompanyPscTransformerTest {
         pscDocument.setSensitiveData(new PscSensitiveData());
 
         ListSummary listSummary = pscTransformer
-                .transformPscDocToListSummary(pscDocument);
+                .transformPscDocToListSummary(pscDocument, true);
         Assertions.assertNotNull(listSummary);
-        Assertions.assertNull(listSummary.getKind());
     }
 
     @Test
