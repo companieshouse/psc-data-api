@@ -1,5 +1,5 @@
 {
-  "_id": "YfTs9WeeqpXTqf6dc6FZ4C0H0ZVV",
+  "_id": "YfTs9WeeqpXTqf6dc6FZ4C0H0ZC",
   "internal_data": {
     "created_at" : "2021-11-02T08:47:45",
     "updated_at" :"2021-09-14T10:30:16.000Z",
@@ -7,8 +7,8 @@
     "delta_at" : "2023-11-20T08:47:45.378Z"
   },
   "external_data": {
-    "notification_id": "ZfTs9WeeqpXTqf6dc6FZ4C0H0ZVV",
-    "psc_id" : "ZfTs9WeeqpXTqf6dc6FZ4C0H0ZVV",
+    "notification_id": "ZfTs9WeeqpXTqf6dc6FZ4C0H0ZC",
+    "psc_id" : "ZfTs9WeeqpXTqf6dc6FZ4C0H0ZC",
     "sensitive_data": {
       "usual_residential_address" : {
         "address_line_1" : "ura_line1",
@@ -45,12 +45,12 @@
       ],
       "country_of_residence" : "United Kingdom",
       "links" : [{
-        "self" : "/company/34777775/persons-with-significant-control/ZfTs9WeeqpXTqf6dc6FZ4C0H0ZVV"
+        "self" : "/company/34777774/persons-with-significant-control/ZfTs9WeeqpXTqf6dc6FZ4C0H0ZC"
       }],
       "nationality" : "British",
       "is_sanctioned": true,
-      "kind" : "legal-person-beneficial-owner",
-      "company_number": "347777755",
+      "kind" : "corporate-entity-beneficial-owner",
+      "company_number": "34777774",
       "name": "string",
       "name_elements": {
         "title":"Mr.",

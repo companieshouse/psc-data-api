@@ -68,38 +68,27 @@ class CompanyPscControllerTest {
             "/company/123456789/persons-with-significant-control/super-secure-beneficial-owner/123456789";
 
     private static final String X_REQUEST_ID = "123456";
-
     private static final String MOCK_COMPANY_NUMBER = "123456789";
-
     private static final String MOCK_NOTIFICATION_ID = "123456789";
-
     private static final Boolean MOCK_REGISTER_VIEW_TRUE = true;
-
     private static final Boolean MOCK_REGISTER_VIEW_FALSE = false;
 
     private static final String ERIC_IDENTITY = "Test-Identity";
     private static final String ERIC_IDENTITY_TYPE = "key";
     private static final String ERIC_PRIVILEGES = "*";
-    //private static final String X_REQUEST_ID = TestHelper.X_REQUEST_ID;
+    private static final String ERIC_AUTH = "internal-app";
 
     private static final String DELETE_URL = String.format("/company/%s/persons-with-significant-control/%s/full_record", MOCK_COMPANY_NUMBER, MOCK_COMPANY_NUMBER);
 
     private FullRecordCompanyPSCApi request;
-
     private PscDocument document;
 
     private SuperSecure superSecure;
-
     private SuperSecureBeneficialOwner superSecureBeneficialOwner;
-
     private Individual individual;
-
     private IndividualBeneficialOwner individualBeneficialOwner;
-
     private CorporateEntity corporateEntity;
-
     private CorporateEntityBeneficialOwner corporateEntityBeneficialOwner;
-
     private LegalPerson legalPerson;
     private LegalPersonBeneficialOwner legalPersonBeneficialOwner;
 
@@ -115,8 +104,6 @@ class CompanyPscControllerTest {
     private MockMvc mockMvc;
     @Autowired
     private CompanyPscController companyPscController;
-
-
 
     @BeforeEach
     public void setUp() {
@@ -157,11 +144,25 @@ class CompanyPscControllerTest {
         mockMvc.perform(put(PUT_URL)
                 .contentType(APPLICATION_JSON)
                 .header("x-request-id", X_REQUEST_ID)
-                .header("ERIC-Identity", "test")
-                .header("ERIC-Identity-Type", "key")
-                .header("ERIC-Authorised-Key-Roles", "*")
+                .header("ERIC-Identity", ERIC_IDENTITY)
+                .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
+                .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
                 .content(TestHelper.createJsonPayload()))
                 .andExpect(status().isCreated());
+    }
+
+    @Test
+    void callPutRequestNoPrivileges() throws Exception {
+        doNothing()
+                .when(companyPscService).insertPscRecord(anyString(), isA(FullRecordCompanyPSCApi.class));
+
+        mockMvc.perform(put(PUT_URL)
+                        .contentType(APPLICATION_JSON)
+                        .header("x-request-id", X_REQUEST_ID)
+                        .header("ERIC-Identity", ERIC_IDENTITY)
+                        .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
+                        .content(TestHelper.createJsonPayload()))
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -170,7 +171,7 @@ class CompanyPscControllerTest {
         mockMvc.perform(get(GET_SuperSecure_URL)).andExpect(status().isUnauthorized());
 
         verify(companyPscService
-                ,times(0)).getSuperSecurePsc( "123456789",MOCK_NOTIFICATION_ID);
+                ,times(0)).getSuperSecurePsc(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID);
     }
 
     @Test
@@ -180,12 +181,12 @@ class CompanyPscControllerTest {
         when(companyPscService.getSuperSecurePsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID)).thenReturn(superSecure);
 
         mockMvc.perform(get(GET_SuperSecure_URL)
-                        .header("ERIC-Identity", "SOME_IDENTITY")
-                        .header("ERIC-Identity-Type", "key")
+                        .header("ERIC-Identity", ERIC_IDENTITY)
+                        .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
                         .contentType(APPLICATION_JSON)
-                        .header("x-request-id", "123456")
-                        .header("ERIC-Authorised-Key-Roles", "*")
-                        .header("ERIC-Authorised-Key-Privileges", "internal-app"))
+                        .header("x-request-id", X_REQUEST_ID)
+                        .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
+                        .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH))
                 .andExpect(status().isOk());
 
         verify(companyPscService).getSuperSecurePsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID);
@@ -199,12 +200,12 @@ class CompanyPscControllerTest {
         when(companyPscService.getSuperSecurePsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID)).thenThrow(ServiceUnavailableException.class);
 
         mockMvc.perform(get(GET_SuperSecure_URL)
-                        .header("ERIC-Identity", "SOME_IDENTITY")
-                        .header("ERIC-Identity-Type", "key")
+                        .header("ERIC-Identity", ERIC_IDENTITY)
+                        .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
                         .contentType(APPLICATION_JSON)
-                        .header("x-request-id", "123456")
-                        .header("ERIC-Authorised-Key-Roles", "*")
-                        .header("ERIC-Authorised-Key-Privileges", "internal-app"))
+                        .header("x-request-id", X_REQUEST_ID)
+                        .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
+                        .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH))
                 .andExpect(status().isInternalServerError());
 
         verify(companyPscService).getSuperSecurePsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID);
@@ -218,12 +219,12 @@ class CompanyPscControllerTest {
         when(companyPscService.getSuperSecurePsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID)).thenThrow(ResourceNotFoundException.class);
 
         mockMvc.perform(get(GET_SuperSecure_URL)
-                        .header("ERIC-Identity", "SOME_IDENTITY")
-                        .header("ERIC-Identity-Type", "key")
+                        .header("ERIC-Identity", ERIC_IDENTITY)
+                        .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
                         .contentType(APPLICATION_JSON)
-                        .header("x-request-id", "123456")
-                        .header("ERIC-Authorised-Key-Roles", "*")
-                        .header("ERIC-Authorised-Key-Privileges", "internal-app"))
+                        .header("x-request-id", X_REQUEST_ID)
+                        .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
+                        .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH))
                 .andExpect(status().isNotFound());
 
         verify(companyPscService).getSuperSecurePsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID);
@@ -236,7 +237,7 @@ class CompanyPscControllerTest {
         mockMvc.perform(get(GET_SuperSecureBeneficialOwner_URL)).andExpect(status().isUnauthorized());
 
         verify(companyPscService
-                ,times(0)).getSuperSecureBeneficialOwnerPsc( "123456789",MOCK_NOTIFICATION_ID);
+                ,times(0)).getSuperSecureBeneficialOwnerPsc(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID);
     }
 
     @Test
@@ -246,12 +247,12 @@ class CompanyPscControllerTest {
         when(companyPscService.getSuperSecureBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID)).thenReturn(superSecureBeneficialOwner);
 
         mockMvc.perform(get(GET_SuperSecureBeneficialOwner_URL)
-                        .header("ERIC-Identity", "SOME_IDENTITY")
-                        .header("ERIC-Identity-Type", "key")
+                        .header("ERIC-Identity", ERIC_IDENTITY)
+                        .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
                         .contentType(APPLICATION_JSON)
-                        .header("x-request-id", "123456")
-                        .header("ERIC-Authorised-Key-Roles", "*")
-                        .header("ERIC-Authorised-Key-Privileges", "internal-app"))
+                        .header("x-request-id", X_REQUEST_ID)
+                        .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
+                        .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH))
                 .andExpect(status().isOk());
 
         verify(companyPscService).getSuperSecureBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID);
@@ -265,12 +266,12 @@ class CompanyPscControllerTest {
         when(companyPscService.getSuperSecureBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID)).thenThrow(ServiceUnavailableException.class);
 
         mockMvc.perform(get(GET_SuperSecureBeneficialOwner_URL)
-                        .header("ERIC-Identity", "SOME_IDENTITY")
-                        .header("ERIC-Identity-Type", "key")
+                        .header("ERIC-Identity", ERIC_IDENTITY)
+                        .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
                         .contentType(APPLICATION_JSON)
-                        .header("x-request-id", "123456")
-                        .header("ERIC-Authorised-Key-Roles", "*")
-                        .header("ERIC-Authorised-Key-Privileges", "internal-app"))
+                        .header("x-request-id", X_REQUEST_ID)
+                        .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
+                        .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH))
                 .andExpect(status().isInternalServerError());
 
         verify(companyPscService).getSuperSecureBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID);
@@ -284,12 +285,12 @@ class CompanyPscControllerTest {
         when(companyPscService.getSuperSecureBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID)).thenThrow(ResourceNotFoundException.class);
 
         mockMvc.perform(get(GET_SuperSecureBeneficialOwner_URL)
-                        .header("ERIC-Identity", "SOME_IDENTITY")
-                        .header("ERIC-Identity-Type", "key")
+                        .header("ERIC-Identity", ERIC_IDENTITY)
+                        .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
                         .contentType(APPLICATION_JSON)
-                        .header("x-request-id", "123456")
-                        .header("ERIC-Authorised-Key-Roles", "*")
-                        .header("ERIC-Authorised-Key-Privileges", "internal-app"))
+                        .header("x-request-id", X_REQUEST_ID)
+                        .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
+                        .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH))
                 .andExpect(status().isNotFound());
 
         verify(companyPscService).getSuperSecureBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID);
@@ -302,7 +303,7 @@ class CompanyPscControllerTest {
         mockMvc.perform(get(GET_CorporateEntity_URL)).andExpect(status().isUnauthorized());
 
         verify(companyPscService
-                ,times(0)).getCorporateEntityPsc( "123456789",MOCK_NOTIFICATION_ID);
+                ,times(0)).getCorporateEntityPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID);
     }
 
     @Test
@@ -312,15 +313,34 @@ class CompanyPscControllerTest {
         when(companyPscService.getCorporateEntityPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID)).thenReturn(corporateEntity);
 
         mockMvc.perform(get(GET_CorporateEntity_URL)
-                        .header("ERIC-Identity", "SOME_IDENTITY")
-                        .header("ERIC-Identity-Type", "key")
+                        .header("ERIC-Identity", ERIC_IDENTITY)
+                        .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
                         .contentType(APPLICATION_JSON)
-                        .header("x-request-id", "123456")
-                        .header("ERIC-Authorised-Key-Roles", "*")
-                        .header("ERIC-Authorised-Key-Privileges", "internal-app"))
+                        .header("x-request-id", X_REQUEST_ID)
+                        .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
+                        .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH))
                 .andExpect(status().isOk());
 
         verify(companyPscService).getCorporateEntityPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID);
+
+    }
+
+    @Test
+    @DisplayName(
+            "GET request returns a 200 response when Corporate Entity PSC found")
+    void getCorporateEntityPSCWithoutPrivileges() throws Exception {
+        when(companyPscService.getCorporateEntityPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID)).thenReturn(corporateEntity);
+
+        mockMvc.perform(get(GET_CorporateEntity_URL)
+                        .header("ERIC-Identity", ERIC_IDENTITY)
+                        .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
+                        .contentType(APPLICATION_JSON)
+                        .header("x-request-id", X_REQUEST_ID)
+                        .header("ERIC-Authorised-Key-Roles", "")
+                        .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH))
+                .andExpect(status().isForbidden());
+
+        verifyNoInteractions(companyPscService);
 
     }
 
@@ -331,12 +351,12 @@ class CompanyPscControllerTest {
         when(companyPscService.getCorporateEntityPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID)).thenThrow(ServiceUnavailableException.class);
 
         mockMvc.perform(get(GET_CorporateEntity_URL)
-                        .header("ERIC-Identity", "SOME_IDENTITY")
-                        .header("ERIC-Identity-Type", "key")
+                        .header("ERIC-Identity", ERIC_IDENTITY)
+                        .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
                         .contentType(APPLICATION_JSON)
-                        .header("x-request-id", "123456")
-                        .header("ERIC-Authorised-Key-Roles", "*")
-                        .header("ERIC-Authorised-Key-Privileges", "internal-app"))
+                        .header("x-request-id", X_REQUEST_ID)
+                        .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
+                        .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH))
                 .andExpect(status().isInternalServerError());
 
         verify(companyPscService).getCorporateEntityPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID);
@@ -350,12 +370,12 @@ class CompanyPscControllerTest {
         when(companyPscService.getCorporateEntityPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID)).thenThrow(ResourceNotFoundException.class);
 
         mockMvc.perform(get(GET_CorporateEntity_URL)
-                        .header("ERIC-Identity", "SOME_IDENTITY")
-                        .header("ERIC-Identity-Type", "key")
+                        .header("ERIC-Identity", ERIC_IDENTITY)
+                        .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
                         .contentType(APPLICATION_JSON)
-                        .header("x-request-id", "123456")
-                        .header("ERIC-Authorised-Key-Roles", "*")
-                        .header("ERIC-Authorised-Key-Privileges", "internal-app"))
+                        .header("x-request-id", X_REQUEST_ID)
+                        .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
+                        .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH))
                 .andExpect(status().isNotFound());
 
         verify(companyPscService).getCorporateEntityPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID);
@@ -368,7 +388,7 @@ class CompanyPscControllerTest {
         mockMvc.perform(delete(PUT_URL)).andExpect(status().isUnauthorized());
 
         verify(companyPscService
-                ,times(0)).deletePsc("123456789",MOCK_NOTIFICATION_ID);
+                ,times(0)).deletePsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID);
     }
 
     @Test
@@ -378,12 +398,12 @@ class CompanyPscControllerTest {
                 .when(companyPscService).deletePsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID);
 
         mockMvc.perform(delete(DELETE_URL)
-                        .header("ERIC-Identity", "SOME_IDENTITY")
-                        .header("ERIC-Identity-Type", "key")
+                        .header("ERIC-Identity", ERIC_IDENTITY)
+                        .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
                         .contentType(APPLICATION_JSON)
-                        .header("x-request-id", "123456")
-                        .header("ERIC-Authorised-Key-Roles", "*")
-                        .header("ERIC-Authorised-Key-Privileges", "internal-app"))
+                        .header("x-request-id", X_REQUEST_ID)
+                        .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
+                        .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH))
                 .andExpect(status().isOk());
 
         verify(companyPscService,times(1)).deletePsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID);
@@ -396,12 +416,12 @@ class CompanyPscControllerTest {
                 .when(companyPscService).deletePsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID);
 
         mockMvc.perform(delete(DELETE_URL)
-                        .header("ERIC-Identity", "SOME_IDENTITY")
-                        .header("ERIC-Identity-Type", "key")
+                        .header("ERIC-Identity", ERIC_IDENTITY)
+                        .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
                         .contentType(APPLICATION_JSON)
-                        .header("x-request-id", "123456")
-                        .header("ERIC-Authorised-Key-Roles", "*")
-                        .header("ERIC-Authorised-Key-Privileges", "internal-app"))
+                        .header("x-request-id", X_REQUEST_ID)
+                        .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
+                        .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH))
                 .andExpect(status().isNotFound());
 
         verify(companyPscService,times(1)).deletePsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID);
@@ -414,12 +434,12 @@ class CompanyPscControllerTest {
                 .when(companyPscService).deletePsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID);
 
         mockMvc.perform(delete(DELETE_URL)
-                        .header("ERIC-Identity", "SOME_IDENTITY")
-                        .header("ERIC-Identity-Type", "key")
+                        .header("ERIC-Identity", ERIC_IDENTITY)
+                        .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
                         .contentType(APPLICATION_JSON)
-                        .header("x-request-id", "123456")
-                        .header("ERIC-Authorised-Key-Roles", "*")
-                        .header("ERIC-Authorised-Key-Privileges", "internal-app"))
+                        .header("x-request-id", X_REQUEST_ID)
+                        .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
+                        .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH))
                 .andExpect(status().isInternalServerError());
 
     }
@@ -430,8 +450,8 @@ class CompanyPscControllerTest {
     void getPSCWhenNoApiKeyPresent() throws Exception {
         mockMvc.perform(get(GET_URL)).andExpect(status().isUnauthorized());
 
-        verify(companyPscService
-                ,times(0)).getIndividualPsc( "123456789",MOCK_NOTIFICATION_ID, MOCK_REGISTER_VIEW_TRUE);
+        verify(companyPscService ,times(0))
+                        .getIndividualPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID, MOCK_REGISTER_VIEW_TRUE);
     }
 
     @Test
@@ -441,12 +461,12 @@ class CompanyPscControllerTest {
         when(companyPscService.getIndividualPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID, MOCK_REGISTER_VIEW_FALSE)).thenReturn(individual);
 
         mockMvc.perform(get(GET_URL)
-                        .header("ERIC-Identity", "SOME_IDENTITY")
-                        .header("ERIC-Identity-Type", "key")
+                        .header("ERIC-Identity", ERIC_IDENTITY)
+                        .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
                         .contentType(APPLICATION_JSON)
-                        .header("x-request-id", "123456")
-                        .header("ERIC-Authorised-Key-Roles", "*")
-                        .header("ERIC-Authorised-Key-Privileges", "internal-app"))
+                        .header("x-request-id", X_REQUEST_ID)
+                        .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
+                        .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH))
                 .andExpect(status().isOk());
 
         verify(companyPscService).getIndividualPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID, MOCK_REGISTER_VIEW_FALSE);
@@ -460,13 +480,13 @@ class CompanyPscControllerTest {
         when(companyPscService.getIndividualPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID, MOCK_REGISTER_VIEW_TRUE)).thenThrow(ServiceUnavailableException.class);
 
         mockMvc.perform(get(GET_URL)
-                        .header("ERIC-Identity", "SOME_IDENTITY")
-                        .header("ERIC-Identity-Type", "key")
+                        .header("ERIC-Identity", ERIC_IDENTITY)
+                        .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
                         .param("register_view", "true")
                         .contentType(APPLICATION_JSON)
-                        .header("x-request-id", "123456")
-                        .header("ERIC-Authorised-Key-Roles", "*")
-                        .header("ERIC-Authorised-Key-Privileges", "internal-app"))
+                        .header("x-request-id", X_REQUEST_ID)
+                        .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
+                        .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH))
                 .andExpect(status().isInternalServerError());
 
         verify(companyPscService).getIndividualPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID, MOCK_REGISTER_VIEW_TRUE);
@@ -480,13 +500,13 @@ class CompanyPscControllerTest {
         when(companyPscService.getIndividualPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID, MOCK_REGISTER_VIEW_TRUE)).thenThrow(ResourceNotFoundException.class);
 
         mockMvc.perform(get(GET_URL)
-                        .header("ERIC-Identity", "SOME_IDENTITY")
-                        .header("ERIC-Identity-Type", "key")
+                        .header("ERIC-Identity", ERIC_IDENTITY)
+                        .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
                         .param("register_view", "true")
                         .contentType(APPLICATION_JSON)
-                        .header("x-request-id", "123456")
-                        .header("ERIC-Authorised-Key-Roles", "*")
-                        .header("ERIC-Authorised-Key-Privileges", "internal-app"))
+                        .header("x-request-id", X_REQUEST_ID)
+                        .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
+                        .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH))
                 .andExpect(status().isNotFound());
 
         verify(companyPscService).getIndividualPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID, MOCK_REGISTER_VIEW_TRUE);
@@ -501,7 +521,7 @@ class CompanyPscControllerTest {
 
         verify(companyPscService
                 ,times(0))
-                .getIndividualBeneficialOwnerPsc( "123456789",MOCK_NOTIFICATION_ID,MOCK_REGISTER_VIEW_FALSE);
+                .getIndividualBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID,MOCK_REGISTER_VIEW_FALSE);
     }
 
     @Test
@@ -513,13 +533,13 @@ class CompanyPscControllerTest {
                 .thenReturn(individualBeneficialOwner);
 
         mockMvc.perform(get(GET_IndividualBeneficialOwner_URL)
-                        .header("ERIC-Identity", "SOME_IDENTITY")
-                        .header("ERIC-Identity-Type", "key")
+                        .header("ERIC-Identity", ERIC_IDENTITY)
+                        .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
                         .param("register_view", "true")
                         .contentType(APPLICATION_JSON)
-                        .header("x-request-id", "123456")
-                        .header("ERIC-Authorised-Key-Roles", "*")
-                        .header("ERIC-Authorised-Key-Privileges", "internal-app"))
+                        .header("x-request-id", X_REQUEST_ID)
+                        .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
+                        .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH))
                 .andExpect(status().isOk());
 
         verify(companyPscService).getIndividualBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID,MOCK_REGISTER_VIEW_TRUE);
@@ -535,12 +555,12 @@ class CompanyPscControllerTest {
                 .thenThrow(ServiceUnavailableException.class);
 
         mockMvc.perform(get(GET_IndividualBeneficialOwner_URL)
-                        .header("ERIC-Identity", "SOME_IDENTITY")
-                        .header("ERIC-Identity-Type", "key")
+                        .header("ERIC-Identity", ERIC_IDENTITY)
+                        .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
                         .contentType(APPLICATION_JSON)
-                        .header("x-request-id", "123456")
-                        .header("ERIC-Authorised-Key-Roles", "*")
-                        .header("ERIC-Authorised-Key-Privileges", "internal-app"))
+                        .header("x-request-id", X_REQUEST_ID)
+                        .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
+                        .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH))
                 .andExpect(status().isInternalServerError());
 
         verify(companyPscService).getIndividualBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID,MOCK_REGISTER_VIEW_FALSE);
@@ -556,12 +576,12 @@ class CompanyPscControllerTest {
                 .thenThrow(ResourceNotFoundException.class);
 
         mockMvc.perform(get(GET_IndividualBeneficialOwner_URL)
-                        .header("ERIC-Identity", "SOME_IDENTITY")
-                        .header("ERIC-Identity-Type", "key")
+                        .header("ERIC-Identity", ERIC_IDENTITY)
+                        .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
                         .contentType(APPLICATION_JSON)
-                        .header("x-request-id", "123456")
-                        .header("ERIC-Authorised-Key-Roles", "*")
-                        .header("ERIC-Authorised-Key-Privileges", "internal-app"))
+                        .header("x-request-id", X_REQUEST_ID)
+                        .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
+                        .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH))
                 .andExpect(status().isNotFound());
 
         verify(companyPscService).getIndividualBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID,MOCK_REGISTER_VIEW_FALSE);
@@ -577,12 +597,12 @@ class CompanyPscControllerTest {
                 .thenReturn(corporateEntityBeneficialOwner);
 
         mockMvc.perform(get(GET_CorporateEntityBeneficialOwner_URL)
-                        .header("ERIC-Identity", "SOME_IDENTITY")
-                        .header("ERIC-Identity-Type", "key")
+                        .header("ERIC-Identity", ERIC_IDENTITY)
+                        .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
                         .contentType(APPLICATION_JSON)
-                        .header("x-request-id", "123456")
-                        .header("ERIC-Authorised-Key-Roles", "*")
-                        .header("ERIC-Authorised-Key-Privileges", "internal-app"))
+                        .header("x-request-id", X_REQUEST_ID)
+                        .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
+                        .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH))
                 .andExpect(status().isOk());
 
         verify(companyPscService).getCorporateEntityBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID);
@@ -598,12 +618,12 @@ class CompanyPscControllerTest {
                 .thenThrow(ServiceUnavailableException.class);
 
         mockMvc.perform(get(GET_CorporateEntityBeneficialOwner_URL)
-                        .header("ERIC-Identity", "SOME_IDENTITY")
-                        .header("ERIC-Identity-Type", "key")
+                        .header("ERIC-Identity", ERIC_IDENTITY)
+                        .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
                         .contentType(APPLICATION_JSON)
-                        .header("x-request-id", "123456")
-                        .header("ERIC-Authorised-Key-Roles", "*")
-                        .header("ERIC-Authorised-Key-Privileges", "internal-app"))
+                        .header("x-request-id", X_REQUEST_ID)
+                        .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
+                        .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH))
                 .andExpect(status().isInternalServerError());
 
         verify(companyPscService).getCorporateEntityBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID);
@@ -619,12 +639,12 @@ class CompanyPscControllerTest {
                 .thenThrow(ResourceNotFoundException.class);
 
         mockMvc.perform(get(GET_CorporateEntityBeneficialOwner_URL)
-                        .header("ERIC-Identity", "SOME_IDENTITY")
-                        .header("ERIC-Identity-Type", "key")
+                        .header("ERIC-Identity", ERIC_IDENTITY)
+                        .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
                         .contentType(APPLICATION_JSON)
-                        .header("x-request-id", "123456")
-                        .header("ERIC-Authorised-Key-Roles", "*")
-                        .header("ERIC-Authorised-Key-Privileges", "internal-app"))
+                        .header("x-request-id", X_REQUEST_ID)
+                        .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
+                        .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH))
                 .andExpect(status().isNotFound());
 
         verify(companyPscService).getCorporateEntityBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID);
@@ -640,12 +660,12 @@ class CompanyPscControllerTest {
                 .thenReturn(legalPerson);
 
         mockMvc.perform(get(GET_Legal_Person_URL)
-                        .header("ERIC-Identity", "SOME_IDENTITY")
-                        .header("ERIC-Identity-Type", "key")
+                        .header("ERIC-Identity", ERIC_IDENTITY)
+                        .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
                         .contentType(APPLICATION_JSON)
-                        .header("x-request-id", "123456")
-                        .header("ERIC-Authorised-Key-Roles", "*")
-                        .header("ERIC-Authorised-Key-Privileges", "internal-app"))
+                        .header("x-request-id", X_REQUEST_ID)
+                        .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
+                        .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH))
                 .andExpect(status().isOk());
 
         verify(companyPscService).getLegalPersonPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID);
@@ -661,12 +681,12 @@ class CompanyPscControllerTest {
                 .thenThrow(ServiceUnavailableException.class);
 
         mockMvc.perform(get(GET_Legal_Person_URL)
-                        .header("ERIC-Identity", "SOME_IDENTITY")
-                        .header("ERIC-Identity-Type", "key")
+                        .header("ERIC-Identity", ERIC_IDENTITY)
+                        .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
                         .contentType(APPLICATION_JSON)
-                        .header("x-request-id", "123456")
-                        .header("ERIC-Authorised-Key-Roles", "*")
-                        .header("ERIC-Authorised-Key-Privileges", "internal-app"))
+                        .header("x-request-id", X_REQUEST_ID)
+                        .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
+                        .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH))
                 .andExpect(status().isInternalServerError());
 
         verify(companyPscService).getLegalPersonPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID);
@@ -682,12 +702,12 @@ class CompanyPscControllerTest {
                 .thenThrow(ResourceNotFoundException.class);
 
         mockMvc.perform(get(GET_Legal_Person_URL)
-                        .header("ERIC-Identity", "SOME_IDENTITY")
-                        .header("ERIC-Identity-Type", "key")
+                        .header("ERIC-Identity", ERIC_IDENTITY)
+                        .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
                         .contentType(APPLICATION_JSON)
-                        .header("x-request-id", "123456")
-                        .header("ERIC-Authorised-Key-Roles", "*")
-                        .header("ERIC-Authorised-Key-Privileges", "internal-app"))
+                        .header("x-request-id", X_REQUEST_ID)
+                        .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
+                        .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH))
                 .andExpect(status().isNotFound());
 
         verify(companyPscService).getLegalPersonPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID);
@@ -702,12 +722,12 @@ class CompanyPscControllerTest {
                 .thenReturn(legalPersonBeneficialOwner);
 
         mockMvc.perform(get(GET_Legal_Person_Beneficial_Owner_URL)
-                        .header("ERIC-Identity", "SOME_IDENTITY")
-                        .header("ERIC-Identity-Type", "key")
+                        .header("ERIC-Identity", ERIC_IDENTITY)
+                        .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
                         .contentType(APPLICATION_JSON)
-                        .header("x-request-id", "123456")
-                        .header("ERIC-Authorised-Key-Roles", "*")
-                        .header("ERIC-Authorised-Key-Privileges", "internal-app"))
+                        .header("x-request-id", X_REQUEST_ID)
+                        .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
+                        .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH))
                 .andExpect(status().isOk());
 
         verify(companyPscService).getLegalPersonBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID);
@@ -723,12 +743,12 @@ class CompanyPscControllerTest {
                 .thenThrow(ServiceUnavailableException.class);
 
         mockMvc.perform(get(GET_Legal_Person_Beneficial_Owner_URL)
-                        .header("ERIC-Identity", "SOME_IDENTITY")
-                        .header("ERIC-Identity-Type", "key")
+                        .header("ERIC-Identity", ERIC_IDENTITY)
+                        .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
                         .contentType(APPLICATION_JSON)
-                        .header("x-request-id", "123456")
-                        .header("ERIC-Authorised-Key-Roles", "*")
-                        .header("ERIC-Authorised-Key-Privileges", "internal-app"))
+                        .header("x-request-id", X_REQUEST_ID)
+                        .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
+                        .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH))
                 .andExpect(status().isInternalServerError());
 
         verify(companyPscService).getLegalPersonBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID);
@@ -744,12 +764,12 @@ class CompanyPscControllerTest {
                 .thenThrow(ResourceNotFoundException.class);
 
         mockMvc.perform(get(GET_Legal_Person_Beneficial_Owner_URL)
-                        .header("ERIC-Identity", "SOME_IDENTITY")
-                        .header("ERIC-Identity-Type", "key")
+                        .header("ERIC-Identity", ERIC_IDENTITY)
+                        .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
                         .contentType(APPLICATION_JSON)
-                        .header("x-request-id", "123456")
-                        .header("ERIC-Authorised-Key-Roles", "*")
-                        .header("ERIC-Authorised-Key-Privileges", "internal-app"))
+                        .header("x-request-id", X_REQUEST_ID)
+                        .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
+                        .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH))
                 .andExpect(status().isNotFound());
 
         verify(companyPscService).getLegalPersonBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID);
@@ -757,57 +777,56 @@ class CompanyPscControllerTest {
     }
 
     @Test
-    void callPscStatementListGetRequestWithParams() throws Exception {
+    void callPscListGetRequestWithParams() throws Exception {
         when(companyPscService.retrievePscListSummaryFromDb(MOCK_COMPANY_NUMBER, 2, false, 5))
                 .thenReturn(testHelper.createPscList());
 
         mockMvc.perform(MockMvcRequestBuilders
                         .get(GET_List_Summary_URL)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header("ERIC-Identity", "SOME_IDENTITY")
-                        .header("ERIC-Identity-Type", "key")
-                        //.contentType(APPLICATION_JSON)
-//                        .header("x-request-id", "123456")
-                        .header("ERIC-Authorised-Key-Roles", "*")
-                        .header("ERIC-Authorised-Key-Privileges", "internal-app")
+                        .header("ERIC-Identity", ERIC_IDENTITY)
+                        .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
+                        .contentType(APPLICATION_JSON)
+                        .header("x-request-id", X_REQUEST_ID)
+                        .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
+                        .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH)
                         .header("items_per_page", 5)
                         .header("start_index", 2))
                 .andExpect(status().isOk());
     }
 
     @Test
-    void callPscStatementListGetRequestWithRegisterView() throws Exception {
+    void callPscListGetRequestWithRegisterView() throws Exception {
         when(companyPscService.retrievePscListSummaryFromDb(MOCK_COMPANY_NUMBER, 2, true, 5))
                 .thenReturn(testHelper.createPscList());
 
         mockMvc.perform(MockMvcRequestBuilders
                         .get(GET_List_Summary_URL)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header("ERIC-Identity", "SOME_IDENTITY")
-                        .header("ERIC-Identity-Type", "key")
+                        .header("ERIC-Identity", ERIC_IDENTITY)
+                        .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
                         //.contentType(APPLICATION_JSON)
-                        .header("x-request-id", "123456")
-                        .header("ERIC-Authorised-Key-Roles", "*")
-                        .header("ERIC-Authorised-Key-Privileges", "internal-app")
+                        .header("x-request-id", X_REQUEST_ID)
+                        .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
+                        .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH)
                         .header("items_per_page", 5)
                         .header("start_index", 2))
                 .andExpect(status().isOk());
     }
 
     @Test
-    void callPscStatementListGetRequestNoParams() throws Exception {
+    void callPscListGetRequestNoParams() throws Exception {
         when(companyPscService.retrievePscListSummaryFromDb(MOCK_COMPANY_NUMBER, 0, false, 25))
                 .thenReturn(testHelper.createPscList());
 
         mockMvc.perform(MockMvcRequestBuilders
                         .get(GET_List_Summary_URL)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header("x-request-id", "123456")
-                        .header("ERIC-Authorised-Key-Roles", "*")
-                        .header("ERIC-Authorised-Key-Privileges", "internal-app")
+                        .header("x-request-id", X_REQUEST_ID)
+                        .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
+                        .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH)
                         .header("ERIC-IDENTITY", ERIC_IDENTITY)
                         .header("ERIC-IDENTITY-TYPE", ERIC_IDENTITY_TYPE))
                 .andExpect(status().isOk());
     }
-
 }
