@@ -484,35 +484,6 @@ public class CompanyPscTransformer {
         }
     }
 
-    private uk.gov.companieshouse.api.psc.Address convertAddress(
-                uk.gov.companieshouse.pscdataapi.models.Address inputAddress) {
-        uk.gov.companieshouse.api.psc.Address address = 
-                new uk.gov.companieshouse.api.psc.Address();
-        address.setAddressLine1(inputAddress.getAddressLine1());
-        address.setAddressLine2(inputAddress.getAddressLine2());
-        address.setCountry(inputAddress.getCountry());
-        address.setLocality(inputAddress.getLocality());
-        address.setPoBox(inputAddress.getPoBox());
-        address.setPostalCode(inputAddress.getPostalCode());
-        address.setPremises(inputAddress.getPremises());
-        address.setRegion(inputAddress.getRegion());
-        return address;
-    }
-    
-    private uk.gov.companieshouse.api.psc.BeneficialOwnerAddress convertToBoAddress(
-                uk.gov.companieshouse.pscdataapi.models.Address inputAddress) {
-        uk.gov.companieshouse.api.psc.BeneficialOwnerAddress address =
-                new uk.gov.companieshouse.api.psc.BeneficialOwnerAddress();
-        address.setAddressLine1(inputAddress.getAddressLine1());
-        address.setAddressLine2(inputAddress.getAddressLine2());
-        address.setCountry(inputAddress.getCountry());
-        address.setLocality(inputAddress.getLocality());
-        address.setPoBox(inputAddress.getPoBox());
-        address.setPostalCode(inputAddress.getPostalCode());
-        address.setPremises(inputAddress.getPremises());
-        address.setRegion(inputAddress.getRegion());
-        return address;
-    }
     private Identification mapIdentification(
             PscIdentification inputIdentification, String kindString) {
         if (inputIdentification != null) {
