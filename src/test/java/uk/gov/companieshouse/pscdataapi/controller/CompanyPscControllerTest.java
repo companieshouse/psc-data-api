@@ -338,9 +338,9 @@ class CompanyPscControllerTest {
                         .header("x-request-id", X_REQUEST_ID)
                         .header("ERIC-Authorised-Key-Roles", "")
                         .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isOk());
 
-        verifyNoInteractions(companyPscService);
+        verify(companyPscService).getCorporateEntityPsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID);
 
     }
 
