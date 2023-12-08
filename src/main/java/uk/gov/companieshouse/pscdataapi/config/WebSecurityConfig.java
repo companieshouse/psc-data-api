@@ -18,7 +18,7 @@ public class WebSecurityConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(internalUserInterceptor());
+        registry.addInterceptor(userAuthenticationInterceptor());
     }
 
     @Bean
