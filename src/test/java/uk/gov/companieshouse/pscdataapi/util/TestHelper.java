@@ -7,7 +7,6 @@ import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.List;
 
-import com.github.dockerjava.api.model.Link;
 import org.springframework.util.FileCopyUtils;
 import uk.gov.companieshouse.api.metrics.*;
 import uk.gov.companieshouse.api.psc.*;

@@ -13,7 +13,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import uk.gov.companieshouse.api.exception.ResourceNotFoundException;
 import uk.gov.companieshouse.api.exception.ServiceUnavailableException;
 import uk.gov.companieshouse.api.psc.*;
-import uk.gov.companieshouse.pscdataapi.models.Links;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 import uk.gov.companieshouse.pscdataapi.models.Updated;
 import uk.gov.companieshouse.pscdataapi.service.CompanyPscService;
@@ -21,10 +20,6 @@ import uk.gov.companieshouse.pscdataapi.util.TestHelper;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
-
-import java.util.Collections;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -103,11 +98,7 @@ class CompanyPscControllerTest {
     private LegalPerson legalPerson;
     private LegalPersonBeneficialOwner legalPersonBeneficialOwner;
 
-    private ListSummary listSummary;
-
     private TestHelper testHelper;
-
-    private String dateString;
 
     @MockBean
     private CompanyPscService companyPscService;
@@ -136,11 +127,6 @@ class CompanyPscControllerTest {
         document.setCompanyNumber(MOCK_COMPANY_NUMBER);
         document.setNotificationId(MOCK_NOTIFICATION_ID);
         document.setUpdated(new Updated().setAt(LocalDate.now()));
-        final DateTimeFormatter dateTimeFormatter =
-                DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSSSSS");
-        dateString = date.format(dateTimeFormatter);
-
-
     }
 
     @Test

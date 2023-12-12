@@ -8,19 +8,18 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 
-    @ExtendWith(MockitoExtension.class)
-    class ResourceChangedApiServiceAspectTest {
+@ExtendWith(MockitoExtension.class)
+class ResourceChangedApiServiceAspectTest {
 
-        @InjectMocks
-        private ResourceChangedApiServiceAsepct.ResourceChangedApiServiceAspect apiServiceAspect;
+    @InjectMocks
+    private ResourceChangedApiServiceAspect apiServiceAspect;
 
-        @Test
-        void testAspectDoesNotProceedWhenFlagDisabled() {
-            // when
-            Object actual = apiServiceAspect.checkStreamEventsEnabled();
+    @Test
+    void testAspectDoesNotProceedWhenFlagDisabled() {
+        // when
+        Object actual = apiServiceAspect.checkStreamEventsEnabled();
 
-            // then
-            assertNull(actual);
-        }
+        // then
+        assertNull(actual);
     }
-
+}

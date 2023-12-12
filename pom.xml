@@ -230,8 +230,9 @@
                     <skipTests>${skip.unit.tests}</skipTests>
                     <environmentVariables>
                         <CHS_API_KEY>key</CHS_API_KEY>
-                        <API_URL>g9yZIA81Zo9J46Kzp3JPbfld6kOqxR47EAYqXbRV</API_URL>
+                        <API_URL>key</API_URL>
                         <PAYMENTS_API_URL>key</PAYMENTS_API_URL>
+                        <DOCUMENT_API_LOCAL_URL>document_api_local_url</DOCUMENT_API_LOCAL_URL>
                     </environmentVariables>
                 </configuration>
             </plugin>
