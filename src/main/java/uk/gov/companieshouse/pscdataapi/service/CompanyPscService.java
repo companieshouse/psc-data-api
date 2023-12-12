@@ -35,14 +35,13 @@ import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
 import uk.gov.companieshouse.pscdataapi.exceptions.ServiceUnavailableException;
+import uk.gov.companieshouse.pscdataapi.logging.DataMapHolder;
 import uk.gov.companieshouse.pscdataapi.models.Created;
 import uk.gov.companieshouse.pscdataapi.models.Links;
 import uk.gov.companieshouse.pscdataapi.models.PscData;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 import uk.gov.companieshouse.pscdataapi.repository.CompanyPscRepository;
 import uk.gov.companieshouse.pscdataapi.transform.CompanyPscTransformer;
-
-
 
 @Service
 public class CompanyPscService {
