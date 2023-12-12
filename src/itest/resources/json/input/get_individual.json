@@ -1,5 +1,5 @@
 {
-  "_id": "YfTs9WeeqpXTqf6dc6FZ4C0H0ZV",
+  "_id": "YfTs9WeeqpXTqf6dc6FZ4C0H0ZZ",
   "internal_data": {
     "created_at" : "2021-11-02T08:47:45",
     "updated_at" :"2021-09-14T10:30:16.000Z",
@@ -7,8 +7,8 @@
     "delta_at" : "2023-11-20T08:47:45.378Z"
   },
   "external_data": {
-    "notification_id": "ZfTs9WeeqpXTqf6dc6FZ4C0H0ZV",
-    "psc_id" : "ZfTs9WeeqpXTqf6dc6FZ4C0H0ZV",
+    "notification_id": "ZfTs9WeeqpXTqf6dc6FZ4C0H0ZZ",
+    "psc_id" : "ZfTs9WeeqpXTqf6dc6FZ4C0H0ZZ",
     "sensitive_data": {
       "usual_residential_address" : {
         "address_line_1" : "ura_line1",
@@ -45,13 +45,11 @@
       ],
       "country_of_residence" : "United Kingdom",
       "links" : [{
-        "self" : "/company/34777772/persons-with-significant-control/ZfTs9WeeqpXTqf6dc6FZ4C0H0ZC"
+        "self" : "/company/34777772/persons-with-significant-control/ZfTs9WeeqpXTqf6dc6FZ4C0H0ZZ"
       }],
       "nationality" : "British",
-      "is_sanctioned": true,
-      "kind" : "legal-person-person-with-significant-control",
-      "company_number": "34777775",
-      "name": "string",
+      "kind" : "individual-person-with-significant-control",
+      "company_number": "34777771",
       "name_elements": {
         "title":"Mr.",
         "surname" : "JONES",

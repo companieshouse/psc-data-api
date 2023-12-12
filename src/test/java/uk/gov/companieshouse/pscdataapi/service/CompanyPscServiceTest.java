@@ -1,6 +1,5 @@
 package uk.gov.companieshouse.pscdataapi.service;
 
-import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -9,10 +8,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -36,14 +31,11 @@ import uk.gov.companieshouse.pscdataapi.repository.CompanyPscRepository;
 import uk.gov.companieshouse.pscdataapi.transform.CompanyPscTransformer;
 import uk.gov.companieshouse.pscdataapi.util.TestHelper;
 
-import javax.xml.transform.TransformerException;
-
 import static com.mongodb.internal.connection.tlschannel.util.Util.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -127,7 +119,7 @@ class CompanyPscServiceTest {
     void insertBrandNewPscRecordSavesPsc() {
         when(repository.findUpdatedPsc(eq(NOTIFICATION_ID), dateCaptor.capture())).thenReturn(new ArrayList<>());
         when(repository.findById(NOTIFICATION_ID)).thenReturn(Optional.empty());
-        when(transformer.transformPsc(NOTIFICATION_ID, request)).thenReturn(document);
+        when(transformer.transformPscOnInsert(NOTIFICATION_ID, request)).thenReturn(document);
 
         service.insertPscRecord("", request);
 
@@ -143,7 +135,7 @@ class CompanyPscServiceTest {
         oldRecord.setCreated(new Created().setAt(date));
         when(repository.findUpdatedPsc(eq(NOTIFICATION_ID), dateCaptor.capture())).thenReturn(new ArrayList<>());
         when(repository.findById(NOTIFICATION_ID)).thenReturn(Optional.of(oldRecord));
-        when(transformer.transformPsc(NOTIFICATION_ID, request)).thenReturn(document);
+        when(transformer.transformPscOnInsert(NOTIFICATION_ID, request)).thenReturn(document);
 
         service.insertPscRecord("", request);
 
@@ -170,7 +162,7 @@ class CompanyPscServiceTest {
     void throwsBadRequestExceptionWhenNotGivenDocument() {
         when(repository.findUpdatedPsc(eq(NOTIFICATION_ID), any())).thenReturn(new ArrayList<>());
         when(repository.findById(NOTIFICATION_ID)).thenReturn(Optional.empty());
-        when(transformer.transformPsc(NOTIFICATION_ID, request)).thenReturn(document);
+        when(transformer.transformPscOnInsert(NOTIFICATION_ID, request)).thenReturn(document);
         when(repository.save(document)).thenThrow(new IllegalArgumentException());
 
         assertThrows(BadRequestException.class, () -> service.insertPscRecord("", request));
@@ -180,7 +172,7 @@ class CompanyPscServiceTest {
     void insertNewCreatedWhenCreatedCallToMongoFails() {
         when(repository.findUpdatedPsc(eq(NOTIFICATION_ID), any())).thenReturn(new ArrayList<>());
         when(repository.findById(NOTIFICATION_ID)).thenThrow(new RuntimeException());
-        when(transformer.transformPsc(NOTIFICATION_ID, request)).thenReturn(document);
+        when(transformer.transformPscOnInsert(NOTIFICATION_ID, request)).thenReturn(document);
 
         service.insertPscRecord("", request);
 
@@ -203,9 +195,7 @@ class CompanyPscServiceTest {
     public void testDeletePSCThrowsResourceNotFoundException() {
         when(repository.getPscByCompanyNumberAndId("",NOTIFICATION_ID)).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> {
-            service.deletePsc("",NOTIFICATION_ID);
-        });
+        assertThrows(ResourceNotFoundException.class, () -> service.deletePsc("",NOTIFICATION_ID));
 
         verify(repository, times(1)).getPscByCompanyNumberAndId("",NOTIFICATION_ID);
         verify(repository, times(0)).delete(any());
@@ -216,20 +206,18 @@ class CompanyPscServiceTest {
     public void testDeletePSCThrowsResourceNotFoundExceptionWhenCompanyNumberAndNotificationIdIsNull() {
         when(repository.getPscByCompanyNumberAndId("","")).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> {
-            service.deletePsc("","");
-        });
+        assertThrows(ResourceNotFoundException.class, () -> service.deletePsc("",""));
 
         verify(repository, times(1)).getPscByCompanyNumberAndId("","");
         verify(repository, times(0)).delete(any());
     }
 
     @Test
-    public void GetIndividualPscReturn200WhenRegisterViewIsTrue() throws TransformerException {
+    public void GetIndividualPscReturn200WhenRegisterViewIsTrue() {
         Individual individual = new Individual();
         when(repository.getPscByCompanyNumberAndId(MOCK_COMPANY_NUMBER, NOTIFICATION_ID))
                 .thenReturn(Optional.of(document));
-        when(transformer.transformPscDocToIndividual(Optional.of(document), MOCK_REGISTER_TRUE)).thenReturn(individual);
+        when(transformer.transformPscDocToIndividual(document, MOCK_REGISTER_TRUE)).thenReturn(individual);
 
         Individual result = service.getIndividualPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID, MOCK_REGISTER_TRUE);
 
@@ -237,11 +225,11 @@ class CompanyPscServiceTest {
     }
 
     @Test
-    public void GetIndividualPscReturn200WhenRegisterViewIsFalse() throws TransformerException {
+    public void GetIndividualPscReturn200WhenRegisterViewIsFalse() {
         Individual individual = new Individual();
         when(repository.getPscByCompanyNumberAndId(MOCK_COMPANY_NUMBER, NOTIFICATION_ID))
                 .thenReturn(Optional.of(document));
-        when(transformer.transformPscDocToIndividual(Optional.of(document), MOCK_REGISTER_FALSE)).thenReturn(individual);
+        when(transformer.transformPscDocToIndividual(document, MOCK_REGISTER_FALSE)).thenReturn(individual);
 
         Individual result = service.getIndividualPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID, MOCK_REGISTER_FALSE);
 
@@ -253,9 +241,7 @@ class CompanyPscServiceTest {
         when(repository.getPscByCompanyNumberAndId(MOCK_COMPANY_NUMBER, NOTIFICATION_ID))
                 .thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> {
-            service.getIndividualPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID,MOCK_REGISTER_FALSE);
-        });
+        assertThrows(ResourceNotFoundException.class, () -> service.getIndividualPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID,MOCK_REGISTER_FALSE));
     }
 
     @Test
@@ -263,17 +249,15 @@ class CompanyPscServiceTest {
         when(repository.getPscByCompanyNumberAndId(MOCK_COMPANY_NUMBER, NOTIFICATION_ID))
                 .thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> {
-            service.getIndividualPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID,MOCK_REGISTER_FALSE);
-        });
+        assertThrows(ResourceNotFoundException.class, () -> service.getIndividualPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID,MOCK_REGISTER_FALSE));
     }
 
     @Test
-    public void GetIndividualBeneficialOwnerPscReturn200() throws TransformerException {
+    public void GetIndividualBeneficialOwnerPscReturn200() {
         document.getData().setKind("individual-beneficial-owner");
         IndividualBeneficialOwner individualBeneficialOwner = new IndividualBeneficialOwner();
         when(repository.findById(NOTIFICATION_ID)).thenReturn(Optional.of(document));
-        when(transformer.transformPscDocToIndividualBeneficialOwner(Optional.of(document),MOCK_REGISTER_FALSE))
+        when(transformer.transformPscDocToIndividualBeneficialOwner(document,MOCK_REGISTER_FALSE))
                 .thenReturn(individualBeneficialOwner);
 
         IndividualBeneficialOwner result = service
@@ -286,9 +270,7 @@ class CompanyPscServiceTest {
     public void GetIndividualBeneficialOwnerPscReturn404() {
         when(repository.findById(NOTIFICATION_ID)).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> {
-            service.getIndividualBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID,MOCK_REGISTER_FALSE);
-        });
+        assertThrows(ResourceNotFoundException.class, () -> service.getIndividualBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID,MOCK_REGISTER_FALSE));
     }
 
     @Test
@@ -298,17 +280,15 @@ class CompanyPscServiceTest {
                         .equals("WRONG KIND")))
                 .thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> {
-            service.getIndividualBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID,MOCK_REGISTER_FALSE);
-        });
+        assertThrows(ResourceNotFoundException.class, () -> service.getIndividualBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID,MOCK_REGISTER_FALSE));
     }
     @Test
-    public void GetCorporateEntityBeneficialOwnerPscReturn200() throws TransformerException {
+    public void GetCorporateEntityBeneficialOwnerPscReturn200() {
         document.getData().setKind("corporate-entity-beneficial-owner");
         CorporateEntityBeneficialOwner corporateEntityBeneficialOwner =
                 new CorporateEntityBeneficialOwner();
         when(repository.findById(NOTIFICATION_ID)).thenReturn(Optional.of(document));
-        when(transformer.transformPscDocToCorporateEntityBeneficialOwner(Optional.of(document)))
+        when(transformer.transformPscDocToCorporateEntityBeneficialOwner(document))
                 .thenReturn(corporateEntityBeneficialOwner);
 
         CorporateEntityBeneficialOwner result = service
@@ -321,9 +301,7 @@ class CompanyPscServiceTest {
     public void GetCorporateEntityBeneficialOwnerPscReturn404() {
         when(repository.findById(NOTIFICATION_ID)).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> {
-            service.getCorporateEntityBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
-        });
+        assertThrows(ResourceNotFoundException.class, () -> service.getCorporateEntityBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID));
     }
 
     @Test
@@ -333,18 +311,16 @@ class CompanyPscServiceTest {
                         .equals("WRONG KIND")))
                 .thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> {
-            service.getCorporateEntityBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
-        });
+        assertThrows(ResourceNotFoundException.class, () -> service.getCorporateEntityBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID));
     }
 
     @Test
-    public void GetLegalPersonPscReturn200() throws TransformerException {
+    public void GetLegalPersonPscReturn200() {
         document.getData().setKind("legal-person-person-with-significant-control");
         LegalPerson legalPerson =
                 new LegalPerson();
         when(repository.findById(NOTIFICATION_ID)).thenReturn(Optional.of(document));
-        when(transformer.transformPscDocToLegalPerson(Optional.of(document)))
+        when(transformer.transformPscDocToLegalPerson(document))
                 .thenReturn(legalPerson);
 
         LegalPerson result = service
@@ -356,17 +332,15 @@ class CompanyPscServiceTest {
     @Test
     public void GetLegalPersonPscReturn404() {
         when(repository.findById(NOTIFICATION_ID)).thenReturn(Optional.empty());
-        assertThrows(ResourceNotFoundException.class, () -> {
-            service.getLegalPersonPsc(MOCK_COMPANY_NUMBER, NOTIFICATION_ID);
-        });
+        assertThrows(ResourceNotFoundException.class, () -> service.getLegalPersonPsc(MOCK_COMPANY_NUMBER, NOTIFICATION_ID));
     }
 
     @Test
-    public void GetSuperSecurePscReturn200() throws TransformerException {
+    public void GetSuperSecurePscReturn200() {
         document.getData().setKind("super-secure-person-with-significant-control");
         SuperSecure superSecure = new SuperSecure();
         when(repository.getPscByCompanyNumberAndId(MOCK_COMPANY_NUMBER,NOTIFICATION_ID)).thenReturn(Optional.of(document));
-        when(transformer.transformPscDocToSuperSecure(Optional.of(document)))
+        when(transformer.transformPscDocToSuperSecure(document))
                 .thenReturn(superSecure);
 
         SuperSecure result = service
@@ -379,9 +353,7 @@ class CompanyPscServiceTest {
     public void GetSuperSecurePscReturn404() {
         when(repository.getPscByCompanyNumberAndId(MOCK_COMPANY_NUMBER,NOTIFICATION_ID)).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> {
-            service.getSuperSecurePsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
-        });
+        assertThrows(ResourceNotFoundException.class, () -> service.getSuperSecurePsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID));
     }
 
     @Test
@@ -391,17 +363,15 @@ class CompanyPscServiceTest {
                         .equals("WRONG KIND")))
                 .thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> {
-            service.getSuperSecurePsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
-        });
+        assertThrows(ResourceNotFoundException.class, () -> service.getSuperSecurePsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID));
     }
 
     @Test
-    public void GetSuperSecureBeneficialOwnerPscReturn200() throws TransformerException {
+    public void GetSuperSecureBeneficialOwnerPscReturn200() {
         document.getData().setKind("super-secure-beneficial-owner");
         SuperSecureBeneficialOwner superSecureBeneficialOwner = new SuperSecureBeneficialOwner();
         when(repository.getPscByCompanyNumberAndId(MOCK_COMPANY_NUMBER,NOTIFICATION_ID)).thenReturn(Optional.of(document));
-        when(transformer.transformPscDocToSuperSecureBeneficialOwner(Optional.of(document)))
+        when(transformer.transformPscDocToSuperSecureBeneficialOwner(document))
                 .thenReturn(superSecureBeneficialOwner);
 
         SuperSecureBeneficialOwner result = service
@@ -414,9 +384,7 @@ class CompanyPscServiceTest {
     public void GetSuperSecureBeneficialOwnerPscReturn404() {
         when(repository.getPscByCompanyNumberAndId(MOCK_COMPANY_NUMBER,NOTIFICATION_ID)).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> {
-            service.getSuperSecureBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
-        });
+        assertThrows(ResourceNotFoundException.class, () -> service.getSuperSecureBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID));
     }
 
     @Test
@@ -426,17 +394,15 @@ class CompanyPscServiceTest {
                         .equals("WRONG KIND")))
                 .thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> {
-            service.getSuperSecureBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
-        });
+        assertThrows(ResourceNotFoundException.class, () -> service.getSuperSecureBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID));
     }
 
     @Test
-    public void GetCorporateEntityPscReturn200() throws TransformerException {
+    public void GetCorporateEntityPscReturn200() {
         document.getData().setKind("corporate-entity-person-with-significant-control");
         CorporateEntity corporateEntity = new CorporateEntity();
         when(repository.getPscByCompanyNumberAndId(MOCK_COMPANY_NUMBER,NOTIFICATION_ID)).thenReturn(Optional.of(document));
-        when(transformer.transformPscDocToCorporateEntity(Optional.of(document)))
+        when(transformer.transformPscDocToCorporateEntity(document))
                 .thenReturn(corporateEntity);
 
         CorporateEntity result = service.getCorporateEntityPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
@@ -449,9 +415,7 @@ class CompanyPscServiceTest {
         when(repository.getPscByCompanyNumberAndId(MOCK_COMPANY_NUMBER, NOTIFICATION_ID))
                 .thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> {
-            service.getCorporateEntityPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
-        });
+        assertThrows(ResourceNotFoundException.class, () -> service.getCorporateEntityPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID));
     }
 
     @Test
@@ -461,28 +425,24 @@ class CompanyPscServiceTest {
                         .equals("WRONG KIND")))
                 .thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> {
-            service.getLegalPersonPsc(MOCK_COMPANY_NUMBER, NOTIFICATION_ID);
-        });
+        assertThrows(ResourceNotFoundException.class, () -> service.getLegalPersonPsc(MOCK_COMPANY_NUMBER, NOTIFICATION_ID));
     }
 
+    @Test
     public void GetWrongTypeCorporateEntityPscReturn404() {
         when(repository.getPscByCompanyNumberAndId(MOCK_COMPANY_NUMBER, NOTIFICATION_ID))
                 .thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> {
-            service.getCorporateEntityPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
-        });
-
+        assertThrows(ResourceNotFoundException.class, () -> service.getCorporateEntityPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID));
     }
 
     @Test
-    public void GetLegalPersonBeneficialOwnerPscReturn200() throws TransformerException {
+    public void GetLegalPersonBeneficialOwnerPscReturn200() {
         document.getData().setKind("legal-person-beneficial-owner");
         LegalPersonBeneficialOwner legalPersonBeneficialOwner =
                 new LegalPersonBeneficialOwner();
         when(repository.findById(NOTIFICATION_ID)).thenReturn(Optional.of(document));
-        when(transformer.transformPscDocToLegalPersonBeneficialOwner(Optional.of(document)))
+        when(transformer.transformPscDocToLegalPersonBeneficialOwner(document))
                 .thenReturn(legalPersonBeneficialOwner);
 
         LegalPersonBeneficialOwner result = service
@@ -494,9 +454,7 @@ class CompanyPscServiceTest {
     @Test
     public void GetLegalPersonBeneficialOwnerPscReturn404() {
         when(repository.findById(NOTIFICATION_ID)).thenReturn(Optional.empty());
-        assertThrows(ResourceNotFoundException.class, () -> {
-            service.getLegalPersonBeneficialOwnerPsc(MOCK_COMPANY_NUMBER, NOTIFICATION_ID);
-        });
+        assertThrows(ResourceNotFoundException.class, () -> service.getLegalPersonBeneficialOwnerPsc(MOCK_COMPANY_NUMBER, NOTIFICATION_ID));
     }
 
     @Test
@@ -506,20 +464,16 @@ class CompanyPscServiceTest {
                         .equals("WRONG KIND")))
                 .thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> {
-            service.getLegalPersonBeneficialOwnerPsc(MOCK_COMPANY_NUMBER, NOTIFICATION_ID);
-        });
+        assertThrows(ResourceNotFoundException.class, () -> service.getLegalPersonBeneficialOwnerPsc(MOCK_COMPANY_NUMBER, NOTIFICATION_ID));
     }
 
     @Test
-    void whenNoPSCExistGetPSCListShouldThrow() throws JsonProcessingException {
-
-        when(repository.getPscDocumentList(anyString(), anyInt(), anyInt())).thenReturn(Optional.of(new ArrayList<PscDocument>()));
+    void whenNoPSCExistGetPSCListShouldThrow() {
         assertThrows(ResourceNotFoundException.class, ()-> service.retrievePscListSummaryFromDb( MOCK_COMPANY_NUMBER, 0, false,25));
     }
 
     @Test
-    void pscListReturnedByCompanyNumberFromRepository() throws ResourceNotFoundException, IOException {
+    void pscListReturnedByCompanyNumberFromRepository() throws ResourceNotFoundException {
         TestHelper testHelper = new TestHelper();
         PscList expectedPscList = testHelper.createPscList();
         PscData pscData = new PscData();
@@ -533,11 +487,10 @@ class CompanyPscServiceTest {
         identification.setLegalForm("x");
         listSummary.setIdentification(identification);
 
-
         when(companyMetricsApiService.getCompanyMetrics(MOCK_COMPANY_NUMBER))
                 .thenReturn(Optional.ofNullable(testHelper.createMetrics()));
         when(repository.getPscDocumentList(anyString(), anyInt(), anyInt())).thenReturn(Optional.of(Collections.singletonList(document)));
-        when(transformer.transformPscDocToListSummary(document))
+        when(transformer.transformPscDocToListSummary(document, false))
                 .thenReturn(listSummary);
 
         PscList PscDocumentList = service.retrievePscListSummaryFromDb(MOCK_COMPANY_NUMBER,0, false,25);
@@ -547,7 +500,7 @@ class CompanyPscServiceTest {
     }
 
     @Test
-    void pscListWithNoMetricsReturnedByCompanyNumberFromRepository() throws ResourceNotFoundException, IOException {
+    void pscListWithNoMetricsReturnedByCompanyNumberFromRepository() throws ResourceNotFoundException {
         PscList expectedPscList = testHelper.createPscListWithNoMetrics();
         PscData pscData = new PscData();
         document.setData(pscData);
@@ -562,13 +515,9 @@ class CompanyPscServiceTest {
         identification.setLegalForm("x");
         listSummary.setIdentification(identification);
 
-
-
-        when(companyMetricsApiService.getCompanyMetrics(MOCK_COMPANY_NUMBER))
-                .thenReturn(Optional.empty());
         when(repository.getPscDocumentList(anyString(), anyInt(), anyInt())).thenReturn(Optional.of(Collections.singletonList(document)));
 
-        when(transformer.transformPscDocToListSummary(document))
+        when(transformer.transformPscDocToListSummary(document, false))
                 .thenReturn(listSummary);
 
         PscList PscDocumentList = service.retrievePscListSummaryFromDb(MOCK_COMPANY_NUMBER,0, false,25);
@@ -578,35 +527,33 @@ class CompanyPscServiceTest {
     }
 
     @Test
-    void whenNoMetricsDataFoundForCompanyInRegisterViewShouldThrow() throws ResourceNotFoundException, IOException {
+    void whenNoMetricsDataFoundForCompanyInRegisterViewShouldThrow() throws ResourceNotFoundException {
         when(companyMetricsApiService.getCompanyMetrics(MOCK_COMPANY_NUMBER))
                 .thenReturn(Optional.empty());
 
-        Exception ex = assertThrows(ResourceNotFoundException.class, () -> {
-            service.retrievePscListSummaryFromDb(MOCK_COMPANY_NUMBER,0, true,25);
-        });
+        Exception ex = assertThrows(ResourceNotFoundException.class, () -> service.retrievePscListSummaryFromDb(MOCK_COMPANY_NUMBER,0, true,25));
 
         String expectedMessage = "No company metrics data found for company number: 1234567";
         String actualMessage = ex.getMessage();
+        assertNotNull(actualMessage);
         assertTrue(actualMessage.contains(expectedMessage));
         verify(repository, times(0)).getListSummaryRegisterView(MOCK_COMPANY_NUMBER, 0, OffsetDateTime.parse("2020-12-20T06:00Z"), 25);
     }
 
     @Test
-    void whenCompanyNotInPublicRegisterGetPSCListShouldThrow() throws ResourceNotFoundException, IOException {
+    void whenCompanyNotInPublicRegisterGetPSCListShouldThrow() throws ResourceNotFoundException {
         MetricsApi metricsApi = testHelper.createMetrics();
         RegistersApi registersApi = new RegistersApi();
         metricsApi.setRegisters(registersApi);
 
         when(companyMetricsApiService.getCompanyMetrics(MOCK_COMPANY_NUMBER))
-                .thenReturn(Optional.ofNullable(metricsApi));
+                .thenReturn(Optional.of(metricsApi));
 
-        Exception ex = assertThrows(ResourceNotFoundException.class, () -> {
-            service.retrievePscListSummaryFromDb(MOCK_COMPANY_NUMBER,0, true,25);
-        });
+        Exception ex = assertThrows(ResourceNotFoundException.class, () -> service.retrievePscListSummaryFromDb(MOCK_COMPANY_NUMBER,0, true,25));
 
         String expectedMessage = "company 1234567 not on public register";
         String actualMessage = ex.getMessage();
+        assertNotNull(actualMessage);
         assertTrue(actualMessage.contains(expectedMessage));
         verify(service, times(1)).retrievePscListSummaryFromDb(MOCK_COMPANY_NUMBER,0, true, 25);
         verify(repository, times(0)).getListSummaryRegisterView(MOCK_COMPANY_NUMBER, 0, OffsetDateTime.parse("2020-12-20T06:00Z"), 25);

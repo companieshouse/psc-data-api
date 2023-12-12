@@ -6,7 +6,6 @@ import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.List;
-
 import org.springframework.util.FileCopyUtils;
 import uk.gov.companieshouse.api.metrics.*;
 import uk.gov.companieshouse.api.psc.*;
@@ -18,120 +17,189 @@ import uk.gov.companieshouse.pscdataapi.models.NameElements;
 
 public class TestHelper {
     public static final String INDIVIDUAL_KIND = "individual-person-with-significant-control";
-    public static final String SECURE_KIND = "super-secure-person-with-significant-control";
     public static final String CORPORATE_KIND = "corporate-entity-person-with-significant-control";
     public static final String LEGAL_KIND = "legal-person-person-with-significant-control";
+    public static final String SECURE_KIND = "super-secure-person-with-significant-control";
     public static final String INDIVIDUAL_BO_KIND = "individual-beneficial-owner";
     public static final String COMPANY_NUMBER = "companyNumber";
     public static final String NOTIFICATION_ID = "notificationId";
     public static final String X_REQUEST_ID = "654321";
 
 
-    public static FullRecordCompanyPSCApi buildFullRecordPsc(String kind, Boolean registerView) {
-        FullRecordCompanyPSCApi output  = new FullRecordCompanyPSCApi();
+    public static FullRecordCompanyPSCApi buildFullRecordPsc(String kind) {
+        return buildFullRecordPsc(kind, false);
+    }
 
+    public static FullRecordCompanyPSCApi buildFullRecordPsc(String kind, boolean registerView) {
+        FullRecordCompanyPSCApi output  = new FullRecordCompanyPSCApi();
         ExternalData externalData = new ExternalData();
         Data data = new Data();
-        data.setName("forename");
-        data.setCompanyNumber("companyNumber");
-        data.setKind(kind);
-        data.setLinks(List.of(new ItemLinkTypes()));
-        data.setServiceAddress(new uk.gov.companieshouse.api.psc.Address());
 
-        Identification identification = new Identification();
-        data.setIdentification(identification);
-        if(kind.contains("corporate") || kind.contains("legal")) {
-            identification.setLegalForm("Form");
-            identification.setLegalAuthority("Authority");
-            if(kind.contains("corporate")){
-                identification.setCountryRegistered("Wales");
-                identification.setPlaceRegistered("Cardiff");
-                identification.setRegistrationNumber("16102009");
-            }
-        }
-        
-        SensitiveData sensitiveData = new SensitiveData();
-        uk.gov.companieshouse.api.psc.DateOfBirth dateOfBirth = new uk.gov.companieshouse.api.psc.DateOfBirth();
-        if(registerView == false){
-            dateOfBirth.setDay(null);
-        }
-        else{
-            dateOfBirth.setDay(21);
-        }
-        dateOfBirth.setMonth(12);
-        dateOfBirth.setYear(1943);
-        sensitiveData.setDateOfBirth(dateOfBirth);
-        externalData.setData(data);
-        externalData.setSensitiveData(sensitiveData);
-        externalData.setNotificationId("id");
-        externalData.setCompanyNumber("companyNumber");
         externalData.setPscId("pscId");
+        // Not setting the notificationId as that is passed to the Transformer
+        externalData.setCompanyNumber("1234567");
 
         InternalData internalData = new InternalData();
         internalData.setDeltaAt(OffsetDateTime.parse("2022-01-12T00:00:00Z"));
-        internalData.setUpdatedAt(LocalDate.parse("2022-01-12"));
-
-        if(kind.contains("individual")) {
-            UsualResidentialAddress address = new UsualResidentialAddress();
-            sensitiveData.setUsualResidentialAddress(address);
-            uk.gov.companieshouse.api.psc.NameElements nameElements =
-                    new uk.gov.companieshouse.api.psc.NameElements();
-            nameElements.setSurname("surname");
-            data.setNameElements(nameElements);
-        } else if(kind.contains("secure")) {
-            data.setCeasedOn(LocalDate.now());
-        }
-
-        output.setExternalData(externalData);
+        internalData.setUpdatedBy("user");
         output.setInternalData(internalData);
-        return output;
-    }
 
-    public static PscDocument buildPscDocument(String kind, Boolean registerView) {
-        PscDocument output = new PscDocument();
-
-        PscData data = new PscData();
         data.setKind(kind);
-        data.setName("forename");
-        data.setLinks(new Links());
+        data.setEtag("etag");
+        data.setName("wholeName");
+        ItemLinkTypes links = new ItemLinkTypes();
+        links.setSelf("self");
+        links.setStatements("linkStatements");
+        data.setLinks(List.of(links));
+        data.serviceAddressSameAsRegisteredOfficeAddress(true);
+        data.naturesOfControl(List.of("part-right-to-share-surplus-assets-75-to-100-percent",
+                "right-to-appoint-and-remove-directors-as-trust-registered-overseas-entity",
+                "significant-influence-or-control-as-trust-registered-overseas-entity"));
+
+        uk.gov.companieshouse.api.psc.Address address = new uk.gov.companieshouse.api.psc.Address();
+        address.setAddressLine1("sa_line1");
+        address.setAddressLine2("sa_line2");
+        address.setCareOf("sa_care_of");
+        address.setCountry("United Kingdom");
+        address.setLocality("Cardiff");
+        address.setPoBox("sa_po");
+        address.setPostalCode("CF2 1B6");
+        address.setPremises("SA");
+        address.setRegion("sa_region");
         if (!kind.contains("secure")) {
-            data.setAddress(new Address());
+            data.setServiceAddress(address);
+        }
+        if (kind.contains("beneficial")){
+            data.setIsSanctioned(true);
         }
 
-        output.setNotificationId("id");
-        output.setData(data);
-        output.setPscId("pscId");
-        output.setCompanyNumber("1234567");
-        output.setDeltaAt("20220112000000000000");
-        Updated updated = new Updated();
-        updated.setAt(LocalDate.now());
-        output.setUpdated(updated);
-
         if(kind.contains("individual")) {
-            PscSensitiveData sensitiveData = new PscSensitiveData();
-            DateOfBirth dateOfBirth = new DateOfBirth();
-            if(registerView == false){
-                dateOfBirth.setDay(null);
-            }
-            else {
+            SensitiveData sensitiveData = new SensitiveData();
+            uk.gov.companieshouse.api.psc.DateOfBirth dateOfBirth = new uk.gov.companieshouse.api.psc.DateOfBirth();
+            if(registerView){
                 dateOfBirth.setDay(21);
+            } else{
+                dateOfBirth.setDay(null);
             }
             dateOfBirth.setMonth(12);
             dateOfBirth.setYear(1943);
             sensitiveData.setDateOfBirth(dateOfBirth);
-            sensitiveData.setUsualResidentialAddress(new Address());
-            output.setSensitiveData(sensitiveData);
-            NameElements nameElements = new NameElements();
-            nameElements.setSurname("surname");
+            UsualResidentialAddress usualResidentialAddress = new UsualResidentialAddress();
+            usualResidentialAddress.setAddressLine1("sa_line1");
+            usualResidentialAddress.setAddressLine2("sa_line2");
+            usualResidentialAddress.setCareOf("sa_care_of");
+            usualResidentialAddress.setCountry("United Kingdom");
+            usualResidentialAddress.setLocality("Cardiff");
+            usualResidentialAddress.setPoBox("sa_po");
+            usualResidentialAddress.setPostalCode("CF2 1B6");
+            usualResidentialAddress.setPremise("SA");
+            usualResidentialAddress.setRegion("sa_region");
+            sensitiveData.setUsualResidentialAddress(usualResidentialAddress);
+            sensitiveData.setResidentialAddressSameAsServiceAddress(true);
+            externalData.setSensitiveData(sensitiveData);
+
+            uk.gov.companieshouse.api.psc.NameElements nameElements =
+                    new uk.gov.companieshouse.api.psc.NameElements();
+            nameElements.setTitle("Mr");
+            nameElements.setForename("John");
+            nameElements.setMiddleName("George");
+            nameElements.setSurname("Doe");
             data.setNameElements(nameElements);
-        } else if(kind.contains("secure")) {
-            data.setCeasedOn(LocalDate.now());
-            data.setCeased(true);
+
+            data.setNationality("British");
+            data.setCountryOfResidence("England");
+        } else if(kind.contains("corporate")) {
+            Identification identification = new Identification();
+            identification.setLegalForm("Form");
+            identification.setLegalAuthority("Authority");
+            identification.setCountryRegistered("Wales");
+            identification.setPlaceRegistered("Cardiff");
+            identification.setRegistrationNumber("16102009");
+            data.setIdentification(identification);
         } else if(kind.contains("legal")) {
             Identification identification = new Identification();
             identification.setLegalForm("Form");
             identification.setLegalAuthority("Authority");
-            output.setIdentification(new PscIdentification(identification));
+            data.setIdentification(identification);
+        } else if(kind.contains("secure")) {
+            data.setCeasedOn(LocalDate.parse("2022-01-14"));
+            data.setDescription("description");
+        }
+
+        externalData.setData(data);
+        output.setExternalData(externalData);
+        return output;
+    }
+
+    public static PscDocument buildPscDocument(String kind) {
+        return buildPscDocument(kind, false);
+    }
+
+    public static PscDocument buildPscDocument(String kind, boolean registerView) {
+        PscDocument output = new PscDocument();
+        PscData data = new PscData();
+
+        output.setId("notificationId");
+        output.setNotificationId("notificationId");
+        output.setPscId("pscId");
+        output.setCompanyNumber("1234567");
+        output.setDeltaAt("20220112000000000000");
+        output.setUpdated(new Updated().setAt(LocalDate.now()));
+        output.setUpdatedBy("user");
+
+        data.setKind(kind);
+        data.setEtag("etag");
+        data.setName("wholeName");
+        Links links = new Links();
+        links.setSelf("self");
+        links.setStatements("linkStatements");
+        data.setLinks(links);
+        data.setServiceAddressIsSameAsRegisteredOfficeAddress(true);
+        data.setNaturesOfControl(List.of("part-right-to-share-surplus-assets-75-to-100-percent",
+                "right-to-appoint-and-remove-directors-as-trust-registered-overseas-entity",
+                "significant-influence-or-control-as-trust-registered-overseas-entity"));
+
+        Address address = new Address();
+        address.setAddressLine1("sa_line1");
+        address.setAddressLine2("sa_line2");
+        address.setCareOf("sa_care_of");
+        address.setCountry("United Kingdom");
+        address.setLocality("Cardiff");
+        address.setPoBox("sa_po");
+        address.setPostalCode("CF2 1B6");
+        address.setPremises("SA");
+        address.setRegion("sa_region");
+        if (!kind.contains("secure")) {
+            data.setAddress(address);
+        }
+        if (kind.contains("beneficial")){
+            data.setSanctioned(true);
+        }
+
+        if(kind.contains("individual")) {
+            PscSensitiveData sensitiveData = new PscSensitiveData();
+            DateOfBirth dateOfBirth = new DateOfBirth();
+            if(registerView){
+                dateOfBirth.setDay(21);
+            } else {
+                dateOfBirth.setDay(null);
+            }
+            dateOfBirth.setMonth(12);
+            dateOfBirth.setYear(1943);
+            sensitiveData.setDateOfBirth(dateOfBirth);
+            sensitiveData.setUsualResidentialAddress(address);
+            sensitiveData.setResidentialAddressIsSameAsServiceAddress(true);
+            output.setSensitiveData(sensitiveData);
+
+            NameElements nameElements = new NameElements();
+            nameElements.setTitle("Mr");
+            nameElements.setForename("John");
+            nameElements.setMiddleName("George");
+            nameElements.setSurname("Doe");
+            data.setNameElements(nameElements);
+
+            data.setNationality("British");
+            data.setCountryOfResidence("England");
         } else if(kind.contains("corporate")) {
             Identification identification = new Identification();
             identification.setLegalForm("Form");
@@ -140,8 +208,18 @@ public class TestHelper {
             identification.setPlaceRegistered("Cardiff");
             identification.setRegistrationNumber("16102009");
             output.setIdentification(new PscIdentification(identification));
+        } else if(kind.contains("legal")) {
+            Identification identification = new Identification();
+            identification.setLegalForm("Form");
+            identification.setLegalAuthority("Authority");
+            output.setIdentification(new PscIdentification(identification));
+        } else if(kind.contains("secure")) {
+            data.setCeasedOn(LocalDate.parse("2022-01-14"));
+            data.setCeased(true);
+            data.setDescription("description");
         }
 
+        output.setData(data);
         return output;
     }
 
@@ -213,9 +291,9 @@ public class TestHelper {
         MetricsApi metrics = new MetricsApi();
         CountsApi counts = new CountsApi();
         PscApi pscs = new PscApi();
-        pscs.setActiveStatementsCount(1);
-        pscs.setWithdrawnStatementsCount(1);
-        pscs.setStatementsCount(2);
+        pscs.setActivePscsCount(1);
+        pscs.setCeasedPscsCount(1);
+        pscs.setPscsCount(2);
         counts.setPersonsWithSignificantControl(pscs);
         metrics.setCounts(counts);
         return metrics;
