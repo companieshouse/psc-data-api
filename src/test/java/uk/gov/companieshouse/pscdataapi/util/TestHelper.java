@@ -27,6 +27,7 @@ public class TestHelper {
     public static final String PSC_ID = "pscId";
     public static final String X_REQUEST_ID = "654321";
 
+    private TestHelper(){}
 
     public static FullRecordCompanyPSCApi buildFullRecordPsc(String kind) {
         return buildFullRecordPsc(kind, false);
@@ -334,4 +335,5 @@ public class TestHelper {
         ZoneOffset offset = ZoneId.systemDefault().getRules().getOffset(laterLocalDate);
         return OffsetDateTime.of(laterLocalDate, offset);
     }
+
 }

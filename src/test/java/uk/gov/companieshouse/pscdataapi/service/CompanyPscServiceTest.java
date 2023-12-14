@@ -71,7 +71,6 @@ class CompanyPscServiceTest {
     private String dateString;
     private OffsetDateTime date;
     private OffsetDateTime laterDate;
-    private TestHelper testHelper;
 
     @BeforeEach
     public void setUp() {
@@ -92,7 +91,7 @@ class CompanyPscServiceTest {
         service.insertPscRecord("", request);
 
         verify(repository).save(document);
-        assertEquals(dateString, dateCaptor.getValue());
+        Assertions.assertEquals(dateString, dateCaptor.getValue());
         assertNotNull(document.getCreated().getAt());
     }
 
