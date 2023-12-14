@@ -1,6 +1,5 @@
 package uk.gov.companieshouse.pscdataapi.service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
@@ -8,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,6 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.api.api.CompanyMetricsApiService;
 import uk.gov.companieshouse.api.exception.ResourceNotFoundException;
 import uk.gov.companieshouse.api.metrics.MetricsApi;
+import uk.gov.companieshouse.api.metrics.RegisterApi;
 import uk.gov.companieshouse.api.metrics.RegistersApi;
 import uk.gov.companieshouse.api.psc.*;
 import uk.gov.companieshouse.logging.Logger;
@@ -32,7 +33,6 @@ import uk.gov.companieshouse.pscdataapi.transform.CompanyPscTransformer;
 import uk.gov.companieshouse.pscdataapi.util.TestHelper;
 
 import static com.mongodb.internal.connection.tlschannel.util.Util.assertTrue;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -43,76 +43,43 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class CompanyPscServiceTest {
 
-    private static final String NOTIFICATION_ID = "pscId";
-
-    private static final String MOCK_COMPANY_NUMBER = "1234567";
-
-    private static final Boolean MOCK_REGISTER_TRUE = true;
-
-    private static final Boolean MOCK_REGISTER_FALSE = false;
+    private static final String NOTIFICATION_ID = TestHelper.NOTIFICATION_ID;
+    private static final String COMPANY_NUMBER = TestHelper.COMPANY_NUMBER;
+    private static final Boolean REGISTER_VIEW_TRUE = true;
+    private static final Boolean REGISTER_VIEW_FALSE = false;
+    private static final boolean SHOW_FULL_DOB_TRUE = true;
+    private static final boolean SHOW_FULL_DOB_FALSE = false;
 
     @Mock
     private Logger logger;
-
     @Mock
     private CompanyPscRepository repository;
-
     @Mock
     private CompanyPscTransformer transformer;
-
     @Mock
     private ChsKafkaApiService chsKafkaApiService;
-
     @Captor
     private ArgumentCaptor<String> dateCaptor;
-
     @Spy
     @InjectMocks
     private CompanyPscService service;
-
     @Mock
     CompanyMetricsApiService companyMetricsApiService;
 
     private FullRecordCompanyPSCApi request;
     private PscDocument document;
     private String dateString;
-
-    private TestHelper testHelper;
+    private OffsetDateTime date;
+    private OffsetDateTime laterDate;
 
     @BeforeEach
     public void setUp() {
-        testHelper = new TestHelper();
-        OffsetDateTime date = OffsetDateTime.now();
-        request = new FullRecordCompanyPSCApi();
-        InternalData internal = new InternalData();
-        ExternalData external = new ExternalData();
-        Data data = new Data();
-        external.setNotificationId(NOTIFICATION_ID);
-        external.setData(data);
-        data.setKind("individual-person-with-significant-control");
-        internal.setDeltaAt(date);
-        request.setInternalData(internal);
-        request.setExternalData(external);
-        document = new PscDocument();
-        document.setUpdated(new Updated().setAt(LocalDate.now()));
-        final DateTimeFormatter dateTimeFormatter =
-                DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSSSSS");
-        dateString = date.format(dateTimeFormatter);
-        document.setCompanyNumber(MOCK_COMPANY_NUMBER);
-        document.setPscId("1234");
-        PscData pscData = new PscData();
-        pscData.setKind("individual-person-with-significant-control");
-        document.setNotificationId(MOCK_COMPANY_NUMBER);
-        document.setData(pscData);
-        Identification identification = new Identification();
-        identification.setCountryRegistered("x");
-        identification.setLegalForm("x");
-        identification.setPlaceRegistered("x");
-        identification.setLegalAuthority("x");
-        identification.setRegistrationNumber("x");
-        document.setIdentification(new PscIdentification(identification));
+        date = TestHelper.createOffsetDateTime();
+        dateString = date.format(DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSSSSS"));
+        laterDate = TestHelper.createLaterOffsetDateTime();
 
-
+        request = TestHelper.buildBasicFullRecordPsc();
+        document = TestHelper.buildBasicDocument();
     }
 
     @Test
@@ -124,7 +91,7 @@ class CompanyPscServiceTest {
         service.insertPscRecord("", request);
 
         verify(repository).save(document);
-        assertEquals(dateString, dateCaptor.getValue());
+        Assertions.assertEquals(dateString, dateCaptor.getValue());
         assertNotNull(document.getCreated().getAt());
     }
 
@@ -140,9 +107,9 @@ class CompanyPscServiceTest {
         service.insertPscRecord("", request);
 
         verify(repository).save(document);
-        assertEquals(dateString, dateCaptor.getValue());
+        Assertions.assertEquals(dateString, dateCaptor.getValue());
         assertNotNull(document.getCreated().getAt());
-        assertEquals(date, document.getCreated().getAt());
+        Assertions.assertEquals(date, document.getCreated().getAt());
     }
 
     @Test
@@ -155,7 +122,7 @@ class CompanyPscServiceTest {
         service.insertPscRecord("", request);
 
         verify(repository, times(0)).save(document);
-        assertEquals(dateString, dateCaptor.getValue());
+        Assertions.assertEquals(dateString, dateCaptor.getValue());
     }
 
     @Test
@@ -183,10 +150,10 @@ class CompanyPscServiceTest {
     @Test
     @DisplayName("When company number & notification id is provided, delete PSC")
     public void testDeletePSC() {
-        when(repository.getPscByCompanyNumberAndId("1234567",NOTIFICATION_ID)).thenReturn(Optional.ofNullable(document));
-        service.deletePsc("1234567",NOTIFICATION_ID);
+        when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER,NOTIFICATION_ID)).thenReturn(Optional.ofNullable(document));
+        service.deletePsc(COMPANY_NUMBER,NOTIFICATION_ID);
 
-        verify(repository, times(1)).getPscByCompanyNumberAndId("1234567",NOTIFICATION_ID);
+        verify(repository, times(1)).getPscByCompanyNumberAndId(COMPANY_NUMBER,NOTIFICATION_ID);
         verify(repository, times(1)).delete(document);
     }
 
@@ -213,64 +180,254 @@ class CompanyPscServiceTest {
     }
 
     @Test
-    public void GetIndividualPscReturn200WhenRegisterViewIsTrue() {
-        Individual individual = new Individual();
-        when(repository.getPscByCompanyNumberAndId(MOCK_COMPANY_NUMBER, NOTIFICATION_ID))
+    public void GetIndividualPscReturns404WhenRegisterViewIsTrueAndNoMetrics() {
+        when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID))
                 .thenReturn(Optional.of(document));
-        when(transformer.transformPscDocToIndividual(document, MOCK_REGISTER_TRUE)).thenReturn(individual);
 
-        Individual result = service.getIndividualPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID, MOCK_REGISTER_TRUE);
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () ->
+                service.getIndividualPsc(COMPANY_NUMBER,NOTIFICATION_ID, REGISTER_VIEW_TRUE));
+        String expectedErrorMessage = "404 NOT_FOUND \"No company metrics data found for company number: " + COMPANY_NUMBER +"\"";
+        Assertions.assertEquals(expectedErrorMessage, exception.getMessage());
+    }
 
-        assertEquals(individual,result);
+    @Test
+    public void GetIndividualPscReturns404WhenRegisterViewIsTrueAndEmptyMetrics() {
+        when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID))
+                .thenReturn(Optional.of(document));
+        when(companyMetricsApiService.getCompanyMetrics(COMPANY_NUMBER)).thenReturn(Optional.of(new MetricsApi()));
+
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () ->
+                service.getIndividualPsc(COMPANY_NUMBER,NOTIFICATION_ID, REGISTER_VIEW_TRUE));
+        String expectedErrorMessage = "404 NOT_FOUND \"not-on-public-register\"";
+        Assertions.assertEquals(expectedErrorMessage, exception.getMessage());
+    }
+
+    @Test
+    public void GetIndividualPscReturns404WhenRegisterViewIsTrueAndWrongRegisterMovedTo() {
+        when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID))
+                .thenReturn(Optional.of(document));
+        MetricsApi metrics = new MetricsApi();
+        RegistersApi registers = new RegistersApi();
+        registers.setPersonsWithSignificantControl(new RegisterApi().registerMovedTo("wrong"));
+        metrics.setRegisters(registers);
+        when(companyMetricsApiService.getCompanyMetrics(COMPANY_NUMBER)).thenReturn(Optional.of(metrics));
+
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () ->
+                service.getIndividualPsc(COMPANY_NUMBER,NOTIFICATION_ID, REGISTER_VIEW_TRUE));
+        String expectedErrorMessage = "404 NOT_FOUND \"not-on-public-register\"";
+        Assertions.assertEquals(expectedErrorMessage, exception.getMessage());
+    }
+
+    @Test
+    public void GetIndividualPscReturns404WhenRegisterViewIsTrueAndOnPublicRegisterAndNoMovedToDate() {
+        when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID))
+                .thenReturn(Optional.of(document));
+        MetricsApi metrics = new MetricsApi();
+        RegistersApi registers = new RegistersApi();
+        registers.setPersonsWithSignificantControl(new RegisterApi().registerMovedTo("public-register"));
+        metrics.setRegisters(registers);
+        when(companyMetricsApiService.getCompanyMetrics(COMPANY_NUMBER)).thenReturn(Optional.of(metrics));
+
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () ->
+                service.getIndividualPsc(COMPANY_NUMBER,NOTIFICATION_ID, REGISTER_VIEW_TRUE));
+        String expectedErrorMessage = "404 NOT_FOUND \"not-on-public-register\"";
+        Assertions.assertEquals(expectedErrorMessage, exception.getMessage());
+    }
+
+    @Test
+    public void GetIndividualPscReturns404WhenRegisterViewIsTrueAndOnPublicRegisterAndMovedToDateAndNoCeasedOn() {
+        PscData pscData = document.getData();
+        pscData.setCeased(true);
+        document.setData(pscData);
+        when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID))
+                .thenReturn(Optional.of(document));
+
+        MetricsApi metrics = new MetricsApi();
+        RegistersApi registers = new RegistersApi();
+        RegisterApi pscRegisters = new RegisterApi();
+        pscRegisters.registerMovedTo("public-register");
+        pscRegisters.setMovedOn(date);
+        registers.setPersonsWithSignificantControl(pscRegisters);
+        metrics.setRegisters(registers);
+        when(companyMetricsApiService.getCompanyMetrics(COMPANY_NUMBER)).thenReturn(Optional.of(metrics));
+
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () ->
+                service.getIndividualPsc(COMPANY_NUMBER,NOTIFICATION_ID, REGISTER_VIEW_TRUE));
+        String expectedErrorMessage = "404 NOT_FOUND \"not-on-public-register\"";
+        Assertions.assertEquals(expectedErrorMessage, exception.getMessage());
+    }
+
+    @Test
+    public void GetIndividualPscReturns404WhenRegisterViewIsTrueAndOnPublicRegisterAndMovedToDateEqualsCeasedOn() {
+        PscData pscData = document.getData();
+        pscData.setCeased(true);
+        pscData.setCeasedOn(date.toLocalDate());
+        document.setData(pscData);
+        when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID))
+                .thenReturn(Optional.of(document));
+
+        MetricsApi metrics = new MetricsApi();
+        RegistersApi registers = new RegistersApi();
+        RegisterApi pscRegisters = new RegisterApi();
+        pscRegisters.registerMovedTo("public-register");
+        pscRegisters.setMovedOn(date);
+        registers.setPersonsWithSignificantControl(pscRegisters);
+        metrics.setRegisters(registers);
+        when(companyMetricsApiService.getCompanyMetrics(COMPANY_NUMBER)).thenReturn(Optional.of(metrics));
+
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () ->
+                service.getIndividualPsc(COMPANY_NUMBER,NOTIFICATION_ID, REGISTER_VIEW_TRUE));
+        String expectedErrorMessage = "404 NOT_FOUND \"not-on-public-register\"";
+        Assertions.assertEquals(expectedErrorMessage, exception.getMessage());
+    }
+
+    @Test
+    public void GetIndividualPscReturns404WhenRegisterViewIsTrueAndOnPublicRegisterAndMovedToDateAfterCeasedOn() {
+        PscData pscData = document.getData();
+        pscData.setCeased(true);
+        pscData.setCeasedOn(date.toLocalDate());
+        document.setData(pscData);
+        when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID))
+                .thenReturn(Optional.of(document));
+
+        MetricsApi metrics = new MetricsApi();
+        RegistersApi registers = new RegistersApi();
+        RegisterApi pscRegisters = new RegisterApi();
+        pscRegisters.registerMovedTo("public-register");
+        pscRegisters.setMovedOn(laterDate);
+        registers.setPersonsWithSignificantControl(pscRegisters);
+        metrics.setRegisters(registers);
+        when(companyMetricsApiService.getCompanyMetrics(COMPANY_NUMBER)).thenReturn(Optional.of(metrics));
+
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () ->
+                service.getIndividualPsc(COMPANY_NUMBER,NOTIFICATION_ID, REGISTER_VIEW_TRUE));
+        String expectedErrorMessage = "404 NOT_FOUND \"not-on-public-register\"";
+        Assertions.assertEquals(expectedErrorMessage, exception.getMessage());
+    }
+
+    @Test
+    public void GetIndividualPscReturns200WhenRegisterViewIsTrueAndOnPublicRegisterAndMovedToDateBeforeCeasedOn() {
+        PscData pscData = document.getData();
+        pscData.setCeased(true);
+        pscData.setCeasedOn(laterDate.toLocalDate());
+        document.setData(pscData);
+        when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID))
+                .thenReturn(Optional.of(document));
+
+        MetricsApi metrics = new MetricsApi();
+        RegistersApi registers = new RegistersApi();
+        RegisterApi pscRegisters = new RegisterApi();
+        pscRegisters.registerMovedTo("public-register");
+        pscRegisters.setMovedOn(date);
+        registers.setPersonsWithSignificantControl(pscRegisters);
+        metrics.setRegisters(registers);
+        when(companyMetricsApiService.getCompanyMetrics(COMPANY_NUMBER)).thenReturn(Optional.of(metrics));
+
+        Individual individual = new Individual();
+        when(transformer.transformPscDocToIndividual(document, SHOW_FULL_DOB_TRUE)).thenReturn(individual);
+
+        Individual result = service.getIndividualPsc(COMPANY_NUMBER,NOTIFICATION_ID, REGISTER_VIEW_TRUE);
+        Assertions.assertEquals(individual, result);
     }
 
     @Test
     public void GetIndividualPscReturn200WhenRegisterViewIsFalse() {
-        Individual individual = new Individual();
-        when(repository.getPscByCompanyNumberAndId(MOCK_COMPANY_NUMBER, NOTIFICATION_ID))
+        when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID))
                 .thenReturn(Optional.of(document));
-        when(transformer.transformPscDocToIndividual(document, MOCK_REGISTER_FALSE)).thenReturn(individual);
 
-        Individual result = service.getIndividualPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID, MOCK_REGISTER_FALSE);
+        Individual individual = new Individual();
+        when(transformer.transformPscDocToIndividual(document, SHOW_FULL_DOB_FALSE)).thenReturn(individual);
 
-        assertEquals(individual,result);
+        Individual result = service.getIndividualPsc(COMPANY_NUMBER,NOTIFICATION_ID, REGISTER_VIEW_FALSE);
+        Assertions.assertEquals(individual, result);
     }
 
     @Test
     public void GetIndividualPscReturn404() {
-        when(repository.getPscByCompanyNumberAndId(MOCK_COMPANY_NUMBER, NOTIFICATION_ID))
+        when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID))
                 .thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> service.getIndividualPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID,MOCK_REGISTER_FALSE));
+        assertThrows(ResourceNotFoundException.class, () -> service.getIndividualPsc(COMPANY_NUMBER,NOTIFICATION_ID, REGISTER_VIEW_FALSE));
     }
 
     @Test
     public void GetWrongTypePscReturn404() {
-        when(repository.getPscByCompanyNumberAndId(MOCK_COMPANY_NUMBER, NOTIFICATION_ID))
+        when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID))
                 .thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> service.getIndividualPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID,MOCK_REGISTER_FALSE));
+        assertThrows(ResourceNotFoundException.class, () -> service.getIndividualPsc(COMPANY_NUMBER,NOTIFICATION_ID, REGISTER_VIEW_FALSE));
     }
 
     @Test
-    public void GetIndividualBeneficialOwnerPscReturn200() {
-        document.getData().setKind("individual-beneficial-owner");
+    public void GetIndividualBeneficialOwnerPscReturns400WhenRegisterViewIsTrueAndOnPublicRegisterAndMovedToDateEqualsCeasedOn() {
+        PscData pscData = document.getData();
+        pscData.setCeased(true);
+        pscData.setCeasedOn(date.toLocalDate());
+        pscData.setKind(TestHelper.INDIVIDUAL_BO_KIND);
+        document.setData(pscData);
+        when(repository.findById(NOTIFICATION_ID))
+                .thenReturn(Optional.of(document));
+
+        MetricsApi metrics = new MetricsApi();
+        RegistersApi registers = new RegistersApi();
+        RegisterApi pscRegisters = new RegisterApi();
+        pscRegisters.registerMovedTo("public-register");
+        pscRegisters.setMovedOn(date);
+        registers.setPersonsWithSignificantControl(pscRegisters);
+        metrics.setRegisters(registers);
+        when(companyMetricsApiService.getCompanyMetrics(COMPANY_NUMBER)).thenReturn(Optional.of(metrics));
+
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () ->
+                service.getIndividualBeneficialOwnerPsc(COMPANY_NUMBER,NOTIFICATION_ID, REGISTER_VIEW_TRUE));
+        String expectedErrorMessage = "404 NOT_FOUND \"not-on-public-register\"";
+        Assertions.assertEquals(expectedErrorMessage, exception.getMessage());
+    }
+
+    @Test
+    public void GetIndividualBeneficialOwnerPscReturns200WhenRegisterViewIsTrueAndOnPublicRegisterAndMovedToDateBeforeCeasedOn() {
+        PscData pscData = document.getData();
+        pscData.setCeased(true);
+        pscData.setCeasedOn(laterDate.toLocalDate());
+        pscData.setKind(TestHelper.INDIVIDUAL_BO_KIND);
+        document.setData(pscData);
+        when(repository.findById(NOTIFICATION_ID))
+                .thenReturn(Optional.of(document));
+
+        MetricsApi metrics = new MetricsApi();
+        RegistersApi registers = new RegistersApi();
+        RegisterApi pscRegisters = new RegisterApi();
+        pscRegisters.registerMovedTo("public-register");
+        pscRegisters.setMovedOn(date);
+        registers.setPersonsWithSignificantControl(pscRegisters);
+        metrics.setRegisters(registers);
+        when(companyMetricsApiService.getCompanyMetrics(COMPANY_NUMBER)).thenReturn(Optional.of(metrics));
+
+        IndividualBeneficialOwner individualBo = new IndividualBeneficialOwner();
+        when(transformer.transformPscDocToIndividualBeneficialOwner(document, SHOW_FULL_DOB_TRUE)).thenReturn(individualBo);
+
+        IndividualBeneficialOwner result = service.getIndividualBeneficialOwnerPsc(COMPANY_NUMBER,NOTIFICATION_ID, REGISTER_VIEW_TRUE);
+        Assertions.assertEquals(individualBo, result);
+    }
+
+    @Test
+    public void GetIndividualBeneficialOwnerPscReturn200WhenRegisterViewIsFalse() {
+        document.getData().setKind(TestHelper.INDIVIDUAL_BO_KIND);
         IndividualBeneficialOwner individualBeneficialOwner = new IndividualBeneficialOwner();
         when(repository.findById(NOTIFICATION_ID)).thenReturn(Optional.of(document));
-        when(transformer.transformPscDocToIndividualBeneficialOwner(document,MOCK_REGISTER_FALSE))
+        when(transformer.transformPscDocToIndividualBeneficialOwner(document, SHOW_FULL_DOB_FALSE))
                 .thenReturn(individualBeneficialOwner);
 
         IndividualBeneficialOwner result = service
-                .getIndividualBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID,MOCK_REGISTER_FALSE);
+                .getIndividualBeneficialOwnerPsc(COMPANY_NUMBER,NOTIFICATION_ID, REGISTER_VIEW_FALSE);
 
-        assertEquals(individualBeneficialOwner,result);
+        Assertions.assertEquals(individualBeneficialOwner, result);
     }
 
     @Test
     public void GetIndividualBeneficialOwnerPscReturn404() {
         when(repository.findById(NOTIFICATION_ID)).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> service.getIndividualBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID,MOCK_REGISTER_FALSE));
+        assertThrows(ResourceNotFoundException.class, () -> service.getIndividualBeneficialOwnerPsc(COMPANY_NUMBER,NOTIFICATION_ID, REGISTER_VIEW_FALSE));
     }
 
     @Test
@@ -280,7 +437,7 @@ class CompanyPscServiceTest {
                         .equals("WRONG KIND")))
                 .thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> service.getIndividualBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID,MOCK_REGISTER_FALSE));
+        assertThrows(ResourceNotFoundException.class, () -> service.getIndividualBeneficialOwnerPsc(COMPANY_NUMBER,NOTIFICATION_ID,REGISTER_VIEW_FALSE));
     }
     @Test
     public void GetCorporateEntityBeneficialOwnerPscReturn200() {
@@ -292,16 +449,16 @@ class CompanyPscServiceTest {
                 .thenReturn(corporateEntityBeneficialOwner);
 
         CorporateEntityBeneficialOwner result = service
-                .getCorporateEntityBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
+                .getCorporateEntityBeneficialOwnerPsc(COMPANY_NUMBER,NOTIFICATION_ID);
 
-        assertEquals(corporateEntityBeneficialOwner,result);
+        Assertions.assertEquals(corporateEntityBeneficialOwner, result);
     }
 
     @Test
     public void GetCorporateEntityBeneficialOwnerPscReturn404() {
         when(repository.findById(NOTIFICATION_ID)).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> service.getCorporateEntityBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID));
+        assertThrows(ResourceNotFoundException.class, () -> service.getCorporateEntityBeneficialOwnerPsc(COMPANY_NUMBER,NOTIFICATION_ID));
     }
 
     @Test
@@ -311,7 +468,7 @@ class CompanyPscServiceTest {
                         .equals("WRONG KIND")))
                 .thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> service.getCorporateEntityBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID));
+        assertThrows(ResourceNotFoundException.class, () -> service.getCorporateEntityBeneficialOwnerPsc(COMPANY_NUMBER,NOTIFICATION_ID));
     }
 
     @Test
@@ -324,98 +481,98 @@ class CompanyPscServiceTest {
                 .thenReturn(legalPerson);
 
         LegalPerson result = service
-                .getLegalPersonPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
+                .getLegalPersonPsc(COMPANY_NUMBER,NOTIFICATION_ID);
 
-        assertEquals(legalPerson,result);
+        Assertions.assertEquals(legalPerson, result);
     }
 
     @Test
     public void GetLegalPersonPscReturn404() {
         when(repository.findById(NOTIFICATION_ID)).thenReturn(Optional.empty());
-        assertThrows(ResourceNotFoundException.class, () -> service.getLegalPersonPsc(MOCK_COMPANY_NUMBER, NOTIFICATION_ID));
+        assertThrows(ResourceNotFoundException.class, () -> service.getLegalPersonPsc(COMPANY_NUMBER, NOTIFICATION_ID));
     }
 
     @Test
     public void GetSuperSecurePscReturn200() {
         document.getData().setKind("super-secure-person-with-significant-control");
         SuperSecure superSecure = new SuperSecure();
-        when(repository.getPscByCompanyNumberAndId(MOCK_COMPANY_NUMBER,NOTIFICATION_ID)).thenReturn(Optional.of(document));
+        when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER,NOTIFICATION_ID)).thenReturn(Optional.of(document));
         when(transformer.transformPscDocToSuperSecure(document))
                 .thenReturn(superSecure);
 
         SuperSecure result = service
-                .getSuperSecurePsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
+                .getSuperSecurePsc(COMPANY_NUMBER,NOTIFICATION_ID);
 
-        assertEquals(superSecure,result);
+        Assertions.assertEquals(superSecure, result);
     }
 
     @Test
     public void GetSuperSecurePscReturn404() {
-        when(repository.getPscByCompanyNumberAndId(MOCK_COMPANY_NUMBER,NOTIFICATION_ID)).thenReturn(Optional.empty());
+        when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER,NOTIFICATION_ID)).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> service.getSuperSecurePsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID));
+        assertThrows(ResourceNotFoundException.class, () -> service.getSuperSecurePsc(COMPANY_NUMBER,NOTIFICATION_ID));
     }
 
     @Test
     public void GetWrongTypeSuperSecurePscReturn404() {
-        when(repository.getPscByCompanyNumberAndId(MOCK_COMPANY_NUMBER,NOTIFICATION_ID)
+        when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER,NOTIFICATION_ID)
                 .filter(document -> document.getData().getKind()
                         .equals("WRONG KIND")))
                 .thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> service.getSuperSecurePsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID));
+        assertThrows(ResourceNotFoundException.class, () -> service.getSuperSecurePsc(COMPANY_NUMBER,NOTIFICATION_ID));
     }
 
     @Test
     public void GetSuperSecureBeneficialOwnerPscReturn200() {
         document.getData().setKind("super-secure-beneficial-owner");
         SuperSecureBeneficialOwner superSecureBeneficialOwner = new SuperSecureBeneficialOwner();
-        when(repository.getPscByCompanyNumberAndId(MOCK_COMPANY_NUMBER,NOTIFICATION_ID)).thenReturn(Optional.of(document));
+        when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER,NOTIFICATION_ID)).thenReturn(Optional.of(document));
         when(transformer.transformPscDocToSuperSecureBeneficialOwner(document))
                 .thenReturn(superSecureBeneficialOwner);
 
         SuperSecureBeneficialOwner result = service
-                .getSuperSecureBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
+                .getSuperSecureBeneficialOwnerPsc(COMPANY_NUMBER,NOTIFICATION_ID);
 
-        assertEquals(superSecureBeneficialOwner,result);
+        Assertions.assertEquals(superSecureBeneficialOwner, result);
     }
 
     @Test
     public void GetSuperSecureBeneficialOwnerPscReturn404() {
-        when(repository.getPscByCompanyNumberAndId(MOCK_COMPANY_NUMBER,NOTIFICATION_ID)).thenReturn(Optional.empty());
+        when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER,NOTIFICATION_ID)).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> service.getSuperSecureBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID));
+        assertThrows(ResourceNotFoundException.class, () -> service.getSuperSecureBeneficialOwnerPsc(COMPANY_NUMBER,NOTIFICATION_ID));
     }
 
     @Test
     public void GetWrongTypeSuperSecureBeneficialOwnerPscReturn404() {
-        when(repository.getPscByCompanyNumberAndId(MOCK_COMPANY_NUMBER,NOTIFICATION_ID)
+        when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER,NOTIFICATION_ID)
                 .filter(document -> document.getData().getKind()
                         .equals("WRONG KIND")))
                 .thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> service.getSuperSecureBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID));
+        assertThrows(ResourceNotFoundException.class, () -> service.getSuperSecureBeneficialOwnerPsc(COMPANY_NUMBER,NOTIFICATION_ID));
     }
 
     @Test
     public void GetCorporateEntityPscReturn200() {
         document.getData().setKind("corporate-entity-person-with-significant-control");
         CorporateEntity corporateEntity = new CorporateEntity();
-        when(repository.getPscByCompanyNumberAndId(MOCK_COMPANY_NUMBER,NOTIFICATION_ID)).thenReturn(Optional.of(document));
+        when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER,NOTIFICATION_ID)).thenReturn(Optional.of(document));
         when(transformer.transformPscDocToCorporateEntity(document))
                 .thenReturn(corporateEntity);
 
-        CorporateEntity result = service.getCorporateEntityPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
+        CorporateEntity result = service.getCorporateEntityPsc(COMPANY_NUMBER,NOTIFICATION_ID);
 
-        assertEquals(corporateEntity,result);
+        Assertions.assertEquals(corporateEntity, result);
     }
 
     @Test
     public void GetCorporateEntityPscReturn404() {
-        when(repository.getPscByCompanyNumberAndId(MOCK_COMPANY_NUMBER, NOTIFICATION_ID))
+        when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID))
                 .thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> service.getCorporateEntityPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID));
+        assertThrows(ResourceNotFoundException.class, () -> service.getCorporateEntityPsc(COMPANY_NUMBER,NOTIFICATION_ID));
     }
 
     @Test
@@ -425,15 +582,15 @@ class CompanyPscServiceTest {
                         .equals("WRONG KIND")))
                 .thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> service.getLegalPersonPsc(MOCK_COMPANY_NUMBER, NOTIFICATION_ID));
+        assertThrows(ResourceNotFoundException.class, () -> service.getLegalPersonPsc(COMPANY_NUMBER, NOTIFICATION_ID));
     }
 
     @Test
     public void GetWrongTypeCorporateEntityPscReturn404() {
-        when(repository.getPscByCompanyNumberAndId(MOCK_COMPANY_NUMBER, NOTIFICATION_ID))
+        when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID))
                 .thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> service.getCorporateEntityPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID));
+        assertThrows(ResourceNotFoundException.class, () -> service.getCorporateEntityPsc(COMPANY_NUMBER,NOTIFICATION_ID));
     }
 
     @Test
@@ -446,15 +603,15 @@ class CompanyPscServiceTest {
                 .thenReturn(legalPersonBeneficialOwner);
 
         LegalPersonBeneficialOwner result = service
-                .getLegalPersonBeneficialOwnerPsc(MOCK_COMPANY_NUMBER,NOTIFICATION_ID);
+                .getLegalPersonBeneficialOwnerPsc(COMPANY_NUMBER,NOTIFICATION_ID);
 
-        assertEquals(legalPersonBeneficialOwner,result);
+        Assertions.assertEquals(legalPersonBeneficialOwner, result);
     }
 
     @Test
     public void GetLegalPersonBeneficialOwnerPscReturn404() {
         when(repository.findById(NOTIFICATION_ID)).thenReturn(Optional.empty());
-        assertThrows(ResourceNotFoundException.class, () -> service.getLegalPersonBeneficialOwnerPsc(MOCK_COMPANY_NUMBER, NOTIFICATION_ID));
+        assertThrows(ResourceNotFoundException.class, () -> service.getLegalPersonBeneficialOwnerPsc(COMPANY_NUMBER, NOTIFICATION_ID));
     }
 
     @Test
@@ -464,18 +621,17 @@ class CompanyPscServiceTest {
                         .equals("WRONG KIND")))
                 .thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> service.getLegalPersonBeneficialOwnerPsc(MOCK_COMPANY_NUMBER, NOTIFICATION_ID));
+        assertThrows(ResourceNotFoundException.class, () -> service.getLegalPersonBeneficialOwnerPsc(COMPANY_NUMBER, NOTIFICATION_ID));
     }
 
     @Test
     void whenNoPSCExistGetPSCListShouldThrow() {
-        assertThrows(ResourceNotFoundException.class, ()-> service.retrievePscListSummaryFromDb( MOCK_COMPANY_NUMBER, 0, false,25));
+        assertThrows(ResourceNotFoundException.class, ()-> service.retrievePscListSummaryFromDb( COMPANY_NUMBER, 0, false,25));
     }
 
     @Test
     void pscListReturnedByCompanyNumberFromRepository() throws ResourceNotFoundException {
-        TestHelper testHelper = new TestHelper();
-        PscList expectedPscList = testHelper.createPscList();
+        PscList expectedPscList = TestHelper.createPscList();
         PscData pscData = new PscData();
         document.setData(pscData);
         ListSummary listSummary = new ListSummary();
@@ -487,24 +643,24 @@ class CompanyPscServiceTest {
         identification.setLegalForm("x");
         listSummary.setIdentification(identification);
 
-        when(companyMetricsApiService.getCompanyMetrics(MOCK_COMPANY_NUMBER))
-                .thenReturn(Optional.ofNullable(testHelper.createMetrics()));
+        when(companyMetricsApiService.getCompanyMetrics(COMPANY_NUMBER))
+                .thenReturn(Optional.of(TestHelper.createMetrics()));
         when(repository.getPscDocumentList(anyString(), anyInt(), anyInt())).thenReturn(Optional.of(Collections.singletonList(document)));
         when(transformer.transformPscDocToListSummary(document, false))
                 .thenReturn(listSummary);
 
-        PscList PscDocumentList = service.retrievePscListSummaryFromDb(MOCK_COMPANY_NUMBER,0, false,25);
+        PscList PscDocumentList = service.retrievePscListSummaryFromDb(COMPANY_NUMBER,0, false,25);
 
-        assertEquals(expectedPscList, PscDocumentList);
-        verify(repository, times(1)).getPscDocumentList(MOCK_COMPANY_NUMBER, 0, 25);
+        Assertions.assertEquals(expectedPscList, PscDocumentList);
+        verify(repository, times(1)).getPscDocumentList(COMPANY_NUMBER, 0, 25);
     }
 
     @Test
     void pscListWithNoMetricsReturnedByCompanyNumberFromRepository() throws ResourceNotFoundException {
-        PscList expectedPscList = testHelper.createPscListWithNoMetrics();
+        PscList expectedPscList = TestHelper.createPscListWithNoMetrics();
         PscData pscData = new PscData();
         document.setData(pscData);
-        document.setId("1234");
+        document.setId(TestHelper.PSC_ID);
 
         ListSummary listSummary = new ListSummary();
         Identification identification = new Identification();
@@ -520,43 +676,43 @@ class CompanyPscServiceTest {
         when(transformer.transformPscDocToListSummary(document, false))
                 .thenReturn(listSummary);
 
-        PscList PscDocumentList = service.retrievePscListSummaryFromDb(MOCK_COMPANY_NUMBER,0, false,25);
+        PscList PscDocumentList = service.retrievePscListSummaryFromDb(COMPANY_NUMBER,0, false,25);
 
-        assertEquals(expectedPscList, PscDocumentList);
-        verify(repository, times(1)).getPscDocumentList(MOCK_COMPANY_NUMBER, 0, 25);
+        Assertions.assertEquals(expectedPscList, PscDocumentList);
+        verify(repository, times(1)).getPscDocumentList(COMPANY_NUMBER, 0, 25);
     }
 
     @Test
     void whenNoMetricsDataFoundForCompanyInRegisterViewShouldThrow() throws ResourceNotFoundException {
-        when(companyMetricsApiService.getCompanyMetrics(MOCK_COMPANY_NUMBER))
+        when(companyMetricsApiService.getCompanyMetrics(COMPANY_NUMBER))
                 .thenReturn(Optional.empty());
 
-        Exception ex = assertThrows(ResourceNotFoundException.class, () -> service.retrievePscListSummaryFromDb(MOCK_COMPANY_NUMBER,0, true,25));
+        Exception ex = assertThrows(ResourceNotFoundException.class, () -> service.retrievePscListSummaryFromDb(COMPANY_NUMBER,0, true,25));
 
-        String expectedMessage = "No company metrics data found for company number: 1234567";
+        String expectedMessage = "No company metrics data found for company number: " + COMPANY_NUMBER;
         String actualMessage = ex.getMessage();
         assertNotNull(actualMessage);
         assertTrue(actualMessage.contains(expectedMessage));
-        verify(repository, times(0)).getListSummaryRegisterView(MOCK_COMPANY_NUMBER, 0, OffsetDateTime.parse("2020-12-20T06:00Z"), 25);
+        verify(repository, times(0)).getListSummaryRegisterView(COMPANY_NUMBER, 0, OffsetDateTime.parse("2020-12-20T06:00Z"), 25);
     }
 
     @Test
     void whenCompanyNotInPublicRegisterGetPSCListShouldThrow() throws ResourceNotFoundException {
-        MetricsApi metricsApi = testHelper.createMetrics();
+        MetricsApi metricsApi = TestHelper.createMetrics();
         RegistersApi registersApi = new RegistersApi();
         metricsApi.setRegisters(registersApi);
 
-        when(companyMetricsApiService.getCompanyMetrics(MOCK_COMPANY_NUMBER))
+        when(companyMetricsApiService.getCompanyMetrics(COMPANY_NUMBER))
                 .thenReturn(Optional.of(metricsApi));
 
-        Exception ex = assertThrows(ResourceNotFoundException.class, () -> service.retrievePscListSummaryFromDb(MOCK_COMPANY_NUMBER,0, true,25));
+        Exception ex = assertThrows(ResourceNotFoundException.class, () -> service.retrievePscListSummaryFromDb(COMPANY_NUMBER,0, true,25));
 
-        String expectedMessage = "company 1234567 not on public register";
+        String expectedMessage = "company " + COMPANY_NUMBER + " not on public register";
         String actualMessage = ex.getMessage();
         assertNotNull(actualMessage);
         assertTrue(actualMessage.contains(expectedMessage));
-        verify(service, times(1)).retrievePscListSummaryFromDb(MOCK_COMPANY_NUMBER,0, true, 25);
-        verify(repository, times(0)).getListSummaryRegisterView(MOCK_COMPANY_NUMBER, 0, OffsetDateTime.parse("2020-12-20T06:00Z"), 25);
+        verify(service, times(1)).retrievePscListSummaryFromDb(COMPANY_NUMBER,0, true, 25);
+        verify(repository, times(0)).getListSummaryRegisterView(COMPANY_NUMBER, 0, OffsetDateTime.parse("2020-12-20T06:00Z"), 25);
     }
 
 }

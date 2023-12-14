@@ -1,7 +1,6 @@
 package uk.gov.companieshouse.pscdataapi.transform;
 
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -35,16 +34,12 @@ class CompanyPscTransformerTest {
     public static final String LEGAL_BO_KIND = "legal-person-beneficial-owner";
     public static final String SECURE_BO_KIND = "super-secure-beneficial-owner";
 
-    private static final Boolean REGISTER_VIEW_TRUE = true;
-    private static final Boolean REGISTER_VIEW_FALSE = false;
+    private static final boolean SHOW_FULL_DOB_TRUE = true;
+    private static final boolean SHOW_FULL_DOB_FALSE = false;
 
     @InjectMocks
     private CompanyPscTransformer pscTransformer;
     private FullRecordCompanyPSCApi fullRecordCompanyPSCApi;
-
-    @BeforeEach
-    public void setUp() {
-    }
 
     @Test
     void testInsertEmptyPscTransform(){
@@ -54,10 +49,10 @@ class CompanyPscTransformerTest {
     }
 
     @Test
-    void testInsertIndividualPscIsTransformedSuccessfullyWhenRegisterViewTrue() throws FailedToTransformException {
+    void testInsertIndividualPscWithDateOfBirthIsTransformedSuccessfully() throws FailedToTransformException {
         // given
-        fullRecordCompanyPSCApi = TestHelper.buildFullRecordPsc(INDIVIDUAL_KIND, REGISTER_VIEW_TRUE);
-        PscDocument expectedDocument = TestHelper.buildPscDocument(INDIVIDUAL_KIND, REGISTER_VIEW_TRUE);
+        fullRecordCompanyPSCApi = TestHelper.buildFullRecordPsc(INDIVIDUAL_KIND, SHOW_FULL_DOB_TRUE);
+        PscDocument expectedDocument = TestHelper.buildPscDocument(INDIVIDUAL_KIND, SHOW_FULL_DOB_TRUE);
         // when
         PscDocument result = pscTransformer.transformPscOnInsert(NOTIFICATION_ID, fullRecordCompanyPSCApi);
         // then
@@ -76,10 +71,10 @@ class CompanyPscTransformerTest {
     }
 
     @Test
-    void testInsertIndividualPscIsTransformedSuccessfullyWhenRegisterViewFalse() throws FailedToTransformException {
+    void testInsertIndividualPscNoDateOfBirthIsTransformedSuccessfully() throws FailedToTransformException {
         // given
-        fullRecordCompanyPSCApi = TestHelper.buildFullRecordPsc(INDIVIDUAL_KIND, REGISTER_VIEW_FALSE);
-        PscDocument expectedDocument = TestHelper.buildPscDocument(INDIVIDUAL_KIND, REGISTER_VIEW_FALSE);
+        fullRecordCompanyPSCApi = TestHelper.buildFullRecordPsc(INDIVIDUAL_KIND, SHOW_FULL_DOB_FALSE);
+        PscDocument expectedDocument = TestHelper.buildPscDocument(INDIVIDUAL_KIND, SHOW_FULL_DOB_FALSE);
         // when
         PscDocument result = pscTransformer.transformPscOnInsert(NOTIFICATION_ID, fullRecordCompanyPSCApi);
         // then
@@ -151,8 +146,8 @@ class CompanyPscTransformerTest {
     @Test
     void testInsertIndividualBeneficialOwnerPscIsTransformedSuccessfully() throws FailedToTransformException {
         // given
-        fullRecordCompanyPSCApi = TestHelper.buildFullRecordPsc(INDIVIDUAL_BO_KIND, REGISTER_VIEW_TRUE);
-        PscDocument expectedDocument = TestHelper.buildPscDocument(INDIVIDUAL_BO_KIND, REGISTER_VIEW_TRUE);
+        fullRecordCompanyPSCApi = TestHelper.buildFullRecordPsc(INDIVIDUAL_BO_KIND, SHOW_FULL_DOB_TRUE);
+        PscDocument expectedDocument = TestHelper.buildPscDocument(INDIVIDUAL_BO_KIND, SHOW_FULL_DOB_TRUE);
         // when
         PscDocument result = pscTransformer.transformPscOnInsert(NOTIFICATION_ID, fullRecordCompanyPSCApi);
         // then
@@ -247,7 +242,7 @@ class CompanyPscTransformerTest {
         pscDocument.setDeltaAt("20230102030405000000");
         pscDocument.setSensitiveData(new PscSensitiveData());
 
-        Individual individual = pscTransformer.transformPscDocToIndividual(pscDocument, true);
+        Individual individual = pscTransformer.transformPscDocToIndividual(pscDocument, SHOW_FULL_DOB_TRUE);
 
         Assertions.assertNotNull(individual);
         Assertions.assertEquals("2023-01-02", individual.getNotifiedOn().toString());
@@ -256,14 +251,14 @@ class CompanyPscTransformerTest {
     @Test
     void testEmptyPscIndividualTransform(){
         Individual individual = pscTransformer
-                .transformPscDocToIndividual(new PscDocument(), true);
+                .transformPscDocToIndividual(new PscDocument(), SHOW_FULL_DOB_TRUE);
         Assertions.assertNotNull(individual);
     }
 
     @Test
     void testEmptyPscIndividualBeneficialOwnerTransform(){
         IndividualBeneficialOwner individualBeneficialOwner = pscTransformer
-                .transformPscDocToIndividualBeneficialOwner(new PscDocument(), true);
+                .transformPscDocToIndividualBeneficialOwner(new PscDocument(), SHOW_FULL_DOB_TRUE);
         Assertions.assertNotNull(individualBeneficialOwner);
     }
 

@@ -1,9 +1,14 @@
 package uk.gov.companieshouse.pscdataapi.util;
 
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
 import org.springframework.util.FileCopyUtils;
@@ -23,21 +28,23 @@ public class TestHelper {
     public static final String INDIVIDUAL_BO_KIND = "individual-beneficial-owner";
     public static final String COMPANY_NUMBER = "companyNumber";
     public static final String NOTIFICATION_ID = "notificationId";
+    public static final String PSC_ID = "pscId";
     public static final String X_REQUEST_ID = "654321";
 
+    private TestHelper(){}
 
     public static FullRecordCompanyPSCApi buildFullRecordPsc(String kind) {
         return buildFullRecordPsc(kind, false);
     }
 
-    public static FullRecordCompanyPSCApi buildFullRecordPsc(String kind, boolean registerView) {
+    public static FullRecordCompanyPSCApi buildFullRecordPsc(String kind, boolean showFullDateOfBirth) {
         FullRecordCompanyPSCApi output  = new FullRecordCompanyPSCApi();
         ExternalData externalData = new ExternalData();
         Data data = new Data();
 
-        externalData.setPscId("pscId");
+        externalData.setPscId(PSC_ID);
         // Not setting the notificationId as that is passed to the Transformer
-        externalData.setCompanyNumber("1234567");
+        externalData.setCompanyNumber(COMPANY_NUMBER);
 
         InternalData internalData = new InternalData();
         internalData.setDeltaAt(OffsetDateTime.parse("2022-01-12T00:00:00Z"));
@@ -76,7 +83,7 @@ public class TestHelper {
         if(kind.contains("individual")) {
             SensitiveData sensitiveData = new SensitiveData();
             uk.gov.companieshouse.api.psc.DateOfBirth dateOfBirth = new uk.gov.companieshouse.api.psc.DateOfBirth();
-            if(registerView){
+            if(showFullDateOfBirth){
                 dateOfBirth.setDay(21);
             } else{
                 dateOfBirth.setDay(null);
@@ -131,18 +138,32 @@ public class TestHelper {
         return output;
     }
 
+    public static FullRecordCompanyPSCApi buildBasicFullRecordPsc(){
+        FullRecordCompanyPSCApi result = new FullRecordCompanyPSCApi();
+        InternalData internal = new InternalData();
+        ExternalData external = new ExternalData();
+        Data data = new Data();
+        external.setNotificationId(NOTIFICATION_ID);
+        data.setKind(INDIVIDUAL_KIND);
+        external.setData(data);
+        internal.setDeltaAt(createOffsetDateTime());
+        result.setExternalData(external);
+        result.setInternalData(internal);
+        return result;
+    }
+
     public static PscDocument buildPscDocument(String kind) {
         return buildPscDocument(kind, false);
     }
 
-    public static PscDocument buildPscDocument(String kind, boolean registerView) {
+    public static PscDocument buildPscDocument(String kind, boolean showFullDateOfBirth) {
         PscDocument output = new PscDocument();
         PscData data = new PscData();
 
-        output.setId("notificationId");
-        output.setNotificationId("notificationId");
-        output.setPscId("pscId");
-        output.setCompanyNumber("1234567");
+        output.setId(NOTIFICATION_ID);
+        output.setNotificationId(NOTIFICATION_ID);
+        output.setPscId(PSC_ID);
+        output.setCompanyNumber(COMPANY_NUMBER);
         output.setDeltaAt("20220112000000000000");
         output.setUpdated(new Updated().setAt(LocalDate.now()));
         output.setUpdatedBy("user");
@@ -179,7 +200,7 @@ public class TestHelper {
         if(kind.contains("individual")) {
             PscSensitiveData sensitiveData = new PscSensitiveData();
             DateOfBirth dateOfBirth = new DateOfBirth();
-            if(registerView){
+            if(showFullDateOfBirth){
                 dateOfBirth.setDay(21);
             } else {
                 dateOfBirth.setDay(null);
@@ -223,14 +244,36 @@ public class TestHelper {
         return output;
     }
 
+    public static PscDocument buildBasicDocument(){
+        PscDocument document = new PscDocument();
+        document.setUpdated(new Updated().setAt(LocalDate.now()));
+        document.setCompanyNumber(COMPANY_NUMBER);
+        document.setPscId(PSC_ID);
+        document.setNotificationId(COMPANY_NUMBER);
+        PscData pscData = new PscData();
+        pscData.setKind(INDIVIDUAL_KIND);
+        document.setData(pscData);
+        PscIdentification identification = new PscIdentification();
+        identification.setCountryRegistered("x");
+        identification.setLegalForm("x");
+        identification.setPlaceRegistered("x");
+        identification.setLegalAuthority("x");
+        identification.setRegistrationNumber("x");
+        document.setIdentification(identification);
+        return document;
+    }
+
     public static String createJsonPayload() throws IOException {
-        InputStreamReader exampleJsonPayload = new InputStreamReader(
-                ClassLoader.getSystemClassLoader().getResourceAsStream("psc_payload.json"));
+        InputStream inputStream = ClassLoader.getSystemClassLoader().getResourceAsStream("psc_payload.json");
+        if (inputStream == null){
+            throw new IOException("Failed to load Json payload input stream");
+        }
+        InputStreamReader exampleJsonPayload = new InputStreamReader(inputStream);
 
         return FileCopyUtils.copyToString(exampleJsonPayload);
     }
 
-    public PscList createPscList() {
+    public static PscList createPscList() {
         ListSummary listSummary = new ListSummary();
         Identification identification = new Identification();
         identification.setPlaceRegistered("x");
@@ -250,44 +293,13 @@ public class TestHelper {
         return pscList;
     }
 
-    private ListSummary createListSummary() {
-        ListSummary listSummary = new ListSummary();
-        listSummary.setEtag("string");
-        listSummary.setName("string");
-        NameElements nameElements = new NameElements();
-        nameElements.setTitle("Mr");
-        nameElements.setForename("Forname");
-        nameElements.setMiddleName("Middle");
-        nameElements.setSurname("Surname");
-        listSummary.setNameElements(nameElements);
-        uk.gov.companieshouse.api.psc.Address address = new uk.gov.companieshouse.api.psc.Address();
-        address.setAddressLine1("1 street");
-        address.setAddressLine2("2 street");
-        address.setCountry("uk");
-        address.setRegion("south");
-        address.setPremises("prem");
-        address.setPoBox("po");
-        address.setLocality("Local");
-        address.setCareOf("care");
-        address.setPostalCode("post");
-        listSummary.setAddress(address);
-        listSummary.setCeasedOn(LocalDate.now());
-        listSummary.setIsSanctioned(true);
-        listSummary.setNationality("British");
-        listSummary.setCountryOfResidence("Uk");
-        listSummary.setDescription(ListSummary.DescriptionEnum
-                .SUPER_SECURE_PERSONS_WITH_SIGNIFICANT_CONTROL);
-        listSummary.setPrincipalOfficeAddress(address);
-        return listSummary;
-    }
-
-    private Links createLinks() {
+    private static Links createLinks() {
         Links links = new Links();
-        links.setSelf(String.format("/company/%s/persons-with-significant-control", "1234567"));
+        links.setSelf(String.format("/company/%s/persons-with-significant-control", COMPANY_NUMBER));
         return links;
     }
 
-    public MetricsApi createMetrics() {
+    public static MetricsApi createMetrics() {
         MetricsApi metrics = new MetricsApi();
         CountsApi counts = new CountsApi();
         PscApi pscs = new PscApi();
@@ -299,7 +311,7 @@ public class TestHelper {
         return metrics;
     }
 
-    public PscList createPscListWithNoMetrics() {
+    public static PscList createPscListWithNoMetrics() {
         ListSummary listSummary = new ListSummary();
         Identification identification = new Identification();
         identification.setPlaceRegistered("x");
@@ -316,44 +328,16 @@ public class TestHelper {
         return pscList;
     }
 
-    public PscList createPscListRegisterView() {
-        ListSummary listSummary = new ListSummary();
-        Identification identification = new Identification();
-        identification.setPlaceRegistered("x");
-        identification.setCountryRegistered("x");
-        identification.setRegistrationNumber("x");
-        identification.setLegalAuthority("x");
-        identification.setLegalForm("x");
-        listSummary.setIdentification(identification);
-        PscList pscList = new PscList();
-        pscList.setItems(Collections.singletonList(listSummary));
-        pscList.setActiveCount(1);
-        pscList.setCeasedCount(0);
-        pscList.setTotalResults(1);
-        pscList.setStartIndex(0);
-        pscList.setItemsPerPage(25);
-        pscList.setLinks(createLinks());
-        return pscList;
+    static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
+    public static OffsetDateTime createOffsetDateTime() {
+        LocalDateTime localDate = LocalDateTime.parse("2023-01-02T13:04:05.678", formatter);
+        ZoneOffset offset = ZoneId.systemDefault().getRules().getOffset(localDate);
+        return OffsetDateTime.of(localDate, offset);
+    }
+    public static OffsetDateTime createLaterOffsetDateTime() {
+        LocalDateTime laterLocalDate = LocalDateTime.parse("2023-01-03T13:04:05.678", formatter);
+        ZoneOffset offset = ZoneId.systemDefault().getRules().getOffset(laterLocalDate);
+        return OffsetDateTime.of(laterLocalDate, offset);
     }
 
-    public MetricsApi createMetricsRegisterView() {
-        MetricsApi metrics = new MetricsApi();
-        CountsApi counts = new CountsApi();
-        PscApi pscs = new PscApi();
-        pscs.setActiveStatementsCount(1);
-        pscs.setWithdrawnStatementsCount(0);
-        pscs.setStatementsCount(1);
-        counts.setPersonsWithSignificantControl(pscs);
-        metrics.setCounts(counts);
-
-        RegistersApi registers = new RegistersApi();
-        RegisterApi pscStatements = new RegisterApi();
-        pscStatements.setRegisterMovedTo("public-register");
-        String date = "2020-12-20T06:00:00Z";
-        OffsetDateTime dt = OffsetDateTime.parse(date);
-        pscStatements.setMovedOn(dt);
-        registers.setPersonsWithSignificantControl(pscStatements);
-        metrics.setRegisters(registers);
-        return metrics;
-    }
 }

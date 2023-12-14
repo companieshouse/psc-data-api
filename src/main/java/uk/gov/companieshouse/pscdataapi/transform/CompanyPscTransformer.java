@@ -50,7 +50,7 @@ public class CompanyPscTransformer {
      * @return PSC mongo Document.
      */
     public Individual transformPscDocToIndividual(
-            PscDocument pscDocument, Boolean registerView) {
+            PscDocument pscDocument, boolean showFullDateOfBirth) {
         logger.info("Attempting to transform pscDocument to Individual",
                 DataMapHolder.getLogMap());
         Individual individual = new Individual();
@@ -67,7 +67,7 @@ public class CompanyPscTransformer {
         }
         if (pscDocument.getSensitiveData() != null) {
             individual.setDateOfBirth(mapDateOfBirth(
-                    pscDocument.getSensitiveData().getDateOfBirth(), registerView));
+                    pscDocument.getSensitiveData().getDateOfBirth(), showFullDateOfBirth));
         }
         if (pscDocument.getDeltaAt() != null) {
             individual.setNotifiedOn(LocalDate.parse(pscDocument.getDeltaAt(), dateTimeFormatter));
@@ -81,7 +81,7 @@ public class CompanyPscTransformer {
      * @return PSC mongo Document.
      */
     public IndividualBeneficialOwner transformPscDocToIndividualBeneficialOwner(
-            PscDocument pscDocument, Boolean registerView) {
+            PscDocument pscDocument, boolean showFullDateOfBirth) {
         logger.info("Attempting to transform pscDocument to IndividualBeneficialOwner",
                 DataMapHolder.getLogMap());
         IndividualBeneficialOwner individualBo = new IndividualBeneficialOwner();
@@ -99,7 +99,7 @@ public class CompanyPscTransformer {
         }
         if (pscDocument.getSensitiveData() != null) {
             individualBo.setDateOfBirth(mapDateOfBirth(
-                    pscDocument.getSensitiveData().getDateOfBirth(), registerView));
+                    pscDocument.getSensitiveData().getDateOfBirth(), showFullDateOfBirth));
         }
         if (pscDocument.getDeltaAt() != null) {
             individualBo.setNotifiedOn(LocalDate.parse(pscDocument.getDeltaAt(),
@@ -413,11 +413,11 @@ public class CompanyPscTransformer {
     }
 
     private uk.gov.companieshouse.api.psc.DateOfBirth mapDateOfBirth(
-            DateOfBirth inputDateOfBirth, Boolean registerView) {
+            DateOfBirth inputDateOfBirth, boolean showFullDateOfBirth) {
         if (inputDateOfBirth != null) {
             uk.gov.companieshouse.api.psc.DateOfBirth dateOfBirth =
                     new uk.gov.companieshouse.api.psc.DateOfBirth();
-            if (registerView) {
+            if (showFullDateOfBirth) {
                 dateOfBirth.setDay(inputDateOfBirth.getDay());
             } else {
                 dateOfBirth.setDay(null);
