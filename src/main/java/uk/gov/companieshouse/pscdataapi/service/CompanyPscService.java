@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.pscdataapi.service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
@@ -176,8 +177,12 @@ public class CompanyPscService {
                             .filter(document -> document.getData().getKind()
                                     .equals("individual-person-with-significant-control"));
             if (pscDocument.isPresent()) {
+                boolean showFullDateOfBirth = determineShowFullDob(
+                        companyNumber, registerView, pscDocument.get());
+
                 Individual individual = transformer
-                        .transformPscDocToIndividual(pscDocument.get(), registerView);
+                        .transformPscDocToIndividual(pscDocument.get(), showFullDateOfBirth);
+
                 if (individual == null) {
                     throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
                             "Failed to transform PSCDocument to Individual");
@@ -187,6 +192,8 @@ public class CompanyPscService {
                 throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
                         "Individual PSC document not found in Mongo with id " + notificationId);
             }
+        } catch (ResourceNotFoundException rnfe) {
+            throw rnfe;
         } catch (Exception ex) {
             logger.error(ex.getMessage(), DataMapHolder.getLogMap());
             throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
@@ -208,8 +215,13 @@ public class CompanyPscService {
                             .equals("individual-beneficial-owner")
                             && document.getCompanyNumber().equals(companyNumber));
             if (pscDocument.isPresent()) {
+                boolean showFullDateOfBirth = determineShowFullDob(
+                        companyNumber, registerView, pscDocument.get());
+
                 IndividualBeneficialOwner individualBeneficialOwner = transformer
-                        .transformPscDocToIndividualBeneficialOwner(pscDocument.get(),registerView);
+                        .transformPscDocToIndividualBeneficialOwner(pscDocument.get(),
+                                showFullDateOfBirth);
+
                 if (individualBeneficialOwner == null) {
                     throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
                             "Failed to transform PSCDocument to IndividualBeneficialOwner");
@@ -220,10 +232,54 @@ public class CompanyPscService {
                         "Individual Beneficial Owner PSC document not found in Mongo with id"
                                 + notificationId);
             }
+        } catch (ResourceNotFoundException rnfe) {
+            throw rnfe;
         } catch (Exception ex) {
             logger.error(ex.getMessage(), DataMapHolder.getLogMap());
             throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
                     "Unexpected error occurred while fetching PSC document");
+        }
+    }
+
+    private boolean determineShowFullDob(String companyNumber, Boolean registerView,
+                                         PscDocument pscDocument) throws ResourceNotFoundException {
+        if (!registerView) {
+            return false;
+        } else {
+            Optional<MetricsApi> companyMetrics = companyMetricsApiService
+                    .getCompanyMetrics(companyNumber);
+
+            if (companyMetrics.isPresent()) {
+                try {
+                    String registerMovedTo = companyMetrics.get().getRegisters()
+                            .getPersonsWithSignificantControl().getRegisterMovedTo();
+                    if (registerMovedTo.equals("public-register")) {
+                        Boolean isCeased = pscDocument.getData().getCeased();
+                        boolean ceased = isCeased != null && isCeased;
+                        LocalDate ceasedOn =  pscDocument.getData().getCeasedOn();
+                        LocalDate movedToPublicRegister = companyMetrics.get().getRegisters()
+                                .getPersonsWithSignificantControl().getMovedOn().toLocalDate();
+
+                        if (!ceased || movedToPublicRegister.isBefore(ceasedOn)) {
+                            return true;
+                        } else {
+                            throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
+                                    "not-on-public-register");
+                        }
+                    } else {
+                        throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
+                                "not-on-public-register");
+                    }
+                } catch (ResourceNotFoundException rnfe) {
+                    throw rnfe;
+                } catch (Exception ignored) {
+                    throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
+                            "not-on-public-register");
+                }
+            } else {
+                throw new ResourceNotFoundException(HttpStatus.NOT_FOUND, String.format(
+                        "No company metrics data found for company number: %s", companyNumber));
+            }
         }
     }
 
