@@ -23,7 +23,7 @@ import uk.gov.companieshouse.pscdataapi.util.TestHelper;
 class ResourceChangedApiServiceAspectFeatureFlagDisabledITest {
 
     @InjectMocks
-    private ChsKafkaApiService chsKafkaService;
+    private ChsKafkaApiService chsKafkaApiService;
 
     @MockBean
     private ApiClientService apiClientService;
@@ -68,7 +68,7 @@ class ResourceChangedApiServiceAspectFeatureFlagDisabledITest {
                 changedResourcePost);
         when(changedResourcePost.execute()).thenReturn(response);
 
-        ApiResponse<?> apiResponse = chsKafkaService.invokeChsKafkaApi(testHelper.X_REQUEST_ID, testHelper.COMPANY_NUMBER, testHelper.NOTIFICATION_ID, "kind");
+        ApiResponse<?> apiResponse = chsKafkaApiService.invokeChsKafkaApi(TestHelper.X_REQUEST_ID, TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID, "kind");
 
         Assertions.assertThat(apiResponse).isNotNull();
 
