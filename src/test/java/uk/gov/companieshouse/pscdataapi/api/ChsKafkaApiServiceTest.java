@@ -4,7 +4,6 @@ import com.google.api.client.http.HttpHeaders;
 import com.google.api.client.http.HttpResponseException;
 import org.assertj.core.api.Assertions;
 import org.junit.Assert;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -40,18 +39,10 @@ public class ChsKafkaApiServiceTest {
     private PrivateChangedResourcePost privateChangedResourcePost;
     @Mock
     private ApiResponse<Void> response;
-
-    private TestHelper testHelper;
     @InjectMocks
     private ChsKafkaApiService chsKafkaApiService;
-
     @Captor
     ArgumentCaptor<ChangedResource> changedResourceCaptor;
-
-    @BeforeEach
-    void setUp() {
-        testHelper = new TestHelper();
-    }
 
     @Test
     void invokeChsKafkaEndpoint() throws ApiErrorResponseException {

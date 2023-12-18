@@ -33,7 +33,7 @@ import uk.gov.companieshouse.pscdataapi.service.CompanyPscService;
 
 
 @RestController
-@RequestMapping(path = "/company/{company_number}/persons-with-significant-control/",
+@RequestMapping(path = "/company/{company_number}/persons-with-significant-control",
         produces = "application/json")
 public class CompanyPscController {
 
@@ -48,7 +48,7 @@ public class CompanyPscController {
      * @param request request payload.
      * @return response.
      * */
-    @PutMapping(path = "{notification_id}/full_record", consumes = "application/json")
+    @PutMapping(path = "/{notification_id}/full_record", consumes = "application/json")
     public ResponseEntity<Void> submitPscData(@RequestHeader("x-request-id") String contextId,
                                               @RequestBody final FullRecordCompanyPSCApi request) {
         try {
@@ -79,7 +79,7 @@ public class CompanyPscController {
      * @param companyNumber The number of the company
      * @return ResponseEntity
      */
-    @DeleteMapping(path = "{notification_id}/full_record")
+    @DeleteMapping(path = "/{notification_id}/full_record")
     public ResponseEntity<Void> deletePscData(
             @PathVariable("company_number") String companyNumber,
             @PathVariable("notification_id") String notificationId) {
@@ -107,7 +107,7 @@ public class CompanyPscController {
      * @param companyNumber The number of the company
      * @return ResponseEntity
      */
-    @GetMapping("individual/{notification_id}")
+    @GetMapping("/individual/{notification_id}")
     public ResponseEntity<Individual> getIndividualPscData(
             @PathVariable("company_number") String companyNumber,
             @PathVariable("notification_id") String notificationId,
@@ -136,7 +136,7 @@ public class CompanyPscController {
      * @param companyNumber The number of the company
      * @return ResponseEntity
      */
-    @GetMapping("individual-beneficial-owner/{notification_id}")
+    @GetMapping("/individual-beneficial-owner/{notification_id}")
     public ResponseEntity<IndividualBeneficialOwner> getIndividualBeneficialOwnerPscData(
             @PathVariable("company_number") String companyNumber,
             @PathVariable("notification_id") String notificationId,
@@ -166,7 +166,7 @@ public class CompanyPscController {
      * @param companyNumber The number of the company
      * @return ResponseEntity
      */
-    @GetMapping("corporate-entity/{notification_id}")
+    @GetMapping("/corporate-entity/{notification_id}")
     public ResponseEntity<CorporateEntity> getCorporateEntityPscData(
             @PathVariable("company_number") String companyNumber,
             @PathVariable("notification_id") String notificationId) {
@@ -193,7 +193,7 @@ public class CompanyPscController {
      * @param companyNumber The number of the company
      * @return ResponseEntity
      */
-    @GetMapping("corporate-entity-beneficial-owner/{notification_id}")
+    @GetMapping("/corporate-entity-beneficial-owner/{notification_id}")
     public ResponseEntity<CorporateEntityBeneficialOwner> getCorporateEntityBeneficialOwnerPscData(
             @PathVariable("company_number") String companyNumber,
             @PathVariable("notification_id") String notificationId) {
@@ -221,7 +221,7 @@ public class CompanyPscController {
      * @param companyNumber The number of the company
      * @return ResponseEntity
      */
-    @GetMapping("legal-person/{notification_id}")
+    @GetMapping("/legal-person/{notification_id}")
     public ResponseEntity<LegalPerson> getLegalPersonPscData(
             @PathVariable("company_number") String companyNumber,
             @PathVariable("notification_id") String notificationId) {
@@ -248,7 +248,7 @@ public class CompanyPscController {
      * @param companyNumber The number of the company
      * @return ResponseEntity
      */
-    @GetMapping("legal-person-beneficial-owner/{notification_id}")
+    @GetMapping("/legal-person-beneficial-owner/{notification_id}")
     public ResponseEntity<LegalPersonBeneficialOwner> getLegalPersonBeneficialOwnerPscData(
             @PathVariable("company_number") String companyNumber,
             @PathVariable("notification_id") String notificationId) {
@@ -275,7 +275,7 @@ public class CompanyPscController {
      * @param companyNumber The number of the company
      * @return ResponseEntity
      */
-    @GetMapping("super-secure/{notification_id}")
+    @GetMapping("/super-secure/{notification_id}")
     public ResponseEntity<SuperSecure> getSuperSecurePscData(
             @PathVariable("company_number") String companyNumber,
             @PathVariable("notification_id") String notificationId) {
@@ -302,7 +302,7 @@ public class CompanyPscController {
      * @param companyNumber The number of the company
      * @return ResponseEntity
      */
-    @GetMapping("super-secure-beneficial-owner/{notification_id}")
+    @GetMapping("/super-secure-beneficial-owner/{notification_id}")
     public ResponseEntity<SuperSecureBeneficialOwner> getSuperSecureBeneficialOwnerPscData(
             @PathVariable("company_number") String companyNumber,
             @PathVariable("notification_id") String notificationId) {
