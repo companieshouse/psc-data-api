@@ -21,6 +21,7 @@ import uk.gov.companieshouse.api.sdk.ApiClientService;
 import uk.gov.companieshouse.pscdataapi.exceptions.ServiceUnavailableException;
 import uk.gov.companieshouse.pscdataapi.util.TestHelper;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
@@ -35,6 +36,7 @@ class ResourceChangedApiServiceAspectFeatureFlagEnabledITest {
 
     @Mock
     private InternalApiClient internalApiClient;
+    @Mock
     private PrivateChangedResourceHandler privateChangedResourceHandler;
     @Mock
     private PrivateChangedResourcePost changedResourcePost;
@@ -55,16 +57,15 @@ class ResourceChangedApiServiceAspectFeatureFlagEnabledITest {
     void setup() {
 
         testHelper = new TestHelper();
-//        privateChangedResourceHandler = new PrivateChangedResourceHandler(httpClient, url, requestExecutor);
     }
     @Test
     void testThatAspectShouldNotProceedWhenFeatureFlagEnabled() throws ServiceUnavailableException, ApiErrorResponseException {
 
-//        when(internalApiClient.privateChangedResourceHandler()).thenReturn(
-//                privateChangedResourceHandler);
-//        when(privateChangedResourceHandler.postChangedResource(Mockito.any(), Mockito.any())).thenReturn(
-//                changedResourcePost);
-//        when(changedResourcePost.execute()).thenReturn(response);
+        when(internalApiClient.privateChangedResourceHandler()).thenReturn(
+                privateChangedResourceHandler);
+        when(privateChangedResourceHandler.postChangedResource(any(), any())).thenReturn(
+                changedResourcePost);
+        when(changedResourcePost.execute()).thenReturn(response);
 
         chsKafkaApiService.invokeChsKafkaApi(TestHelper.X_REQUEST_ID, TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID, "kind");
 
