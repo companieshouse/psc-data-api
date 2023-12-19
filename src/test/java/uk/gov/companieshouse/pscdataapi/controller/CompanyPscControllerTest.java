@@ -12,8 +12,13 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import uk.gov.companieshouse.api.exception.ResourceNotFoundException;
 import uk.gov.companieshouse.api.exception.ServiceUnavailableException;
 import uk.gov.companieshouse.api.psc.*;
+import uk.gov.companieshouse.pscdataapi.models.PscDocument;
+import uk.gov.companieshouse.pscdataapi.models.Updated;
 import uk.gov.companieshouse.pscdataapi.service.CompanyPscService;
 import uk.gov.companieshouse.pscdataapi.util.TestHelper;
+
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -37,6 +42,18 @@ class CompanyPscControllerTest {
     private static final String ERIC_IDENTITY_TYPE = "key";
     private static final String ERIC_PRIVILEGES = "*";
     private static final String ERIC_AUTH = "internal-app";
+
+    private FullRecordCompanyPSCApi request;
+    private PscDocument document;
+    private SuperSecure superSecure;
+    private SuperSecureBeneficialOwner superSecureBeneficialOwner;
+    private Individual individual;
+    private IndividualBeneficialOwner individualBeneficialOwner;
+    private CorporateEntity corporateEntity;
+    private CorporateEntityBeneficialOwner corporateEntityBeneficialOwner;
+    private LegalPerson legalPerson;
+    private LegalPersonBeneficialOwner legalPersonBeneficialOwner;
+    private TestHelper testHelper;
 
     private static final String PUT_URL = String.format(
             "/company/%s/persons-with-significant-control/%s/full_record", MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID);

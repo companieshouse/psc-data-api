@@ -31,8 +31,9 @@
         <private-api-sdk-java.version>2.0.326</private-api-sdk-java.version>
         <data-sync-api-sdk-java.version>1.0.4</data-sync-api-sdk-java.version>
         <api-security-java.version>0.4.1</api-security-java.version>
-        <api-sdk-manager-java-library.version>1.0.4</api-sdk-manager-java-library.version>
+        <api-sdk-manager-java-library.version>1.0.8</api-sdk-manager-java-library.version>
         <api-helper-java-library.version>1.4.5</api-helper-java-library.version>
+        <sdk-manager-java.version>1.5.17</sdk-manager-java.version>
 
         <!-- tests -->
         <maven-surefire-plugin.version>3.0.0-M5</maven-surefire-plugin.version>
@@ -171,6 +172,16 @@
             <artifactId>kafka-models</artifactId>
             <version>${kafka-models.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.yaml</groupId>
+                    <artifactId>snakeyaml</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
     </dependencies>
 
     <build>
@@ -219,8 +230,9 @@
                     <skipTests>${skip.unit.tests}</skipTests>
                     <environmentVariables>
                         <CHS_API_KEY>key</CHS_API_KEY>
-                        <API_URL>g9yZIA81Zo9J46Kzp3JPbfld6kOqxR47EAYqXbRV</API_URL>
+                        <API_URL>key</API_URL>
                         <PAYMENTS_API_URL>key</PAYMENTS_API_URL>
+                        <DOCUMENT_API_LOCAL_URL>document_api_local_url</DOCUMENT_API_LOCAL_URL>
                     </environmentVariables>
                 </configuration>
             </plugin>

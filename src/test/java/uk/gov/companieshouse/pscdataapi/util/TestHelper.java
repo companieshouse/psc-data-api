@@ -31,7 +31,7 @@ public class TestHelper {
     public static final String PSC_ID = "pscId";
     public static final String X_REQUEST_ID = "654321";
 
-    private TestHelper(){}
+    public TestHelper(){}
 
     public static FullRecordCompanyPSCApi buildFullRecordPsc(String kind) {
         return buildFullRecordPsc(kind, false);

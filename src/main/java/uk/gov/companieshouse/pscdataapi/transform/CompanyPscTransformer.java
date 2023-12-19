@@ -34,7 +34,6 @@ import uk.gov.companieshouse.pscdataapi.models.PscSensitiveData;
 import uk.gov.companieshouse.pscdataapi.models.Updated;
 import uk.gov.companieshouse.pscdataapi.util.PscTransformationHelper;
 
-
 @Component
 public class CompanyPscTransformer {
 

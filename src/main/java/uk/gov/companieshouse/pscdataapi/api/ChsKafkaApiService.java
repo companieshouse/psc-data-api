@@ -37,6 +37,8 @@ public class ChsKafkaApiService {
      * @param notificationId mongo id
      * @return passes request to api response handling
      */
+
+    @StreamEvents
     public ApiResponse<Void> invokeChsKafkaApi(String contextId, String companyNumber,
                                                String notificationId, String kind) {
         internalApiClient.setBasePath(chsKafkaApiUrl);
