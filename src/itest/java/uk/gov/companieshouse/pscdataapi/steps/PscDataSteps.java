@@ -94,18 +94,18 @@ public class PscDataSteps {
     }
 
     @Given("a psc data record {string} exists with notification id {string} and delta_at {string}")
-    public void psc_record_exists_for_company_and_id_with_delta_at(String existingDataFile, String notifcationId, String deltaAt) throws IOException {
+    public void psc_record_exists_for_company_and_id_with_delta_at(String existingDataFile, String notifocationId, String deltaAt) throws IOException {
         String pscDataFile = FileReaderUtil.readFile(
                 "src/itest/resources/json/input/" + existingDataFile + ".json");
         PscData pscData = objectMapper.readValue(pscDataFile, PscData.class);
 
         PscDocument document = new PscDocument();
-        document.setId(notifcationId);
+        document.setId(notificationId);
         document.setCompanyNumber(COMPANY_NUMBER);
         document.setData(pscData);
         document.setDeltaAt(deltaAt);
         mongoTemplate.save(document);
-        assertThat(companyPscRepository.findById(notifcationId)).isNotEmpty();
+        assertThat(companyPscRepository.findById(notificationId)).isNotEmpty();
     }
 
     @And("nothing is persisted to the database")
@@ -473,7 +473,7 @@ public class PscDataSteps {
         identification.setCountryRegistered("string");
         identification.setLegalAuthority("string");
         identification.setLegalForm("string");
-        document.setIdentification(identification);
+        pscData.setIdentification(identification);
         document.setData(pscData);
 
         mongoTemplate.save(document);
@@ -1078,7 +1078,7 @@ public class PscDataSteps {
         identification.setCountryRegistered("string");
         identification.setLegalAuthority("string");
         identification.setLegalForm("string");
-        document1.setIdentification(new PscIdentification(identification));
+        pscData.setIdentification(new PscIdentification(identification));
 
         document1.setData(pscData);
         mongoTemplate.save(document1);
@@ -1102,7 +1102,7 @@ public class PscDataSteps {
 
         pscData2.setAddress(address);
         pscData2.setNaturesOfControl(list);
-        document2.setIdentification(new PscIdentification(identification));
+        pscData2.setIdentification(new PscIdentification(identification));
 
         document2.setData(pscData2);
 

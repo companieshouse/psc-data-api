@@ -158,7 +158,7 @@ public class TestHelper {
 
     public static PscDocument buildPscDocument(String kind, boolean showFullDateOfBirth) {
         PscDocument output = new PscDocument();
-        PscData data = new PscData();
+        PscData pscData = new PscData();
 
         output.setId(NOTIFICATION_ID);
         output.setNotificationId(NOTIFICATION_ID);
@@ -168,15 +168,15 @@ public class TestHelper {
         output.setUpdated(new Updated().setAt(LocalDate.now()));
         output.setUpdatedBy("user");
 
-        data.setKind(kind);
-        data.setEtag("etag");
-        data.setName("wholeName");
+        pscData.setKind(kind);
+        pscData.setEtag("etag");
+        pscData.setName("wholeName");
         Links links = new Links();
         links.setSelf("self");
         links.setStatements("linkStatements");
-        data.setLinks(links);
-        data.setServiceAddressIsSameAsRegisteredOfficeAddress(true);
-        data.setNaturesOfControl(List.of("part-right-to-share-surplus-assets-75-to-100-percent",
+        pscData.setLinks(links);
+        pscData.setServiceAddressIsSameAsRegisteredOfficeAddress(true);
+        pscData.setNaturesOfControl(List.of("part-right-to-share-surplus-assets-75-to-100-percent",
                 "right-to-appoint-and-remove-directors-as-trust-registered-overseas-entity",
                 "significant-influence-or-control-as-trust-registered-overseas-entity"));
 
@@ -191,10 +191,10 @@ public class TestHelper {
         address.setPremises("SA");
         address.setRegion("sa_region");
         if (!kind.contains("secure")) {
-            data.setAddress(address);
+            pscData.setAddress(address);
         }
         if (kind.contains("beneficial")){
-            data.setSanctioned(true);
+            pscData.setSanctioned(true);
         }
 
         if(kind.contains("individual")) {
@@ -217,10 +217,10 @@ public class TestHelper {
             nameElements.setForename("John");
             nameElements.setMiddleName("George");
             nameElements.setSurname("Doe");
-            data.setNameElements(nameElements);
+            pscData.setNameElements(nameElements);
 
-            data.setNationality("British");
-            data.setCountryOfResidence("England");
+            pscData.setNationality("British");
+            pscData.setCountryOfResidence("England");
         } else if(kind.contains("corporate")) {
             Identification identification = new Identification();
             identification.setLegalForm("Form");
@@ -228,19 +228,19 @@ public class TestHelper {
             identification.setCountryRegistered("Wales");
             identification.setPlaceRegistered("Cardiff");
             identification.setRegistrationNumber("16102009");
-            output.setIdentification(new PscIdentification(identification));
+            pscData.setIdentification(new PscIdentification(identification));
         } else if(kind.contains("legal")) {
             Identification identification = new Identification();
             identification.setLegalForm("Form");
             identification.setLegalAuthority("Authority");
-            output.setIdentification(new PscIdentification(identification));
+            pscData.setIdentification(new PscIdentification(identification));
         } else if(kind.contains("secure")) {
-            data.setCeasedOn(LocalDate.parse("2022-01-14"));
-            data.setCeased(true);
-            data.setDescription("description");
+            pscData.setCeasedOn(LocalDate.parse("2022-01-14"));
+            pscData.setCeased(true);
+            pscData.setDescription("description");
         }
 
-        output.setData(data);
+        output.setData(pscData);
         return output;
     }
 
@@ -259,7 +259,7 @@ public class TestHelper {
         identification.setPlaceRegistered("x");
         identification.setLegalAuthority("x");
         identification.setRegistrationNumber("x");
-        document.setIdentification(identification);
+        pscData.setIdentification(identification);
         return document;
     }
 
