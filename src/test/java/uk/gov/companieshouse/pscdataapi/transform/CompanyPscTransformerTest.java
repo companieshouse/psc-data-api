@@ -103,8 +103,8 @@ class CompanyPscTransformerTest {
         Assertions.assertNotNull(result.getData());
 
         Assertions.assertNotNull(result.getData().getAddress());
-        Assertions.assertNotNull(result.getIdentification().getLegalForm());
-        Assertions.assertNotNull(result.getIdentification().getCountryRegistered());
+        Assertions.assertNotNull(result.getData().getIdentification().getLegalForm());
+        Assertions.assertNotNull(result.getData().getIdentification().getCountryRegistered());
 
         pscInsertAssertions(expectedDocument, result);
     }
@@ -120,8 +120,8 @@ class CompanyPscTransformerTest {
         Assertions.assertNotNull(result.getData());
 
         Assertions.assertNotNull(result.getData().getAddress());
-        Assertions.assertNotNull(result.getIdentification().getLegalForm());
-        Assertions.assertNull(result.getIdentification().getCountryRegistered());
+        Assertions.assertNotNull(result.getData().getIdentification().getLegalForm());
+        Assertions.assertNull(result.getData().getIdentification().getCountryRegistered());
 
         pscInsertAssertions(expectedDocument, result);
     }
@@ -178,8 +178,8 @@ class CompanyPscTransformerTest {
 
         Assertions.assertTrue(result.getData().getSanctioned());
         Assertions.assertNotNull(result.getData().getAddress());
-        Assertions.assertNotNull(result.getIdentification().getLegalForm());
-        Assertions.assertNotNull(result.getIdentification().getCountryRegistered());
+        Assertions.assertNotNull(result.getData().getIdentification().getLegalForm());
+        Assertions.assertNotNull(result.getData().getIdentification().getCountryRegistered());
 
         pscInsertAssertions(expectedDocument, result);
     }
@@ -196,8 +196,8 @@ class CompanyPscTransformerTest {
 
         Assertions.assertTrue(result.getData().getSanctioned());
         Assertions.assertNotNull(result.getData().getAddress());
-        Assertions.assertNotNull(result.getIdentification().getLegalForm());
-        Assertions.assertNull(result.getIdentification().getCountryRegistered());
+        Assertions.assertNotNull(result.getData().getIdentification().getLegalForm());
+        Assertions.assertNull(result.getData().getIdentification().getCountryRegistered());
 
         pscInsertAssertions(expectedDocument, result);
     }
@@ -225,7 +225,7 @@ class CompanyPscTransformerTest {
         assertThat(result.getData(), is(expectedDocument.getData()));
 
         assertThat(result.getSensitiveData(),is(expectedDocument.getSensitiveData()));
-        assertThat(result.getIdentification(), is(expectedDocument.getIdentification()));
+        assertThat(result.getData().getIdentification(), is(expectedDocument.getData().getIdentification()));
 
         assertThat(result.getDeltaAt(), is(expectedDocument.getDeltaAt()));
         assertThat(result.getUpdatedBy(), is(expectedDocument.getUpdatedBy()));

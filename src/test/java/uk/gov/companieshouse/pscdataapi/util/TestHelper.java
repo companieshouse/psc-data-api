@@ -228,12 +228,12 @@ public class TestHelper {
             identification.setCountryRegistered("Wales");
             identification.setPlaceRegistered("Cardiff");
             identification.setRegistrationNumber("16102009");
-            output.setIdentification(new PscIdentification(identification));
+            data.setIdentification(identification);
         } else if(kind.contains("legal")) {
             Identification identification = new Identification();
             identification.setLegalForm("Form");
             identification.setLegalAuthority("Authority");
-            output.setIdentification(new PscIdentification(identification));
+            data.setIdentification(identification);
         } else if(kind.contains("secure")) {
             data.setCeasedOn(LocalDate.parse("2022-01-14"));
             data.setCeased(true);
@@ -253,13 +253,13 @@ public class TestHelper {
         PscData pscData = new PscData();
         pscData.setKind(INDIVIDUAL_KIND);
         document.setData(pscData);
-        PscIdentification identification = new PscIdentification();
+        Identification identification = new Identification();
         identification.setCountryRegistered("x");
         identification.setLegalForm("x");
         identification.setPlaceRegistered("x");
         identification.setLegalAuthority("x");
         identification.setRegistrationNumber("x");
-        document.setIdentification(identification);
+        pscData.setIdentification(identification);
         return document;
     }
 
