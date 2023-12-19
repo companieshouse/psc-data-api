@@ -94,7 +94,7 @@ public class PscDataSteps {
     }
 
     @Given("a psc data record {string} exists with notification id {string} and delta_at {string}")
-    public void psc_record_exists_for_company_and_id_with_delta_at(String existingDataFile, String notifocationId, String deltaAt) throws IOException {
+    public void psc_record_exists_for_company_and_id_with_delta_at(String existingDataFile, String notificationId, String deltaAt) throws IOException {
         String pscDataFile = FileReaderUtil.readFile(
                 "src/itest/resources/json/input/" + existingDataFile + ".json");
         PscData pscData = objectMapper.readValue(pscDataFile, PscData.class);
