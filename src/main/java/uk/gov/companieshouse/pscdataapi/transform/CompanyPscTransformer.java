@@ -394,8 +394,10 @@ public class CompanyPscTransformer {
         pscData.setSanctioned(data.getIsSanctioned());
         pscData.setServiceAddressIsSameAsRegisteredOfficeAddress(
                 data.getServiceAddressSameAsRegisteredOfficeAddress());
-        PscIdentification identification = new PscIdentification(data.getIdentification());
-        pscData.setIdentification(identification);
+        if (pscData.getKind().contains("corporate") || pscData.getKind().contains("legal")) {
+            PscIdentification identification = new PscIdentification(data.getIdentification());
+            pscData.setIdentification(identification);
+        }
         return pscData;
     }
 
