@@ -342,14 +342,14 @@ class CompanyPscControllerTest {
         mockMvc.perform(delete(PUT_URL)).andExpect(status().isUnauthorized());
 
         verify(companyPscService
-                ,times(0)).deletePsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID);
+                ,times(0)).deletePsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID,"");
     }
 
     @Test
     void callPscDeleteRequest() throws Exception {
 
         doNothing()
-                .when(companyPscService).deletePsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID);
+                .when(companyPscService).deletePsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID, "");
 
         mockMvc.perform(delete(DELETE_URL)
                         .header("ERIC-Identity", ERIC_IDENTITY)
@@ -360,14 +360,14 @@ class CompanyPscControllerTest {
                         .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH))
                 .andExpect(status().isOk());
 
-        verify(companyPscService,times(1)).deletePsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID);
+        verify(companyPscService,times(1)).deletePsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID,"");
     }
 
     @Test
     void callPscDeleteRequestAndReturn404() throws Exception {
 
         doThrow(ResourceNotFoundException.class)
-                .when(companyPscService).deletePsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID);
+                .when(companyPscService).deletePsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID,X_REQUEST_ID);
 
         mockMvc.perform(delete(DELETE_URL)
                         .header("ERIC-Identity", ERIC_IDENTITY)
@@ -378,14 +378,14 @@ class CompanyPscControllerTest {
                         .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH))
                 .andExpect(status().isNotFound());
 
-        verify(companyPscService,times(1)).deletePsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID);
+        verify(companyPscService,times(1)).deletePsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID,X_REQUEST_ID);
     }
 
     @Test
     void callPscDeleteRequestWhenServiceUnavailableAndReturn503() throws Exception {
 
         doThrow(ServiceUnavailableException.class)
-                .when(companyPscService).deletePsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID);
+                .when(companyPscService).deletePsc(MOCK_COMPANY_NUMBER,MOCK_NOTIFICATION_ID,"");
 
         mockMvc.perform(delete(DELETE_URL)
                         .header("ERIC-Identity", ERIC_IDENTITY)

@@ -76,4 +76,23 @@ class ResourceChangedApiServiceAspectFeatureFlagDisabledITest {
         verify(privateChangedResourceHandler,times(1)).postChangedResource(Mockito.any(), changedResourceCaptor.capture());
         verify(changedResourcePost, times(1)).execute();
     }
+
+    @Test
+    void testThatKafkaApiShouldBeCalledOnDeleteWhenFeatureFlagDisabled()
+            throws ApiErrorResponseException {
+
+        when(internalApiClient.privateChangedResourceHandler()).thenReturn(
+                privateChangedResourceHandler);
+        when(privateChangedResourceHandler.postChangedResource(Mockito.any(), Mockito.any())).thenReturn(
+                changedResourcePost);
+        when(changedResourcePost.execute()).thenReturn(response);
+
+        ApiResponse<?> apiResponse = chsKafkaApiService.invokeChsKafkaApiWithDeleteEvent(TestHelper.X_REQUEST_ID, TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID, "kind");
+
+        Assertions.assertThat(apiResponse).isNotNull();
+
+        verify(internalApiClient).privateChangedResourceHandler();
+        verify(privateChangedResourceHandler,times(1)).postChangedResource(Mockito.any(), changedResourceCaptor.capture());
+        verify(changedResourcePost, times(1)).execute();
+    }
 }

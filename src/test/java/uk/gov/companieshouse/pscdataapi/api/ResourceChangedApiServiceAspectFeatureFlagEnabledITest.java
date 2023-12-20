@@ -74,4 +74,21 @@ class ResourceChangedApiServiceAspectFeatureFlagEnabledITest {
         verifyNoInteractions(privateChangedResourceHandler);
         verifyNoInteractions(changedResourcePost);
     }
+
+    @Test
+    void testThatAspectShouldNotProceedOnDeleteWhenFeatureFlagEnabled() throws ServiceUnavailableException, ApiErrorResponseException {
+
+        when(internalApiClient.privateChangedResourceHandler()).thenReturn(
+                privateChangedResourceHandler);
+        when(privateChangedResourceHandler.postChangedResource(any(), any())).thenReturn(
+                changedResourcePost);
+        when(changedResourcePost.execute()).thenReturn(response);
+
+        chsKafkaApiService.invokeChsKafkaApiWithDeleteEvent(TestHelper.X_REQUEST_ID, TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID, "kind");
+
+        verifyNoInteractions(apiClientService);
+        verifyNoInteractions(internalApiClient);
+        verifyNoInteractions(privateChangedResourceHandler);
+        verifyNoInteractions(changedResourcePost);
+    }
 }

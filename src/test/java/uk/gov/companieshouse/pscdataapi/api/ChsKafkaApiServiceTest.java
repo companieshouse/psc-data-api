@@ -61,6 +61,22 @@ public class ChsKafkaApiServiceTest {
     }
 
     @Test
+    void invokeChsKafkaEndpointDelete() throws ApiErrorResponseException {
+        when(internalApiClient.privateChangedResourceHandler()).thenReturn(privateChangedResourceHandler);
+        when(privateChangedResourceHandler.postChangedResource(Mockito.any(), Mockito.any())).thenReturn(privateChangedResourcePost);
+        when(privateChangedResourcePost.execute()).thenReturn(response);
+
+        ApiResponse<?> apiResponse = chsKafkaApiService.invokeChsKafkaApiWithDeleteEvent(
+                TestHelper.X_REQUEST_ID, TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID, "kind");
+        Assertions.assertThat(apiResponse).isNotNull();
+
+        verify(internalApiClient, times(1)).privateChangedResourceHandler();
+        verify(privateChangedResourceHandler, times(1)).postChangedResource(Mockito.any(), changedResourceCaptor.capture());
+        verify(privateChangedResourcePost, times(1)).execute();
+        Assertions.assertThat(changedResourceCaptor.getValue().getEvent().getType()).isEqualTo("deleted");
+    }
+
+    @Test
     void invokeChsKafkaEndpointThrowsApiErrorException() throws ApiErrorResponseException {
         ApiErrorResponseException exception = new ApiErrorResponseException(new HttpResponseException.Builder(408, "Test Request timeout", new HttpHeaders()));
         when(internalApiClient.privateChangedResourceHandler()).thenReturn(privateChangedResourceHandler);
@@ -77,6 +93,22 @@ public class ChsKafkaApiServiceTest {
     }
 
     @Test
+    void invokeChsKafkaEndpointWithDeleteThrowsApiErrorException() throws ApiErrorResponseException {
+        ApiErrorResponseException exception = new ApiErrorResponseException(new HttpResponseException.Builder(408, "Test Request timeout", new HttpHeaders()));
+        when(internalApiClient.privateChangedResourceHandler()).thenReturn(privateChangedResourceHandler);
+        when(privateChangedResourceHandler.postChangedResource(Mockito.any(), Mockito.any())).thenReturn(privateChangedResourcePost);
+        when(privateChangedResourcePost.execute()).thenThrow(exception);
+
+        Assert.assertThrows(ServiceUnavailableException.class, () -> chsKafkaApiService.invokeChsKafkaApiWithDeleteEvent(
+                TestHelper.X_REQUEST_ID, TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID, "kind"));
+
+        verify(internalApiClient, times(1)).privateChangedResourceHandler();
+        verify(privateChangedResourceHandler, times(1)).postChangedResource(Mockito.any(), changedResourceCaptor.capture());
+        verify(privateChangedResourcePost, times(1)).execute();
+        Assertions.assertThat(changedResourceCaptor.getValue().getEvent().getType()).isEqualTo("deleted");
+    }
+
+    @Test
     void invokeChsKafkaEndpointThrowsRuntimeException() throws ApiErrorResponseException {
         RuntimeException exception = new RuntimeException("Test Runtime exception");
         when(internalApiClient.privateChangedResourceHandler()).thenReturn(privateChangedResourceHandler);
@@ -90,5 +122,21 @@ public class ChsKafkaApiServiceTest {
         verify(privateChangedResourceHandler, times(1)).postChangedResource(Mockito.any(), changedResourceCaptor.capture());
         verify(privateChangedResourcePost, times(1)).execute();
         Assertions.assertThat(changedResourceCaptor.getValue().getEvent().getType()).isEqualTo("changed");
+    }
+
+    @Test
+    void invokeChsKafkaEndpointWithDeleteThrowsRuntimeException() throws ApiErrorResponseException {
+        RuntimeException exception = new RuntimeException("Test Runtime exception");
+        when(internalApiClient.privateChangedResourceHandler()).thenReturn(privateChangedResourceHandler);
+        when(privateChangedResourceHandler.postChangedResource(Mockito.any(), Mockito.any())).thenReturn(privateChangedResourcePost);
+        when(privateChangedResourcePost.execute()).thenThrow(exception);
+
+        Assert.assertThrows(RuntimeException.class, () -> chsKafkaApiService.invokeChsKafkaApiWithDeleteEvent(
+                TestHelper.X_REQUEST_ID, TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID, "kind"));
+
+        verify(internalApiClient, times(1)).privateChangedResourceHandler();
+        verify(privateChangedResourceHandler, times(1)).postChangedResource(Mockito.any(), changedResourceCaptor.capture());
+        verify(privateChangedResourcePost, times(1)).execute();
+        Assertions.assertThat(changedResourceCaptor.getValue().getEvent().getType()).isEqualTo("deleted");
     }
 }
