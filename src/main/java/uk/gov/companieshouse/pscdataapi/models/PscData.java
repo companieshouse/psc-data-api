@@ -31,6 +31,9 @@ public class PscData {
     @Field("kind")
     private String kind;
 
+    @Field("notified_on")
+    private String notifiedOn;
+
     @Field("description")
     private String description;
 
@@ -111,7 +114,6 @@ public class PscData {
         this.countryOfResidence = countryOfResidence;
     }
 
-
     public Boolean getServiceAddressIsSameAsRegisteredOfficeAddress() {
         return serviceAddressIsSameAsRegisteredOfficeAddress;
     }
@@ -152,6 +154,14 @@ public class PscData {
 
     public void setKind(String kind) {
         this.kind = kind;
+    }
+
+    public String getNotifiedOn() {
+        return notifiedOn;
+    }
+
+    public void setNotifiedOn(String notifiedOn) {
+        this.notifiedOn = notifiedOn;
     }
 
     public String getDescription() {
@@ -199,6 +209,8 @@ public class PscData {
                 + '\''
                 + ", kind='"
                 + kind
+                + ", notifiedOn="
+                + notifiedOn
                 + '\''
                 + ", description='"
                 + description
@@ -236,6 +248,7 @@ public class PscData {
                 && Objects.equals(nationality, pscData.nationality)
                 && Objects.equals(countryOfResidence, pscData.countryOfResidence)
                 && Objects.equals(kind, pscData.kind)
+                && Objects.equals(notifiedOn, pscData.notifiedOn)
                 && Objects.equals(description, pscData.description)
                 && Objects.equals(serviceAddressIsSameAsRegisteredOfficeAddress,
                 pscData.serviceAddressIsSameAsRegisteredOfficeAddress)
@@ -250,7 +263,7 @@ public class PscData {
     @Override
     public int hashCode() {
         return Objects.hash(ceasedOn, etag, address, name, nationality, countryOfResidence,
-                kind, description, serviceAddressIsSameAsRegisteredOfficeAddress,
+                kind, notifiedOn, description, serviceAddressIsSameAsRegisteredOfficeAddress,
                 isSanctioned, ceased, naturesOfControl,
                 nameElements, links, identification);
     }
