@@ -18,6 +18,7 @@
   },
   "etag": "string",
   "kind": "legal-person-person-with-significant-control",
+  "notified_on": "2023-11-20T08:47:45.378Z",
   "links": {
     "self": "/company/34777775/persons-with-significant-control/individual/ZfTs9WeeqpXTqf6dc6FZ4C0H0ZV",
     "statement": "string"

@@ -18,6 +18,7 @@
   },
   "etag": "string",
   "kind": "legal-person-beneficial-owner",
+  "notified_on": "2023-11-20T08:47:45.378Z",
   "links": {
     "self": "/company/34777776/persons-with-significant-control/individual/ZfTs9WeeqpXTqf6dc6FZ4C0H0ZVV",
     "statement": "string"
