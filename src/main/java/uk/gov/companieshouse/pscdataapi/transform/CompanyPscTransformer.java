@@ -387,7 +387,7 @@ public class CompanyPscTransformer {
         pscData.setDescription(data.getDescription());
         pscData.setEtag(data.getEtag());
         pscData.setKind(data.getKind());
-        pscData.setNotifiedOn(String.valueOf(data.getNotifiedOn()));
+        pscData.setNotifiedOn(data.getNotifiedOn());
         pscData.setLinks(PscTransformationHelper.createLinks(data));
         pscData.setName(data.getName());
         pscData.setNationality(data.getNationality());

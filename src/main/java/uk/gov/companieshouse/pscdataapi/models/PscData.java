@@ -32,7 +32,7 @@ public class PscData {
     private String kind;
 
     @Field("notified_on")
-    private String notifiedOn;
+    private LocalDate notifiedOn;
 
     @Field("description")
     private String description;
@@ -156,11 +156,11 @@ public class PscData {
         this.kind = kind;
     }
 
-    public String getNotifiedOn() {
+    public LocalDate getNotifiedOn() {
         return notifiedOn;
     }
 
-    public void setNotifiedOn(String notifiedOn) {
+    public void setNotifiedOn(LocalDate notifiedOn) {
         this.notifiedOn = notifiedOn;
     }
 
