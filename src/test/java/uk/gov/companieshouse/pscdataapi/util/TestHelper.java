@@ -170,7 +170,7 @@ public class TestHelper {
         output.setUpdatedBy("user");
 
         pscData.setKind(kind);
-        pscData.setNotifiedOn("2000-12-12");
+        pscData.setNotifiedOn(LocalDate.of(2000,12,12));
         pscData.setEtag("etag");
         pscData.setName("wholeName");
         Links links = new Links();
