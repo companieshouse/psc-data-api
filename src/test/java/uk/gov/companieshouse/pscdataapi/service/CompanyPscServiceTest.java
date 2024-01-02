@@ -151,7 +151,7 @@ class CompanyPscServiceTest {
     @DisplayName("When company number & notification id is provided, delete PSC")
     public void testDeletePSC() {
         when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER,NOTIFICATION_ID)).thenReturn(Optional.ofNullable(document));
-        service.deletePsc(COMPANY_NUMBER,NOTIFICATION_ID);
+        service.deletePsc(COMPANY_NUMBER,NOTIFICATION_ID, "");
 
         verify(repository, times(1)).getPscByCompanyNumberAndId(COMPANY_NUMBER,NOTIFICATION_ID);
         verify(repository, times(1)).delete(document);
@@ -162,7 +162,7 @@ class CompanyPscServiceTest {
     public void testDeletePSCThrowsResourceNotFoundException() {
         when(repository.getPscByCompanyNumberAndId("",NOTIFICATION_ID)).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> service.deletePsc("",NOTIFICATION_ID));
+        assertThrows(ResourceNotFoundException.class, () -> service.deletePsc("",NOTIFICATION_ID, ""));
 
         verify(repository, times(1)).getPscByCompanyNumberAndId("",NOTIFICATION_ID);
         verify(repository, times(0)).delete(any());
@@ -173,7 +173,7 @@ class CompanyPscServiceTest {
     public void testDeletePSCThrowsResourceNotFoundExceptionWhenCompanyNumberAndNotificationIdIsNull() {
         when(repository.getPscByCompanyNumberAndId("","")).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> service.deletePsc("",""));
+        assertThrows(ResourceNotFoundException.class, () -> service.deletePsc("","", ""));
 
         verify(repository, times(1)).getPscByCompanyNumberAndId("","");
         verify(repository, times(0)).delete(any());

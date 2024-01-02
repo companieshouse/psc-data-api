@@ -154,10 +154,13 @@ public class CompanyPscService {
      * @param notificationId Mongo Id.
      */
     @Transactional
-    public void deletePsc(String companyNumber,String notificationId)
+    public void deletePsc(String companyNumber,String notificationId, String contextId)
             throws ResourceNotFoundException {
         PscDocument pscDocument = getPscDocument(companyNumber, notificationId);
+        String kind = pscDocument.getData().getKind();
         repository.delete(pscDocument);
+        chsKafkaApiService.invokeChsKafkaApiWithDeleteEvent(contextId,
+                companyNumber, notificationId, kind);
         logger.info(String.format("PSC record with company number %s has been deleted",
                 companyNumber), DataMapHolder.getLogMap());
     }

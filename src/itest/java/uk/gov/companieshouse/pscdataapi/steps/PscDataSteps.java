@@ -118,6 +118,16 @@ public class PscDataSteps {
         verify(chsKafkaApiService, times(0)).invokeChsKafkaApi(any(), any(), any(), any());
     }
 
+    @Then("the CHS Kafka API is not invoked with a DELETE event")
+    public void chs_kafka_api_not_invoked_for_delete() {
+        verify(chsKafkaApiService, times(0)).invokeChsKafkaApiWithDeleteEvent(any(), any(), any(), any());
+    }
+
+    @Then("the CHS Kafka API is invoked with a DELETE event")
+    public void chs_kafka_api_is_invoked_for_delete() {
+        verify(chsKafkaApiService, times(1)).invokeChsKafkaApiWithDeleteEvent(any(), any(), any(), any());
+    }
+
     @And("the CHS Kafka API service is not invoked")
     public void verifyChsKafkaApiNotInvoked(){
         verifyNoInteractions(chsKafkaApiService);
@@ -244,6 +254,7 @@ public class PscDataSteps {
     @When("the chs kafka api is not available")
     public void theChsKafkaApiIsNotAvailable() {
         doThrow(ServiceUnavailableException.class).when(chsKafkaApiService).invokeChsKafkaApi(any(), any(), any(), any());
+        doThrow(ServiceUnavailableException.class).when(chsKafkaApiService).invokeChsKafkaApiWithDeleteEvent(any(), any(), any(), any());
     }
 
     @And("a PSC {string} exists for {string} for Super Secure")

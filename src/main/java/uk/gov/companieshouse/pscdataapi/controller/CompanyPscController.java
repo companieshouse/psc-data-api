@@ -82,14 +82,15 @@ public class CompanyPscController {
     @DeleteMapping(path = "/{notification_id}/full_record")
     public ResponseEntity<Void> deletePscData(
             @PathVariable("company_number") String companyNumber,
-            @PathVariable("notification_id") String notificationId) {
+            @PathVariable("notification_id") String notificationId,
+            @RequestHeader("x-request-id") String contextId) {
         DataMapHolder.get()
                 .companyNumber(companyNumber)
                 .itemId(notificationId);
         LOGGER.info(String.format("Deleting PSC data with company number %s", companyNumber),
                 DataMapHolder.getLogMap());
         try {
-            pscService.deletePsc(companyNumber,notificationId);
+            pscService.deletePsc(companyNumber, notificationId, contextId);
             LOGGER.info(String.format("Successfully deleted PSC with company number %s",
                     companyNumber), DataMapHolder.getLogMap());
             return ResponseEntity.status(HttpStatus.OK).build();

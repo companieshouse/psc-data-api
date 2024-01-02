@@ -11,6 +11,7 @@ import uk.gov.companieshouse.api.chskafka.ChangedResourceEvent;
 import uk.gov.companieshouse.api.error.ApiErrorResponseException;
 import uk.gov.companieshouse.api.handler.chskafka.request.PrivateChangedResourcePost;
 import uk.gov.companieshouse.api.model.ApiResponse;
+import uk.gov.companieshouse.api.psc.Statement;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.exceptions.ServiceUnavailableException;
 import uk.gov.companieshouse.pscdataapi.util.PscTransformationHelper;
@@ -26,6 +27,8 @@ public class ChsKafkaApiService {
     private static final String PSC_URI = "/company/%s/persons-with-significant-control/"
                                           + "%s/full_record";
     private static final String CHANGED_EVENT_TYPE = "changed";
+
+    private static final String DELETE_EVENT_TYPE = "deleted";
     @Autowired
     private Logger logger;
 
@@ -44,16 +47,29 @@ public class ChsKafkaApiService {
         internalApiClient.setBasePath(chsKafkaApiUrl);
         PrivateChangedResourcePost changedResourcePost = internalApiClient
                 .privateChangedResourceHandler().postChangedResource(resourceChangedUri,
-                        mapChangedResource(contextId, companyNumber, notificationId, kind));
+                        mapChangedResource(contextId, companyNumber, notificationId, kind, false));
+        return handleApiCall(changedResourcePost);
+    }
+
+    @StreamEvents
+    public ApiResponse<Void> invokeChsKafkaApiWithDeleteEvent(String contextId, String companyNumber, String notificationId, String kind) {
+        internalApiClient.setBasePath(chsKafkaApiUrl);
+        PrivateChangedResourcePost changedResourcePost = internalApiClient.privateChangedResourceHandler()
+                .postChangedResource(resourceChangedUri, mapChangedResource(contextId, companyNumber, notificationId, kind, true));
         return handleApiCall(changedResourcePost);
     }
 
     private ChangedResource mapChangedResource(String contextId, String companyNumber,
-                                               String notificationId, String kind) {
+                                               String notificationId, String kind, boolean isDelete) {
         ChangedResourceEvent event = new ChangedResourceEvent();
         ChangedResource changedResource = new ChangedResource();
         event.setPublishedAt(String.valueOf(OffsetDateTime.now()));
-        event.setType(CHANGED_EVENT_TYPE);
+        if (isDelete) {
+            event.setType(DELETE_EVENT_TYPE);
+        }
+        else {
+            event.setType(CHANGED_EVENT_TYPE);
+        }
         changedResource.setResourceUri(String.format(PSC_URI, companyNumber, notificationId));
         changedResource.event(event);
         changedResource.setResourceKind(PscTransformationHelper.mapResourceKind(kind));

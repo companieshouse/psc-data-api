@@ -6,6 +6,7 @@ Feature: Delete PSC
     When a DELETE request is sent for "<company_number>"
     And a PSC does not exist for "<company_number>"
     Then I should receive 200 status code
+    And the CHS Kafka API is invoked with a DELETE event
 
     Examples:
       | data           | company_number |
@@ -35,6 +36,7 @@ Feature: Delete PSC
     And the database is down
     When a DELETE request is sent for "<company_number>"
     Then I should receive 503 status code
+    And the CHS Kafka API is not invoked with a DELETE event
 
     Examples:
       | company_number |
