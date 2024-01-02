@@ -51,23 +51,36 @@ public class ChsKafkaApiService {
         return handleApiCall(changedResourcePost);
     }
 
+    /**
+     * Creates a ChangedResource object to send a delete request to the chs kafka api.
+     *
+     * @param contextId chs kafka id
+     * @param companyNumber company number of psc
+     * @param notificationId mongo id
+     * @return passes request to api response handling
+     */
     @StreamEvents
-    public ApiResponse<Void> invokeChsKafkaApiWithDeleteEvent(String contextId, String companyNumber, String notificationId, String kind) {
+    public ApiResponse<Void> invokeChsKafkaApiWithDeleteEvent(String contextId,
+                                                              String companyNumber,
+                                                              String notificationId, String kind) {
         internalApiClient.setBasePath(chsKafkaApiUrl);
-        PrivateChangedResourcePost changedResourcePost = internalApiClient.privateChangedResourceHandler()
-                .postChangedResource(resourceChangedUri, mapChangedResource(contextId, companyNumber, notificationId, kind, true));
+        PrivateChangedResourcePost changedResourcePost =
+                internalApiClient.privateChangedResourceHandler()
+                .postChangedResource(resourceChangedUri,
+                        mapChangedResource(contextId, companyNumber,
+                        notificationId, kind, true));
         return handleApiCall(changedResourcePost);
     }
 
     private ChangedResource mapChangedResource(String contextId, String companyNumber,
-                                               String notificationId, String kind, boolean isDelete) {
+                                               String notificationId,
+                                               String kind, boolean isDelete) {
         ChangedResourceEvent event = new ChangedResourceEvent();
         ChangedResource changedResource = new ChangedResource();
         event.setPublishedAt(String.valueOf(OffsetDateTime.now()));
         if (isDelete) {
             event.setType(DELETE_EVENT_TYPE);
-        }
-        else {
+        } else {
             event.setType(CHANGED_EVENT_TYPE);
         }
         changedResource.setResourceUri(String.format(PSC_URI, companyNumber, notificationId));
