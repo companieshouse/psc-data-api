@@ -160,7 +160,7 @@ public class CompanyPscService {
         String kind = pscDocument.getData().getKind();
         repository.delete(pscDocument);
         chsKafkaApiService.invokeChsKafkaApiWithDeleteEvent(contextId,
-                companyNumber, notificationId, kind);
+                companyNumber, notificationId, kind, pscDocument.getData());
         logger.info(String.format("PSC record with company number %s has been deleted",
                 companyNumber), DataMapHolder.getLogMap());
     }
