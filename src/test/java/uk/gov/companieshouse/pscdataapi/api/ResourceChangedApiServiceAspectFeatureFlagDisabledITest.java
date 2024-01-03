@@ -87,7 +87,8 @@ class ResourceChangedApiServiceAspectFeatureFlagDisabledITest {
                 changedResourcePost);
         when(changedResourcePost.execute()).thenReturn(response);
 
-        ApiResponse<?> apiResponse = chsKafkaApiService.invokeChsKafkaApiWithDeleteEvent(TestHelper.X_REQUEST_ID, TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID, "kind");
+        ApiResponse<?> apiResponse = chsKafkaApiService.invokeChsKafkaApiWithDeleteEvent(TestHelper.X_REQUEST_ID, TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID, "kind",
+                TestHelper.buildPscDocument("individual-persons-with-significant-control").getData());
 
         Assertions.assertThat(apiResponse).isNotNull();
 
