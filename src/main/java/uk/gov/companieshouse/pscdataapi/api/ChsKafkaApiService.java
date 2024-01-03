@@ -48,7 +48,8 @@ public class ChsKafkaApiService {
         internalApiClient.setBasePath(chsKafkaApiUrl);
         PrivateChangedResourcePost changedResourcePost = internalApiClient
                 .privateChangedResourceHandler().postChangedResource(resourceChangedUri,
-                        mapChangedResource(contextId, companyNumber, notificationId, kind, false, null));
+                        mapChangedResource(contextId, companyNumber, notificationId, kind,
+                                false, null));
         return handleApiCall(changedResourcePost);
     }
 
