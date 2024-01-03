@@ -102,7 +102,7 @@ public class ChsKafkaApiService {
             throw new ServiceUnavailableException(exception.getMessage());
         } catch (RuntimeException exception) {
             logger.error("Error occurred while calling /resource-changed endpoint", exception);
-            throw exception;
+            throw new ServiceUnavailableException("Resource changed endpoint not available");
         }
     }
 }
