@@ -155,12 +155,17 @@ public class CompanyPscService {
      */
     @Transactional
     public void deletePsc(String companyNumber,String notificationId, String contextId)
-            throws ResourceNotFoundException {
+            throws ResourceNotFoundException, ServiceUnavailableException {
         PscDocument pscDocument = getPscDocument(companyNumber, notificationId);
         String kind = pscDocument.getData().getKind();
         repository.delete(pscDocument);
-        chsKafkaApiService.invokeChsKafkaApiWithDeleteEvent(contextId,
-                companyNumber, notificationId, kind, pscDocument.getData());
+        try {
+            chsKafkaApiService.invokeChsKafkaApiWithDeleteEvent(contextId,
+                    companyNumber, notificationId, kind, pscDocument.getData());
+        } catch (Exception exception) {
+            throw new ServiceUnavailableException(exception.getMessage());
+        }
+
         logger.info(String.format("PSC record with company number %s has been deleted",
                 companyNumber), DataMapHolder.getLogMap());
     }
