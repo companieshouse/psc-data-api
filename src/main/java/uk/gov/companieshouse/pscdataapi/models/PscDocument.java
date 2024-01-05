@@ -19,7 +19,7 @@ public class PscDocument {
     @Field("delta_at")
     private String deltaAt;
 
-    @Field("notificaton_id")
+    @Field("notification_id")
     private String notificationId;
 
     @Field("company_number")
