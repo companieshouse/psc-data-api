@@ -63,16 +63,14 @@ public class CompanyPscTransformer {
             individual.setAddress(mapAddress(pscData.getAddress()));
             individual.setNaturesOfControl(pscData.getNaturesOfControl());
             individual.setLinks(pscData.getLinks());
-            if (pscDocument.getDeltaAt() != null) {
-//            individual.setNotifiedOn(LocalDate.parse(pscDocument.getDeltaAt(), dateTimeFormatter));
-                individual.setNotifiedOn(pscData.getNotifiedOn());
-            }
         }
         if (pscDocument.getSensitiveData() != null) {
             individual.setDateOfBirth(mapDateOfBirth(
                     pscDocument.getSensitiveData().getDateOfBirth(), showFullDateOfBirth));
         }
-
+        if (pscDocument.getDeltaAt() != null) {
+            individual.setNotifiedOn(LocalDate.parse(pscDocument.getDeltaAt(), dateTimeFormatter));
+        }
         return individual;
     }
 
@@ -315,6 +313,10 @@ public class CompanyPscTransformer {
         if (pscDocument.getSensitiveData() != null) {
             listSummary.setDateOfBirth(mapDateOfBirth(pscDocument.getSensitiveData()
                     .getDateOfBirth(), registerView));
+        }
+        if (pscDocument.getDeltaAt() != null) {
+            listSummary.setNotifiedOn(LocalDate.parse(pscDocument.getDeltaAt(),
+                    dateTimeFormatter));
         }
         return listSummary;
     }
