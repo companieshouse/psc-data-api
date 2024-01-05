@@ -87,6 +87,7 @@
   "total_results": null,
   "active_count": null,
   "ceased_count": null,
+  "notified_on": "2023-11-20T08:47:45.378Z",
   "links": {
     "self": "/company/34777777/persons-with-significant-control"
   }
