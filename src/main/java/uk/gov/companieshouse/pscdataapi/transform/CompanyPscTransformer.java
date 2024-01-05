@@ -314,6 +314,10 @@ public class CompanyPscTransformer {
             listSummary.setDateOfBirth(mapDateOfBirth(pscDocument.getSensitiveData()
                     .getDateOfBirth(), registerView));
         }
+        if (pscDocument.getDeltaAt() != null) {
+            listSummary.setNotifiedOn(LocalDate.parse(pscDocument.getDeltaAt(),
+                    dateTimeFormatter));
+        }
         return listSummary;
     }
 
