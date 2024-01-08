@@ -379,9 +379,10 @@ public class CompanyPscTransformer {
         pscSensitiveData.setResidentialAddressIsSameAsServiceAddress(
                 sensitiveData.getResidentialAddressSameAsServiceAddress());
         pscSensitiveData.setDateOfBirth(dateOfBirth);
-        pscSensitiveData.setUsualResidentialAddress(
-                new Address(sensitiveData.getUsualResidentialAddress()));
-
+        if(sensitiveData.getUsualResidentialAddress() != null) {
+            pscSensitiveData.setUsualResidentialAddress(
+                    new Address(sensitiveData.getUsualResidentialAddress()));
+        }
         return pscSensitiveData;
     }
 
