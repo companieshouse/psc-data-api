@@ -62,6 +62,7 @@ public class CompanyPscTransformer {
             individual.setNameElements(mapNameElements(pscData.getNameElements()));
             individual.setAddress(mapAddress(pscData.getAddress()));
             individual.setNaturesOfControl(pscData.getNaturesOfControl());
+            individual.setNationality(pscData.getNationality());
             individual.setLinks(pscData.getLinks());
             individual.setNotifiedOn(pscData.getNotifiedOn());
         }
