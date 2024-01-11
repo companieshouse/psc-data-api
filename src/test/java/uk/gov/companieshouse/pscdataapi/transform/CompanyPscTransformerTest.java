@@ -245,7 +245,6 @@ class CompanyPscTransformerTest {
         Individual individual = pscTransformer.transformPscDocToIndividual(pscDocument, SHOW_FULL_DOB_TRUE);
 
         Assertions.assertNotNull(individual);
-        Assertions.assertEquals("2023-01-02", individual.getNotifiedOn().toString());
     }
 
     @Test

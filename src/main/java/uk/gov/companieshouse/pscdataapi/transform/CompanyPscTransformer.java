@@ -63,13 +63,11 @@ public class CompanyPscTransformer {
             individual.setAddress(mapAddress(pscData.getAddress()));
             individual.setNaturesOfControl(pscData.getNaturesOfControl());
             individual.setLinks(pscData.getLinks());
+            individual.setNotifiedOn(pscData.getNotifiedOn());
         }
         if (pscDocument.getSensitiveData() != null) {
             individual.setDateOfBirth(mapDateOfBirth(
                     pscDocument.getSensitiveData().getDateOfBirth(), showFullDateOfBirth));
-        }
-        if (pscDocument.getDeltaAt() != null) {
-            individual.setNotifiedOn(LocalDate.parse(pscDocument.getDeltaAt(), dateTimeFormatter));
         }
         return individual;
     }
@@ -95,14 +93,11 @@ public class CompanyPscTransformer {
             individualBo.setLinks(pscData.getLinks());
             individualBo.setNationality(pscData.getNationality());
             individualBo.setIsSanctioned(pscData.getSanctioned());
+            individualBo.setNotifiedOn(pscData.getNotifiedOn());
         }
         if (pscDocument.getSensitiveData() != null) {
             individualBo.setDateOfBirth(mapDateOfBirth(
                     pscDocument.getSensitiveData().getDateOfBirth(), showFullDateOfBirth));
-        }
-        if (pscDocument.getDeltaAt() != null) {
-            individualBo.setNotifiedOn(LocalDate.parse(pscDocument.getDeltaAt(),
-                    dateTimeFormatter));
         }
         return individualBo;
     }
@@ -122,16 +117,13 @@ public class CompanyPscTransformer {
             PscData pscData = pscDocument.getData();
             corporateEntity.setEtag(pscData.getEtag());
             corporateEntity.setCeasedOn(pscData.getCeasedOn());
+            corporateEntity.setNotifiedOn(pscData.getNotifiedOn());
             corporateEntity.setName(pscData.getName());
             corporateEntity.setLinks(pscData.getLinks());
             corporateEntity.setAddress(mapAddress(pscData.getAddress()));
             corporateEntity.setNaturesOfControl(pscData.getNaturesOfControl());
             corporateEntity.setIdentification(
                     mapIdentification(pscData.getIdentification(), "corporate"));
-        }
-        if (pscDocument.getDeltaAt() != null) {
-            corporateEntity.setNotifiedOn(LocalDate.parse(pscDocument.getDeltaAt(),
-                    dateTimeFormatter));
         }
         return corporateEntity;
     }
@@ -158,10 +150,7 @@ public class CompanyPscTransformer {
             corporateEntityBo.setIsSanctioned(pscData.getSanctioned());
             corporateEntityBo.setIdentification(mapIdentification(
                     pscData.getIdentification(), "corporate"));
-        }
-        if (pscDocument.getDeltaAt() != null) {
-            corporateEntityBo.setNotifiedOn(LocalDate.parse(pscDocument.getDeltaAt(),
-                    dateTimeFormatter));
+            corporateEntityBo.setNotifiedOn(pscData.getNotifiedOn());
         }
         return corporateEntityBo;
     }
@@ -185,11 +174,9 @@ public class CompanyPscTransformer {
             legalPerson.setNaturesOfControl(pscData.getNaturesOfControl());
             legalPerson.setLinks(pscData.getLinks());
             legalPerson.setCeasedOn(pscData.getCeasedOn());
+            legalPerson.setNotifiedOn(pscData.getNotifiedOn());
             legalPerson.setIdentification(mapIdentification(
                     pscData.getIdentification(), "legal"));
-        }
-        if (pscDocument.getDeltaAt() != null) {
-            legalPerson.setNotifiedOn(LocalDate.parse(pscDocument.getDeltaAt(), dateTimeFormatter));
         }
         return legalPerson;
     }
@@ -214,13 +201,10 @@ public class CompanyPscTransformer {
             legalPersonBo.setNaturesOfControl(pscData.getNaturesOfControl());
             legalPersonBo.setLinks(pscData.getLinks());
             legalPersonBo.setCeasedOn(pscData.getCeasedOn());
+            legalPersonBo.setNotifiedOn(pscData.getNotifiedOn());
             legalPersonBo.setIsSanctioned(pscData.getSanctioned());
             legalPersonBo.setIdentification(mapIdentification(
                     pscData.getIdentification(), "legal"));
-        }
-        if (pscDocument.getDeltaAt() != null) {
-            legalPersonBo.setNotifiedOn(LocalDate.parse(pscDocument.getDeltaAt(),
-                    dateTimeFormatter));
         }
         return legalPersonBo;
     }
@@ -302,6 +286,7 @@ public class CompanyPscTransformer {
             listSummary.setNaturesOfControl(pscData.getNaturesOfControl());
             listSummary.setLinks(pscData.getLinks());
             listSummary.setCeasedOn(pscData.getCeasedOn());
+            listSummary.setNotifiedOn(pscData.getNotifiedOn());
             listSummary.setIsSanctioned(pscData.getSanctioned());
             listSummary.setNationality(pscData.getNationality());
             listSummary.setCountryOfResidence(pscData.getCountryOfResidence());
@@ -313,10 +298,6 @@ public class CompanyPscTransformer {
         if (pscDocument.getSensitiveData() != null) {
             listSummary.setDateOfBirth(mapDateOfBirth(pscDocument.getSensitiveData()
                     .getDateOfBirth(), registerView));
-        }
-        if (pscDocument.getDeltaAt() != null) {
-            listSummary.setNotifiedOn(LocalDate.parse(pscDocument.getDeltaAt(),
-                    dateTimeFormatter));
         }
         return listSummary;
     }
