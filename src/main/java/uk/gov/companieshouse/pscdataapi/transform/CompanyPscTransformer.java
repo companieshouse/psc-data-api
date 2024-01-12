@@ -118,6 +118,7 @@ public class CompanyPscTransformer {
             PscData pscData = pscDocument.getData();
             corporateEntity.setEtag(pscData.getEtag());
             corporateEntity.setCeasedOn(pscData.getCeasedOn());
+            corporateEntity.setNotifiedOn(pscData.getNotifiedOn());
             corporateEntity.setName(pscData.getName());
             corporateEntity.setLinks(pscData.getLinks());
             corporateEntity.setAddress(mapAddress(pscData.getAddress()));
