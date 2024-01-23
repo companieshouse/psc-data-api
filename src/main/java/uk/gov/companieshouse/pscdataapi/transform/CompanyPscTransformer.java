@@ -380,6 +380,9 @@ public class CompanyPscTransformer {
         pscData.setNationality(data.getNationality());
         pscData.setNaturesOfControl(data.getNaturesOfControl());
         pscData.setSanctioned(data.getIsSanctioned());
+        if (data.getPrincipalOfficeAddress() != null) {
+            pscData.setPrincipalOfficeAddress(new Address(data.getPrincipalOfficeAddress()));
+        }
         pscData.setServiceAddressIsSameAsRegisteredOfficeAddress(
                 data.getServiceAddressSameAsRegisteredOfficeAddress());
         if (pscData.getKind().contains("corporate") || pscData.getKind().contains("legal")) {

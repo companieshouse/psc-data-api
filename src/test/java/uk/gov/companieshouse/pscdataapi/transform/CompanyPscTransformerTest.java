@@ -180,6 +180,7 @@ class CompanyPscTransformerTest {
         Assertions.assertNotNull(result.getData().getAddress());
         Assertions.assertNotNull(result.getData().getIdentification().getLegalForm());
         Assertions.assertNotNull(result.getData().getIdentification().getCountryRegistered());
+        Assertions.assertNotNull(result.getData().getPrincipalOfficeAddress());
 
         pscInsertAssertions(expectedDocument, result);
     }
@@ -198,6 +199,7 @@ class CompanyPscTransformerTest {
         Assertions.assertNotNull(result.getData().getAddress());
         Assertions.assertNotNull(result.getData().getIdentification().getLegalForm());
         Assertions.assertNull(result.getData().getIdentification().getCountryRegistered());
+        Assertions.assertNotNull(result.getData().getPrincipalOfficeAddress());
 
         pscInsertAssertions(expectedDocument, result);
     }
@@ -323,5 +325,4 @@ class CompanyPscTransformerTest {
                 .transformPscDocToListSummary(pscDocument, true);
         Assertions.assertNotNull(listSummary);
     }
-
 }
