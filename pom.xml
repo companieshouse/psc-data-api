@@ -21,7 +21,7 @@
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <maven-surefire-plugin.version>3.0.0-M5</maven-surefire-plugin.version>
-        <jib-maven-plugin.version>3.1.1</jib-maven-plugin.version>
+        <jib-maven-plugin.version>3.3.0</jib-maven-plugin.version>
         <jacoco-maven-plugin.version>0.8.5</jacoco-maven-plugin.version>
         <ch-kafka.version>1.4.2</ch-kafka.version>
         <kafka-models.version>1.0.34</kafka-models.version>
@@ -37,7 +37,7 @@
 
         <!-- tests -->
         <maven-surefire-plugin.version>3.0.0-M5</maven-surefire-plugin.version>
-        <jib-maven-plugin.version>3.1.1</jib-maven-plugin.version>
+        <jib-maven-plugin.version>3.3.0</jib-maven-plugin.version>
         <io-cucumber.version>7.2.3</io-cucumber.version>
         <test-containers.version>1.16.3</test-containers.version>
         <maven-failsafe-plugin.version>3.0.0-M5</maven-failsafe-plugin.version>
@@ -232,7 +232,7 @@
                         <CHS_API_KEY>key</CHS_API_KEY>
                         <API_URL>key</API_URL>
                         <PAYMENTS_API_URL>key</PAYMENTS_API_URL>
-                        <DOCUMENT_API_LOCAL_URL>document_api_local_url</DOCUMENT_API_LOCAL_URL>
+                        <DOCUMENT_API_LOCAL_URL>key</DOCUMENT_API_LOCAL_URL>
                     </environmentVariables>
                 </configuration>
             </plugin>
