@@ -88,7 +88,8 @@ public class ChsKafkaApiService {
         } else {
             event.setType(CHANGED_EVENT_TYPE);
         }
-        changedResource.setResourceUri(String.format(PSC_URI, companyNumber, mapKind(kind), notificationId));
+        changedResource.setResourceUri(String.format(PSC_URI, companyNumber,
+                mapKind(kind), notificationId));
         changedResource.event(event);
         changedResource.setResourceKind(PscTransformationHelper.mapResourceKind(kind));
         changedResource.setContextId(contextId);
