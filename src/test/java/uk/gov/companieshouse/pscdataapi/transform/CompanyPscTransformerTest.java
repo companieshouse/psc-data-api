@@ -323,5 +323,4 @@ class CompanyPscTransformerTest {
                 .transformPscDocToListSummary(pscDocument, true);
         Assertions.assertNotNull(listSummary);
     }
-
 }

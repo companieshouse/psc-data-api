@@ -55,8 +55,19 @@ public class PscData {
     @Field("links")
     private Links links;
 
+    @Field("principal_office_address")
+    private Address principalOfficeAddress;
+
     @Field("identification")
     private PscIdentification identification;
+
+    public Address getPrincipalOfficeAddress() {
+        return principalOfficeAddress;
+    }
+
+    public void setPrincipalOfficeAddress(Address principalOfficeAddress) {
+        this.principalOfficeAddress = principalOfficeAddress;
+    }
 
     public PscIdentification getIdentification() {
         return identification;

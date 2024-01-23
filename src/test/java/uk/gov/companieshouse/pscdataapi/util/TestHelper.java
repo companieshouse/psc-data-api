@@ -59,7 +59,25 @@ public class TestHelper {
         links.setSelf("self");
         links.setStatements("linkStatements");
         data.setLinks(List.of(links));
-        data.serviceAddressSameAsRegisteredOfficeAddress(true);
+
+        data.serviceAddressSameAsRegisteredOfficeAddress(false);
+        uk.gov.companieshouse.api.psc.Address principalOfficeAddress = new uk.gov.companieshouse.api.psc.Address();
+        principalOfficeAddress.setAddressLine1("office_line1");
+        principalOfficeAddress.setAddressLine2("office_line2");
+        principalOfficeAddress.setCareOf("office_careof");
+        principalOfficeAddress.setCountry("office_country");
+        principalOfficeAddress.setLocality("office_locality");
+        principalOfficeAddress.setPoBox("office_pobox");
+        principalOfficeAddress.setPostalCode("office_postalcode");
+        principalOfficeAddress.setPremises("office_premises");
+        principalOfficeAddress.setRegion("office_region");
+        if (kind.contains("legal") && kind.contains("beneficial")) {
+            data.setPrincipalOfficeAddress(principalOfficeAddress);
+        } else if (kind.contains("corporate") && kind.contains("beneficial")) {
+            data.setPrincipalOfficeAddress(principalOfficeAddress);
+        }
+
+
         data.naturesOfControl(List.of("part-right-to-share-surplus-assets-75-to-100-percent",
                 "right-to-appoint-and-remove-directors-as-trust-registered-overseas-entity",
                 "significant-influence-or-control-as-trust-registered-overseas-entity"));
@@ -177,7 +195,25 @@ public class TestHelper {
         links.setSelf("self");
         links.setStatements("linkStatements");
         pscData.setLinks(links);
-        pscData.setServiceAddressIsSameAsRegisteredOfficeAddress(true);
+
+        pscData.setServiceAddressIsSameAsRegisteredOfficeAddress(false);
+
+        Address principalOfficeAddress = new Address();
+        principalOfficeAddress.setAddressLine1("office_line1");
+        principalOfficeAddress.setAddressLine2("office_line2");
+        principalOfficeAddress.setCareOf("office_careof");
+        principalOfficeAddress.setCountry("office_country");
+        principalOfficeAddress.setLocality("office_locality");
+        principalOfficeAddress.setPoBox("office_pobox");
+        principalOfficeAddress.setPostalCode("office_postalcode");
+        principalOfficeAddress.setPremises("office_premises");
+        principalOfficeAddress.setRegion("office_region");
+        if (kind.contains("legal") && kind.contains("beneficial")) {
+            pscData.setPrincipalOfficeAddress(principalOfficeAddress);
+        } else if (kind.contains("corporate") && kind.contains("beneficial")) {
+            pscData.setPrincipalOfficeAddress(principalOfficeAddress);
+        }
+
         pscData.setNaturesOfControl(List.of("part-right-to-share-surplus-assets-75-to-100-percent",
                 "right-to-appoint-and-remove-directors-as-trust-registered-overseas-entity",
                 "significant-influence-or-control-as-trust-registered-overseas-entity"));
