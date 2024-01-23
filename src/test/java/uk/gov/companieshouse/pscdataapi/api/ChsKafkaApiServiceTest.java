@@ -52,13 +52,14 @@ public class ChsKafkaApiServiceTest {
         when(privateChangedResourcePost.execute()).thenReturn(response);
 
         ApiResponse<?> apiResponse = chsKafkaApiService.invokeChsKafkaApi(
-                TestHelper.X_REQUEST_ID, TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID, "kind");
+                TestHelper.X_REQUEST_ID, TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID, "individual-person-with-significant-control");
         Assertions.assertThat(apiResponse).isNotNull();
 
         verify(internalApiClient, times(1)).privateChangedResourceHandler();
         verify(privateChangedResourceHandler, times(1)).postChangedResource(any(), changedResourceCaptor.capture());
         verify(privateChangedResourcePost, times(1)).execute();
         Assertions.assertThat(changedResourceCaptor.getValue().getEvent().getType()).isEqualTo("changed");
+        Assertions.assertThat(changedResourceCaptor.getValue().getResourceUri()).isEqualTo("/company/companyNumber/persons-with-significant-control/individual/notificationId");
     }
 
     @Test
