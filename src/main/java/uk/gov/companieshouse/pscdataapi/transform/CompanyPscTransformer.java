@@ -152,6 +152,8 @@ public class CompanyPscTransformer {
             corporateEntityBo.setIdentification(mapIdentification(
                     pscData.getIdentification(), "corporate"));
             corporateEntityBo.setNotifiedOn(pscData.getNotifiedOn());
+            corporateEntityBo.setPrincipalOfficeAddress(mapPrincipleAddress(
+                    pscData.getPrincipalOfficeAddress()));
         }
         return corporateEntityBo;
     }
@@ -206,6 +208,8 @@ public class CompanyPscTransformer {
             legalPersonBo.setIsSanctioned(pscData.getSanctioned());
             legalPersonBo.setIdentification(mapIdentification(
                     pscData.getIdentification(), "legal"));
+            legalPersonBo.setPrincipalOfficeAddress(mapPrincipleAddress(
+                    pscData.getPrincipalOfficeAddress()));
         }
         return legalPersonBo;
     }
@@ -434,6 +438,26 @@ public class CompanyPscTransformer {
             address.setPremises(inputAddress.getPremises());
             address.setRegion(inputAddress.getRegion());
             return address;
+        } else {
+            return null;
+        }
+    }
+
+    private uk.gov.companieshouse.api.psc.Address mapPrincipleAddress(
+            uk.gov.companieshouse.pscdataapi.models.Address inputPrincipleAddress){
+        if (inputPrincipleAddress != null) {
+            uk.gov.companieshouse.api.psc.Address principleAddress =
+                    new uk.gov.companieshouse.api.psc.Address();
+            principleAddress.setAddressLine1(inputPrincipleAddress.getAddressLine1());
+            principleAddress.setAddressLine2(inputPrincipleAddress.getAddressLine2());
+            principleAddress.setCareOf(inputPrincipleAddress.getCareOf());
+            principleAddress.setCountry(inputPrincipleAddress.getCountry());
+            principleAddress.setLocality(inputPrincipleAddress.getLocality());
+            principleAddress.setPoBox(inputPrincipleAddress.getPoBox());
+            principleAddress.setPostalCode(inputPrincipleAddress.getPostalCode());
+            principleAddress.setPremises(inputPrincipleAddress.getPremises());
+            principleAddress.setRegion(inputPrincipleAddress.getRegion());
+            return principleAddress;
         } else {
             return null;
         }
