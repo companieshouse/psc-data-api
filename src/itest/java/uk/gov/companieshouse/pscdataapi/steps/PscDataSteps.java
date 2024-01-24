@@ -841,6 +841,7 @@ public class PscDataSteps {
 
         assertThat(actual.getName()).isEqualTo(expected.getName());
         assertThat(actual.getIsSanctioned()).isEqualTo(expected.getIsSanctioned());
+        assertThat(actual.getPrincipalOfficeAddress()).isEqualTo(expected.getPrincipalOfficeAddress());
     }
 
     @When("a Get request is sent for {string} and {string} without ERIC headers for Corporate Entity Beneficial Owner")
@@ -1035,6 +1036,7 @@ public class PscDataSteps {
         assertThat(actual.getName()).isEqualTo(expected.getName());
         assertThat(actual.getCeasedOn()).isEqualTo(expected.getCeasedOn());
         assertThat(actual.getIsSanctioned()).isEqualTo(expected.getIsSanctioned());
+        assertThat(actual.getPrincipalOfficeAddress()).isEqualTo(expected.getPrincipalOfficeAddress());
     }
 
     @When("a Get request is sent for {string} and {string} without ERIC headers for Legal Person Beneficial Owner")

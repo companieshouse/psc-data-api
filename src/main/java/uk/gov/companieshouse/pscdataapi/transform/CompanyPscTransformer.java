@@ -152,6 +152,8 @@ public class CompanyPscTransformer {
             corporateEntityBo.setIdentification(mapIdentification(
                     pscData.getIdentification(), "corporate"));
             corporateEntityBo.setNotifiedOn(pscData.getNotifiedOn());
+            corporateEntityBo.setPrincipalOfficeAddress(mapPrincipleAddress(
+                    pscData.getPrincipalOfficeAddress()));
         }
         return corporateEntityBo;
     }
@@ -448,6 +450,7 @@ public class CompanyPscTransformer {
                     new uk.gov.companieshouse.api.psc.Address();
             principleAddress.setAddressLine1(inputPrincipleAddress.getAddressLine1());
             principleAddress.setAddressLine2(inputPrincipleAddress.getAddressLine2());
+            principleAddress.setCareOf(inputPrincipleAddress.getCareOf());
             principleAddress.setCountry(inputPrincipleAddress.getCountry());
             principleAddress.setLocality(inputPrincipleAddress.getLocality());
             principleAddress.setPoBox(inputPrincipleAddress.getPoBox());
