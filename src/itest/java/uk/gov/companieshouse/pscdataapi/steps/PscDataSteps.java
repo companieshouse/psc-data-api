@@ -793,6 +793,18 @@ public class PscDataSteps {
         pscData.setNationality("British");
         pscData.setSanctioned(true);
         pscData.setKind("corporate-entity-beneficial-owner");
+        Address principleOfAddress = new Address();
+        principleOfAddress.setAddressLine1("ura_line1");
+        principleOfAddress.setAddressLine2("ura_line2");
+        principleOfAddress.setCareOf("ura_care_of");
+        principleOfAddress.setCountry("United Kingdom");
+        principleOfAddress.setLocality("Cardiff");
+        principleOfAddress.setPoBox("ura_po");
+        principleOfAddress.setPostalCode("CF2 1B6");
+        principleOfAddress.setPremises("URA");
+        principleOfAddress.setRegion("ura_region");
+        pscData.setPrincipalOfficeAddress(principleOfAddress);
+
         document.setData(pscData);
 
         mongoTemplate.save(document);
@@ -975,6 +987,17 @@ public class PscDataSteps {
         pscData.setNationality("British");
         pscData.setSanctioned(true);
         pscData.setKind("legal-person-beneficial-owner");
+        Address principleOfAddress = new Address();
+        principleOfAddress.setAddressLine1("ura_line1");
+        principleOfAddress.setAddressLine2("ura_line2");
+        principleOfAddress.setCareOf("ura_care_of");
+        principleOfAddress.setCountry("United Kingdom");
+        principleOfAddress.setLocality("Cardiff");
+        principleOfAddress.setPoBox("ura_po");
+        principleOfAddress.setPostalCode("CF2 1B6");
+        principleOfAddress.setPremises("URA");
+        principleOfAddress.setRegion("ura_region");
+        pscData.setPrincipalOfficeAddress(principleOfAddress);
         document.setData(pscData);
 
         mongoTemplate.save(document);
