@@ -444,7 +444,7 @@ public class CompanyPscTransformer {
     }
 
     private uk.gov.companieshouse.api.psc.Address mapPrincipleAddress(
-            uk.gov.companieshouse.pscdataapi.models.Address inputPrincipleAddress){
+            uk.gov.companieshouse.pscdataapi.models.Address inputPrincipleAddress) {
         if (inputPrincipleAddress != null) {
             uk.gov.companieshouse.api.psc.Address principleAddress =
                     new uk.gov.companieshouse.api.psc.Address();
