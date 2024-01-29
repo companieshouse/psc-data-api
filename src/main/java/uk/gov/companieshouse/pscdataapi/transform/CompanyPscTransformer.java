@@ -229,7 +229,11 @@ public class CompanyPscTransformer {
         if (pscDocument.getData() != null) {
             PscData pscData = pscDocument.getData();
             superSecure.setEtag(pscData.getEtag());
-            superSecure.setCeased(pscData.getCeased());
+            if (pscData.getCeased()) {
+                superSecure.setCeased("1");
+            } else {
+                superSecure.setCeased("0");
+            }
             superSecure.setLinks(pscData.getLinks());
         }
         return superSecure;
@@ -251,7 +255,11 @@ public class CompanyPscTransformer {
         if (pscDocument.getData() != null) {
             PscData pscData = pscDocument.getData();
             superSecureBo.setEtag(pscData.getEtag());
-            superSecureBo.setCeased(pscData.getCeased());
+            if (pscData.getCeased()) {
+                superSecureBo.setCeased("1");
+            } else {
+                superSecureBo.setCeased("0");
+            }
             superSecureBo.setLinks(pscData.getLinks());
         }
         return superSecureBo;
