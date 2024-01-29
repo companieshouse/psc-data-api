@@ -104,7 +104,7 @@ public class ChsKafkaApiService {
         kindMap.put("super-secure-person-with-significant-control", "super-secure");
         kindMap.put("individual-beneficial-owner", "individual-beneficial-owner");
         kindMap.put("legal-person-beneficial-owner", "legal-person-beneficial-owner");
-        kindMap.put("corporate-entity-beneficial-ownerl", "corporate-entity-beneficial-owner");
+        kindMap.put("corporate-entity-beneficial-owner", "corporate-entity-beneficial-owner");
         kindMap.put("super-secure-beneficial-owner", "super-secure-beneficial-owner");
 
         return kindMap.get(kind);

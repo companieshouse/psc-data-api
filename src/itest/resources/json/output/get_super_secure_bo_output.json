@@ -1,5 +1,5 @@
 {
-  "ceased": false,
+  "ceased": "0",
   "description": "super-secure-beneficial-owner",
   "etag": "string",
   "kind": "super-secure-beneficial-owner",

@@ -1,5 +1,5 @@
 {
-  "ceased": false,
+  "ceased": "0",
   "description": "super-secure-persons-with-significant-control",
   "etag": "string",
   "kind": "super-secure-person-with-significant-control",
