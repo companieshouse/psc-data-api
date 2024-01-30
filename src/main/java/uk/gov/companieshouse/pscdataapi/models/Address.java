@@ -35,7 +35,7 @@ public class Address {
         this.country = address.getCountry();
         this.locality = address.getLocality();
         this.postalCode = address.getPostalCode();
-        this.premises = address.getPremise();
+        this.premises = address.getPremises();
         this.region = address.getRegion();
         this.careOf = address.getCareOf();
         this.poBox = address.getPoBox();

@@ -45,5 +45,4 @@ public class MongoPscConfig extends AbstractMongoClientConfiguration {
                 .build();
         return MongoClients.create(mongoClientSettings);
     }
-
 }

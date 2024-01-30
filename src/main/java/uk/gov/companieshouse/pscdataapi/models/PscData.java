@@ -31,6 +31,9 @@ public class PscData {
     @Field("kind")
     private String kind;
 
+    @Field("notified_on")
+    private LocalDate notifiedOn;
+
     @Field("description")
     private String description;
 
@@ -51,6 +54,28 @@ public class PscData {
 
     @Field("links")
     private Links links;
+
+    @Field("principal_office_address")
+    private Address principalOfficeAddress;
+
+    @Field("identification")
+    private PscIdentification identification;
+
+    public Address getPrincipalOfficeAddress() {
+        return principalOfficeAddress;
+    }
+
+    public void setPrincipalOfficeAddress(Address principalOfficeAddress) {
+        this.principalOfficeAddress = principalOfficeAddress;
+    }
+
+    public PscIdentification getIdentification() {
+        return identification;
+    }
+
+    public void setIdentification(PscIdentification identification) {
+        this.identification = identification;
+    }
 
     public LocalDate getCeasedOn() {
         return ceasedOn;
@@ -142,6 +167,14 @@ public class PscData {
         this.kind = kind;
     }
 
+    public LocalDate getNotifiedOn() {
+        return notifiedOn;
+    }
+
+    public void setNotifiedOn(LocalDate notifiedOn) {
+        this.notifiedOn = notifiedOn;
+    }
+
     public String getDescription() {
         return description;
     }
@@ -187,6 +220,8 @@ public class PscData {
                 + '\''
                 + ", kind='"
                 + kind
+                + ", notifiedOn="
+                + notifiedOn
                 + '\''
                 + ", description='"
                 + description
@@ -203,6 +238,8 @@ public class PscData {
                 + nameElements
                 + ", links="
                 + links
+                + ", identification="
+                + identification
                 + '}';
     }
 
@@ -222,6 +259,7 @@ public class PscData {
                 && Objects.equals(nationality, pscData.nationality)
                 && Objects.equals(countryOfResidence, pscData.countryOfResidence)
                 && Objects.equals(kind, pscData.kind)
+                && Objects.equals(notifiedOn, pscData.notifiedOn)
                 && Objects.equals(description, pscData.description)
                 && Objects.equals(serviceAddressIsSameAsRegisteredOfficeAddress,
                 pscData.serviceAddressIsSameAsRegisteredOfficeAddress)
@@ -229,14 +267,15 @@ public class PscData {
                 && Objects.equals(ceased, pscData.ceased)
                 && Objects.equals(naturesOfControl, pscData.naturesOfControl)
                 && Objects.equals(nameElements, pscData.nameElements)
-                && Objects.equals(links, pscData.links);
+                && Objects.equals(links, pscData.links)
+                && Objects.equals(identification, pscData.identification);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(ceasedOn, etag, address, name, nationality, countryOfResidence,
-                kind, description, serviceAddressIsSameAsRegisteredOfficeAddress,
+                kind, notifiedOn, description, serviceAddressIsSameAsRegisteredOfficeAddress,
                 isSanctioned, ceased, naturesOfControl,
-                nameElements, links);
+                nameElements, links, identification);
     }
 }

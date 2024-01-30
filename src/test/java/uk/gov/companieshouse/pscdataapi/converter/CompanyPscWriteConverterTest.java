@@ -2,17 +2,17 @@ package uk.gov.companieshouse.pscdataapi.converter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.BasicDBObject;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 
 import uk.gov.companieshouse.pscdataapi.exceptions.FailedToConvertException;
+import uk.gov.companieshouse.pscdataapi.util.TestHelper;
+
 import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
 
 class CompanyPscWriteConverterTest {
-
-    private static final String PSC_ID = "pscId";
 
     private CompanyPscWriteConverter converter;
 
@@ -24,12 +24,13 @@ class CompanyPscWriteConverterTest {
     @Test
     void canConvertDocument() {
         PscDocument document = new PscDocument();
-        document.setNotificationId(PSC_ID);
+        document.setNotificationId(TestHelper.PSC_ID);
 
         BasicDBObject object = converter.convert(document);
 
+        Assertions.assertNotNull(object);
         String json = object.toJson();
-        assertTrue(json.contains(PSC_ID));
+        Assertions.assertTrue(json.contains(TestHelper.PSC_ID));
     }
 
     @Test

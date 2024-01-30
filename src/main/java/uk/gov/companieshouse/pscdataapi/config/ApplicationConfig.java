@@ -14,6 +14,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
 import uk.gov.companieshouse.api.InternalApiClient;
+import uk.gov.companieshouse.api.api.CompanyMetricsApiService;
 import uk.gov.companieshouse.pscdataapi.converter.CompanyPscReadConverter;
 import uk.gov.companieshouse.pscdataapi.converter.CompanyPscWriteConverter;
 import uk.gov.companieshouse.pscdataapi.serialization.LocalDateDeSerializer;
@@ -44,6 +45,13 @@ public class ApplicationConfig {
     public Supplier<String> offsetDateTimeGenerator() {
         return () -> String.valueOf(OffsetDateTime.now());
     }
+
+    @Bean
+    public CompanyMetricsApiService companyMetricsApiService() {
+        return new CompanyMetricsApiService();
+    }
+
+
 
     /**
      * Mongo DB Object Mapper.

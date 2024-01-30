@@ -2,17 +2,16 @@ package uk.gov.companieshouse.pscdataapi.converter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.bson.Document;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
 import uk.gov.companieshouse.pscdataapi.exceptions.FailedToConvertException;
+import uk.gov.companieshouse.pscdataapi.util.TestHelper;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 
 class CompanyPscReadConverterTest {
-
-    private static final String NOTIFICATION_ID = "123456";
 
     private CompanyPscReadConverter converter;
 
@@ -23,11 +22,12 @@ class CompanyPscReadConverterTest {
 
     @Test
     void canConvertDocument() {
-        Document notificationIdNode = new Document("notification_id", NOTIFICATION_ID);
+        Document notificationIdNode = new Document("notification_id", TestHelper.NOTIFICATION_ID);
         Document document = new Document("external_data", notificationIdNode);
         FullRecordCompanyPSCApi pscApi = converter.convert(document);
 
-        assertEquals(NOTIFICATION_ID, pscApi.getExternalData().getNotificationId());
+        Assertions.assertNotNull(pscApi);
+        Assertions.assertEquals(TestHelper.NOTIFICATION_ID, pscApi.getExternalData().getNotificationId());
     }
 
     @Test
