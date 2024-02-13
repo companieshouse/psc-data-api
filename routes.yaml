@@ -11,6 +11,6 @@ routes:
   7: ^/company/(.){8}/persons-with-significant-control/corporate-entity/(.*)
   8: ^/company/(.){8}/persons-with-significant-control/super-secure/(.*)
   9: ^/company/(.){8}/persons-with-significant-control/legal-person-beneficial-owner/(.*)
-  10: ^/company/(.){8}persons-with-significant-control/super-secure-beneficial-owner/(.*)
+  10: ^/company/(.){8}/persons-with-significant-control/super-secure-beneficial-owner/(.*)
   11: ^/company/(.){8}/persons-with-significant-control
 
