@@ -4,13 +4,3 @@ weight: 905
 routes:
   1: ^/persons-with-significant-control/healthcheck
   2: ^/company/(.){8}/persons-with-significant-control/(.*)/full_record
-  3: ^/company/(.){8}/persons-with-significant-control/individual/(.*)
-  4: ^/company/(.){8}/persons-with-significant-control/individual-beneficial-owner/(.*)
-  5: ^/company/(.){8}/persons-with-significant-control/corporate-entity-beneficial-owner/(.*)
-  6: ^/company/(.){8}/persons-with-significant-control/legal-person/(.*)
-  7: ^/company/(.){8}/persons-with-significant-control/corporate-entity/(.*)
-  8: ^/company/(.){8}/persons-with-significant-control/super-secure/(.*)
-  9: ^/company/(.){8}/persons-with-significant-control/legal-person-beneficial-owner/(.*)
-  10: ^/company/(.){8}/persons-with-significant-control/super-secure-beneficial-owner/(.*)
-  11: ^/company/(.){8}/persons-with-significant-control
-
