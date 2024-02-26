@@ -3,5 +3,4 @@ group: api
 weight: 905
 routes:
   1: ^/persons-with-significant-control/healthcheck
-  2: ^/company/(.*)/persons-with-significant-control/(.*)/full_record
-
+  2: ^/company/(.){8}/persons-with-significant-control/(.*)/full_record
