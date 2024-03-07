@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Objects;
 
 import org.springframework.data.mongodb.core.mapping.Field;
+import org.springframework.format.annotation.DateTimeFormat;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PscData {
@@ -32,6 +33,7 @@ public class PscData {
     private String kind;
 
     @Field("notified_on")
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate notifiedOn;
 
     @Field("description")
@@ -44,6 +46,7 @@ public class PscData {
     private Boolean isSanctioned;
 
     @Field("ceased")
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private Boolean ceased;
 
     @Field("natures_of_control")
