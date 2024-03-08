@@ -42,11 +42,6 @@ public class ApplicationConfig {
     }
 
     @Bean
-    public Supplier<String> offsetDateTimeGenerator() {
-        return () -> String.valueOf(OffsetDateTime.now());
-    }
-
-    @Bean
     public CompanyMetricsApiService companyMetricsApiService() {
         return new CompanyMetricsApiService();
     }
