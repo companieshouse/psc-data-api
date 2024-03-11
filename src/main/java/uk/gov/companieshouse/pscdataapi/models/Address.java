@@ -1,26 +1,27 @@
 package uk.gov.companieshouse.pscdataapi.models;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.Objects;
-import org.springframework.data.mongodb.core.mapping.Field;
 
 public class Address {
-    @Field("address_line_1")
+    @JsonProperty("address_line_1")
     private String addressLine1;
-    @Field("address_line_2")
+    @JsonProperty("address_line_2")
     private String addressLine2;
-    @Field("country")
+    @JsonProperty("country")
     private String country;
-    @Field("locality")
+    @JsonProperty("locality")
     private String locality;
-    @Field("postal_code")
+    @JsonProperty("postal_code")
     private String postalCode;
-    @Field("premises")
+    @JsonProperty("premises")
     private String premises;
-    @Field("region")
+    @JsonProperty("region")
     private String region;
-    @Field("care_of")
+    @JsonProperty("care_of")
     private String careOf;
-    @Field("po_box")
+    @JsonProperty("po_box")
     private String poBox;
 
     public Address() {}
