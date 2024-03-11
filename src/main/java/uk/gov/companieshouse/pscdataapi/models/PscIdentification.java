@@ -1,24 +1,25 @@
 package uk.gov.companieshouse.pscdataapi.models;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.Objects;
 
-import org.springframework.data.mongodb.core.mapping.Field;
 
 public class PscIdentification {
 
-    @Field("legal_form")
+    @JsonProperty("legal_form")
     private String legalForm;
 
-    @Field("legal_authority")
+    @JsonProperty("legal_authority")
     private String legalAuthority;
 
-    @Field("country_registered")
+    @JsonProperty("country_registered")
     private String countryRegistered;
 
-    @Field("place_registered")
+    @JsonProperty("place_registered")
     private String placeRegistered;
 
-    @Field("registration_number")
+    @JsonProperty("registration_number")
     private String registrationNumber;
 
     public PscIdentification(){}
