@@ -368,11 +368,12 @@ public class CompanyPscTransformer {
 
     private PscSensitiveData transformSensitiveDataFields(SensitiveData sensitiveData) {
         PscSensitiveData pscSensitiveData = new PscSensitiveData();
-        DateOfBirth dateOfBirth = new DateOfBirth(sensitiveData.getDateOfBirth());
-
+        if(sensitiveData.getDateOfBirth() != null) {
+            DateOfBirth dateOfBirth = new DateOfBirth(sensitiveData.getDateOfBirth());
+            pscSensitiveData.setDateOfBirth(dateOfBirth);
+        }
         pscSensitiveData.setResidentialAddressIsSameAsServiceAddress(
                 sensitiveData.getResidentialAddressSameAsServiceAddress());
-        pscSensitiveData.setDateOfBirth(dateOfBirth);
         if (sensitiveData.getUsualResidentialAddress() != null) {
             pscSensitiveData.setUsualResidentialAddress(
                     new Address(sensitiveData.getUsualResidentialAddress()));
