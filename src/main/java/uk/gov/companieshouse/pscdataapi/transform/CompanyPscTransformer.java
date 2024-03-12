@@ -368,7 +368,7 @@ public class CompanyPscTransformer {
 
     private PscSensitiveData transformSensitiveDataFields(SensitiveData sensitiveData) {
         PscSensitiveData pscSensitiveData = new PscSensitiveData();
-        if(sensitiveData.getDateOfBirth() != null) {
+        if (sensitiveData.getDateOfBirth() != null) {
             DateOfBirth dateOfBirth = new DateOfBirth(sensitiveData.getDateOfBirth());
             pscSensitiveData.setDateOfBirth(dateOfBirth);
         }
