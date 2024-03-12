@@ -16,9 +16,13 @@ import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
 import uk.gov.companieshouse.api.InternalApiClient;
 import uk.gov.companieshouse.api.api.CompanyMetricsApiService;
 import uk.gov.companieshouse.api.converter.EnumWriteConverter;
+import uk.gov.companieshouse.api.psc.SensitiveData;
 import uk.gov.companieshouse.pscdataapi.converter.CompanyPscReadConverter;
+import uk.gov.companieshouse.pscdataapi.converter.CompanyPscSensitiveReadConverter;
+import uk.gov.companieshouse.pscdataapi.converter.CompanyPscSensitiveWriteConverter;
 import uk.gov.companieshouse.pscdataapi.converter.CompanyPscWriteConverter;
 import uk.gov.companieshouse.pscdataapi.models.PscData;
+import uk.gov.companieshouse.pscdataapi.models.PscSensitiveData;
 import uk.gov.companieshouse.pscdataapi.serialization.LocalDateDeSerializer;
 import uk.gov.companieshouse.pscdataapi.serialization.LocalDateSerializer;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
@@ -35,7 +39,9 @@ public class ApplicationConfig {
     public MongoCustomConversions mongoCustomConversions() {
         ObjectMapper objectMapper = mongoDbObjectMapper();
         return new MongoCustomConversions(List.of(new CompanyPscWriteConverter(objectMapper),
+                new CompanyPscSensitiveWriteConverter(objectMapper),
                 new CompanyPscReadConverter(objectMapper, PscData.class),
+                new CompanyPscSensitiveReadConverter(objectMapper, PscSensitiveData.class),
                 new EnumWriteConverter()));
     }
 
