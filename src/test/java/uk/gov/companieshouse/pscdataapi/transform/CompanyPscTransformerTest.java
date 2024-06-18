@@ -325,4 +325,18 @@ class CompanyPscTransformerTest {
                 .transformPscDocToListSummary(pscDocument, true);
         Assertions.assertNotNull(listSummary);
     }
+
+    @Test
+    void testListSummaryTransform(){
+        PscDocument pscDocument = TestHelper.buildPscDocument(CORPORATE_BO_KIND);
+
+        ListSummary listSummary = pscTransformer
+                .transformPscDocToListSummary(pscDocument, true);
+        Assertions.assertNotNull(listSummary);
+        Assertions.assertEquals(pscDocument.getData().getAddress().getAddressLine1(),
+                listSummary.getAddress().getAddressLine1());
+        Assertions.assertEquals(pscDocument.getData().getPrincipalOfficeAddress().getAddressLine1(),
+                listSummary.getPrincipalOfficeAddress().getAddressLine1());
+
+    }
 }
