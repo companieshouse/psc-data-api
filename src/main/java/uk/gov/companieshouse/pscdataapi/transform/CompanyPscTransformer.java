@@ -295,7 +295,7 @@ public class CompanyPscTransformer {
             listSummary.setName(pscData.getName());
             listSummary.setNameElements(mapNameElements(pscData.getNameElements()));
             listSummary.setAddress(mapAddress(pscData.getAddress()));
-            listSummary.setPrincipalOfficeAddress(mapAddress(pscData.getAddress()));
+            listSummary.setPrincipalOfficeAddress(mapAddress(pscData.getPrincipalOfficeAddress()));
             listSummary.setNaturesOfControl(pscData.getNaturesOfControl());
             listSummary.setLinks(pscData.getLinks());
             listSummary.setCeasedOn(pscData.getCeasedOn());
