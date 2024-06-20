@@ -1,20 +1,22 @@
 package uk.gov.companieshouse.pscdataapi.models;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.Objects;
-import org.springframework.data.mongodb.core.mapping.Field;
+
 
 public class NameElements {
 
-    @Field("title")
+    @JsonProperty("title")
     private String title;
 
-    @Field("forename")
+    @JsonProperty("forename")
     private String forename;
 
-    @Field("surname")
+    @JsonProperty("surname")
     private String surname;
 
-    @Field("middle_name")
+    @JsonProperty("middle_name")
     private String middleName;
 
     public NameElements() {}

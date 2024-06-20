@@ -1,6 +1,6 @@
 package uk.gov.companieshouse.pscdataapi.util;
 
-import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
+import uk.gov.companieshouse.api.psc.Data;
 import uk.gov.companieshouse.api.psc.ItemLinkTypes;
 import uk.gov.companieshouse.pscdataapi.models.Links;
 
@@ -13,15 +13,16 @@ public class PscTransformationHelper {
 
     /**
      * Creates Links field.
-     * @param requestBody request payload.
+     * @param data the Data in ExternalData in the request payload.
      * @return Links object.
      */
-    public static Links createLinks(FullRecordCompanyPSCApi requestBody) {
+    public static Links createLinks(Data data) {
         Links links = new Links();
-        ItemLinkTypes itemLinkTypes = requestBody.getExternalData()
-                .getData().getLinks().get(0);
-        links.setSelf(itemLinkTypes.getSelf());
-        links.setStatements(itemLinkTypes.getStatements());
+        if (data.getLinks() != null) {
+            ItemLinkTypes itemLinkTypes = data.getLinks().get(0);
+            links.setSelf(itemLinkTypes.getSelf());
+            links.setStatements(itemLinkTypes.getStatements());
+        }
         return links;
     }
 
@@ -31,7 +32,7 @@ public class PscTransformationHelper {
      * @return String containing valid resource kind
      */
     public static String mapResourceKind(String kind) {
-        String validResourceKind = new String();
+        String validResourceKind = "";
 
         switch (kind) {
             case "individual-person-with-significant-control":

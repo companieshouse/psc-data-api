@@ -1,14 +1,16 @@
 package uk.gov.companieshouse.pscdataapi.models;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.Objects;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 public class PscSensitiveData {
-    @Field("usual_residential_address")
+    @JsonProperty("usual_residential_address")
     private Address usualResidentialAddress;
-    @Field("date_of_birth")
+    @JsonProperty("date_of_birth")
     private DateOfBirth dateOfBirth;
-    @Field("residential_address_is_same_as_service_address")
+    @JsonProperty("residential_address_is_same_as_service_address")
     private Boolean residentialAddressIsSameAsServiceAddress;
 
     public Address getUsualResidentialAddress() {

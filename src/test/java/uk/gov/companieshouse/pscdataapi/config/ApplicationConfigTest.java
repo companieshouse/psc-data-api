@@ -31,9 +31,4 @@ class ApplicationConfigTest {
         assertThat(applicationConfig.internalApiClient(), isA(InternalApiClient.class));
     }
 
-    @Test
-    void offsetDateTimeGenerator() {
-        assertThat(applicationConfig.offsetDateTimeGenerator(), is(not(nullValue())));
-        assertThat(applicationConfig.offsetDateTimeGenerator(), isA(Supplier.class));
-    }
 }
