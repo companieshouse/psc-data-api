@@ -51,8 +51,8 @@ class CompanyPscTransformerTest {
     @Test
     void testInsertIndividualPscWithDateOfBirthIsTransformedSuccessfully() throws FailedToTransformException {
         // given
-        fullRecordCompanyPSCApi = TestHelper.buildFullRecordPsc(INDIVIDUAL_KIND, SHOW_FULL_DOB_TRUE);
-        PscDocument expectedDocument = TestHelper.buildPscDocument(INDIVIDUAL_KIND, SHOW_FULL_DOB_TRUE);
+        fullRecordCompanyPSCApi = TestHelper.buildFullRecordPsc(INDIVIDUAL_KIND, SHOW_FULL_DOB_TRUE, true);
+        PscDocument expectedDocument = TestHelper.buildPscDocument(INDIVIDUAL_KIND, SHOW_FULL_DOB_TRUE, true);
         // when
         PscDocument result = pscTransformer.transformPscOnInsert(NOTIFICATION_ID, fullRecordCompanyPSCApi);
         // then
@@ -73,8 +73,8 @@ class CompanyPscTransformerTest {
     @Test
     void testInsertIndividualPscNoDateOfBirthIsTransformedSuccessfully() throws FailedToTransformException {
         // given
-        fullRecordCompanyPSCApi = TestHelper.buildFullRecordPsc(INDIVIDUAL_KIND, SHOW_FULL_DOB_FALSE);
-        PscDocument expectedDocument = TestHelper.buildPscDocument(INDIVIDUAL_KIND, SHOW_FULL_DOB_FALSE);
+        fullRecordCompanyPSCApi = TestHelper.buildFullRecordPsc(INDIVIDUAL_KIND, SHOW_FULL_DOB_FALSE, true);
+        PscDocument expectedDocument = TestHelper.buildPscDocument(INDIVIDUAL_KIND, SHOW_FULL_DOB_FALSE, true);
         // when
         PscDocument result = pscTransformer.transformPscOnInsert(NOTIFICATION_ID, fullRecordCompanyPSCApi);
         // then
@@ -146,8 +146,8 @@ class CompanyPscTransformerTest {
     @Test
     void testInsertIndividualBeneficialOwnerPscIsTransformedSuccessfully() throws FailedToTransformException {
         // given
-        fullRecordCompanyPSCApi = TestHelper.buildFullRecordPsc(INDIVIDUAL_BO_KIND, SHOW_FULL_DOB_TRUE);
-        PscDocument expectedDocument = TestHelper.buildPscDocument(INDIVIDUAL_BO_KIND, SHOW_FULL_DOB_TRUE);
+        fullRecordCompanyPSCApi = TestHelper.buildFullRecordPsc(INDIVIDUAL_BO_KIND, SHOW_FULL_DOB_TRUE, true);
+        PscDocument expectedDocument = TestHelper.buildPscDocument(INDIVIDUAL_BO_KIND, SHOW_FULL_DOB_TRUE, true);
         // when
         PscDocument result = pscTransformer.transformPscOnInsert(NOTIFICATION_ID, fullRecordCompanyPSCApi);
         // then
@@ -165,6 +165,31 @@ class CompanyPscTransformerTest {
 
         pscInsertAssertions(expectedDocument, result);
     }
+
+    @Test
+    void testInsertIndividualBeneficialOwnerPscIsTransformedSuccessfullyNoPscStatements() throws FailedToTransformException {
+        // given
+        fullRecordCompanyPSCApi = TestHelper.buildFullRecordPsc(INDIVIDUAL_BO_KIND, SHOW_FULL_DOB_TRUE, false);
+        PscDocument expectedDocument = TestHelper.buildPscDocument(INDIVIDUAL_BO_KIND, SHOW_FULL_DOB_TRUE, false);
+        // when
+        PscDocument result = pscTransformer.transformPscOnInsert(NOTIFICATION_ID, fullRecordCompanyPSCApi);
+        // then
+        Assertions.assertNotNull(result.getData());
+
+        Assertions.assertTrue(result.getData().getSanctioned());
+        Assertions.assertNotNull(result.getData().getAddress());
+        Assertions.assertNotNull(result.getSensitiveData().getDateOfBirth());
+        Assertions.assertNotNull(result.getSensitiveData().getUsualResidentialAddress());
+        Assertions.assertNotNull(result.getSensitiveData().getResidentialAddressIsSameAsServiceAddress());
+        Assertions.assertNotNull(result.getData().getNameElements().getForename());
+        Assertions.assertNotNull(result.getData().getName());
+        Assertions.assertNotNull(result.getData().getNationality());
+        Assertions.assertNotNull(result.getData().getCountryOfResidence());
+        Assertions.assertNull(result.getData().getLinks().getStatements());
+
+        pscInsertAssertions(expectedDocument, result);
+    }
+
 
     @Test
     void testInsertCorporateEntityBeneficialOwnerPscIsTransformedSuccessfully() throws FailedToTransformException {

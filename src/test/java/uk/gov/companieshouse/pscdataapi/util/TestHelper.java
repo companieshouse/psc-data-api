@@ -29,20 +29,26 @@ public class TestHelper {
     public static final String COMPANY_NUMBER = "companyNumber";
     public static final String NOTIFICATION_ID = "notificationId";
     public static final String PSC_ID = "pscId";
+    public static final String PSC_STATEMENT_ID = "pscStatementId";
     public static final String X_REQUEST_ID = "654321";
 
     public TestHelper(){}
 
     public static FullRecordCompanyPSCApi buildFullRecordPsc(String kind) {
-        return buildFullRecordPsc(kind, false);
+        return buildFullRecordPsc(kind, false, true);
     }
 
-    public static FullRecordCompanyPSCApi buildFullRecordPsc(String kind, boolean showFullDateOfBirth) {
+    public static FullRecordCompanyPSCApi buildFullRecordPsc(String kind, boolean showFullDateOfBirth, boolean pscStatementsExists) {
         FullRecordCompanyPSCApi output  = new FullRecordCompanyPSCApi();
         ExternalData externalData = new ExternalData();
         Data data = new Data();
 
         externalData.setPscId(PSC_ID);
+
+        if (pscStatementsExists) {
+            externalData.setPscStatementId(PSC_STATEMENT_ID);
+        }
+
         // Not setting the notificationId as that is passed to the Transformer
         externalData.setCompanyNumber(COMPANY_NUMBER);
 
@@ -57,7 +63,11 @@ public class TestHelper {
         data.setName("wholeName");
         ItemLinkTypes links = new ItemLinkTypes();
         links.setSelf("self");
-        links.setStatements("linkStatements");
+
+        if (pscStatementsExists) {
+            links.setStatements("linkStatements");
+        }
+
         data.setLinks(List.of(links));
 
         data.serviceAddressSameAsRegisteredOfficeAddress(false);
@@ -172,10 +182,10 @@ public class TestHelper {
     }
 
     public static PscDocument buildPscDocument(String kind) {
-        return buildPscDocument(kind, false);
+        return buildPscDocument(kind, false, true);
     }
 
-    public static PscDocument buildPscDocument(String kind, boolean showFullDateOfBirth) {
+    public static PscDocument buildPscDocument(String kind, boolean showFullDateOfBirth, boolean pscStatementsExists) {
         PscDocument output = new PscDocument();
         PscData pscData = new PscData();
 
@@ -193,7 +203,9 @@ public class TestHelper {
         pscData.setName("wholeName");
         Links links = new Links();
         links.setSelf("self");
-        links.setStatements("linkStatements");
+        if (pscStatementsExists) {
+            links.setStatements("linkStatements");
+        }
         pscData.setLinks(links);
 
         pscData.setServiceAddressIsSameAsRegisteredOfficeAddress(false);
