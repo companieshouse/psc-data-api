@@ -16,12 +16,17 @@ public class PscTransformationHelper {
      * @param data the Data in ExternalData in the request payload.
      * @return Links object.
      */
-    public static Links createLinks(Data data) {
+    public static Links createLinks(Data data, String pscStatementId) {
         Links links = new Links();
         if (data.getLinks() != null) {
             ItemLinkTypes itemLinkTypes = data.getLinks().get(0);
             links.setSelf(itemLinkTypes.getSelf());
-            links.setStatements(itemLinkTypes.getStatements());
+
+            if (pscStatementId != null) {
+                links.setStatements(itemLinkTypes.getStatements());
+            } else {
+                links.setStatements(null);
+            }
         }
         return links;
     }
