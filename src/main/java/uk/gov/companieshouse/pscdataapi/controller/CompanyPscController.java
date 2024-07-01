@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.companieshouse.api.exception.ResourceNotFoundException;
 import uk.gov.companieshouse.api.psc.CorporateEntity;
 import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
 import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
@@ -27,6 +26,7 @@ import uk.gov.companieshouse.api.psc.SuperSecureBeneficialOwner;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
+import uk.gov.companieshouse.pscdataapi.exceptions.ResourceNotFoundException;
 import uk.gov.companieshouse.pscdataapi.exceptions.ServiceUnavailableException;
 import uk.gov.companieshouse.pscdataapi.logging.DataMapHolder;
 import uk.gov.companieshouse.pscdataapi.service.CompanyPscService;
@@ -44,10 +44,11 @@ public class CompanyPscController {
 
     /**
      * PUT endpoint for PSC record
+     *
      * @param contextId contextId taken from header.
-     * @param request request payload.
+     * @param request   request payload.
      * @return response.
-     * */
+     */
     @PutMapping(path = "/{notification_id}/full_record", consumes = "application/json")
     public ResponseEntity<Void> submitPscData(@RequestHeader("x-request-id") String contextId,
                                               @RequestBody final FullRecordCompanyPSCApi request) {
@@ -62,7 +63,7 @@ public class CompanyPscController {
                 request.getExternalData().getCompanyNumber()), DataMapHolder.getLogMap());
         try {
             pscService.insertPscRecord(contextId, request);
-            LOGGER.infoContext(contextId,"Successfully inserted PSC",
+            LOGGER.infoContext(contextId, "Successfully inserted PSC",
                     DataMapHolder.getLogMap());
             return ResponseEntity.status(HttpStatus.CREATED).build();
         } catch (ServiceUnavailableException ex) {
@@ -76,6 +77,7 @@ public class CompanyPscController {
 
     /**
      * Delete the data object for a company profile number.
+     *
      * @param companyNumber The number of the company
      * @return ResponseEntity
      */
@@ -105,6 +107,7 @@ public class CompanyPscController {
 
     /**
      * Get the data object for a company profile number for Individual PSC.
+     *
      * @param companyNumber The number of the company
      * @return ResponseEntity
      */
@@ -121,7 +124,7 @@ public class CompanyPscController {
                 DataMapHolder.getLogMap());
         try {
             Individual individual = pscService
-                    .getIndividualPsc(companyNumber , notificationId , registerView);
+                    .getIndividualPsc(companyNumber, notificationId, registerView);
             return new ResponseEntity<>(individual, HttpStatus.OK);
         } catch (ResourceNotFoundException ex) {
             LOGGER.error(ex.getMessage(), DataMapHolder.getLogMap());
@@ -134,6 +137,7 @@ public class CompanyPscController {
 
     /**
      * Get the data object for a company profile number for Individual Beneficial Owner PSC.
+     *
      * @param companyNumber The number of the company
      * @return ResponseEntity
      */
@@ -164,6 +168,7 @@ public class CompanyPscController {
 
     /**
      * Get the data object for a company profile number for Corporate Entity PSC.
+     *
      * @param companyNumber The number of the company
      * @return ResponseEntity
      */
@@ -191,6 +196,7 @@ public class CompanyPscController {
 
     /**
      * Get the data object for a company profile number for Corporate Entity Beneficial Owner PSC.
+     *
      * @param companyNumber The number of the company
      * @return ResponseEntity
      */
@@ -246,6 +252,7 @@ public class CompanyPscController {
 
     /**
      * Get the data object for a company profile number for Legal Person Beneficial Owner PSC.
+     *
      * @param companyNumber The number of the company
      * @return ResponseEntity
      */
@@ -273,6 +280,7 @@ public class CompanyPscController {
 
     /**
      * Get the data object for a company profile number for Super Secure PSC.
+     *
      * @param companyNumber The number of the company
      * @return ResponseEntity
      */
@@ -300,6 +308,7 @@ public class CompanyPscController {
 
     /**
      * Get the data object for a company profile number for Super Secure Beneficial Owner PSC.
+     *
      * @param companyNumber The number of the company
      * @return ResponseEntity
      */
@@ -327,6 +336,7 @@ public class CompanyPscController {
 
     /**
      * Get the PSC List Summary for a company profile number.
+     *
      * @param companyNumber The number of the company
      * @return ResponseEntity
      */

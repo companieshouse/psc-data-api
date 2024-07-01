@@ -5,7 +5,7 @@
     <parent>
         <groupId>uk.gov.companieshouse</groupId>
         <artifactId>companies-house-parent</artifactId>
-        <version>2.1.4</version>
+        <version>2.1.5</version>
         <relativePath />
     </parent>
     <artifactId>psc-data-api</artifactId>
@@ -14,37 +14,33 @@
     <name>psc-data-api</name>
     <description>Service handling CRUD functions for pscs</description>
     <properties>
-        <java.version>11</java.version>
+        <java.version>21</java.version>
         <start-class>uk.gov.companieshouse.pscdataapi.PscDataApiApplication</start-class>
-        <spring-boot-dependencies.version>2.6.4</spring-boot-dependencies.version>
-        <spring-boot-maven-plugin.version>2.6.4</spring-boot-maven-plugin.version>
+        <spring-boot-dependencies.version>3.3.1</spring-boot-dependencies.version>
+        <spring-boot-maven-plugin.version>3.3.1</spring-boot-maven-plugin.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
-        <maven-surefire-plugin.version>3.0.0-M5</maven-surefire-plugin.version>
-        <jib-maven-plugin.version>3.3.0</jib-maven-plugin.version>
-        <jacoco-maven-plugin.version>0.8.5</jacoco-maven-plugin.version>
-        <ch-kafka.version>1.4.2</ch-kafka.version>
-        <kafka-models.version>1.0.34</kafka-models.version>
+        <maven-surefire-plugin.version>3.3.0</maven-surefire-plugin.version>
+        <jib-maven-plugin.version>3.3.1</jib-maven-plugin.version>
+        <jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
+        <ch-kafka.version>3.0.2</ch-kafka.version>
+        <kafka-models.version>3.0.7</kafka-models.version>
 
         <!-- Internal -->
-        <structured-logging.version>1.9.25</structured-logging.version>
-        <private-api-sdk-java.version>2.0.347</private-api-sdk-java.version>
-        <data-sync-api-sdk-java.version>1.0.4</data-sync-api-sdk-java.version>
-        <api-security-java.version>0.4.1</api-security-java.version>
-        <api-sdk-manager-java-library.version>1.0.8</api-sdk-manager-java-library.version>
-        <api-helper-java-library.version>1.4.5</api-helper-java-library.version>
-        <sdk-manager-java.version>1.5.17</sdk-manager-java.version>
+        <structured-logging.version>3.0.8</structured-logging.version>
+        <private-api-sdk-java.version>4.0.160</private-api-sdk-java.version>
+        <data-sync-api-sdk-java.version>1.0.6</data-sync-api-sdk-java.version>
+        <api-security-java.version>2.0.4</api-security-java.version>
+        <api-sdk-manager-java-library.version>3.0.5</api-sdk-manager-java-library.version>
+        <api-helper-java-library.version>3.0.1</api-helper-java-library.version>
+        <sdk-manager-java.version>3.0.9</sdk-manager-java.version>
 
         <!-- tests -->
-        <maven-surefire-plugin.version>3.0.0-M5</maven-surefire-plugin.version>
-        <jib-maven-plugin.version>3.3.0</jib-maven-plugin.version>
-        <io-cucumber.version>7.2.3</io-cucumber.version>
-        <test-containers.version>1.16.3</test-containers.version>
-        <maven-failsafe-plugin.version>3.0.0-M5</maven-failsafe-plugin.version>
-        <assertj-core.version>3.22.0</assertj-core.version>
+        <jib-maven-plugin.version>3.4.3</jib-maven-plugin.version>
+        <io-cucumber.version>7.18.0</io-cucumber.version>
+        <test-containers.version>1.19.8</test-containers.version>
         <skip.integration.tests>false</skip.integration.tests>
         <skip.unit.tests>false</skip.unit.tests>
-        <maven-resources-plugin.version>2.5</maven-resources-plugin.version>
 
         <!--sonar configuration-->
         <sonar.coverage.jacoco.xmlReportPaths>${project.basedir}/target/site/jacoco/jacoco.xml,
