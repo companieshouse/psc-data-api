@@ -323,6 +323,13 @@ public class CompanyPscTransformer {
      */
     public PscDocument transformPscOnInsert(
             String notificationId, FullRecordCompanyPSCApi requestBody) {
+        String pscStatementId = null;
+        if (requestBody.getExternalData() != null) {
+            ExternalData externalData = requestBody.getExternalData();
+            if (externalData != null) {
+                pscStatementId = requestBody.getExternalData().getPscStatementId();
+            }
+        }
         PscDocument pscDocument = new PscDocument();
         logger.info("Transforming incoming payload", DataMapHolder.getLogMap());
 
@@ -336,7 +343,7 @@ public class CompanyPscTransformer {
             if (externalData.getData() != null) {
                 Data data = externalData.getData();
                 PscData pscData;
-                pscData = transformDataFields(data);
+                pscData = transformDataFields(data, pscStatementId);
 
                 String kind = data.getKind();
                 if (IndividualPscRoles.includes(kind)) {
@@ -381,14 +388,14 @@ public class CompanyPscTransformer {
         return pscSensitiveData;
     }
 
-    private PscData transformDataFields(Data data) {
+    private PscData transformDataFields(Data data, String pscStatementId) {
         PscData pscData = new PscData();
         pscData.setCeasedOn(data.getCeasedOn());
         pscData.setDescription(data.getDescription());
         pscData.setEtag(data.getEtag());
         pscData.setKind(data.getKind());
         pscData.setNotifiedOn(data.getNotifiedOn());
-        pscData.setLinks(PscTransformationHelper.createLinks(data));
+        pscData.setLinks(PscTransformationHelper.createLinks(data, pscStatementId));
         pscData.setName(data.getName());
         pscData.setNationality(data.getNationality());
         pscData.setNaturesOfControl(data.getNaturesOfControl());
