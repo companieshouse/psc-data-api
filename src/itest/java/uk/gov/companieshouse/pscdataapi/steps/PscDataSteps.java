@@ -64,10 +64,10 @@ public class PscDataSteps {
     private ChsKafkaApiService chsKafkaApiService;
     @Autowired
     private CompanyPscTransformer transformer;
-    @InjectMocks
-    private CompanyPscService companyPscService;
-
-    @Mock
+//    @InjectMocks
+//    private CompanyPscService companyPscService;
+//
+    @Autowired
     private CompanyMetricsApiService companyMetricsApiService;
 
     private final String COMPANY_NUMBER = "34777772";
