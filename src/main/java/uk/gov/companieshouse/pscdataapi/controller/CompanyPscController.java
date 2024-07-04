@@ -1,6 +1,5 @@
 package uk.gov.companieshouse.pscdataapi.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,10 +36,14 @@ import uk.gov.companieshouse.pscdataapi.service.CompanyPscService;
         produces = "application/json")
 public class CompanyPscController {
 
-    @Autowired
-    CompanyPscService pscService;
-
     private static final Logger LOGGER = LoggerFactory.getLogger("psc-data-api");
+    private static final String GETTING_PSC_DATA_WITH_COMPANY_NUMBER = "Getting PSC data with company number %s";
+
+    private final CompanyPscService pscService;
+
+    public CompanyPscController(CompanyPscService pscService) {
+        this.pscService = pscService;
+    }
 
     /**
      * PUT endpoint for PSC record
@@ -120,7 +123,7 @@ public class CompanyPscController {
         DataMapHolder.get()
                 .companyNumber(companyNumber)
                 .itemId(notificationId);
-        LOGGER.info(String.format("Getting PSC data with company number %s", companyNumber),
+        LOGGER.info(String.format(GETTING_PSC_DATA_WITH_COMPANY_NUMBER, companyNumber),
                 DataMapHolder.getLogMap());
         try {
             Individual individual = pscService
@@ -150,7 +153,7 @@ public class CompanyPscController {
         DataMapHolder.get()
                 .companyNumber(companyNumber)
                 .itemId(notificationId);
-        LOGGER.info(String.format("Getting PSC data with company number %s", companyNumber),
+        LOGGER.info(String.format(GETTING_PSC_DATA_WITH_COMPANY_NUMBER, companyNumber),
                 DataMapHolder.getLogMap());
         try {
             IndividualBeneficialOwner individualBeneficialOwner =
@@ -179,7 +182,7 @@ public class CompanyPscController {
         DataMapHolder.get()
                 .companyNumber(companyNumber)
                 .itemId(notificationId);
-        LOGGER.info(String.format("Getting PSC data with company number %s", companyNumber),
+        LOGGER.info(String.format(GETTING_PSC_DATA_WITH_COMPANY_NUMBER, companyNumber),
                 DataMapHolder.getLogMap());
         try {
             CorporateEntity corporateEntity =
@@ -207,7 +210,7 @@ public class CompanyPscController {
         DataMapHolder.get()
                 .companyNumber(companyNumber)
                 .itemId(notificationId);
-        LOGGER.info(String.format("Getting PSC data with company number %s", companyNumber),
+        LOGGER.info(String.format(GETTING_PSC_DATA_WITH_COMPANY_NUMBER, companyNumber),
                 DataMapHolder.getLogMap());
         try {
             CorporateEntityBeneficialOwner corporateEntityBeneficialOwner =
@@ -235,7 +238,7 @@ public class CompanyPscController {
         DataMapHolder.get()
                 .companyNumber(companyNumber)
                 .itemId(notificationId);
-        LOGGER.info(String.format("Getting PSC data with company number %s", companyNumber),
+        LOGGER.info(String.format(GETTING_PSC_DATA_WITH_COMPANY_NUMBER, companyNumber),
                 DataMapHolder.getLogMap());
         try {
             LegalPerson legalPerson =
@@ -263,7 +266,7 @@ public class CompanyPscController {
         DataMapHolder.get()
                 .companyNumber(companyNumber)
                 .itemId(notificationId);
-        LOGGER.info(String.format("Getting PSC data with company number %s", companyNumber),
+        LOGGER.info(String.format(GETTING_PSC_DATA_WITH_COMPANY_NUMBER, companyNumber),
                 DataMapHolder.getLogMap());
         try {
             LegalPersonBeneficialOwner legalPersonBeneficialOwner =
@@ -291,7 +294,7 @@ public class CompanyPscController {
         DataMapHolder.get()
                 .companyNumber(companyNumber)
                 .itemId(notificationId);
-        LOGGER.info(String.format("Getting PSC data with company number %s", companyNumber),
+        LOGGER.info(String.format(GETTING_PSC_DATA_WITH_COMPANY_NUMBER, companyNumber),
                 DataMapHolder.getLogMap());
         try {
             SuperSecure superSecure =
@@ -319,7 +322,7 @@ public class CompanyPscController {
         DataMapHolder.get()
                 .companyNumber(companyNumber)
                 .itemId(notificationId);
-        LOGGER.info(String.format("Getting PSC data with company number %s", companyNumber),
+        LOGGER.info(String.format(GETTING_PSC_DATA_WITH_COMPANY_NUMBER, companyNumber),
                 DataMapHolder.getLogMap());
         try {
             SuperSecureBeneficialOwner superSecureBeneficialOwner =
@@ -348,7 +351,7 @@ public class CompanyPscController {
             @RequestParam(value = "start_index",
                     required = false, defaultValue = "0") final Integer startIndex,
             @RequestParam(
-                    value = "register_view", required = false) boolean registerView) {
+                    value = "register_view", required = false) Boolean registerView) {
         DataMapHolder.get()
                 .companyNumber(companyNumber);
         itemsPerPage = Math.min(itemsPerPage, 100);

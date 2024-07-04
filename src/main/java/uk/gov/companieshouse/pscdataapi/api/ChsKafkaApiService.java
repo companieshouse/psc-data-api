@@ -2,7 +2,6 @@ package uk.gov.companieshouse.pscdataapi.api;
 
 import java.time.OffsetDateTime;
 import java.util.HashMap;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.api.InternalApiClient;
@@ -18,25 +17,30 @@ import uk.gov.companieshouse.pscdataapi.util.PscTransformationHelper;
 
 @Service
 public class ChsKafkaApiService {
-    @Autowired
-    InternalApiClient internalApiClient;
+
+    private static final String PSC_URI = "/company/%s/persons-with-significant-control/"
+            + "%s/%s";
+    private static final String CHANGED_EVENT_TYPE = "changed";
+    private static final String DELETE_EVENT_TYPE = "deleted";
+
+    private final InternalApiClient internalApiClient;
+    private final Logger logger;
+
     @Value("${chs.api.kafka.url}")
     private String chsKafkaApiUrl;
     @Value("${chs.api.kafka.resource-changed.uri}")
     private String resourceChangedUri;
-    private static final String PSC_URI = "/company/%s/persons-with-significant-control/"
-                                          + "%s/%s";
-    private static final String CHANGED_EVENT_TYPE = "changed";
 
-    private static final String DELETE_EVENT_TYPE = "deleted";
-    @Autowired
-    private Logger logger;
+    public ChsKafkaApiService(InternalApiClient internalApiClient, Logger logger) {
+        this.internalApiClient = internalApiClient;
+        this.logger = logger;
+    }
 
     /**
      * Creates a ChangedResource object to send a request to the chs kafka api.
      *
-     * @param contextId chs kafka id
-     * @param companyNumber company number of psc
+     * @param contextId      chs kafka id
+     * @param companyNumber  company number of psc
      * @param notificationId mongo id
      * @return passes request to api response handling
      */
@@ -55,8 +59,8 @@ public class ChsKafkaApiService {
     /**
      * Creates a ChangedResource object to send a delete request to the chs kafka api.
      *
-     * @param contextId chs kafka id
-     * @param companyNumber company number of psc
+     * @param contextId      chs kafka id
+     * @param companyNumber  company number of psc
      * @param notificationId mongo id
      * @return passes request to api response handling
      */
@@ -68,9 +72,9 @@ public class ChsKafkaApiService {
         internalApiClient.setBasePath(chsKafkaApiUrl);
         PrivateChangedResourcePost changedResourcePost =
                 internalApiClient.privateChangedResourceHandler()
-                .postChangedResource(resourceChangedUri,
-                        mapChangedResource(contextId, companyNumber,
-                        notificationId, kind, true, pscData));
+                        .postChangedResource(resourceChangedUri,
+                                mapChangedResource(contextId, companyNumber,
+                                        notificationId, kind, true, pscData));
         return handleApiCall(changedResourcePost);
     }
 
@@ -95,7 +99,7 @@ public class ChsKafkaApiService {
     }
 
     private static String mapKind(String kind) {
-        HashMap<String,String> kindMap = new HashMap<>();
+        HashMap<String, String> kindMap = new HashMap<>();
         kindMap.put("individual-person-with-significant-control", "individual");
         kindMap.put("legal-person-person-with-significant-control", "legal-person");
         kindMap.put("corporate-entity-person-with-significant-control", "corporate-entity");

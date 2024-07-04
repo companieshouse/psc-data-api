@@ -52,10 +52,8 @@ public class PscTransformationHelper {
             case "super-secure-person-with-significant-control":
                 validResourceKind = "company-psc-supersecure";
                 break;
-            case "individual-beneficial-owner":
-            case "corporate-entity-beneficial-owner":
-            case "legal-person-beneficial-owner":
-            case "super-secure-beneficial-owner":
+            case "individual-beneficial-owner", "corporate-entity-beneficial-owner",
+                 "legal-person-beneficial-owner", "super-secure-beneficial-owner":
                 validResourceKind = kind;
                 break;
             default:

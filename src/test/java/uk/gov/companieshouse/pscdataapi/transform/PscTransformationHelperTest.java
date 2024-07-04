@@ -3,21 +3,22 @@ package uk.gov.companieshouse.pscdataapi.transform;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
 import uk.gov.companieshouse.pscdataapi.util.PscTransformationHelper;
 import uk.gov.companieshouse.pscdataapi.util.TestHelper;
 
-public class PscTransformationHelperTest {
+class PscTransformationHelperTest {
 
     @Test
     void testIndividualPscResourceKindIsMappedCorrectly() {
         //when
         String validKind = PscTransformationHelper.mapResourceKind(TestHelper.INDIVIDUAL_KIND);
         //then
-        assertEquals(validKind, "company-psc-individual");
+        assertEquals("company-psc-individual", validKind);
     }
+
     @Test
     void testSecurePscResourceKindIsMappedCorrectly() {
         //when
@@ -25,6 +26,7 @@ public class PscTransformationHelperTest {
         //then
         assertThat(validKind, is("company-psc-supersecure"));
     }
+
     @Test
     void testCorporatePscResourceKindIsMappedCorrectly() {
         //when
@@ -32,6 +34,7 @@ public class PscTransformationHelperTest {
         //then
         assertThat(validKind, is("company-psc-corporate"));
     }
+
     @Test
     void testLegalPscResourceKindIsMappedCorrectly() {
         //when
@@ -39,6 +42,7 @@ public class PscTransformationHelperTest {
         //then
         assertThat(validKind, is("company-psc-legal"));
     }
+
     @Test
     void testIndividualBOResourceKindIsMappedCorrectly() {
         //when
@@ -46,6 +50,7 @@ public class PscTransformationHelperTest {
         //then
         assertThat(validKind, is(TestHelper.INDIVIDUAL_BO_KIND));
     }
+
     @Test
     void testIndividualBOResourceKindIsNotMappedToAnythingElse() {
         //when

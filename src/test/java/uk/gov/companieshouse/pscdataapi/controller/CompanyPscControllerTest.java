@@ -48,7 +48,6 @@ class CompanyPscControllerTest {
     private static final String MOCK_NOTIFICATION_ID = "123456789";
     private static final Boolean MOCK_REGISTER_VIEW_TRUE = true;
     private static final Boolean MOCK_REGISTER_VIEW_FALSE = false;
-
     private static final String ERIC_IDENTITY = "Test-Identity";
     private static final String ERIC_IDENTITY_TYPE = "key";
     private static final String ERIC_PRIVILEGES = "*";

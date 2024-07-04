@@ -14,7 +14,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-public class LocalDateSerializerTest {
+class LocalDateSerializerTest {
 
     private LocalDateSerializer serializer;
 
