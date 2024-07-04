@@ -94,18 +94,21 @@ public class PscDataSteps {
     private final String NOTIFICATION_ID = "ZfTs9WeeqpXTqf6dc6FZ4C0H0ZZ";
     private final String contextId = "5234234234";
 
+    private AutoCloseable autoCloseable;
+
     @Before
     public void dbCleanUp() {
         if (!mongoDBContainer.isRunning()) {
             mongoDBContainer.start();
         }
         companyPscRepository.deleteAll();
-        MockitoAnnotations.openMocks(this);
+        autoCloseable = MockitoAnnotations.openMocks(this);
     }
 
     @After
-    public void dbStop() {
+    public void dbStop() throws Exception {
         mongoDBContainer.stop();
+        autoCloseable.close();
     }
 
     @Given("Psc data api service is running")
