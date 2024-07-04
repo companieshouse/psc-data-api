@@ -1,24 +1,39 @@
 package uk.gov.companieshouse.pscdataapi.util;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
 import org.springframework.util.FileCopyUtils;
-import uk.gov.companieshouse.api.metrics.*;
-import uk.gov.companieshouse.api.psc.*;
+import uk.gov.companieshouse.api.metrics.CountsApi;
+import uk.gov.companieshouse.api.metrics.MetricsApi;
+import uk.gov.companieshouse.api.metrics.PscApi;
+import uk.gov.companieshouse.api.psc.Data;
+import uk.gov.companieshouse.api.psc.ExternalData;
+import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
+import uk.gov.companieshouse.api.psc.Identification;
 import uk.gov.companieshouse.api.psc.InternalData;
-import uk.gov.companieshouse.pscdataapi.models.*;
+import uk.gov.companieshouse.api.psc.ItemLinkTypes;
+import uk.gov.companieshouse.api.psc.ListSummary;
+import uk.gov.companieshouse.api.psc.PscList;
+import uk.gov.companieshouse.api.psc.SensitiveData;
+import uk.gov.companieshouse.api.psc.UsualResidentialAddress;
 import uk.gov.companieshouse.pscdataapi.models.Address;
 import uk.gov.companieshouse.pscdataapi.models.DateOfBirth;
+import uk.gov.companieshouse.pscdataapi.models.Links;
 import uk.gov.companieshouse.pscdataapi.models.NameElements;
+import uk.gov.companieshouse.pscdataapi.models.PscData;
+import uk.gov.companieshouse.pscdataapi.models.PscDocument;
+import uk.gov.companieshouse.pscdataapi.models.PscIdentification;
+import uk.gov.companieshouse.pscdataapi.models.PscSensitiveData;
+import uk.gov.companieshouse.pscdataapi.models.Updated;
 
 public class TestHelper {
     public static final String INDIVIDUAL_KIND = "individual-person-with-significant-control";

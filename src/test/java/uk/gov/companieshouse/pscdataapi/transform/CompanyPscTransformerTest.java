@@ -1,21 +1,30 @@
 package uk.gov.companieshouse.pscdataapi.transform;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.companieshouse.api.psc.*;
+import uk.gov.companieshouse.api.psc.CorporateEntity;
+import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
+import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
+import uk.gov.companieshouse.api.psc.Individual;
+import uk.gov.companieshouse.api.psc.IndividualBeneficialOwner;
+import uk.gov.companieshouse.api.psc.LegalPerson;
+import uk.gov.companieshouse.api.psc.LegalPersonBeneficialOwner;
+import uk.gov.companieshouse.api.psc.ListSummary;
+import uk.gov.companieshouse.api.psc.SuperSecure;
+import uk.gov.companieshouse.api.psc.SuperSecureBeneficialOwner;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.exceptions.FailedToTransformException;
 import uk.gov.companieshouse.pscdataapi.models.PscData;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 import uk.gov.companieshouse.pscdataapi.models.PscSensitiveData;
 import uk.gov.companieshouse.pscdataapi.util.TestHelper;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
 
 @ExtendWith(MockitoExtension.class)
 class CompanyPscTransformerTest {

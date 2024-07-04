@@ -1,16 +1,15 @@
 package uk.gov.companieshouse.pscdataapi.config;
 
-import java.util.function.Supplier;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
-import uk.gov.companieshouse.api.InternalApiClient;
-
-import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isA;
 import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.core.IsNot.not;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
+import uk.gov.companieshouse.api.InternalApiClient;
 
 class ApplicationConfigTest {
     private ApplicationConfig applicationConfig;
