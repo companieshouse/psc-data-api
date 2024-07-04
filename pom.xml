@@ -30,8 +30,6 @@
         <data-sync-api-sdk-java.version>1.0.6</data-sync-api-sdk-java.version>
         <api-security-java.version>2.0.4</api-security-java.version>
         <api-sdk-manager-java-library.version>3.0.5</api-sdk-manager-java-library.version>
-        <api-helper-java-library.version>3.0.1</api-helper-java-library.version>
-        <sdk-manager-java.version>3.0.9</sdk-manager-java.version>
 
         <!-- tests -->
         <jib-maven-plugin.version>3.4.3</jib-maven-plugin.version>
@@ -107,22 +105,23 @@
                     <groupId>com.github.docker-java</groupId>
                     <artifactId>docker-java-api</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>commons-beanutils</groupId>
+                    <artifactId>commons-beanutils</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>commons-collections</groupId>
+                    <artifactId>commons-collections</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.plexus</groupId>
+                    <artifactId>plexus-utils</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>uk.gov.companieshouse</groupId>
-            <artifactId>api-helper-java</artifactId>
-            <version>${api-helper-java-library.version}</version>
-        </dependency>
-
-        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.testcontainers</groupId>
-            <artifactId>junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -157,6 +156,12 @@
             <groupId>org.testcontainers</groupId>
             <artifactId>mongodb</artifactId>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.commons</groupId>
+                    <artifactId>commons-compress</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
