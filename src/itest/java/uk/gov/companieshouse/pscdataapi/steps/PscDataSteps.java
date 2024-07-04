@@ -1,56 +1,73 @@
 package uk.gov.companieshouse.pscdataapi.steps;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
+import static uk.gov.companieshouse.pscdataapi.config.AbstractMongoConfig.mongoDBContainer;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.api.client.http.HttpStatusCodes;
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-import org.assertj.core.api.Assertions;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import static org.mockito.Mockito.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.http.*;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static uk.gov.companieshouse.pscdataapi.config.AbstractMongoConfig.mongoDBContainer;
-
-import org.springframework.util.FileCopyUtils;
-import org.springframework.web.client.ResourceAccessException;
-import uk.gov.companieshouse.api.api.CompanyMetricsApiService;
-import uk.gov.companieshouse.api.metrics.MetricsApi;
-import uk.gov.companieshouse.api.psc.*;
-import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
-import uk.gov.companieshouse.pscdataapi.config.CucumberContext;
-import uk.gov.companieshouse.pscdataapi.models.*;
-import uk.gov.companieshouse.pscdataapi.models.Address;
-import uk.gov.companieshouse.pscdataapi.models.DateOfBirth;
-import uk.gov.companieshouse.pscdataapi.models.NameElements;
-import uk.gov.companieshouse.pscdataapi.transform.CompanyPscTransformer;
-import uk.gov.companieshouse.pscdataapi.util.FileReaderUtil;
-import uk.gov.companieshouse.pscdataapi.exceptions.ServiceUnavailableException;
-import uk.gov.companieshouse.pscdataapi.models.PscData;
-import uk.gov.companieshouse.pscdataapi.models.PscDocument;
-import uk.gov.companieshouse.pscdataapi.repository.CompanyPscRepository;
-import uk.gov.companieshouse.pscdataapi.service.CompanyPscService;
-import java.io.*;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
+import org.assertj.core.api.Assertions;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.FileCopyUtils;
+import uk.gov.companieshouse.api.api.CompanyMetricsApiService;
+import uk.gov.companieshouse.api.metrics.MetricsApi;
+import uk.gov.companieshouse.api.psc.CorporateEntity;
+import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
+import uk.gov.companieshouse.api.psc.Identification;
+import uk.gov.companieshouse.api.psc.Individual;
+import uk.gov.companieshouse.api.psc.IndividualBeneficialOwner;
+import uk.gov.companieshouse.api.psc.LegalPerson;
+import uk.gov.companieshouse.api.psc.LegalPersonBeneficialOwner;
+import uk.gov.companieshouse.api.psc.PscList;
+import uk.gov.companieshouse.api.psc.SuperSecure;
+import uk.gov.companieshouse.api.psc.SuperSecureBeneficialOwner;
+import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
+import uk.gov.companieshouse.pscdataapi.config.CucumberContext;
+import uk.gov.companieshouse.pscdataapi.exceptions.ServiceUnavailableException;
+import uk.gov.companieshouse.pscdataapi.models.Address;
+import uk.gov.companieshouse.pscdataapi.models.DateOfBirth;
+import uk.gov.companieshouse.pscdataapi.models.Links;
+import uk.gov.companieshouse.pscdataapi.models.NameElements;
+import uk.gov.companieshouse.pscdataapi.models.PscData;
+import uk.gov.companieshouse.pscdataapi.models.PscDocument;
+import uk.gov.companieshouse.pscdataapi.models.PscIdentification;
+import uk.gov.companieshouse.pscdataapi.models.PscSensitiveData;
+import uk.gov.companieshouse.pscdataapi.repository.CompanyPscRepository;
+import uk.gov.companieshouse.pscdataapi.service.CompanyPscService;
+import uk.gov.companieshouse.pscdataapi.transform.CompanyPscTransformer;
+import uk.gov.companieshouse.pscdataapi.util.FileReaderUtil;
 
 public class PscDataSteps {
 
@@ -66,6 +83,7 @@ public class PscDataSteps {
     private ChsKafkaApiService chsKafkaApiService;
     @Autowired
     private CompanyPscTransformer transformer;
+
     @InjectMocks
     private CompanyPscService companyPscService;
 
@@ -77,16 +95,16 @@ public class PscDataSteps {
     private final String contextId = "5234234234";
 
     @Before
-    public void dbCleanUp(){
+    public void dbCleanUp() {
         if (!mongoDBContainer.isRunning()) {
             mongoDBContainer.start();
         }
         companyPscRepository.deleteAll();
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
     }
 
     @After
-    public void dbStop(){
+    public void dbStop() {
         mongoDBContainer.stop();
     }
 
@@ -131,7 +149,7 @@ public class PscDataSteps {
     }
 
     @And("the CHS Kafka API service is not invoked")
-    public void verifyChsKafkaApiNotInvoked(){
+    public void verifyChsKafkaApiNotInvoked() {
         verifyNoInteractions(chsKafkaApiService);
     }
 
@@ -147,10 +165,10 @@ public class PscDataSteps {
         headers.set("ERIC-Authorised-Key-Roles", "*");
 
         HttpEntity<String> request = new HttpEntity<>(data, headers);
-        String uri = String.format("/company/%s/persons-with-significant-control/%s/full_record",companyNumber, notificationId);
+        String uri = String.format("/company/%s/persons-with-significant-control/%s/full_record", companyNumber, notificationId);
         ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.PUT, request, Void.class);
 
-        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
     }
 
     @When("I send a PUT request with payload {string} file with notification id {string}")
@@ -169,7 +187,7 @@ public class PscDataSteps {
         String uri = "/company/{company_number}/persons-with-significant-control/{notfication_id}/full_record";
         ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.PUT, request, Void.class, COMPANY_NUMBER, notificationId);
 
-        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
     }
 
     @When("I send a PUT request with payload {string} file for record with notification Id {string}")
@@ -188,7 +206,7 @@ public class PscDataSteps {
         String uri = "/company/{company_number}/persons-with-significant-control/{notification_id}/full_record";
         ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.PUT, request, Void.class, COMPANY_NUMBER, notificationId);
 
-        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
     }
 
     @Then("a record exists with id {string}")
@@ -222,7 +240,8 @@ public class PscDataSteps {
         String uri = "/company/{company_number}/persons-with-significant-control/{notification_id}/full_record";
         ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.DELETE, request, Void.class, companyNumber, NOTIFICATION_ID);
 
-        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());}
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
+    }
 
 
     @When("a DELETE request is sent for {string}")
@@ -296,11 +315,11 @@ public class PscDataSteps {
         HttpEntity<String> request = new HttpEntity<>(null, headers);
 
         String uri =
-                String.format("/company/%s/persons-with-significant-control/super-secure/%s",companyNumber,notification_id);
+                String.format("/company/%s/persons-with-significant-control/super-secure/%s", companyNumber, notification_id);
         ResponseEntity<SuperSecure> response = restTemplate.exchange(uri,
                 HttpMethod.GET, request, SuperSecure.class, companyNumber, notification_id);
 
-        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
         CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
     }
 
@@ -325,11 +344,11 @@ public class PscDataSteps {
         HttpEntity<String> request = new HttpEntity<>(null, headers);
 
         String uri =
-                String.format("/company/%s/persons-with-significant-control/super-secure/%s",companyNumber,notification_id);
+                String.format("/company/%s/persons-with-significant-control/super-secure/%s", companyNumber, notification_id);
         ResponseEntity<SuperSecure> response = restTemplate.exchange(uri,
                 HttpMethod.GET, request, SuperSecure.class, companyNumber, notification_id);
 
-        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
         CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
     }
 
@@ -346,11 +365,11 @@ public class PscDataSteps {
         HttpEntity<String> request = new HttpEntity<>(null, headers);
 
         String uri =
-                String.format("/company/%s/persons-with-significant-control/super-secure/%s",companyNumber,notification_id);
+                String.format("/company/%s/persons-with-significant-control/super-secure/%s", companyNumber, notification_id);
         ResponseEntity<SuperSecure> response = restTemplate.exchange(uri,
                 HttpMethod.GET, request, SuperSecure.class, companyNumber, notification_id);
 
-        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
     }
 
     @And("a PSC {string} exists for {string} for Super Secure Beneficial Owner")
@@ -390,11 +409,11 @@ public class PscDataSteps {
         HttpEntity<String> request = new HttpEntity<>(null, headers);
 
         String uri =
-                String.format("/company/%s/persons-with-significant-control/super-secure-beneficial-owner/%s",companyNumber,notification_id);
+                String.format("/company/%s/persons-with-significant-control/super-secure-beneficial-owner/%s", companyNumber, notification_id);
         ResponseEntity<SuperSecureBeneficialOwner> response = restTemplate.exchange(uri,
                 HttpMethod.GET, request, SuperSecureBeneficialOwner.class, companyNumber, notification_id);
 
-        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
         CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
     }
 
@@ -420,11 +439,11 @@ public class PscDataSteps {
         HttpEntity<String> request = new HttpEntity<>(null, headers);
 
         String uri =
-                String.format("/company/%s/persons-with-significant-control/super-secure-beneficial-owner/%s",companyNumber,notification_id);
+                String.format("/company/%s/persons-with-significant-control/super-secure-beneficial-owner/%s", companyNumber, notification_id);
         ResponseEntity<SuperSecureBeneficialOwner> response = restTemplate.exchange(uri,
                 HttpMethod.GET, request, SuperSecureBeneficialOwner.class, companyNumber, notification_id);
 
-        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
         CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
     }
 
@@ -441,11 +460,11 @@ public class PscDataSteps {
         HttpEntity<String> request = new HttpEntity<>(null, headers);
 
         String uri =
-                String.format("/company/%s/persons-with-significant-control/super-secure-beneficial-owner/%s",companyNumber,notification_id);
+                String.format("/company/%s/persons-with-significant-control/super-secure-beneficial-owner/%s", companyNumber, notification_id);
         ResponseEntity<SuperSecureBeneficialOwner> response = restTemplate.exchange(uri,
                 HttpMethod.GET, request, SuperSecureBeneficialOwner.class, companyNumber, notification_id);
 
-        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
     }
 
     @And("a PSC {string} exists for {string} for Corporate Entity")
@@ -506,11 +525,11 @@ public class PscDataSteps {
         HttpEntity<String> request = new HttpEntity<>(null, headers);
 
         String uri =
-                String.format("/company/%s/persons-with-significant-control/corporate-entity/%s",companyNumber,notification_id);
+                String.format("/company/%s/persons-with-significant-control/corporate-entity/%s", companyNumber, notification_id);
         ResponseEntity<CorporateEntity> response = restTemplate.exchange(uri,
                 HttpMethod.GET, request, CorporateEntity.class, companyNumber, notification_id);
 
-        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
         CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
     }
 
@@ -538,11 +557,11 @@ public class PscDataSteps {
         HttpEntity<String> request = new HttpEntity<>(null, headers);
 
         String uri =
-                String.format("/company/%s/persons-with-significant-control/corporate-entity/%s",companyNumber,notification_id);
+                String.format("/company/%s/persons-with-significant-control/corporate-entity/%s", companyNumber, notification_id);
         ResponseEntity<CorporateEntity> response = restTemplate.exchange(uri,
                 HttpMethod.GET, request, CorporateEntity.class, companyNumber, notification_id);
 
-        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
     }
 
     @When("a Get request is sent for {string} and {string} without ERIC headers for Corporate Entity")
@@ -555,11 +574,11 @@ public class PscDataSteps {
         HttpEntity<String> request = new HttpEntity<>(null, headers);
 
         String uri =
-                String.format("/company/%s/persons-with-significant-control/corporate-entity/%s",companyNumber,notification_id);
+                String.format("/company/%s/persons-with-significant-control/corporate-entity/%s", companyNumber, notification_id);
         ResponseEntity<CorporateEntity> response = restTemplate.exchange(uri,
                 HttpMethod.GET, request, CorporateEntity.class, companyNumber, notification_id);
 
-        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
         CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
     }
 
@@ -632,7 +651,7 @@ public class PscDataSteps {
         ResponseEntity<Individual> response = restTemplate.exchange(uri,
                 HttpMethod.GET, request, Individual.class, companyNumber, notification_id);
 
-        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
         CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
     }
 
@@ -660,7 +679,7 @@ public class PscDataSteps {
         ResponseEntity<Individual> response = restTemplate.exchange(uri,
                 HttpMethod.GET, request, Individual.class, companyNumber, notification_id);
 
-        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
         CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
     }
 
@@ -680,7 +699,7 @@ public class PscDataSteps {
         ResponseEntity<Individual> response = restTemplate.exchange(uri,
                 HttpMethod.GET, request, Individual.class, companyNumber, notification_id);
 
-        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
     }
 
     @And("a PSC {string} exists for {string} for Individual Beneficial Owner")
@@ -728,7 +747,7 @@ public class PscDataSteps {
         ResponseEntity<IndividualBeneficialOwner> response = restTemplate.exchange(uri,
                 HttpMethod.GET, request, IndividualBeneficialOwner.class, companyNumber, notification_id);
 
-        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
         CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
     }
 
@@ -760,7 +779,7 @@ public class PscDataSteps {
         ResponseEntity<IndividualBeneficialOwner> response = restTemplate.exchange(uri,
                 HttpMethod.GET, request, IndividualBeneficialOwner.class, companyNumber, notification_id);
 
-        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
     }
 
     @When("a Get request is sent for {string} and {string} without ERIC headers for Individual Beneficial Owner")
@@ -776,7 +795,7 @@ public class PscDataSteps {
         ResponseEntity<IndividualBeneficialOwner> response = restTemplate.exchange(uri,
                 HttpMethod.GET, request, IndividualBeneficialOwner.class, companyNumber, notification_id);
 
-        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
         CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
     }
 
@@ -830,7 +849,7 @@ public class PscDataSteps {
         ResponseEntity<CorporateEntityBeneficialOwner> response = restTemplate.exchange(uri,
                 HttpMethod.GET, request, CorporateEntityBeneficialOwner.class, companyNumber, notification_id);
 
-        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
         CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
     }
 
@@ -860,7 +879,7 @@ public class PscDataSteps {
         ResponseEntity<CorporateEntityBeneficialOwner> response = restTemplate.exchange(uri,
                 HttpMethod.GET, request, CorporateEntityBeneficialOwner.class, companyNumber, notification_id);
 
-        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
         CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
     }
 
@@ -881,7 +900,7 @@ public class PscDataSteps {
         ResponseEntity<CorporateEntityBeneficialOwner> response = restTemplate.exchange(uri,
                 HttpMethod.GET, request, CorporateEntityBeneficialOwner.class, companyNumber, notification_id);
 
-        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
     }
 
 
@@ -923,7 +942,7 @@ public class PscDataSteps {
         ResponseEntity<LegalPerson> response = restTemplate.exchange(uri,
                 HttpMethod.GET, request, LegalPerson.class, companyNumber, notification_id);
 
-        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
         CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
     }
 
@@ -951,7 +970,7 @@ public class PscDataSteps {
         ResponseEntity<LegalPerson> response = restTemplate.exchange(uri,
                 HttpMethod.GET, request, LegalPerson.class, companyNumber, notification_id);
 
-        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
         CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
     }
 
@@ -972,7 +991,7 @@ public class PscDataSteps {
         ResponseEntity<LegalPerson> response = restTemplate.exchange(uri,
                 HttpMethod.GET, request, LegalPerson.class, companyNumber, notification_id);
 
-        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
     }
 
     @And("a PSC {string} exists for {string} for Legal Person Beneficial Owner")
@@ -1024,7 +1043,7 @@ public class PscDataSteps {
         ResponseEntity<LegalPersonBeneficialOwner> response = restTemplate.exchange(uri,
                 HttpMethod.GET, request, LegalPersonBeneficialOwner.class, companyNumber, notification_id);
 
-        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
         CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
     }
 
@@ -1054,7 +1073,7 @@ public class PscDataSteps {
         ResponseEntity<LegalPersonBeneficialOwner> response = restTemplate.exchange(uri,
                 HttpMethod.GET, request, LegalPersonBeneficialOwner.class, companyNumber, notification_id);
 
-        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
         CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
     }
 
@@ -1075,7 +1094,7 @@ public class PscDataSteps {
         ResponseEntity<LegalPersonBeneficialOwner> response = restTemplate.exchange(uri,
                 HttpMethod.GET, request, LegalPersonBeneficialOwner.class, companyNumber, notification_id);
 
-        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
     }
 
     @And("a PSC exists for {string} for List summary")
@@ -1145,7 +1164,6 @@ public class PscDataSteps {
         document2.setData(pscData2);
 
 
-
         mongoTemplate.save(document2);
 
         assertThat(companyPscRepository.getPscByCompanyNumberAndId(companyNumber, notificationId1)).isNotEmpty();
@@ -1165,11 +1183,11 @@ public class PscDataSteps {
         HttpEntity<String> request = new HttpEntity<>(null, headers);
 
         String uri =
-                "/company/{company_number}/persons-with-significant-control/";
+                "/company/{company_number}/persons-with-significant-control";
         ResponseEntity<PscList> response = restTemplate.exchange(uri,
                 HttpMethod.GET, request, PscList.class, companyNumber);
 
-        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
         CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
     }
 
@@ -1195,11 +1213,11 @@ public class PscDataSteps {
         HttpEntity<String> request = new HttpEntity<>(null, headers);
 
         String uri =
-                String.format("/company/%s/persons-with-significant-control/",companyNumber);
+                String.format("/company/%s/persons-with-significant-control/", companyNumber);
         ResponseEntity<PscList> response = restTemplate.exchange(uri,
-                HttpMethod.GET, request, PscList.class, companyNumber );
+                HttpMethod.GET, request, PscList.class, companyNumber);
 
-        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
         CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
     }
 
@@ -1220,7 +1238,7 @@ public class PscDataSteps {
         } catch (Exception ex) {
             response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
         CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
     }
 
