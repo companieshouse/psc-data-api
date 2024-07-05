@@ -13,6 +13,7 @@ public class PscTransformationHelper {
 
     /**
      * Creates Links field.
+     *
      * @param data the Data in ExternalData in the request payload.
      * @return Links object.
      */
@@ -33,32 +34,19 @@ public class PscTransformationHelper {
 
     /**
      * Maps kind from FullRecordCompanyPSCApi object to a valid resource kind for Chs kafka api.
+     *
      * @param kind psc kind
      * @return String containing valid resource kind
      */
-    public static String mapResourceKind(String kind) {
-        String validResourceKind = "";
-
-        switch (kind) {
-            case "individual-person-with-significant-control":
-                validResourceKind = "company-psc-individual";
-                break;
-            case "corporate-entity-person-with-significant-control":
-                validResourceKind = "company-psc-corporate";
-                break;
-            case "legal-person-person-with-significant-control":
-                validResourceKind = "company-psc-legal";
-                break;
-            case "super-secure-person-with-significant-control":
-                validResourceKind = "company-psc-supersecure";
-                break;
-            case "individual-beneficial-owner", "corporate-entity-beneficial-owner",
-                 "legal-person-beneficial-owner", "super-secure-beneficial-owner":
-                validResourceKind = kind;
-                break;
-            default:
-        }
-
-        return validResourceKind;
+    public static String mapResourceKind(final String kind) {
+        return switch (kind) {
+            case "individual-person-with-significant-control" -> "company-psc-individual";
+            case "corporate-entity-person-with-significant-control" -> "company-psc-corporate";
+            case "legal-person-person-with-significant-control" -> "company-psc-legal";
+            case "super-secure-person-with-significant-control" -> "company-psc-supersecure";
+            case "individual-beneficial-owner", "corporate-entity-beneficial-owner", "legal-person-beneficial-owner",
+                 "super-secure-beneficial-owner" -> kind;
+            default -> "";
+        };
     }
 }
