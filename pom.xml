@@ -207,7 +207,6 @@
                         <CHS_API_KEY>key</CHS_API_KEY>
                         <API_URL>key</API_URL>
                         <PAYMENTS_API_URL>key</PAYMENTS_API_URL>
-                        <DOCUMENT_API_LOCAL_URL>key</DOCUMENT_API_LOCAL_URL>
                     </environmentVariables>
                 </configuration>
             </plugin>
@@ -277,6 +276,14 @@
                 <groupId>com.google.cloud.tools</groupId>
                 <artifactId>jib-maven-plugin</artifactId>
                 <version>${jib-maven-plugin.version}</version>
+                <configuration>
+                    <from>
+                        <image>416670754337.dkr.ecr.eu-west-2.amazonaws.com/ci-corretto-runtime-21:latest</image>
+                    </from>
+                    <to>
+                        <image>416670754337.dkr.ecr.eu-west-2.amazonaws.com/psc-data-api:latest</image>
+                    </to>
+                </configuration>
             </plugin>
         </plugins>
     </build>
