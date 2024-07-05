@@ -2,10 +2,10 @@ package uk.gov.companieshouse.pscdataapi.interceptor;
 
 import static uk.gov.companieshouse.logging.util.LogContextProperties.REQUEST_ID;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.Optional;
 import java.util.UUID;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 import uk.gov.companieshouse.logging.Logger;
