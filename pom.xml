@@ -21,7 +21,7 @@
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <maven-surefire-plugin.version>3.3.0</maven-surefire-plugin.version>
-        <jib-maven-plugin.version>3.3.1</jib-maven-plugin.version>
+        <jib-maven-plugin.version>3.4.2</jib-maven-plugin.version>
         <jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
 
         <!-- Internal -->
@@ -32,7 +32,6 @@
         <api-sdk-manager-java-library.version>3.0.5</api-sdk-manager-java-library.version>
 
         <!-- tests -->
-        <jib-maven-plugin.version>3.4.3</jib-maven-plugin.version>
         <io-cucumber.version>7.18.0</io-cucumber.version>
         <test-containers.version>1.19.8</test-containers.version>
         <skip.integration.tests>false</skip.integration.tests>
@@ -277,6 +276,14 @@
                 <groupId>com.google.cloud.tools</groupId>
                 <artifactId>jib-maven-plugin</artifactId>
                 <version>${jib-maven-plugin.version}</version>
+                <configuration>
+                    <from>
+                        <image>416670754337.dkr.ecr.eu-west-2.amazonaws.com/ci-corretto-runtime-21:latest</image>
+                    </from>
+                    <to>
+                        <image>416670754337.dkr.ecr.eu-west-2.amazonaws.com/psc-data-api:latest</image>
+                    </to>
+                </configuration>
             </plugin>
         </plugins>
     </build>
