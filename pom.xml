@@ -32,7 +32,6 @@
         <api-sdk-manager-java-library.version>3.0.5</api-sdk-manager-java-library.version>
 
         <!-- tests -->
-        <jib-maven-plugin.version>3.4.2</jib-maven-plugin.version>
         <io-cucumber.version>7.18.0</io-cucumber.version>
         <test-containers.version>1.19.8</test-containers.version>
         <skip.integration.tests>false</skip.integration.tests>
