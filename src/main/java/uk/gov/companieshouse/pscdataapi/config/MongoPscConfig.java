@@ -4,7 +4,6 @@ import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,8 +23,11 @@ public class MongoPscConfig extends AbstractMongoClientConfiguration {
     @Value("${spring.data.mongodb.uri}")
     private String databaseUri;
 
-    @Autowired
-    MongoCustomConversions mongoCustomConversions;
+    private final MongoCustomConversions mongoCustomConversions;
+
+    public MongoPscConfig(MongoCustomConversions mongoCustomConversions) {
+        this.mongoCustomConversions = mongoCustomConversions;
+    }
 
     @Bean
     MongoTransactionManager transactionManager(MongoDatabaseFactory dbFactory) {

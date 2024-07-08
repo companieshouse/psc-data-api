@@ -1,7 +1,6 @@
 package uk.gov.companieshouse.pscdataapi.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.Objects;
 
 

@@ -2,8 +2,6 @@ package uk.gov.companieshouse.pscdataapi.transform;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.api.psc.CorporateEntity;
 import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
@@ -37,14 +35,20 @@ import uk.gov.companieshouse.pscdataapi.util.PscTransformationHelper;
 @Component
 public class CompanyPscTransformer {
 
-    @Autowired
-    private Logger logger;
+    private static final String CORPORATE = "corporate";
+    private static final String LEGAL = "legal";
 
+    private final Logger logger;
     private final DateTimeFormatter dateTimeFormatter =
             DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSSSSS");
 
+    public CompanyPscTransformer(Logger logger) {
+        this.logger = logger;
+    }
+
     /**
      * Transform Individual PSC.
+     *
      * @param pscDocument PSC.
      * @return PSC mongo Document.
      */
@@ -75,6 +79,7 @@ public class CompanyPscTransformer {
 
     /**
      * Transform Individual Beneficial Owner PSC.
+     *
      * @param pscDocument PSC.
      * @return PSC mongo Document.
      */
@@ -105,6 +110,7 @@ public class CompanyPscTransformer {
 
     /**
      * Transform Corporate Entity PSC.
+     *
      * @param pscDocument PSC.
      * @return PSC mongo Document.
      */
@@ -124,13 +130,14 @@ public class CompanyPscTransformer {
             corporateEntity.setAddress(mapAddress(pscData.getAddress()));
             corporateEntity.setNaturesOfControl(pscData.getNaturesOfControl());
             corporateEntity.setIdentification(
-                    mapIdentification(pscData.getIdentification(), "corporate"));
+                    mapIdentification(pscData.getIdentification(), CORPORATE));
         }
         return corporateEntity;
     }
 
     /**
      * Transform Corporate Entity Beneficial Owner PSC.
+     *
      * @param pscDocument PSC.
      * @return PSC mongo Document.
      */
@@ -150,7 +157,7 @@ public class CompanyPscTransformer {
             corporateEntityBo.setLinks(pscData.getLinks());
             corporateEntityBo.setIsSanctioned(pscData.getSanctioned());
             corporateEntityBo.setIdentification(mapIdentification(
-                    pscData.getIdentification(), "corporate"));
+                    pscData.getIdentification(), CORPORATE));
             corporateEntityBo.setNotifiedOn(pscData.getNotifiedOn());
             corporateEntityBo.setPrincipalOfficeAddress(mapPrincipleAddress(
                     pscData.getPrincipalOfficeAddress()));
@@ -160,6 +167,7 @@ public class CompanyPscTransformer {
 
     /**
      * Transform Legal person PSC.
+     *
      * @param pscDocument PSC.
      * @return PSC mongo Document.
      */
@@ -179,13 +187,14 @@ public class CompanyPscTransformer {
             legalPerson.setCeasedOn(pscData.getCeasedOn());
             legalPerson.setNotifiedOn(pscData.getNotifiedOn());
             legalPerson.setIdentification(mapIdentification(
-                    pscData.getIdentification(), "legal"));
+                    pscData.getIdentification(), LEGAL));
         }
         return legalPerson;
     }
 
     /**
      * Transform Legal person Beneficial Owner PSC.
+     *
      * @param pscDocument PSC.
      * @return PSC mongo Document.
      */
@@ -207,7 +216,7 @@ public class CompanyPscTransformer {
             legalPersonBo.setNotifiedOn(pscData.getNotifiedOn());
             legalPersonBo.setIsSanctioned(pscData.getSanctioned());
             legalPersonBo.setIdentification(mapIdentification(
-                    pscData.getIdentification(), "legal"));
+                    pscData.getIdentification(), LEGAL));
             legalPersonBo.setPrincipalOfficeAddress(mapPrincipleAddress(
                     pscData.getPrincipalOfficeAddress()));
         }
@@ -216,6 +225,7 @@ public class CompanyPscTransformer {
 
     /**
      * Transform Super Secure PSC.
+     *
      * @param pscDocument PSC.
      * @return PSC mongo Document.
      */
@@ -229,7 +239,7 @@ public class CompanyPscTransformer {
         if (pscDocument.getData() != null) {
             PscData pscData = pscDocument.getData();
             superSecure.setEtag(pscData.getEtag());
-            if (pscData.getCeased()) {
+            if (Boolean.TRUE.equals(pscData.getCeased())) {
                 superSecure.setCeased("1");
             } else {
                 superSecure.setCeased("0");
@@ -241,6 +251,7 @@ public class CompanyPscTransformer {
 
     /**
      * Transform Super Secure Beneficial Owner PSC.
+     *
      * @param pscDocument PSC.
      * @return PSC mongo Document.
      */
@@ -255,7 +266,7 @@ public class CompanyPscTransformer {
         if (pscDocument.getData() != null) {
             PscData pscData = pscDocument.getData();
             superSecureBo.setEtag(pscData.getEtag());
-            if (pscData.getCeased()) {
+            if (Boolean.TRUE.equals(pscData.getCeased())) {
                 superSecureBo.setCeased("1");
             } else {
                 superSecureBo.setCeased("0");
@@ -267,12 +278,12 @@ public class CompanyPscTransformer {
 
     /**
      * Transform Psc List.
+     *
      * @param pscDocument PSC.
      * @return ListSummary mongo Document.
      */
     public ListSummary transformPscDocToListSummary(PscDocument pscDocument, Boolean registerView) {
         ListSummary listSummary = new ListSummary();
-
 
 
         if (pscDocument.getData() != null) {
@@ -317,8 +328,9 @@ public class CompanyPscTransformer {
 
     /**
      * Transform PSC on insert.
+     *
      * @param notificationId PSC Id.
-     * @param requestBody request payload.
+     * @param requestBody    request payload.
      * @return PSC mongo Document.
      */
     public PscDocument transformPscOnInsert(
@@ -405,7 +417,7 @@ public class CompanyPscTransformer {
         }
         pscData.setServiceAddressIsSameAsRegisteredOfficeAddress(
                 data.getServiceAddressSameAsRegisteredOfficeAddress());
-        if (pscData.getKind().contains("corporate") || pscData.getKind().contains("legal")) {
+        if (pscData.getKind().contains(CORPORATE) || pscData.getKind().contains(LEGAL)) {
             PscIdentification identification = new PscIdentification(data.getIdentification());
             pscData.setIdentification(identification);
         }
@@ -519,7 +531,7 @@ public class CompanyPscTransformer {
             Identification identification = new Identification();
             identification.setLegalAuthority(inputIdentification.getLegalAuthority());
             identification.setLegalForm(inputIdentification.getLegalForm());
-            if (kindString.equals("corporate") || kindString.equals("list summary")) {
+            if (kindString.equals(CORPORATE) || kindString.equals("list summary")) {
                 identification.setCountryRegistered(inputIdentification.getCountryRegistered());
                 identification.setPlaceRegistered(inputIdentification.getPlaceRegistered());
                 identification.setRegistrationNumber(inputIdentification.getRegistrationNumber());

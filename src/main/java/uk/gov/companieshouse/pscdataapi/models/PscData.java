@@ -2,13 +2,9 @@ package uk.gov.companieshouse.pscdataapi.models;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.time.LocalDate;
 import java.util.List;
-
 import java.util.Objects;
-
-import org.springframework.data.mongodb.core.mapping.Field;
 import org.springframework.format.annotation.DateTimeFormat;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
