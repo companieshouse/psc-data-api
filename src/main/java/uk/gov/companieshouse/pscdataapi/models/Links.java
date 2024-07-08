@@ -8,8 +8,8 @@ public class Links {
     @Field("self")
     private String self;
 
-    @Field("statements")
-    private String statements;
+    @Field("statement")
+    private String statement;
 
     public String getSelf() {
         return self;
@@ -19,12 +19,12 @@ public class Links {
         this.self = self;
     }
 
-    public String getStatements() {
-        return statements;
+    public String getStatement() {
+        return statement;
     }
 
-    public void setStatements(String statements) {
-        this.statements = statements;
+    public void setStatement(String statement) {
+        this.statement = statement;
     }
 
     @Override
@@ -33,8 +33,8 @@ public class Links {
                 + "self='"
                 + self
                 + '\''
-                + ", statements='"
-                + statements
+                + ", statement='"
+                + statement
                 + '\''
                 + '}';
     }
@@ -49,11 +49,11 @@ public class Links {
         }
         Links links = (Links) object;
         return Objects.equals(self, links.self)
-                && Objects.equals(statements, links.statements);
+                && Objects.equals(statement, links.statement);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(self, statements);
+        return Objects.hash(self, statement);
     }
 }
