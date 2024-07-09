@@ -7,10 +7,10 @@ all: build
 .PHONY: clean
 clean:
 	mvn clean
-	rm -f $(artifact_name)-*.zip
-	rm -f $(artifact_name).jar
+	rm -f ./$(artifact_name)-*.zip
+	rm -f ./$(artifact_name).jar
 	rm -rf ./build-*
-	rm -f ./build.log
+	rm -rf ./build.log-*
 
 .PHONY: security-check
 security-check:
@@ -19,15 +19,9 @@ security-check:
 
 .PHONY: build
 build:
-	$(info Packaging version: $(version))
 	mvn versions:set -DnewVersion=$(version) -DgenerateBackupPoms=false
-	mvn package -DskipTests=true
-	$(eval tmpdir:=$(shell mktemp -d build-XXXXXXXXXX))
-	cp ./start.sh $(tmpdir)
-	cp ./routes.yaml $(tmpdir)
-	cp ./target/$(artifact_name)-$(version).jar $(tmpdir)/$(artifact_name).jar
-	cd $(tmpdir); zip -r ../$(artifact_name)-$(version).zip *
-	rm -rf $(tmpdir)
+	mvn package -Dmaven.test.skip=true
+	cp ./target/$(artifact_name)-$(version).jar ./$(artifact_name).jar
 
 .PHONY: test
 test: test-unit test-integration
@@ -58,6 +52,10 @@ endif
 	cd $(tmpdir); zip -r ../$(artifact_name)-$(version).zip *
 	rm -rf $(tmpdir)
 
+.PHONY: build-container
+build-container: build
+	docker build .
+
 .PHONY: dist
 dist: clean build package coverage
 
@@ -71,4 +69,5 @@ sonar:
 
 .PHONY: sonar-pr-analysis
 sonar-pr-analysis:
-	mvn sonar:sonar -P sonar-pr-analysis
+	mvn verify -Dskip.unit.tests=true -Dskip.integration.tests=true
+	#mvn sonar:sonar -P sonar-pr-analysis #temporary until sonar available for Java 21
