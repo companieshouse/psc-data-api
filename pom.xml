@@ -206,7 +206,6 @@
                         <CHS_API_KEY>key</CHS_API_KEY>
                         <API_URL>key</API_URL>
                         <PAYMENTS_API_URL>key</PAYMENTS_API_URL>
-                        <DOCUMENT_API_LOCAL_URL>key</DOCUMENT_API_LOCAL_URL>
                     </environmentVariables>
                 </configuration>
             </plugin>

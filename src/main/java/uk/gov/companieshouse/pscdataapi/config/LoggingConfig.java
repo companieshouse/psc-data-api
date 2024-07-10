@@ -1,19 +1,16 @@
 package uk.gov.companieshouse.pscdataapi.config;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
+import uk.gov.companieshouse.pscdataapi.PscDataApiApplication;
 
 /**
  * Configuration class for logging.
  */
 @Configuration
 public class LoggingConfig {
-
-    @Value("${logger.namespace}")
-    private String loggerNamespace;
 
     /**
      * Creates a logger with specified namespace.
@@ -22,6 +19,6 @@ public class LoggingConfig {
      */
     @Bean
     public Logger logger() {
-        return LoggerFactory.getLogger(loggerNamespace);
+        return LoggerFactory.getLogger(PscDataApiApplication.APPLICATION_NAME_SPACE);
     }
 }
