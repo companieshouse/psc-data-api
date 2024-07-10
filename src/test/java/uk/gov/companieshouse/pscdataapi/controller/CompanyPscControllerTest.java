@@ -1,10 +1,10 @@
 package uk.gov.companieshouse.pscdataapi.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.anyString;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.isA;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -23,6 +23,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+
 import uk.gov.companieshouse.api.exception.ServiceUnavailableException;
 import uk.gov.companieshouse.api.psc.CorporateEntity;
 import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
@@ -35,7 +36,6 @@ import uk.gov.companieshouse.api.psc.PscList;
 import uk.gov.companieshouse.api.psc.SuperSecure;
 import uk.gov.companieshouse.api.psc.SuperSecureBeneficialOwner;
 import uk.gov.companieshouse.pscdataapi.exceptions.ResourceNotFoundException;
-import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 import uk.gov.companieshouse.pscdataapi.service.CompanyPscService;
 import uk.gov.companieshouse.pscdataapi.util.TestHelper;
 
@@ -52,18 +52,6 @@ class CompanyPscControllerTest {
     private static final String ERIC_IDENTITY_TYPE = "key";
     private static final String ERIC_PRIVILEGES = "*";
     private static final String ERIC_AUTH = "internal-app";
-
-    private FullRecordCompanyPSCApi request;
-    private PscDocument document;
-    private SuperSecure superSecure;
-    private SuperSecureBeneficialOwner superSecureBeneficialOwner;
-    private Individual individual;
-    private IndividualBeneficialOwner individualBeneficialOwner;
-    private CorporateEntity corporateEntity;
-    private CorporateEntityBeneficialOwner corporateEntityBeneficialOwner;
-    private LegalPerson legalPerson;
-    private LegalPersonBeneficialOwner legalPersonBeneficialOwner;
-    private TestHelper testHelper;
 
     private static final String PUT_URL = String.format(
             "/company/%s/persons-with-significant-control/%s/full_record", MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID);
