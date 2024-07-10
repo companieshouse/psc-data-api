@@ -4,13 +4,13 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
+
 import uk.gov.companieshouse.api.InternalApiClient;
 import uk.gov.companieshouse.api.chskafka.ChangedResource;
 import uk.gov.companieshouse.api.error.ApiErrorResponseException;
@@ -46,16 +46,9 @@ class ResourceChangedApiServiceAspectFeatureFlagEnabledITest {
     @Mock
     private ChangedResource changedResource;
 
-    private String url = "testurl";
     @Mock
     private RequestExecutor requestExecutor;
-    private TestHelper testHelper;
 
-    @BeforeEach
-    void setup() {
-
-        testHelper = new TestHelper();
-    }
     @Test
     void testThatAspectShouldNotProceedWhenFeatureFlagEnabled() throws ServiceUnavailableException, ApiErrorResponseException {
 
