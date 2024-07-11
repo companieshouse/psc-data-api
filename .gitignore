@@ -21,7 +21,7 @@
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
-/target/
+target/
 
 # IntelliJ files
 .idea/
@@ -29,3 +29,9 @@ hs_err_pid*
 
 # VSCode
 .vscode/
+
+# Mac files
+.DS_Store
+
+# Maven
+.mvn/
