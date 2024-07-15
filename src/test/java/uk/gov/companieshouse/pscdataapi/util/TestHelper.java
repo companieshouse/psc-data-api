@@ -73,6 +73,7 @@ public class TestHelper {
         output.setInternalData(internalData);
 
         data.setKind(kind);
+        data.setCeasedOn(LocalDate.of(2012,12,12));
         data.setNotifiedOn(LocalDate.of(2000,12,12));
         data.setEtag("etag");
         data.setName("wholeName");
@@ -213,6 +214,7 @@ public class TestHelper {
         output.setUpdatedBy("user");
 
         pscData.setKind(kind);
+        pscData.setCeasedOn(LocalDate.of(2012,12,12));
         pscData.setNotifiedOn(LocalDate.of(2000,12,12));
         pscData.setEtag("etag");
         pscData.setName("wholeName");
