@@ -69,6 +69,7 @@ public class CompanyPscTransformer {
             individual.setNationality(pscData.getNationality());
             individual.setLinks(pscData.getLinks());
             individual.setNotifiedOn(pscData.getNotifiedOn());
+            individual.setCeasedOn(pscData.getCeasedOn());
         }
         if (pscDocument.getSensitiveData() != null) {
             individual.setDateOfBirth(mapDateOfBirth(
@@ -100,6 +101,7 @@ public class CompanyPscTransformer {
             individualBo.setNationality(pscData.getNationality());
             individualBo.setIsSanctioned(pscData.getSanctioned());
             individualBo.setNotifiedOn(pscData.getNotifiedOn());
+            individualBo.setCeasedOn(pscData.getCeasedOn());
         }
         if (pscDocument.getSensitiveData() != null) {
             individualBo.setDateOfBirth(mapDateOfBirth(
@@ -161,6 +163,7 @@ public class CompanyPscTransformer {
             corporateEntityBo.setNotifiedOn(pscData.getNotifiedOn());
             corporateEntityBo.setPrincipalOfficeAddress(mapPrincipleAddress(
                     pscData.getPrincipalOfficeAddress()));
+            corporateEntityBo.setCeasedOn(pscData.getCeasedOn());
         }
         return corporateEntityBo;
     }
