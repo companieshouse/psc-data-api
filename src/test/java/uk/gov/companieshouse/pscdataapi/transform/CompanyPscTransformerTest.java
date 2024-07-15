@@ -114,6 +114,7 @@ class CompanyPscTransformerTest {
         Assertions.assertNotNull(result.getData().getAddress());
         Assertions.assertNotNull(result.getData().getIdentification().getLegalForm());
         Assertions.assertNotNull(result.getData().getIdentification().getCountryRegistered());
+        Assertions.assertNotNull(result.getData().getCeasedOn());
 
         pscInsertAssertions(expectedDocument, result);
     }
@@ -131,6 +132,7 @@ class CompanyPscTransformerTest {
         Assertions.assertNotNull(result.getData().getAddress());
         Assertions.assertNotNull(result.getData().getIdentification().getLegalForm());
         Assertions.assertNull(result.getData().getIdentification().getCountryRegistered());
+        Assertions.assertNotNull(result.getData().getCeasedOn());
 
         pscInsertAssertions(expectedDocument, result);
     }
@@ -171,6 +173,7 @@ class CompanyPscTransformerTest {
         Assertions.assertNotNull(result.getData().getName());
         Assertions.assertNotNull(result.getData().getNationality());
         Assertions.assertNotNull(result.getData().getCountryOfResidence());
+        Assertions.assertNotNull(result.getData().getCeasedOn());
 
         pscInsertAssertions(expectedDocument, result);
     }
@@ -195,6 +198,7 @@ class CompanyPscTransformerTest {
         Assertions.assertNotNull(result.getData().getNationality());
         Assertions.assertNotNull(result.getData().getCountryOfResidence());
         Assertions.assertNull(result.getData().getLinks().getStatements());
+        Assertions.assertNotNull(result.getData().getCeasedOn());
 
         pscInsertAssertions(expectedDocument, result);
     }
@@ -215,6 +219,7 @@ class CompanyPscTransformerTest {
         Assertions.assertNotNull(result.getData().getIdentification().getLegalForm());
         Assertions.assertNotNull(result.getData().getIdentification().getCountryRegistered());
         Assertions.assertNotNull(result.getData().getPrincipalOfficeAddress());
+        Assertions.assertNotNull(result.getData().getCeasedOn());
 
         pscInsertAssertions(expectedDocument, result);
     }
@@ -234,6 +239,7 @@ class CompanyPscTransformerTest {
         Assertions.assertNotNull(result.getData().getIdentification().getLegalForm());
         Assertions.assertNull(result.getData().getIdentification().getCountryRegistered());
         Assertions.assertNotNull(result.getData().getPrincipalOfficeAddress());
+        Assertions.assertNotNull(result.getData().getCeasedOn());
 
         pscInsertAssertions(expectedDocument, result);
     }
