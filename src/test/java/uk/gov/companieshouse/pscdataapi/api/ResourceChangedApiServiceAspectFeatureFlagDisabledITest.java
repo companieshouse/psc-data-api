@@ -4,6 +4,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -46,6 +47,8 @@ class ResourceChangedApiServiceAspectFeatureFlagDisabledITest {
     private ApiResponse<Void> response;
     @Mock
     private HttpClient httpClient;
+    @Mock
+    private ObjectMapper objectMapper;
 
     @MockBean
     private ChsKafkaApiService mapper;

@@ -6,6 +6,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.client.http.HttpHeaders;
 import com.google.api.client.http.HttpResponseException;
 import org.assertj.core.api.Assertions;
@@ -40,6 +41,8 @@ class ChsKafkaApiServiceTest {
     private PrivateChangedResourcePost privateChangedResourcePost;
     @Mock
     private ApiResponse<Void> response;
+    @Mock
+    private ObjectMapper objectMapper;
     @InjectMocks
     private ChsKafkaApiService chsKafkaApiService;
     @Captor

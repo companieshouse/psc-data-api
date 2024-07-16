@@ -1,5 +1,7 @@
 package uk.gov.companieshouse.pscdataapi.api;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.OffsetDateTime;
 import java.util.HashMap;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,6 +13,7 @@ import uk.gov.companieshouse.api.error.ApiErrorResponseException;
 import uk.gov.companieshouse.api.handler.chskafka.request.PrivateChangedResourcePost;
 import uk.gov.companieshouse.api.model.ApiResponse;
 import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.pscdataapi.exceptions.SerDesException;
 import uk.gov.companieshouse.pscdataapi.exceptions.ServiceUnavailableException;
 import uk.gov.companieshouse.pscdataapi.models.PscData;
 import uk.gov.companieshouse.pscdataapi.util.PscTransformationHelper;
@@ -25,15 +28,17 @@ public class ChsKafkaApiService {
 
     private final InternalApiClient internalApiClient;
     private final Logger logger;
+    private final ObjectMapper objectMapper;
 
     @Value("${chs.api.kafka.url}")
     private String chsKafkaApiUrl;
     @Value("${chs.api.kafka.resource-changed.uri}")
     private String resourceChangedUri;
 
-    public ChsKafkaApiService(InternalApiClient internalApiClient, Logger logger) {
+    public ChsKafkaApiService(InternalApiClient internalApiClient, Logger logger, ObjectMapper objectMapper) {
         this.internalApiClient = internalApiClient;
         this.logger = logger;
+        this.objectMapper = objectMapper;
     }
 
     /**
@@ -86,7 +91,16 @@ public class ChsKafkaApiService {
         event.setPublishedAt(String.valueOf(OffsetDateTime.now()));
         if (isDelete) {
             event.setType(DELETE_EVENT_TYPE);
-            changedResource.setDeletedData(pscData);
+            try {
+                // This write value/read value is necessary to remove null fields during the jackson conversion
+                Object pscDataAsObject = objectMapper.readValue(
+                        objectMapper.writeValueAsString(pscData),
+                        Object.class);
+                changedResource.setDeletedData(pscDataAsObject);
+            } catch (JsonProcessingException ex) {
+                throw new SerDesException("Failed to serialise/deserialise psc data", ex);
+            }
+
         } else {
             event.setType(CHANGED_EVENT_TYPE);
         }
