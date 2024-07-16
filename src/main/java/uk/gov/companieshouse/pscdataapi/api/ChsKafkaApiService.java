@@ -92,6 +92,7 @@ public class ChsKafkaApiService {
         if (isDelete) {
             event.setType(DELETE_EVENT_TYPE);
             try {
+                // This write value/read value is necessary to remove null fields during the jackson conversion
                 Object pscDataAsObject = objectMapper.readValue(
                         objectMapper.writeValueAsString(pscData),
                         Object.class);
