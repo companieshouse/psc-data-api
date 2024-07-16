@@ -95,7 +95,7 @@ public class ChsKafkaApiService {
         if (isDelete) {
             event.setType(DELETE_EVENT_TYPE);
 
-            ObjectMapper secondObjectMapper = new ObjectMapper()
+            ObjectMapper objectMapper = new ObjectMapper()
                     .registerModule(new JavaTimeModule())
                     .setDateFormat(new SimpleDateFormat("yyyy-MM-dd"))
                     .setSerializationInclusion(JsonInclude.Include.NON_NULL)
@@ -103,8 +103,9 @@ public class ChsKafkaApiService {
                     .configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
 
             try {
-                String pscDataAsString = secondObjectMapper.writeValueAsString(pscData);
-                Object pscDataAsObject = secondObjectMapper.readValue(pscDataAsString, Object.class);
+                Object pscDataAsObject = objectMapper.readValue(
+                        objectMapper.writeValueAsString(pscData),
+                        Object.class);
                 changedResource.setDeletedData(pscDataAsObject);
             } catch (JsonProcessingException ex) {
                 throw new SerDesException("Failed to serialise/deserialise psc data", ex);
