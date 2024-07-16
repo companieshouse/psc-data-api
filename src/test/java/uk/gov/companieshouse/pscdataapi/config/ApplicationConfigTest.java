@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.isA;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.IsNot.not;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
@@ -18,10 +19,12 @@ class ApplicationConfigTest {
     void setUp() {
         applicationConfig = new ApplicationConfig();
     }
+
     @Test
     void mongoCustomConversions() {
-        assertThat(applicationConfig.mongoCustomConversions(), is(not(nullValue())));
-        assertThat(applicationConfig.mongoCustomConversions(), isA(MongoCustomConversions.class));
+        ObjectMapper objectMapper = new ObjectMapper();
+        assertThat(applicationConfig.mongoCustomConversions(objectMapper), is(not(nullValue())));
+        assertThat(applicationConfig.mongoCustomConversions(objectMapper), isA(MongoCustomConversions.class));
     }
 
     @Test

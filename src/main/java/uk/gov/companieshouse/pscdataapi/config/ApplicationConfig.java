@@ -32,8 +32,7 @@ public class ApplicationConfig {
      * @return MongoCustomConversions.
      */
     @Bean
-    public MongoCustomConversions mongoCustomConversions() {
-        ObjectMapper objectMapper = mongoDbObjectMapper();
+    public MongoCustomConversions mongoCustomConversions(ObjectMapper objectMapper) {
         return new MongoCustomConversions(List.of(new CompanyPscWriteConverter(objectMapper),
                 new CompanyPscSensitiveWriteConverter(objectMapper),
                 new CompanyPscReadConverter(objectMapper, PscData.class),
@@ -52,13 +51,13 @@ public class ApplicationConfig {
     }
 
 
-
     /**
      * Mongo DB Object Mapper.
      *
      * @return ObjectMapper.
      */
-    private ObjectMapper mongoDbObjectMapper() {
+    @Bean
+    public ObjectMapper objectMapper() {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
