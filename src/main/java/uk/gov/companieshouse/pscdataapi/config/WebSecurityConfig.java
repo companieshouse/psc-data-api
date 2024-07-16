@@ -19,7 +19,6 @@ import uk.gov.companieshouse.api.interceptor.UserAuthenticationInterceptor;
 @Configuration
 public class WebSecurityConfig implements WebMvcConfigurer {
 
-    List<String> externalMethods = Arrays.asList(HttpMethod.GET.name());
     List<String> otherAllowedAuthMethods = Arrays.asList("oauth2");
 
     @Override
@@ -37,8 +36,8 @@ public class WebSecurityConfig implements WebMvcConfigurer {
      */
     @Bean
     public UserAuthenticationInterceptor userAuthenticationInterceptor() {
-        return new UserAuthenticationInterceptor(externalMethods, 
-                                                 otherAllowedAuthMethods, 
+        return new UserAuthenticationInterceptor(externalMethods(),
+                                                 otherAllowedAuthMethods,
                                                  internalUserInterceptor());
     }
 

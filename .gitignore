@@ -35,3 +35,7 @@ target/
 
 # Maven
 .mvn/
+
+# Vim files
+*.vim
+.*.sw?

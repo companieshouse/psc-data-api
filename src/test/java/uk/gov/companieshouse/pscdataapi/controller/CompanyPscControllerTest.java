@@ -1,6 +1,7 @@
 package uk.gov.companieshouse.pscdataapi.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.doNothing;
@@ -11,7 +12,9 @@ import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.junit.jupiter.api.DisplayName;
@@ -20,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -782,4 +786,53 @@ class CompanyPscControllerTest {
                         .header("ERIC-IDENTITY-TYPE", ERIC_IDENTITY_TYPE))
                 .andExpect(status().isOk());
     }
+
+    @Test
+    void callPscListOptionsRequestWithParamsCORS() throws Exception {
+        // when(companyPscService.retrievePscListSummaryFromDb(MOCK_COMPANY_NUMBER, 2, false, 5))
+                // .thenReturn(new PscList());
+
+        mockMvc.perform(MockMvcRequestBuilders
+                        .options(GET_List_Summary_URL)
+                        .header("Origin", "")
+                        // .header("ERIC-Allowed-Origin", "some-origin")
+                        .contentType(MediaType.APPLICATION_JSON))
+                        // .header("ERIC-Identity", ERIC_IDENTITY)
+                        // .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
+                        // .contentType(APPLICATION_JSON)
+                        // .header("x-request-id", X_REQUEST_ID)
+                        // .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
+                        // .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH)
+                        // .header("items_per_page", 5)
+                        // .header("start_index", 2))
+            .andExpect(status().isNoContent())
+            .andExpect(header().exists(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN))
+            .andExpect(header().exists(HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS))
+            .andExpect(header().exists(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS))
+            .andExpect(header().exists(HttpHeaders.ACCESS_CONTROL_MAX_AGE));
+    }
+
+    @Test
+    void callPscListGetRequestWithParamsCORS() throws Exception {
+        when(companyPscService.retrievePscListSummaryFromDb(MOCK_COMPANY_NUMBER, 2, false, 5))
+                .thenReturn(new PscList());
+
+        mockMvc.perform(MockMvcRequestBuilders
+                        .get(GET_List_Summary_URL)
+                        .header("Origin", "")
+                        .header("ERIC-Allowed-Origin", "some-origin")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("ERIC-Identity", ERIC_IDENTITY)
+                        .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
+                        .contentType(APPLICATION_JSON)
+                        .header("x-request-id", X_REQUEST_ID)
+                        .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
+                        .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH)
+                        .header("items_per_page", 5)
+                        .header("start_index", 2))
+            .andExpect(status().isOk())
+            .andExpect(header().exists(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS))
+            .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, containsString("GET")));
+    }
+
 }
