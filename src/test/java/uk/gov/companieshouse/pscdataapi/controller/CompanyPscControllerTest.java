@@ -14,6 +14,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -789,22 +790,11 @@ class CompanyPscControllerTest {
 
     @Test
     void callPscListOptionsRequestWithParamsCORS() throws Exception {
-        // when(companyPscService.retrievePscListSummaryFromDb(MOCK_COMPANY_NUMBER, 2, false, 5))
-                // .thenReturn(new PscList());
 
         mockMvc.perform(MockMvcRequestBuilders
                         .options(GET_List_Summary_URL)
                         .header("Origin", "")
-                        // .header("ERIC-Allowed-Origin", "some-origin")
                         .contentType(MediaType.APPLICATION_JSON))
-                        // .header("ERIC-Identity", ERIC_IDENTITY)
-                        // .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
-                        // .contentType(APPLICATION_JSON)
-                        // .header("x-request-id", X_REQUEST_ID)
-                        // .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
-                        // .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH)
-                        // .header("items_per_page", 5)
-                        // .header("start_index", 2))
             .andExpect(status().isNoContent())
             .andExpect(header().exists(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN))
             .andExpect(header().exists(HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS))
@@ -833,6 +823,46 @@ class CompanyPscControllerTest {
             .andExpect(status().isOk())
             .andExpect(header().exists(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS))
             .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, containsString("GET")));
+    }
+
+    @Test
+    void callPscListGetRequestWithParamsForbiddenCORS() throws Exception {
+
+        mockMvc.perform(MockMvcRequestBuilders
+                        .get(GET_List_Summary_URL)
+                        .header("Origin", "")
+                        .header("ERIC-Allowed-Origin", "")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("ERIC-Identity", ERIC_IDENTITY)
+                        .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
+                        .contentType(APPLICATION_JSON)
+                        .header("x-request-id", X_REQUEST_ID)
+                        .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
+                        .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH)
+                        .header("items_per_page", 5)
+                        .header("start_index", 2))
+            .andExpect(status().isForbidden())
+            .andExpect(header().exists(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS))
+            .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, containsString("GET")))
+            .andExpect(content().string(""));
+    }
+
+    @Test
+    void callPscDeleteRequestForbiddenCORS() throws Exception {
+
+        mockMvc.perform(delete(DELETE_URL)
+                        .header("Origin", "")
+                        .header("ERIC-Allowed-Origin", "some-origin")
+                        .header("ERIC-Identity", ERIC_IDENTITY)
+                        .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
+                        .contentType(APPLICATION_JSON)
+                        .header("x-request-id", X_REQUEST_ID)
+                        .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
+                        .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH))
+            .andExpect(status().isForbidden())
+            .andExpect(header().exists(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS))
+            .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, containsString("GET")))
+            .andExpect(content().string(""));
     }
 
 }
