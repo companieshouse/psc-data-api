@@ -1,12 +1,7 @@
 package uk.gov.companieshouse.pscdataapi.api;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import java.text.SimpleDateFormat;
 import java.time.OffsetDateTime;
 import java.util.HashMap;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,15 +28,17 @@ public class ChsKafkaApiService {
 
     private final InternalApiClient internalApiClient;
     private final Logger logger;
+    private final ObjectMapper objectMapper;
 
     @Value("${chs.api.kafka.url}")
     private String chsKafkaApiUrl;
     @Value("${chs.api.kafka.resource-changed.uri}")
     private String resourceChangedUri;
 
-    public ChsKafkaApiService(InternalApiClient internalApiClient, Logger logger) {
+    public ChsKafkaApiService(InternalApiClient internalApiClient, Logger logger, ObjectMapper objectMapper) {
         this.internalApiClient = internalApiClient;
         this.logger = logger;
+        this.objectMapper = objectMapper;
     }
 
     /**
@@ -94,14 +91,6 @@ public class ChsKafkaApiService {
         event.setPublishedAt(String.valueOf(OffsetDateTime.now()));
         if (isDelete) {
             event.setType(DELETE_EVENT_TYPE);
-
-            ObjectMapper objectMapper = new ObjectMapper()
-                    .registerModule(new JavaTimeModule())
-                    .setDateFormat(new SimpleDateFormat("yyyy-MM-dd"))
-                    .setSerializationInclusion(JsonInclude.Include.NON_NULL)
-                    .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                    .configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
-
             try {
                 Object pscDataAsObject = objectMapper.readValue(
                         objectMapper.writeValueAsString(pscData),
