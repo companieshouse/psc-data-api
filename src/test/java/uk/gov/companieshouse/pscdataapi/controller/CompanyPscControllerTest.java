@@ -23,7 +23,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import uk.gov.companieshouse.api.exception.ServiceUnavailableException;
 import uk.gov.companieshouse.api.psc.CorporateEntity;
 import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
 import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
@@ -35,6 +34,7 @@ import uk.gov.companieshouse.api.psc.PscList;
 import uk.gov.companieshouse.api.psc.SuperSecure;
 import uk.gov.companieshouse.api.psc.SuperSecureBeneficialOwner;
 import uk.gov.companieshouse.pscdataapi.exceptions.ResourceNotFoundException;
+import uk.gov.companieshouse.pscdataapi.exceptions.ServiceUnavailableException;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 import uk.gov.companieshouse.pscdataapi.service.CompanyPscService;
 import uk.gov.companieshouse.pscdataapi.util.TestHelper;
@@ -48,7 +48,6 @@ class CompanyPscControllerTest {
     private static final String MOCK_NOTIFICATION_ID = "123456789";
     private static final Boolean MOCK_REGISTER_VIEW_TRUE = true;
     private static final Boolean MOCK_REGISTER_VIEW_FALSE = false;
-
     private static final String ERIC_IDENTITY = "Test-Identity";
     private static final String ERIC_IDENTITY_TYPE = "key";
     private static final String ERIC_PRIVILEGES = "*";
@@ -171,7 +170,7 @@ class CompanyPscControllerTest {
                         .header("x-request-id", X_REQUEST_ID)
                         .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
                         .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH))
-                .andExpect(status().isInternalServerError());
+                .andExpect(status().isServiceUnavailable());
 
         verify(companyPscService).getSuperSecurePsc(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID);
 
@@ -237,7 +236,7 @@ class CompanyPscControllerTest {
                         .header("x-request-id", X_REQUEST_ID)
                         .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
                         .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH))
-                .andExpect(status().isInternalServerError());
+                .andExpect(status().isServiceUnavailable());
 
         verify(companyPscService).getSuperSecureBeneficialOwnerPsc(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID);
 
@@ -322,7 +321,7 @@ class CompanyPscControllerTest {
                         .header("x-request-id", X_REQUEST_ID)
                         .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
                         .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH))
-                .andExpect(status().isInternalServerError());
+                .andExpect(status().isServiceUnavailable());
 
         verify(companyPscService).getCorporateEntityPsc(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID);
 
@@ -452,7 +451,7 @@ class CompanyPscControllerTest {
                         .header("x-request-id", X_REQUEST_ID)
                         .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
                         .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH))
-                .andExpect(status().isInternalServerError());
+                .andExpect(status().isServiceUnavailable());
 
         verify(companyPscService).getIndividualPsc(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID, MOCK_REGISTER_VIEW_TRUE);
 
@@ -526,7 +525,7 @@ class CompanyPscControllerTest {
                         .header("x-request-id", X_REQUEST_ID)
                         .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
                         .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH))
-                .andExpect(status().isInternalServerError());
+                .andExpect(status().isServiceUnavailable());
 
         verify(companyPscService).getIndividualBeneficialOwnerPsc(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID, MOCK_REGISTER_VIEW_FALSE);
 
@@ -589,7 +588,7 @@ class CompanyPscControllerTest {
                         .header("x-request-id", X_REQUEST_ID)
                         .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
                         .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH))
-                .andExpect(status().isInternalServerError());
+                .andExpect(status().isServiceUnavailable());
 
         verify(companyPscService).getCorporateEntityBeneficialOwnerPsc(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID);
 
@@ -652,7 +651,7 @@ class CompanyPscControllerTest {
                         .header("x-request-id", X_REQUEST_ID)
                         .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
                         .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH))
-                .andExpect(status().isInternalServerError());
+                .andExpect(status().isServiceUnavailable());
 
         verify(companyPscService).getLegalPersonPsc(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID);
 
@@ -714,7 +713,7 @@ class CompanyPscControllerTest {
                         .header("x-request-id", X_REQUEST_ID)
                         .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
                         .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH))
-                .andExpect(status().isInternalServerError());
+                .andExpect(status().isServiceUnavailable());
 
         verify(companyPscService).getLegalPersonBeneficialOwnerPsc(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID);
 

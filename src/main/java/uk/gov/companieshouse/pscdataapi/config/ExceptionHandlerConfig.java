@@ -17,6 +17,7 @@ import org.springframework.web.context.request.WebRequest;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
 import uk.gov.companieshouse.pscdataapi.exceptions.MethodNotAllowedException;
+import uk.gov.companieshouse.pscdataapi.exceptions.SerDesException;
 import uk.gov.companieshouse.pscdataapi.exceptions.ServiceUnavailableException;
 
 @ControllerAdvice
@@ -34,12 +35,12 @@ public class ExceptionHandlerConfig {
 
     /**
      * Runtime exception handler. Acts as the catch-all scenario.
-    *
-    * @param ex      exception to handle.
-    * @param request request.
-    * @return error response to return.
-    */
-    @ExceptionHandler(value = {Exception.class})
+     *
+     * @param ex      exception to handle.
+     * @param request request.
+     * @return error response to return.
+     */
+    @ExceptionHandler(value = {Exception.class, SerDesException.class})
     public ResponseEntity<Object> handleException(Exception ex, WebRequest request) {
         logger.error(String.format("Unexpected exception, response code: %s",
                 HttpStatus.INTERNAL_SERVER_ERROR), ex);
@@ -53,11 +54,11 @@ public class ExceptionHandlerConfig {
 
     /**
      * IllegalArgumentException exception handler.
-    *
-    * @param ex      exception to handle.
-    * @param request request.
-    * @return error response to return.
-    */
+     *
+     * @param ex      exception to handle.
+     * @param request request.
+     * @return error response to return.
+     */
     @ExceptionHandler(value = {IllegalArgumentException.class})
     public ResponseEntity<Object> handleNotFoundException(Exception ex, WebRequest request) {
         logger.error(String.format("Resource not found, response code: %s",
@@ -72,11 +73,11 @@ public class ExceptionHandlerConfig {
 
     /**
      * MethodNotAllowedException exception handler.
-    *
-    * @param ex      exception to handle.
-    * @param request request.
-    * @return error response to return.
-    */
+     *
+     * @param ex      exception to handle.
+     * @param request request.
+     * @return error response to return.
+     */
     @ExceptionHandler(value = {MethodNotAllowedException.class,
             HttpRequestMethodNotSupportedException.class})
     public ResponseEntity<Object> handleMethodNotAllowedException(
@@ -93,12 +94,12 @@ public class ExceptionHandlerConfig {
 
     /**
      * ServiceUnavailableException exception handler.
-    * To be thrown when there are connection issues.
-    *
-    * @param ex      exception to handle.
-    * @param request request.
-    * @return error response to return.
-    */
+     * To be thrown when there are connection issues.
+     *
+     * @param ex      exception to handle.
+     * @param request request.
+     * @return error response to return.
+     */
     @ExceptionHandler(value = {ServiceUnavailableException.class,
             DataAccessException.class, MongoException.class})
     public ResponseEntity<Object> handleServiceUnavailableException(Exception ex,
@@ -115,12 +116,12 @@ public class ExceptionHandlerConfig {
 
     /**
      * BadRequestException exception handler.
-    * Thrown when data is given in the wrong format.
-    *
-    * @param ex      exception to handle.
-    * @param request request.
-    * @return error response to return.
-    */
+     * Thrown when data is given in the wrong format.
+     *
+     * @param ex      exception to handle.
+     * @param request request.
+     * @return error response to return.
+     */
     @ExceptionHandler(value = {BadRequestException.class, DateTimeParseException.class,
             HttpMessageNotReadableException.class})
     public ResponseEntity<Object> handleBadRequestException(Exception ex, WebRequest request) {

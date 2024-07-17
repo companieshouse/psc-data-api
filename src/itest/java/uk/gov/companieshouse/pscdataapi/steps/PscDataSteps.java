@@ -1101,7 +1101,7 @@ public class PscDataSteps {
     }
 
     @And("a PSC exists for {string} for List summary")
-    public void aPSCExistsForForListSummary(String companyNumber) throws JsonProcessingException {
+    public void aPSCExistsForForListSummary(String companyNumber) {
 
         PscData pscData = new PscData();
         PscDocument document1 = new PscDocument();

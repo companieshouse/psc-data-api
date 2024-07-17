@@ -1,12 +1,18 @@
 package uk.gov.companieshouse.pscdataapi.api;
 
-import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.*;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.companieshouse.api.InternalApiClient;
@@ -41,6 +47,8 @@ class ResourceChangedApiServiceAspectFeatureFlagDisabledITest {
     private ApiResponse<Void> response;
     @Mock
     private HttpClient httpClient;
+    @Mock
+    private ObjectMapper objectMapper;
 
     @MockBean
     private ChsKafkaApiService mapper;

@@ -1,6 +1,10 @@
 package uk.gov.companieshouse.pscdataapi.serialization;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.verify;
+
 import com.fasterxml.jackson.core.JsonGenerator;
+import java.time.LocalDate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -9,13 +13,8 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDate;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.verify;
-
 @ExtendWith(MockitoExtension.class)
-public class LocalDateSerializerTest {
+class LocalDateSerializerTest {
 
     private LocalDateSerializer serializer;
 
