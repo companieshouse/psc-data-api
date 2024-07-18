@@ -10,7 +10,9 @@ locals {
   kms_alias                   = "alias/${var.aws_profile}/environment-services-kms"
   lb_listener_rule_priority   = 88
   lb_listener_paths           = [
-    "/psc-data-api/healthcheck", "/company/*/persons-with-significant-control*"
+    "/psc-data-api/healthcheck",
+    "/company/*/persons-with-significant-control",
+    "/company/*/persons-with-significant-control/*"
   ]
   healthcheck_path            = "/psc-data-api/healthcheck" #healthcheck path for psc-data-api
   healthcheck_matcher         = "200"
