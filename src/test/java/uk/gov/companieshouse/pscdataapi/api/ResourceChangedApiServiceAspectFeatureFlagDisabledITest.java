@@ -53,8 +53,6 @@ class ResourceChangedApiServiceAspectFeatureFlagDisabledITest {
     @MockBean
     private ChsKafkaApiService mapper;
 
-    private TestHelper testHelper;
-
     @Captor
     ArgumentCaptor<ChangedResource> changedResourceCaptor;
 
@@ -63,7 +61,6 @@ class ResourceChangedApiServiceAspectFeatureFlagDisabledITest {
     @BeforeEach
     void setup() {
         when(internalApiClient.getHttpClient()).thenReturn(httpClient);
-        testHelper = new TestHelper();
     }
 
     @Test
