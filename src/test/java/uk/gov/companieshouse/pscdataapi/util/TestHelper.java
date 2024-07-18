@@ -81,7 +81,7 @@ public class TestHelper {
         links.setSelf("self");
 
         if (pscStatementsExists) {
-            links.setStatements("linkStatements");
+            links.setStatement("linkStatements");
         }
 
         data.setLinks(List.of(links));
@@ -221,7 +221,7 @@ public class TestHelper {
         Links links = new Links();
         links.setSelf("self");
         if (pscStatementsExists) {
-            links.setStatements("linkStatements");
+            links.setStatement("linkStatements");
         }
         pscData.setLinks(links);
 

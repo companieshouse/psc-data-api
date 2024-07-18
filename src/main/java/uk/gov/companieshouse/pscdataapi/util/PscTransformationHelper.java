@@ -24,9 +24,9 @@ public class PscTransformationHelper {
             links.setSelf(itemLinkTypes.getSelf());
 
             if (pscStatementId != null) {
-                links.setStatements(itemLinkTypes.getStatements());
+                links.setStatement(itemLinkTypes.getStatement());
             } else {
-                links.setStatements(null);
+                links.setStatement(null);
             }
         }
         return links;

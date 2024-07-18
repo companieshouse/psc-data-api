@@ -296,7 +296,7 @@ public class PscDataSteps {
         pscData.setDescription("super-secure-persons-with-significant-control");
         Links links = new Links();
         links.setSelf("/company/" + companyNumber + "/persons-with-significant-control/super-secure/" + notificationId);
-        links.setStatements("string");
+        links.setStatement("string");
         pscData.setLinks(links);
         pscData.setCeased(false);
         document.setData(pscData);
@@ -390,7 +390,7 @@ public class PscDataSteps {
         pscData.setDescription("super-secure-beneficial-owner");
         Links links = new Links();
         links.setSelf("/company/" + companyNumber + "/persons-with-significant-control/super-secure-beneficial-owner/" + notificationId);
-        links.setStatements("string");
+        links.setStatement("string");
         pscData.setLinks(links);
         pscData.setCeased(false);
         document.setData(pscData);
@@ -486,7 +486,7 @@ public class PscDataSteps {
         pscData.setKind("corporate-entity-person-with-significant-control");
         Links links = new Links();
         links.setSelf("/company/" + companyNumber + "/persons-with-significant-control/corporate-entity/" + notificationId);
-        links.setStatements("string");
+        links.setStatement("string");
         pscData.setLinks(links);
         Address address = new Address();
         address.setAddressLine1("ura_line1");
@@ -615,7 +615,7 @@ public class PscDataSteps {
         document.setSensitiveData(pscSensitiveData);
         Links links = new Links();
         links.setSelf("/company/" + companyNumber + "/persons-with-significant-control/individual/" + NOTIFICATION_ID);
-        links.setStatements("string");
+        links.setStatement("string");
         pscData.setLinks(links);
         pscData.setNationality("British");
         Address address = new Address();
