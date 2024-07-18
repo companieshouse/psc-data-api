@@ -198,6 +198,7 @@ class CompanyPscTransformerTest {
         Assertions.assertNotNull(result.getData().getNationality());
         Assertions.assertNotNull(result.getData().getCountryOfResidence());
         Assertions.assertNull(result.getData().getLinks().getStatement());
+        Assertions.assertNotNull(result.getData().getCeasedOn());
         pscInsertAssertions(expectedDocument, result);
     }
 
