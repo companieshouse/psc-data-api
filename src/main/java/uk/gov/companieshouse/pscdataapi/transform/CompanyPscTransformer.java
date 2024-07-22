@@ -468,6 +468,7 @@ public class CompanyPscTransformer {
             address.setPostalCode(inputAddress.getPostalCode());
             address.setPremises(inputAddress.getPremises());
             address.setRegion(inputAddress.getRegion());
+            address.setCareOf(inputAddress.getCareOf());
             return address;
         } else {
             return null;
