@@ -68,12 +68,14 @@ public class CompanyPscService {
                              CompanyPscTransformer transformer,
                              CompanyPscRepository repository,
                              ChsKafkaApiService chsKafkaApiService,
-                             CompanyMetricsApiService companyMetricsApiService) {
+                             CompanyMetricsApiService companyMetricsApiService,
+                             CompanyExemptionsApiService companyExemptionsApiService) {
         this.logger = logger;
         this.transformer = transformer;
         this.repository = repository;
         this.chsKafkaApiService = chsKafkaApiService;
         this.companyMetricsApiService = companyMetricsApiService;
+        this.companyExemptionsApiService = companyExemptionsApiService;
     }
 
     /**

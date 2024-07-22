@@ -31,6 +31,9 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.api.api.CompanyExemptionsApiService;
 import uk.gov.companieshouse.api.api.CompanyMetricsApiService;
+import uk.gov.companieshouse.api.exemptions.CompanyExemptions;
+import uk.gov.companieshouse.api.exemptions.Exemptions;
+import uk.gov.companieshouse.api.exemptions.PscExemptAsTradingOnRegulatedMarketItem;
 import uk.gov.companieshouse.api.metrics.MetricsApi;
 import uk.gov.companieshouse.api.metrics.RegisterApi;
 import uk.gov.companieshouse.api.metrics.RegistersApi;
@@ -94,6 +97,8 @@ class CompanyPscServiceTest {
 
     private TestHelper testHelper;
 
+    private PscExemptAsTradingOnRegulatedMarketItem pscExemptAsTradingOnRegulatedMarketItem;
+
     @BeforeEach
     void setUp() {
         date = TestHelper.createOffsetDateTime();
@@ -103,6 +108,7 @@ class CompanyPscServiceTest {
         request = TestHelper.buildBasicFullRecordPsc();
         pscDocument = TestHelper.buildBasicDocument();
         testHelper = new TestHelper();
+        pscExemptAsTradingOnRegulatedMarketItem = new PscExemptAsTradingOnRegulatedMarketItem();
     }
 
     @Test
@@ -656,7 +662,12 @@ class CompanyPscServiceTest {
         when(repository.getPscDocumentList(anyString(), anyInt(), anyInt())).thenReturn(Optional.of(Collections.singletonList(pscDocument)));
         when(transformer.transformPscDocToListSummary(pscDocument, false))
                 .thenReturn(listSummary);
-        when(companyExemptionsApiService.getCompanyExemptions(any())).thenReturn(Optional.ofNullable(testHelper.createExemptions()));
+
+//        CompanyExemptions companyExemptions = new CompanyExemptions();
+//        Exemptions exemptions = new Exemptions();
+//        companyExemptions.setExemptions(exemptions);
+//        Optional<CompanyExemptions> optionalExempt = Optional.of(companyExemptions);
+//        when(companyExemptionsApiService.getCompanyExemptions(COMPANY_NUMBER)).thenReturn(optionalExempt);
 
         PscList PscDocumentList = service.retrievePscListSummaryFromDb(COMPANY_NUMBER, 0, false, 25);
 
