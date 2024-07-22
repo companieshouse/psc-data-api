@@ -29,6 +29,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.companieshouse.api.api.CompanyExemptionsApiService;
 import uk.gov.companieshouse.api.api.CompanyMetricsApiService;
 import uk.gov.companieshouse.api.metrics.MetricsApi;
 import uk.gov.companieshouse.api.metrics.RegisterApi;
@@ -82,11 +83,16 @@ class CompanyPscServiceTest {
     @Mock
     CompanyMetricsApiService companyMetricsApiService;
 
+    @Mock
+    CompanyExemptionsApiService companyExemptionsApiService;
+
     private FullRecordCompanyPSCApi request;
     private PscDocument pscDocument;
     private String dateString;
     private OffsetDateTime date;
     private OffsetDateTime laterDate;
+
+    private TestHelper testHelper;
 
     @BeforeEach
     void setUp() {
@@ -96,6 +102,7 @@ class CompanyPscServiceTest {
 
         request = TestHelper.buildBasicFullRecordPsc();
         pscDocument = TestHelper.buildBasicDocument();
+        testHelper = new TestHelper();
     }
 
     @Test
@@ -649,6 +656,7 @@ class CompanyPscServiceTest {
         when(repository.getPscDocumentList(anyString(), anyInt(), anyInt())).thenReturn(Optional.of(Collections.singletonList(pscDocument)));
         when(transformer.transformPscDocToListSummary(pscDocument, false))
                 .thenReturn(listSummary);
+        when(companyExemptionsApiService.getCompanyExemptions(any())).thenReturn(Optional.ofNullable(testHelper.createExemptions()));
 
         PscList PscDocumentList = service.retrievePscListSummaryFromDb(COMPANY_NUMBER, 0, false, 25);
 

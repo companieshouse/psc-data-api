@@ -12,6 +12,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
 import org.springframework.util.FileCopyUtils;
+import uk.gov.companieshouse.api.exemptions.*;
 import uk.gov.companieshouse.api.metrics.CountsApi;
 import uk.gov.companieshouse.api.metrics.MetricsApi;
 import uk.gov.companieshouse.api.metrics.PscApi;
@@ -35,6 +36,9 @@ import uk.gov.companieshouse.pscdataapi.models.PscIdentification;
 import uk.gov.companieshouse.pscdataapi.models.PscSensitiveData;
 import uk.gov.companieshouse.pscdataapi.models.Updated;
 
+import static uk.gov.companieshouse.api.exemptions.PscExemptAsTradingOnRegulatedMarketItem.ExemptionTypeEnum.PSC_EXEMPT_AS_TRADING_ON_REGULATED_MARKET;
+import static uk.gov.companieshouse.api.exemptions.PscExemptAsTradingOnUkRegulatedMarketItem.ExemptionTypeEnum.PSC_EXEMPT_AS_TRADING_ON_UK_REGULATED_MARKET;
+
 public class TestHelper {
     public static final String INDIVIDUAL_KIND = "individual-person-with-significant-control";
     public static final String CORPORATE_KIND = "corporate-entity-person-with-significant-control";
@@ -46,6 +50,8 @@ public class TestHelper {
     public static final String PSC_ID = "pscId";
     public static final String PSC_STATEMENT_ID = "pscStatementId";
     public static final String X_REQUEST_ID = "654321";
+    private static final LocalDate EXEMPTION_DATE = LocalDate.of(2022, 11, 3);
+
 
     public TestHelper(){}
 
@@ -405,6 +411,35 @@ public class TestHelper {
         LocalDateTime laterLocalDate = LocalDateTime.parse("2023-01-03T13:04:05.678", formatter);
         ZoneOffset offset = ZoneId.systemDefault().getRules().getOffset(laterLocalDate);
         return OffsetDateTime.of(laterLocalDate, offset);
+    }
+
+    public CompanyExemptions createExemptions () {
+        CompanyExemptions exemptions = new CompanyExemptions();
+        exemptions.setExemptions(getExemptions());
+        return exemptions;
+    }
+
+    private Exemptions getExemptions() {
+        ExemptionItem exemptionItem = new ExemptionItem();
+        exemptionItem.exemptFrom(EXEMPTION_DATE);
+        exemptionItem.exemptTo(EXEMPTION_DATE);
+
+        List<ExemptionItem> exemptionItems = Collections.singletonList(exemptionItem);
+
+
+        PscExemptAsTradingOnRegulatedMarketItem nonUkEeaStateMarket = new PscExemptAsTradingOnRegulatedMarketItem();
+        nonUkEeaStateMarket.setItems(exemptionItems);
+        nonUkEeaStateMarket.setExemptionType(PSC_EXEMPT_AS_TRADING_ON_REGULATED_MARKET);
+
+        PscExemptAsTradingOnUkRegulatedMarketItem ukEeaStateMarket = new PscExemptAsTradingOnUkRegulatedMarketItem();
+        ukEeaStateMarket.setItems(exemptionItems);
+        ukEeaStateMarket.setExemptionType(PSC_EXEMPT_AS_TRADING_ON_UK_REGULATED_MARKET);
+
+        Exemptions exemptions = new Exemptions();
+        exemptions.setPscExemptAsTradingOnRegulatedMarket(nonUkEeaStateMarket);
+        exemptions.setPscExemptAsTradingOnUkRegulatedMarket(ukEeaStateMarket);
+
+        return exemptions;
     }
 
 }
