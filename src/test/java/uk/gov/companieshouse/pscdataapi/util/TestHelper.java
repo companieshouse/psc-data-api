@@ -446,7 +446,7 @@ public class TestHelper {
     private Exemptions getExemptions() {
         ExemptionItem exemptionItem = new ExemptionItem();
         exemptionItem.exemptFrom(EXEMPTION_DATE);
-        exemptionItem.exemptTo(EXEMPTION_DATE);
+        exemptionItem.exemptTo(null);
 
         List<ExemptionItem> exemptionItems = Collections.singletonList(exemptionItem);
 
