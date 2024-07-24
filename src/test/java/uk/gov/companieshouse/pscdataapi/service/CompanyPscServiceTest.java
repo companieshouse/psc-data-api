@@ -47,6 +47,7 @@ import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
 import uk.gov.companieshouse.pscdataapi.exceptions.ResourceNotFoundException;
 import uk.gov.companieshouse.pscdataapi.models.Created;
+import uk.gov.companieshouse.pscdataapi.models.Links;
 import uk.gov.companieshouse.pscdataapi.models.PscData;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 import uk.gov.companieshouse.pscdataapi.repository.CompanyPscRepository;
@@ -760,6 +761,8 @@ class CompanyPscServiceTest {
         identification.setLegalForm("x");
         listSummary.setIdentification(identification);
         when(repository.getPscDocumentList(anyString(), anyInt(), anyInt())).thenReturn(Optional.of(Collections.singletonList(pscDocument)));
+        when(transformer.transformPscDocToListSummary(pscDocument, false))
+                .thenReturn(listSummary);
 
         CompanyExemptions companyExemptions = new CompanyExemptions();
         Exemptions exemptions = new Exemptions();
@@ -769,11 +772,11 @@ class CompanyPscServiceTest {
 
         PscList PscDocumentList = service.retrievePscListSummaryFromDb(COMPANY_NUMBER, 0, false, 25);
 
-        PscLinks linksType = new PscLinks();
-        linksType.setSelf("/company/" + COMPANY_NUMBER + "/persons-with-significant-control");
-        linksType.setExemptions("/company/" + COMPANY_NUMBER + "/exemptions");
+        Links links = new Links();
+        links.setSelf("/company/" + COMPANY_NUMBER + "/persons-with-significant-control");
+        links.setExemptions("/company/" + COMPANY_NUMBER + "/exemptions");
 
-        assertEquals(PscDocumentList.getLinks(), linksType);
+        assertEquals(PscDocumentList.getLinks(), links);
     }
 
 }
