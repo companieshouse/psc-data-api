@@ -723,7 +723,7 @@ class CompanyPscServiceTest {
 
     @Test
     void pscListReturnedByCompanyNumberFromRepositoryWithExemptions() throws ResourceNotFoundException {
-        PscList expectedPscList = TestHelper.createPscList();
+        PscList expectedPscList = TestHelper.createPscListWithExemptions();
         PscData pscData = new PscData();
         pscDocument.setData(pscData);
         ListSummary listSummary = new ListSummary();

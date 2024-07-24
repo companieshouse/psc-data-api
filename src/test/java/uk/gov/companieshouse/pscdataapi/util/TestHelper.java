@@ -372,6 +372,33 @@ public class TestHelper {
         return links;
     }
 
+    public static PscList createPscListWithExemptions() {
+        ListSummary listSummary = new ListSummary();
+        Identification identification = new Identification();
+        identification.setPlaceRegistered("x");
+        identification.setCountryRegistered("x");
+        identification.setRegistrationNumber("x");
+        identification.setLegalAuthority("x");
+        identification.setLegalForm("x");
+        listSummary.setIdentification(identification);
+        PscList pscList = new PscList();
+        pscList.setItems(Collections.singletonList(listSummary));
+        pscList.setActiveCount(1);
+        pscList.setCeasedCount(1);
+        pscList.setTotalResults(2);
+        pscList.setStartIndex(0);
+        pscList.setItemsPerPage(25);
+        pscList.setLinks(createLinksWithExemptions());
+        return pscList;
+    }
+
+    private static Links createLinksWithExemptions() {
+        Links links = new Links();
+        links.setSelf(String.format("/company/%s/persons-with-significant-control", COMPANY_NUMBER));
+        links.setExemptions(String.format("/company/%s/exemptions", COMPANY_NUMBER));
+        return links;
+    }
+
     public static MetricsApi createMetrics() {
         MetricsApi metrics = new MetricsApi();
         CountsApi counts = new CountsApi();
