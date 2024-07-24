@@ -768,8 +768,9 @@ class CompanyPscServiceTest {
         when(companyExemptionsApiService.getCompanyExemptions(any())).thenReturn(Optional.ofNullable(testHelper.createExemptions()));
 
         PscList PscDocumentList = service.retrievePscListSummaryFromDb(COMPANY_NUMBER, 0, false, 25);
+
         PscLinks linksType = new PscLinks();
-        linksType.setSelf("/company/" + COMPANY_NUMBER + "/persons-with-significant-control-statements");
+        linksType.setSelf("/company/" + COMPANY_NUMBER + "/persons-with-significant-control");
         linksType.setExemptions("/company/" + COMPANY_NUMBER + "/exemptions");
 
         assertEquals(PscDocumentList.getLinks(), linksType);
