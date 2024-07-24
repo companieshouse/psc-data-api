@@ -73,7 +73,7 @@ class ChsKafkaApiServiceTest {
 
         ApiResponse<?> apiResponse = chsKafkaApiService.invokeChsKafkaApiWithDeleteEvent(
                 TestHelper.X_REQUEST_ID, TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID, "kind",
-                TestHelper.buildPscDocument("individual-persons-with-significant-control").getData());
+                TestHelper.buildPscDocument("individual-persons-with-significant-control"));
         Assertions.assertThat(apiResponse).isNotNull();
 
         verify(internalApiClient, times(1)).privateChangedResourceHandler();

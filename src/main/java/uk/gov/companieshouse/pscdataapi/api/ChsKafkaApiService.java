@@ -16,6 +16,7 @@ import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.exceptions.SerDesException;
 import uk.gov.companieshouse.pscdataapi.exceptions.ServiceUnavailableException;
 import uk.gov.companieshouse.pscdataapi.models.PscData;
+import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 import uk.gov.companieshouse.pscdataapi.util.PscTransformationHelper;
 
 @Service
@@ -73,13 +74,13 @@ public class ChsKafkaApiService {
     public ApiResponse<Void> invokeChsKafkaApiWithDeleteEvent(String contextId,
                                                               String companyNumber,
                                                               String notificationId,
-                                                              String kind, PscData pscData) {
+                                                              String kind, PscDocument pscDocument) {
         internalApiClient.setBasePath(chsKafkaApiUrl);
         PrivateChangedResourcePost changedResourcePost =
                 internalApiClient.privateChangedResourceHandler()
                         .postChangedResource(resourceChangedUri,
                                 mapChangedResource(contextId, companyNumber,
-                                        notificationId, kind, true, pscData));
+                                        notificationId, kind, true, pscDocument.getData()));
         return handleApiCall(changedResourcePost);
     }
 
