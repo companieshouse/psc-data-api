@@ -55,10 +55,10 @@ public class ApplicationConfig {
         return new CompanyMetricsApiService();
     }
 
-//    @Bean
-//    public CompanyExemptionsApiService companyExemptionsApiService(){
-//        return new CompanyExemptionsApiService();
-//    }
+    @Bean
+    public CompanyExemptionsApiService companyExemptionsApiService(){
+        return new CompanyExemptionsApiService();
+    }
 
     @Bean
     @Primary

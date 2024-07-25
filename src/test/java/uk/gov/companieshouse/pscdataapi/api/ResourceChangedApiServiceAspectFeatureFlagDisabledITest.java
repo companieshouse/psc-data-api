@@ -54,8 +54,8 @@ class ResourceChangedApiServiceAspectFeatureFlagDisabledITest {
     @MockBean
     private ChsKafkaApiService mapper;
 
-    @MockBean
-    CompanyExemptionsApiService companyExemptionsApiService;
+//    @MockBean
+//    CompanyExemptionsApiService companyExemptionsApiService;
 
     @Captor
     ArgumentCaptor<ChangedResource> changedResourceCaptor;
