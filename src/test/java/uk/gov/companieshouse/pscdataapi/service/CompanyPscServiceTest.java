@@ -1,7 +1,6 @@
 package uk.gov.companieshouse.pscdataapi.service;
 
 import static com.mongodb.internal.connection.tlschannel.util.Util.assertTrue;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
@@ -12,7 +11,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
@@ -31,23 +29,27 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.companieshouse.api.api.CompanyExemptionsApiService;
 import uk.gov.companieshouse.api.api.CompanyMetricsApiService;
-import uk.gov.companieshouse.api.exemptions.CompanyExemptions;
-import uk.gov.companieshouse.api.exemptions.Exemptions;
-import uk.gov.companieshouse.api.exemptions.PscExemptAsTradingOnRegulatedMarketItem;
-import uk.gov.companieshouse.api.exemptions.PscExemptAsTradingOnUkRegulatedMarketItem;
 import uk.gov.companieshouse.api.metrics.MetricsApi;
 import uk.gov.companieshouse.api.metrics.RegisterApi;
 import uk.gov.companieshouse.api.metrics.RegistersApi;
-import uk.gov.companieshouse.api.model.psc.PscLinks;
-import uk.gov.companieshouse.api.psc.*;
+import uk.gov.companieshouse.api.psc.CorporateEntity;
+import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
+import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
+import uk.gov.companieshouse.api.psc.Identification;
+import uk.gov.companieshouse.api.psc.Individual;
+import uk.gov.companieshouse.api.psc.IndividualBeneficialOwner;
+import uk.gov.companieshouse.api.psc.LegalPerson;
+import uk.gov.companieshouse.api.psc.LegalPersonBeneficialOwner;
+import uk.gov.companieshouse.api.psc.ListSummary;
+import uk.gov.companieshouse.api.psc.PscList;
+import uk.gov.companieshouse.api.psc.SuperSecure;
+import uk.gov.companieshouse.api.psc.SuperSecureBeneficialOwner;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
 import uk.gov.companieshouse.pscdataapi.exceptions.ResourceNotFoundException;
 import uk.gov.companieshouse.pscdataapi.models.Created;
-import uk.gov.companieshouse.pscdataapi.models.Links;
 import uk.gov.companieshouse.pscdataapi.models.PscData;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 import uk.gov.companieshouse.pscdataapi.repository.CompanyPscRepository;
@@ -80,16 +82,11 @@ class CompanyPscServiceTest {
     @Mock
     CompanyMetricsApiService companyMetricsApiService;
 
-    @Mock
-    CompanyExemptionsApiService companyExemptionsApiService;
-
     private FullRecordCompanyPSCApi request;
     private PscDocument pscDocument;
     private String dateString;
     private OffsetDateTime date;
     private OffsetDateTime laterDate;
-    private TestHelper testHelper;
-    private PscExemptAsTradingOnUkRegulatedMarketItem pscExemptAsTradingOnUkRegulatedMarketItem;
 
     @BeforeEach
     void setUp() {
@@ -99,8 +96,6 @@ class CompanyPscServiceTest {
 
         request = TestHelper.buildBasicFullRecordPsc();
         pscDocument = TestHelper.buildBasicDocument();
-        testHelper = new TestHelper();
-        pscExemptAsTradingOnUkRegulatedMarketItem = new PscExemptAsTradingOnUkRegulatedMarketItem();
     }
 
     @Test
@@ -719,64 +714,6 @@ class CompanyPscServiceTest {
         assertTrue(actualMessage.contains(expectedMessage));
         verify(service, times(1)).retrievePscListSummaryFromDb(COMPANY_NUMBER, 0, true, 25);
         verify(repository, times(0)).getListSummaryRegisterView(COMPANY_NUMBER, 0, OffsetDateTime.parse("2020-12-20T06:00Z"), 25);
-    }
-
-    @Test
-    void pscListReturnedByCompanyNumberFromRepositoryWithExemptions() throws ResourceNotFoundException {
-        PscList expectedPscList = TestHelper.createPscListWithExemptions();
-        PscData pscData = new PscData();
-        pscDocument.setData(pscData);
-        ListSummary listSummary = new ListSummary();
-        Identification identification = new Identification();
-        identification.setPlaceRegistered("x");
-        identification.setCountryRegistered("x");
-        identification.setRegistrationNumber("x");
-        identification.setLegalAuthority("x");
-        identification.setLegalForm("x");
-        listSummary.setIdentification(identification);
-
-        when(companyMetricsApiService.getCompanyMetrics(COMPANY_NUMBER))
-                .thenReturn(Optional.of(TestHelper.createMetrics()));
-        when(repository.getPscDocumentList(anyString(), anyInt(), anyInt())).thenReturn(Optional.of(Collections.singletonList(pscDocument)));
-        when(transformer.transformPscDocToListSummary(pscDocument, false))
-                .thenReturn(listSummary);
-        when(companyExemptionsApiService.getCompanyExemptions(any())).thenReturn(Optional.ofNullable(testHelper.createExemptions()));
-
-        PscList PscDocumentList = service.retrievePscListSummaryFromDb(COMPANY_NUMBER, 0, false, 25);
-
-        Assertions.assertEquals(expectedPscList, PscDocumentList);
-        verify(repository, times(1)).getPscDocumentList(COMPANY_NUMBER, 0, 25);
-    }
-
-    @Test
-    void hasPscExemptionsReturnsTrueWhenTradingOnUkRegulatedMarket() {
-        PscData pscData = new PscData();
-        pscDocument.setData(pscData);
-        ListSummary listSummary = new ListSummary();
-        Identification identification = new Identification();
-        identification.setPlaceRegistered("x");
-        identification.setCountryRegistered("x");
-        identification.setRegistrationNumber("x");
-        identification.setLegalAuthority("x");
-        identification.setLegalForm("x");
-        listSummary.setIdentification(identification);
-        when(repository.getPscDocumentList(anyString(), anyInt(), anyInt())).thenReturn(Optional.of(Collections.singletonList(pscDocument)));
-        when(transformer.transformPscDocToListSummary(pscDocument, false))
-                .thenReturn(listSummary);
-
-        CompanyExemptions companyExemptions = new CompanyExemptions();
-        Exemptions exemptions = new Exemptions();
-        exemptions.setPscExemptAsTradingOnUkRegulatedMarket(pscExemptAsTradingOnUkRegulatedMarketItem);
-        companyExemptions.setExemptions(testHelper.getUkExemptions());
-        when(companyExemptionsApiService.getCompanyExemptions(any())).thenReturn(Optional.ofNullable(testHelper.createExemptions()));
-
-        PscList PscDocumentList = service.retrievePscListSummaryFromDb(COMPANY_NUMBER, 0, false, 25);
-
-        Links links = new Links();
-        links.setSelf("/company/" + COMPANY_NUMBER + "/persons-with-significant-control");
-        links.setExemptions("/company/" + COMPANY_NUMBER + "/exemptions");
-
-        assertEquals(PscDocumentList.getLinks(), links);
     }
 
 }
