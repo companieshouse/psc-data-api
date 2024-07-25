@@ -343,7 +343,7 @@ public class CompanyPscController {
      * @param companyNumber The number of the company
      * @return ResponseEntity
      */
-    @GetMapping({"", "/"})
+    @GetMapping("")
     public ResponseEntity<PscList> searchPscListSummary(
             @PathVariable("company_number") String companyNumber,
             @RequestParam(value = "items_per_page",
