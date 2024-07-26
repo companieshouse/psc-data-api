@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.OffsetDateTime;
 import java.util.HashMap;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.api.InternalApiClient;
@@ -17,6 +19,7 @@ import uk.gov.companieshouse.pscdataapi.exceptions.SerDesException;
 import uk.gov.companieshouse.pscdataapi.exceptions.ServiceUnavailableException;
 import uk.gov.companieshouse.pscdataapi.models.PscData;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
+import uk.gov.companieshouse.pscdataapi.transform.CompanyPscTransformer;
 import uk.gov.companieshouse.pscdataapi.util.PscTransformationHelper;
 
 @Service
@@ -27,6 +30,8 @@ public class ChsKafkaApiService {
     private static final String CHANGED_EVENT_TYPE = "changed";
     private static final String DELETE_EVENT_TYPE = "deleted";
 
+    @Autowired
+    private CompanyPscTransformer companyPscTransformer;
     private final InternalApiClient internalApiClient;
     private final Logger logger;
     private final ObjectMapper objectMapper;
@@ -80,28 +85,49 @@ public class ChsKafkaApiService {
                 internalApiClient.privateChangedResourceHandler()
                         .postChangedResource(resourceChangedUri,
                                 mapChangedResource(contextId, companyNumber,
-                                        notificationId, kind, true, pscDocument.getData()));
+                                        notificationId, kind, true, pscDocument));
         return handleApiCall(changedResourcePost);
     }
 
     private ChangedResource mapChangedResource(String contextId, String companyNumber,
                                                String notificationId,
-                                               String kind, boolean isDelete, PscData pscData) {
+                                               String kind, boolean isDelete, PscDocument pscDocument) {
         ChangedResourceEvent event = new ChangedResourceEvent();
         ChangedResource changedResource = new ChangedResource();
         event.setPublishedAt(String.valueOf(OffsetDateTime.now()));
         if (isDelete) {
             event.setType(DELETE_EVENT_TYPE);
+            // This write value/read value is necessary to remove null fields during the jackson conversion
             try {
-                // This write value/read value is necessary to remove null fields during the jackson conversion
-                Object pscDataAsObject = objectMapper.readValue(
-                        objectMapper.writeValueAsString(pscData),
-                        Object.class);
-                changedResource.setDeletedData(pscDataAsObject);
-            } catch (JsonProcessingException ex) {
-                throw new SerDesException("Failed to serialise/deserialise psc data", ex);
+                switch (pscDocument.getData().getKind()) {
+                    case "individual":
+                        changedResource.setDeletedData(deserializedData(
+                                companyPscTransformer.transformPscDocToIndividual(pscDocument, false)));
+                    case "individual-beneficial-owner":
+                        changedResource.setDeletedData(deserializedData(
+                                companyPscTransformer.transformPscDocToIndividualBeneficialOwner(pscDocument, false)));
+                    case "legal-person":
+                        changedResource.setDeletedData(deserializedData(
+                                companyPscTransformer.transformPscDocToLegalPerson(pscDocument)));
+                    case "legal-person-beneficial-owner":
+                        changedResource.setDeletedData(deserializedData(
+                                companyPscTransformer.transformPscDocToLegalPersonBeneficialOwner(pscDocument)));
+                    case "corporate-entity":
+                        changedResource.setDeletedData(deserializedData(
+                                companyPscTransformer.transformPscDocToCorporateEntity(pscDocument)));
+                    case "corporate-entity-beneficial-owner":
+                        changedResource.setDeletedData(deserializedData(
+                                companyPscTransformer.transformPscDocToCorporateEntityBeneficialOwner(pscDocument)));
+                    case "super-secure":
+                        changedResource.setDeletedData(deserializedData(
+                                companyPscTransformer.transformPscDocToSuperSecure(pscDocument)));
+                    case "super-secure-beneficial-owner":
+                        changedResource.setDeletedData(deserializedData(
+                                companyPscTransformer.transformPscDocToSuperSecureBeneficialOwner(pscDocument)));
+                }
+            } catch (JsonProcessingException e) {
+                throw new SerDesException("Failed to serialise/deserialise psc data", e);
             }
-
         } else {
             event.setType(CHANGED_EVENT_TYPE);
         }
@@ -137,5 +163,9 @@ public class ChsKafkaApiService {
             logger.error("Error occurred while calling /resource-changed endpoint", exception);
             throw exception;
         }
+    }
+
+    private Object deserializedData(Object pscDocument) throws JsonProcessingException {
+        return objectMapper.readValue(objectMapper.writeValueAsString(pscDocument), Object.class);
     }
 }
