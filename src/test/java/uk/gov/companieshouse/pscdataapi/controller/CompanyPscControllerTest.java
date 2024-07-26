@@ -754,6 +754,25 @@ class CompanyPscControllerTest {
     }
 
     @Test
+    void callPscListGetRequestWithTrailingSlash() throws Exception {
+        when(companyPscService.retrievePscListSummaryFromDb(MOCK_COMPANY_NUMBER, 2, false, 5))
+                .thenReturn(new PscList());
+
+        mockMvc.perform(MockMvcRequestBuilders
+                        .get(GET_List_Summary_URL+"/")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("ERIC-Identity", ERIC_IDENTITY)
+                        .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
+                        .contentType(APPLICATION_JSON)
+                        .header("x-request-id", X_REQUEST_ID)
+                        .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
+                        .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH)
+                        .header("items_per_page", 5)
+                        .header("start_index", 2))
+                .andExpect(status().isOk());
+    }
+
+    @Test
     void callPscListGetRequestWithRegisterView() throws Exception {
         when(companyPscService.retrievePscListSummaryFromDb(MOCK_COMPANY_NUMBER, 2, true, 5))
                 .thenReturn(new PscList());
