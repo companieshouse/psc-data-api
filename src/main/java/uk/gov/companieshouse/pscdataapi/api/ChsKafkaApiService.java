@@ -97,36 +97,38 @@ public class ChsKafkaApiService {
         event.setPublishedAt(String.valueOf(OffsetDateTime.now()));
         if (isDelete) {
             event.setType(DELETE_EVENT_TYPE);
-            // This write value/read value is necessary to remove null fields during the jackson conversion
-            try {
-                switch (pscDocument.getData().getKind()) {
-                    case "individual":
-                        changedResource.setDeletedData(deserializedData(
-                                companyPscTransformer.transformPscDocToIndividual(pscDocument, false)));
-                    case "individual-beneficial-owner":
-                        changedResource.setDeletedData(deserializedData(
-                                companyPscTransformer.transformPscDocToIndividualBeneficialOwner(pscDocument, false)));
-                    case "legal-person":
-                        changedResource.setDeletedData(deserializedData(
-                                companyPscTransformer.transformPscDocToLegalPerson(pscDocument)));
-                    case "legal-person-beneficial-owner":
-                        changedResource.setDeletedData(deserializedData(
-                                companyPscTransformer.transformPscDocToLegalPersonBeneficialOwner(pscDocument)));
-                    case "corporate-entity":
-                        changedResource.setDeletedData(deserializedData(
-                                companyPscTransformer.transformPscDocToCorporateEntity(pscDocument)));
-                    case "corporate-entity-beneficial-owner":
-                        changedResource.setDeletedData(deserializedData(
-                                companyPscTransformer.transformPscDocToCorporateEntityBeneficialOwner(pscDocument)));
-                    case "super-secure":
-                        changedResource.setDeletedData(deserializedData(
-                                companyPscTransformer.transformPscDocToSuperSecure(pscDocument)));
-                    case "super-secure-beneficial-owner":
-                        changedResource.setDeletedData(deserializedData(
-                                companyPscTransformer.transformPscDocToSuperSecureBeneficialOwner(pscDocument)));
+            if (pscDocument != null) {
+                // This write value/read value is necessary to remove null fields during the jackson conversion
+                try {
+                    switch (pscDocument.getData().getKind()) {
+                        case "individual":
+                            changedResource.setDeletedData(deserializedData(
+                                    companyPscTransformer.transformPscDocToIndividual(pscDocument, false)));
+                        case "individual-beneficial-owner":
+                            changedResource.setDeletedData(deserializedData(
+                                    companyPscTransformer.transformPscDocToIndividualBeneficialOwner(pscDocument, false)));
+                        case "legal-person":
+                            changedResource.setDeletedData(deserializedData(
+                                    companyPscTransformer.transformPscDocToLegalPerson(pscDocument)));
+                        case "legal-person-beneficial-owner":
+                            changedResource.setDeletedData(deserializedData(
+                                    companyPscTransformer.transformPscDocToLegalPersonBeneficialOwner(pscDocument)));
+                        case "corporate-entity":
+                            changedResource.setDeletedData(deserializedData(
+                                    companyPscTransformer.transformPscDocToCorporateEntity(pscDocument)));
+                        case "corporate-entity-beneficial-owner":
+                            changedResource.setDeletedData(deserializedData(
+                                    companyPscTransformer.transformPscDocToCorporateEntityBeneficialOwner(pscDocument)));
+                        case "super-secure":
+                            changedResource.setDeletedData(deserializedData(
+                                    companyPscTransformer.transformPscDocToSuperSecure(pscDocument)));
+                        case "super-secure-beneficial-owner":
+                            changedResource.setDeletedData(deserializedData(
+                                    companyPscTransformer.transformPscDocToSuperSecureBeneficialOwner(pscDocument)));
+                    }
+                } catch (JsonProcessingException e) {
+                    throw new SerDesException("Failed to serialise/deserialise psc data", e);
                 }
-            } catch (JsonProcessingException e) {
-                throw new SerDesException("Failed to serialise/deserialise psc data", e);
             }
         } else {
             event.setType(CHANGED_EVENT_TYPE);

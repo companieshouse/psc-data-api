@@ -76,7 +76,7 @@ class ResourceChangedApiServiceAspectFeatureFlagEnabledITest {
         when(changedResourcePost.execute()).thenReturn(response);
 
         chsKafkaApiService.invokeChsKafkaApiWithDeleteEvent(TestHelper.X_REQUEST_ID, TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID, "kind",
-                TestHelper.buildPscDocument("individual-persons-with-significant-control").getData());
+                TestHelper.buildPscDocument("individual-persons-with-significant-control"));
 
         verifyNoInteractions(apiClientService);
         verifyNoInteractions(internalApiClient);
