@@ -84,10 +84,6 @@ public class PscDataSteps {
     private ChsKafkaApiService chsKafkaApiService;
     @Autowired
     private CompanyPscTransformer transformer;
-
-//    @Autowired
-//    private CompanyExemptionsApiService companyExemptionsApiService;
-
     @InjectMocks
     private CompanyPscService companyPscService;
 
