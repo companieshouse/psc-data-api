@@ -11,9 +11,6 @@ public class Links {
     @Field("statement")
     private String statement;
 
-    @Field("exemptions")
-    private String exemptions;
-
     public String getSelf() {
         return self;
     }
@@ -30,10 +27,6 @@ public class Links {
         this.statement = statement;
     }
 
-    public String getExemptions() { return exemptions; }
-
-    public void setExemptions(String exemptions) { this.exemptions = exemptions; }
-
     @Override
     public String toString() {
         return "Links{"
@@ -42,9 +35,6 @@ public class Links {
                 + '\''
                 + ", statement='"
                 + statement
-                + '\''
-                + ", exemptions='"
-                + exemptions
                 + '\''
                 + '}';
     }
@@ -59,12 +49,11 @@ public class Links {
         }
         Links links = (Links) object;
         return Objects.equals(self, links.self)
-                && Objects.equals(statement, links.statement)
-                && Objects.equals(exemptions, links.exemptions);
+                && Objects.equals(statement, links.statement);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(self, statement, exemptions);
+        return Objects.hash(self, statement);
     }
 }
