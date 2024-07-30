@@ -60,9 +60,7 @@ public class CompanyPscService {
     private final CompanyPscRepository repository;
     private final ChsKafkaApiService chsKafkaApiService;
     private final CompanyMetricsApiService companyMetricsApiService;
-
-    @Autowired
-    CompanyExemptionsApiService companyExemptionsApiService;
+    private final CompanyExemptionsApiService companyExemptionsApiService;
 
     public CompanyPscService(Logger logger,
                              CompanyPscTransformer transformer,
