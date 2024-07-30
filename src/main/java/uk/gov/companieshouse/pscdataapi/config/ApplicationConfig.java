@@ -14,7 +14,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
 import uk.gov.companieshouse.api.InternalApiClient;
-import uk.gov.companieshouse.api.api.CompanyExemptionsApiService;
 import uk.gov.companieshouse.api.api.CompanyMetricsApiService;
 import uk.gov.companieshouse.api.converter.EnumWriteConverter;
 import uk.gov.companieshouse.pscdataapi.converter.CompanyPscReadConverter;
@@ -53,11 +52,6 @@ public class ApplicationConfig {
     @Bean
     public CompanyMetricsApiService companyMetricsApiService() {
         return new CompanyMetricsApiService();
-    }
-
-    @Bean
-    public CompanyExemptionsApiService companyExemptionsApiService(){
-        return new CompanyExemptionsApiService();
     }
 
     @Bean
