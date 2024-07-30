@@ -41,6 +41,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.FileCopyUtils;
+import uk.gov.companieshouse.api.api.CompanyExemptionsApiService;
 import uk.gov.companieshouse.api.api.CompanyMetricsApiService;
 import uk.gov.companieshouse.api.metrics.MetricsApi;
 import uk.gov.companieshouse.api.psc.CorporateEntity;
@@ -83,7 +84,6 @@ public class PscDataSteps {
     private ChsKafkaApiService chsKafkaApiService;
     @Autowired
     private CompanyPscTransformer transformer;
-
     @InjectMocks
     private CompanyPscService companyPscService;
 
