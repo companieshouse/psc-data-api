@@ -10,7 +10,9 @@ import java.util.Optional;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import uk.gov.companieshouse.api.api.CompanyExemptionsApiService;
 import uk.gov.companieshouse.api.api.CompanyMetricsApiService;
+import uk.gov.companieshouse.api.exemptions.CompanyExemptions;
 import uk.gov.companieshouse.api.metrics.MetricsApi;
 import uk.gov.companieshouse.api.metrics.RegisterApi;
 import uk.gov.companieshouse.api.metrics.RegistersApi;
@@ -56,17 +58,20 @@ public class CompanyPscService {
     private final CompanyPscRepository repository;
     private final ChsKafkaApiService chsKafkaApiService;
     private final CompanyMetricsApiService companyMetricsApiService;
+    private final CompanyExemptionsApiService companyExemptionsApiService;
 
     public CompanyPscService(Logger logger,
                              CompanyPscTransformer transformer,
                              CompanyPscRepository repository,
                              ChsKafkaApiService chsKafkaApiService,
-                             CompanyMetricsApiService companyMetricsApiService) {
+                             CompanyMetricsApiService companyMetricsApiService,
+                             CompanyExemptionsApiService companyExemptionsApiService) {
         this.logger = logger;
         this.transformer = transformer;
         this.repository = repository;
         this.chsKafkaApiService = chsKafkaApiService;
         this.companyMetricsApiService = companyMetricsApiService;
+        this.companyExemptionsApiService = companyExemptionsApiService;
     }
 
     /**
@@ -601,6 +606,12 @@ public class CompanyPscService {
         pscList.setStartIndex(startIndex);
         pscList.setItems(documents);
 
+        if (hasPscExemptions(companyNumber)) {
+            if(hasExemptFrom(companyNumber) && !hasExemptTo(companyNumber)) {
+                links.setExemptions(String.format("/company/%s/exemptions", companyNumber));
+            }
+        }
+
         companyMetrics.ifPresentOrElse(metricsApi -> {
             try {
                 if (registerView) {
@@ -630,6 +641,51 @@ public class CompanyPscService {
                 companyNumber), DataMapHolder.getLogMap()));
 
         return pscList;
+    }
+
+    private boolean hasPscExemptions(String companyNumber) {
+        Optional<CompanyExemptions> companyExemptions = companyExemptionsApiService.getCompanyExemptions(companyNumber);
+
+        return companyExemptions.filter(x ->
+                x.getExemptions() != null &&
+                        (x.getExemptions().getPscExemptAsSharesAdmittedOnMarket()!= null ||
+                                x.getExemptions().getPscExemptAsTradingOnEuRegulatedMarket() != null ||
+                                x.getExemptions().getPscExemptAsTradingOnRegulatedMarket() != null ||
+                                x.getExemptions().getPscExemptAsTradingOnUkRegulatedMarket() != null)).isPresent();
+    }
+
+    private boolean hasExemptFrom(String companyNumber) {
+        Optional<CompanyExemptions> companyExemptions = companyExemptionsApiService.getCompanyExemptions(companyNumber);
+
+        return companyExemptions
+                .map(exemptions -> exemptions.getExemptions())
+                .filter(exemptions -> exemptions != null)
+                .map(exemptions -> exemptions.getPscExemptAsSharesAdmittedOnMarket() != null
+                        && exemptions.getPscExemptAsSharesAdmittedOnMarket().getItems().get(0).getExemptFrom() != null ||
+                        exemptions.getPscExemptAsTradingOnEuRegulatedMarket() != null
+                                && exemptions.getPscExemptAsTradingOnEuRegulatedMarket().getItems().get(0).getExemptFrom() != null ||
+                        exemptions.getPscExemptAsTradingOnRegulatedMarket() != null
+                                && exemptions.getPscExemptAsTradingOnRegulatedMarket().getItems().get(0).getExemptFrom() != null ||
+                        exemptions.getPscExemptAsTradingOnUkRegulatedMarket() != null
+                                && exemptions.getPscExemptAsTradingOnUkRegulatedMarket().getItems().get(0).getExemptFrom() != null)
+                .orElse(false);
+    }
+
+    private boolean hasExemptTo(String companyNumber) {
+        Optional<CompanyExemptions> companyExemptions = companyExemptionsApiService.getCompanyExemptions(companyNumber);
+
+        return companyExemptions
+                .map(exemptions -> exemptions.getExemptions())
+                .filter(exemptions -> exemptions != null)
+                .map(exemptions -> exemptions.getPscExemptAsSharesAdmittedOnMarket() != null
+                        && exemptions.getPscExemptAsSharesAdmittedOnMarket().getItems().get(0).getExemptTo() != null ||
+                        exemptions.getPscExemptAsTradingOnEuRegulatedMarket() != null
+                                && exemptions.getPscExemptAsTradingOnEuRegulatedMarket().getItems().get(0).getExemptTo() != null ||
+                        exemptions.getPscExemptAsTradingOnRegulatedMarket() != null
+                                && exemptions.getPscExemptAsTradingOnRegulatedMarket().getItems().get(0).getExemptTo() != null ||
+                        exemptions.getPscExemptAsTradingOnUkRegulatedMarket() != null
+                                && exemptions.getPscExemptAsTradingOnUkRegulatedMarket().getItems().get(0).getExemptTo() != null)
+                .orElse(false);
     }
 
 }
