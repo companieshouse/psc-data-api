@@ -588,6 +588,12 @@ public class CompanyPscService {
             documents.add(listSummary);
         }
 
+        if(pscDocuments.isEmpty()) {
+            pscList.setActiveCount(0);
+            pscList.setCeasedCount(0);
+            pscList.setTotalResults(0);
+        }
+
         Links links = new Links();
         links.setSelf(String.format("/company/%s/persons-with-significant-control", companyNumber));
         pscList.setItemsPerPage(itemsPerPage);
