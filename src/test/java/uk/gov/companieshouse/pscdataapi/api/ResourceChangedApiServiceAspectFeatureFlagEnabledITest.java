@@ -50,9 +50,6 @@ class ResourceChangedApiServiceAspectFeatureFlagEnabledITest {
     @Mock
     private RequestExecutor requestExecutor;
 
-//    @MockBean
-//    CompanyExemptionsApiService companyExemptionsApiService;
-
     @Test
     void testThatAspectShouldNotProceedWhenFeatureFlagEnabled() throws ServiceUnavailableException, ApiErrorResponseException {
 
