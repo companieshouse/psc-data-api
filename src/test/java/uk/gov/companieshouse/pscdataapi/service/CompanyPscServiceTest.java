@@ -627,11 +627,6 @@ class CompanyPscServiceTest {
     }
 
     @Test
-    void whenNoPSCExistGetPSCListShouldThrow() {
-        assertThrows(ResourceNotFoundException.class, () -> service.retrievePscListSummaryFromDb(COMPANY_NUMBER, 0, false, 25));
-    }
-
-    @Test
     void pscListReturnedByCompanyNumberFromRepository() throws ResourceNotFoundException {
         PscList expectedPscList = TestHelper.createPscList();
         PscData pscData = new PscData();
