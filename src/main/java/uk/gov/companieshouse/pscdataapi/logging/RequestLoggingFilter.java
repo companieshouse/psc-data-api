@@ -1,4 +1,4 @@
-package uk.gov.companieshouse.pscdataapi.interceptor;
+package uk.gov.companieshouse.pscdataapi.logging;
 
 import static org.springframework.core.Ordered.HIGHEST_PRECEDENCE;
 import static uk.gov.companieshouse.logging.util.LogContextProperties.REQUEST_ID;
@@ -18,7 +18,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.companieshouse.logging.util.RequestLogger;
-import uk.gov.companieshouse.pscdataapi.logging.DataMapHolder;
 
 @Component
 @Order(value = HIGHEST_PRECEDENCE)
