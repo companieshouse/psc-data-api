@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.http.HttpStatus;
@@ -529,9 +530,7 @@ public class CompanyPscService {
         Optional<List<PscDocument>> pscDocumentListOptional = repository
                 .getPscDocumentList(companyNumber, startIndex, itemsPerPage);
         List<PscDocument> pscDocuments = pscDocumentListOptional
-                .filter(docs -> !docs.isEmpty()).orElseThrow(() ->
-                        new ResourceNotFoundException(HttpStatus.NOT_FOUND, String.format(
-                                RESOURCE_NOT_FOUND_FOR_COMPANY_NUMBER, companyNumber)));
+                .filter(docs -> !docs.isEmpty()).orElse(Collections.emptyList());
 
         return createPscDocumentList(pscDocuments,
                 startIndex, itemsPerPage, companyNumber, false, companyMetrics);
@@ -545,36 +544,31 @@ public class CompanyPscService {
         MetricsApi metricsData;
         if (companyMetrics.isPresent()) {
             metricsData = companyMetrics.get();
+            String registerMovedTo = String.valueOf(Optional.of(metricsData)
+                    .map(MetricsApi::getRegisters)
+                    .map(RegistersApi::getPersonsWithSignificantControl)
+                    .map(RegisterApi::getRegisterMovedTo));
+
+
+            if (registerMovedTo.equals("public-register")) {
+                Optional<List<PscDocument>> pscListOptional = repository
+                        .getListSummaryRegisterView(companyNumber, startIndex,
+                                metricsData.getRegisters().getPersonsWithSignificantControl()
+                                        .getMovedOn(),
+                                itemsPerPage);
+                List<PscDocument> pscStatementDocuments = pscListOptional
+                        .filter(docs -> !docs.isEmpty()).orElse(Collections.emptyList());
+
+                return createPscDocumentList(pscStatementDocuments,
+                        startIndex, itemsPerPage, companyNumber, true, companyMetrics);
+            } else {
+                throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
+                        String.format(COMPANY_NOT_ON_PUBLIC_REGISTER, companyNumber));
+
+            }
         } else {
-            throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
-                    String.format("No company metrics data found for company number: %s",
-                            companyNumber));
-        }
-        String registerMovedTo = Optional.of(metricsData)
-                .map(MetricsApi::getRegisters)
-                .map(RegistersApi::getPersonsWithSignificantControl)
-                .map(RegisterApi::getRegisterMovedTo)
-                .orElseThrow(() -> new ResourceNotFoundException(HttpStatus.NOT_FOUND,
-                        String.format(COMPANY_NOT_ON_PUBLIC_REGISTER, companyNumber)));
-
-
-        if (registerMovedTo.equals("public-register")) {
-            Optional<List<PscDocument>> pscListOptional = repository
-                    .getListSummaryRegisterView(companyNumber, startIndex,
-                            metricsData.getRegisters().getPersonsWithSignificantControl()
-                                    .getMovedOn(),
-                            itemsPerPage);
-            List<PscDocument> pscStatementDocuments = pscListOptional
-                    .filter(docs -> !docs.isEmpty()).orElseThrow(() ->
-                            new ResourceNotFoundException(HttpStatus.NOT_FOUND, String.format(
-                                    RESOURCE_NOT_FOUND_FOR_COMPANY_NUMBER, companyNumber)));
-
-            return createPscDocumentList(pscStatementDocuments,
+            return createPscDocumentList(Collections.emptyList(),
                     startIndex, itemsPerPage, companyNumber, true, companyMetrics);
-        } else {
-            throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
-                    String.format(COMPANY_NOT_ON_PUBLIC_REGISTER, companyNumber));
-
         }
     }
 
@@ -592,6 +586,12 @@ public class CompanyPscService {
             ListSummary listSummary = this.transformer
                     .transformPscDocToListSummary(pscDocument, registerView);
             documents.add(listSummary);
+        }
+
+        if(pscDocuments.isEmpty()) {
+            pscList.setActiveCount(0);
+            pscList.setCeasedCount(0);
+            pscList.setTotalResults(0);
         }
 
         Links links = new Links();

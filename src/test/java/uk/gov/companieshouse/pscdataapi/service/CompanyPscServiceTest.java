@@ -50,6 +50,7 @@ import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
 import uk.gov.companieshouse.pscdataapi.exceptions.ResourceNotFoundException;
 import uk.gov.companieshouse.pscdataapi.models.Created;
+import uk.gov.companieshouse.pscdataapi.models.Links;
 import uk.gov.companieshouse.pscdataapi.models.PscData;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 import uk.gov.companieshouse.pscdataapi.repository.CompanyPscRepository;
@@ -626,11 +627,6 @@ class CompanyPscServiceTest {
     }
 
     @Test
-    void whenNoPSCExistGetPSCListShouldThrow() {
-        assertThrows(ResourceNotFoundException.class, () -> service.retrievePscListSummaryFromDb(COMPANY_NUMBER, 0, false, 25));
-    }
-
-    @Test
     void pscListReturnedByCompanyNumberFromRepository() throws ResourceNotFoundException {
         PscList expectedPscList = TestHelper.createPscList();
         PscData pscData = new PscData();
@@ -684,17 +680,24 @@ class CompanyPscServiceTest {
     }
 
     @Test
-    void whenNoMetricsDataFoundForCompanyInRegisterViewShouldThrow() throws ResourceNotFoundException {
+    void whenNoMetricsDataFoundForCompanyInRegisterViewShouldReturnEmptyList() throws ResourceNotFoundException {
         when(companyMetricsApiService.getCompanyMetrics(COMPANY_NUMBER))
                 .thenReturn(Optional.empty());
 
-        Exception ex = assertThrows(ResourceNotFoundException.class, () -> service.retrievePscListSummaryFromDb(COMPANY_NUMBER, 0, true, 25));
+        PscList expectedPscList = new PscList();
+        Links links = new Links();
+        links.setSelf("/company/companyNumber/persons-with-significant-control");
+        links.setStatement(null);
+        expectedPscList.setLinks(links);
+        expectedPscList.setActiveCount(0);
+        expectedPscList.setCeasedCount(0);
+        expectedPscList.setTotalResults(0);
+        expectedPscList.setItemsPerPage(25);
+        expectedPscList.setStartIndex(0);
 
-        String expectedMessage = "No company metrics data found for company number: " + COMPANY_NUMBER;
-        String actualMessage = ex.getMessage();
-        assertNotNull(actualMessage);
-        assertTrue(actualMessage.contains(expectedMessage));
-        verify(repository, times(0)).getListSummaryRegisterView(COMPANY_NUMBER, 0, OffsetDateTime.parse("2020-12-20T06:00Z"), 25);
+        PscList PscDocumentList = service.retrievePscListSummaryFromDb(COMPANY_NUMBER, 0, true, 25);
+        Assertions.assertEquals(expectedPscList, PscDocumentList);
+
     }
 
     @Test
