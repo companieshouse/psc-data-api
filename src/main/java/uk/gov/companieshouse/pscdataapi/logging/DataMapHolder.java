@@ -6,8 +6,9 @@ import uk.gov.companieshouse.logging.util.DataMap.Builder;
 
 public class DataMapHolder {
 
+    public static final String UNINITIALISED = "uninitialised";
     private static final ThreadLocal<DataMap.Builder> DATAMAP_BUILDER
-            = ThreadLocal.withInitial(() -> new Builder().requestId("uninitialised"));
+            = ThreadLocal.withInitial(() -> new Builder().requestId(UNINITIALISED));
 
     public static void initialise(String requestId) {
         DATAMAP_BUILDER.get().requestId(requestId);
