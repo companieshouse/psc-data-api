@@ -6,6 +6,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.client.http.HttpHeaders;
 import com.google.api.client.http.HttpResponseException;
@@ -25,12 +26,18 @@ import uk.gov.companieshouse.api.handler.chskafka.PrivateChangedResourceHandler;
 import uk.gov.companieshouse.api.handler.chskafka.request.PrivateChangedResourcePost;
 import uk.gov.companieshouse.api.model.ApiResponse;
 import uk.gov.companieshouse.api.psc.Individual;
+import uk.gov.companieshouse.api.psc.IndividualBeneficialOwner;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.exceptions.ServiceUnavailableException;
+import uk.gov.companieshouse.pscdataapi.models.PscDocument;
+import uk.gov.companieshouse.pscdataapi.transform.CompanyPscTransformer;
 import uk.gov.companieshouse.pscdataapi.util.TestHelper;
 
 @ExtendWith(MockitoExtension.class)
 class ChsKafkaApiServiceTest {
+
+    private static final String EVENT_TYPE_CHANGED = "changed";
+    private static final String EVENT_TYPE_DELETED = "deleted";
 
     @Mock
     private Logger logger;
@@ -44,6 +51,8 @@ class ChsKafkaApiServiceTest {
     private ApiResponse<Void> response;
     @Mock
     private ObjectMapper objectMapper;
+    @Mock
+    CompanyPscTransformer companyPscTransformer;
     @InjectMocks
     private ChsKafkaApiService chsKafkaApiService;
     @Captor
@@ -56,31 +65,74 @@ class ChsKafkaApiServiceTest {
         when(privateChangedResourcePost.execute()).thenReturn(response);
 
         ApiResponse<?> apiResponse = chsKafkaApiService.invokeChsKafkaApi(
-                TestHelper.X_REQUEST_ID, TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID, "individual-person-with-significant-control");
+                TestHelper.X_REQUEST_ID, TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID, TestHelper.INDIVIDUAL_KIND);
         Assertions.assertThat(apiResponse).isNotNull();
 
         verify(internalApiClient, times(1)).privateChangedResourceHandler();
         verify(privateChangedResourceHandler, times(1)).postChangedResource(any(), changedResourceCaptor.capture());
         verify(privateChangedResourcePost, times(1)).execute();
-        Assertions.assertThat(changedResourceCaptor.getValue().getEvent().getType()).isEqualTo("changed");
+        Assertions.assertThat(changedResourceCaptor.getValue().getEvent().getType()).isEqualTo(EVENT_TYPE_CHANGED);
         Assertions.assertThat(changedResourceCaptor.getValue().getResourceUri()).isEqualTo("/company/companyNumber/persons-with-significant-control/individual/notificationId");
     }
 
     @Test
-    void invokeChsKafkaEndpointDelete() throws ApiErrorResponseException {
+    void invokeChsKafkaEndpointWithDeleteForIndividual() throws ApiErrorResponseException, JsonProcessingException {
+        // given
         when(internalApiClient.privateChangedResourceHandler()).thenReturn(privateChangedResourceHandler);
         when(privateChangedResourceHandler.postChangedResource(any(), any())).thenReturn(privateChangedResourcePost);
         when(privateChangedResourcePost.execute()).thenReturn(response);
 
+        PscDocument document = TestHelper.buildPscDocument(TestHelper.INDIVIDUAL_KIND);
+        Individual individual = new Individual();
+        individual.setKind(Individual.KindEnum.INDIVIDUAL_PERSON_WITH_SIGNIFICANT_CONTROL);
+        individual.setName("Individual");
+        when(companyPscTransformer.transformPscDocToIndividual(document, false)).thenReturn(individual);
+
+        when(objectMapper.writeValueAsString(individual)).thenReturn(individual.toString());
+        when(objectMapper.readValue(individual.toString(), Object.class)).thenReturn(individual);
+
+        // when
         ApiResponse<?> apiResponse = chsKafkaApiService.invokeChsKafkaApiWithDeleteEvent(
-                TestHelper.X_REQUEST_ID, TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID, "kind",
-                TestHelper.buildPscDocument("individual-persons-with-significant-control"));
+                TestHelper.X_REQUEST_ID, TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID, TestHelper.INDIVIDUAL_KIND,
+                document);
         Assertions.assertThat(apiResponse).isNotNull();
 
+        //then
         verify(internalApiClient, times(1)).privateChangedResourceHandler();
         verify(privateChangedResourceHandler, times(1)).postChangedResource(any(), changedResourceCaptor.capture());
         verify(privateChangedResourcePost, times(1)).execute();
-        Assertions.assertThat(changedResourceCaptor.getValue().getEvent().getType()).isEqualTo("deleted");
+        Assertions.assertThat(changedResourceCaptor.getValue().getEvent().getType()).isEqualTo(EVENT_TYPE_DELETED);
+        Assertions.assertThat(changedResourceCaptor.getValue().getDeletedData()).isInstanceOf(Individual.class);
+    }
+
+    @Test
+    void invokeChsKafkaEndpointWithDeleteForIndividualBeneficialOwner() throws ApiErrorResponseException, JsonProcessingException {
+        // given
+        when(internalApiClient.privateChangedResourceHandler()).thenReturn(privateChangedResourceHandler);
+        when(privateChangedResourceHandler.postChangedResource(any(), any())).thenReturn(privateChangedResourcePost);
+        when(privateChangedResourcePost.execute()).thenReturn(response);
+
+        PscDocument document = TestHelper.buildPscDocument(TestHelper.INDIVIDUAL_BO_KIND);
+        IndividualBeneficialOwner individualBO = new IndividualBeneficialOwner();
+        individualBO.setKind(IndividualBeneficialOwner.KindEnum.INDIVIDUAL_BENEFICIAL_OWNER);
+        individualBO.setName("Individual-Beneficial-Owner");
+        when(companyPscTransformer.transformPscDocToIndividualBeneficialOwner(document, false)).thenReturn(individualBO);
+
+        when(objectMapper.writeValueAsString(individualBO)).thenReturn(individualBO.toString());
+        when(objectMapper.readValue(individualBO.toString(), Object.class)).thenReturn(individualBO);
+
+        // when
+        ApiResponse<?> apiResponse = chsKafkaApiService.invokeChsKafkaApiWithDeleteEvent(
+                TestHelper.X_REQUEST_ID, TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID, TestHelper.INDIVIDUAL_KIND,
+                document);
+        Assertions.assertThat(apiResponse).isNotNull();
+
+        //then
+        verify(internalApiClient, times(1)).privateChangedResourceHandler();
+        verify(privateChangedResourceHandler, times(1)).postChangedResource(any(), changedResourceCaptor.capture());
+        verify(privateChangedResourcePost, times(1)).execute();
+        Assertions.assertThat(changedResourceCaptor.getValue().getEvent().getType()).isEqualTo(EVENT_TYPE_DELETED);
+        Assertions.assertThat(changedResourceCaptor.getValue().getDeletedData()).isInstanceOf(IndividualBeneficialOwner.class);
     }
 
     @Test
@@ -97,7 +149,7 @@ class ChsKafkaApiServiceTest {
         verify(internalApiClient, times(1)).privateChangedResourceHandler();
         verify(privateChangedResourceHandler, times(1)).postChangedResource(any(), changedResourceCaptor.capture());
         verify(privateChangedResourcePost, times(1)).execute();
-        Assertions.assertThat(changedResourceCaptor.getValue().getEvent().getType()).isEqualTo("changed");
+        Assertions.assertThat(changedResourceCaptor.getValue().getEvent().getType()).isEqualTo(EVENT_TYPE_CHANGED);
     }
 
     @Test
@@ -114,7 +166,7 @@ class ChsKafkaApiServiceTest {
         verify(internalApiClient, times(1)).privateChangedResourceHandler();
         verify(privateChangedResourceHandler, times(1)).postChangedResource(any(), changedResourceCaptor.capture());
         verify(privateChangedResourcePost, times(1)).execute();
-        Assertions.assertThat(changedResourceCaptor.getValue().getEvent().getType()).isEqualTo("deleted");
+        Assertions.assertThat(changedResourceCaptor.getValue().getEvent().getType()).isEqualTo(EVENT_TYPE_DELETED);
     }
 
     @Test
@@ -131,7 +183,7 @@ class ChsKafkaApiServiceTest {
         verify(internalApiClient, times(1)).privateChangedResourceHandler();
         verify(privateChangedResourceHandler, times(1)).postChangedResource(any(), changedResourceCaptor.capture());
         verify(privateChangedResourcePost, times(1)).execute();
-        Assertions.assertThat(changedResourceCaptor.getValue().getEvent().getType()).isEqualTo("changed");
+        Assertions.assertThat(changedResourceCaptor.getValue().getEvent().getType()).isEqualTo(EVENT_TYPE_CHANGED);
     }
 
     @Test
@@ -148,7 +200,7 @@ class ChsKafkaApiServiceTest {
         verify(internalApiClient, times(1)).privateChangedResourceHandler();
         verify(privateChangedResourceHandler, times(1)).postChangedResource(any(), changedResourceCaptor.capture());
         verify(privateChangedResourcePost, times(1)).execute();
-        Assertions.assertThat(changedResourceCaptor.getValue().getEvent().getType()).isEqualTo("deleted");
+        Assertions.assertThat(changedResourceCaptor.getValue().getEvent().getType()).isEqualTo(EVENT_TYPE_DELETED);
     }
 
     @Test

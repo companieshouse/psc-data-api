@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.OffsetDateTime;
 import java.util.HashMap;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.api.InternalApiClient;
@@ -17,7 +16,6 @@ import uk.gov.companieshouse.api.model.ApiResponse;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.exceptions.SerDesException;
 import uk.gov.companieshouse.pscdataapi.exceptions.ServiceUnavailableException;
-import uk.gov.companieshouse.pscdataapi.models.PscData;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 import uk.gov.companieshouse.pscdataapi.transform.CompanyPscTransformer;
 import uk.gov.companieshouse.pscdataapi.util.PscTransformationHelper;
@@ -30,8 +28,7 @@ public class ChsKafkaApiService {
     private static final String CHANGED_EVENT_TYPE = "changed";
     private static final String DELETE_EVENT_TYPE = "deleted";
 
-    @Autowired
-    private CompanyPscTransformer companyPscTransformer;
+    private final CompanyPscTransformer companyPscTransformer;
     private final InternalApiClient internalApiClient;
     private final Logger logger;
     private final ObjectMapper objectMapper;
@@ -41,10 +38,12 @@ public class ChsKafkaApiService {
     @Value("${chs.api.kafka.resource-changed.uri}")
     private String resourceChangedUri;
 
-    public ChsKafkaApiService(InternalApiClient internalApiClient, Logger logger, ObjectMapper objectMapper) {
+    public ChsKafkaApiService(InternalApiClient internalApiClient, Logger logger,
+                              ObjectMapper objectMapper, CompanyPscTransformer companyPscTransformer) {
         this.internalApiClient = internalApiClient;
         this.logger = logger;
         this.objectMapper = objectMapper;
+        this.companyPscTransformer = companyPscTransformer;
     }
 
     /**
@@ -98,34 +97,28 @@ public class ChsKafkaApiService {
         if (isDelete) {
             event.setType(DELETE_EVENT_TYPE);
             if (pscDocument != null) {
-                // This write value/read value is necessary to remove null fields during the jackson conversion
+                // This write-value/read-value is necessary to remove null fields during the jackson conversion
                 try {
-                    switch (pscDocument.getData().getKind()) {
-                        case "individual":
-                            changedResource.setDeletedData(deserializedData(
-                                    companyPscTransformer.transformPscDocToIndividual(pscDocument, false)));
-                        case "individual-beneficial-owner":
-                            changedResource.setDeletedData(deserializedData(
-                                    companyPscTransformer.transformPscDocToIndividualBeneficialOwner(pscDocument, false)));
-                        case "legal-person":
-                            changedResource.setDeletedData(deserializedData(
-                                    companyPscTransformer.transformPscDocToLegalPerson(pscDocument)));
-                        case "legal-person-beneficial-owner":
-                            changedResource.setDeletedData(deserializedData(
-                                    companyPscTransformer.transformPscDocToLegalPersonBeneficialOwner(pscDocument)));
-                        case "corporate-entity":
-                            changedResource.setDeletedData(deserializedData(
-                                    companyPscTransformer.transformPscDocToCorporateEntity(pscDocument)));
-                        case "corporate-entity-beneficial-owner":
-                            changedResource.setDeletedData(deserializedData(
-                                    companyPscTransformer.transformPscDocToCorporateEntityBeneficialOwner(pscDocument)));
-                        case "super-secure":
-                            changedResource.setDeletedData(deserializedData(
-                                    companyPscTransformer.transformPscDocToSuperSecure(pscDocument)));
-                        case "super-secure-beneficial-owner":
-                            changedResource.setDeletedData(deserializedData(
-                                    companyPscTransformer.transformPscDocToSuperSecureBeneficialOwner(pscDocument)));
-                    }
+                    Object pscObject = switch (pscDocument.getData().getKind()) {
+                        case "individual-person-with-significant-control" ->
+                                companyPscTransformer.transformPscDocToIndividual(pscDocument, false);
+                        case "individual-beneficial-owner" ->
+                                companyPscTransformer.transformPscDocToIndividualBeneficialOwner(pscDocument, false);
+                        case "corporate-entity-person-with-significant-control" ->
+                                companyPscTransformer.transformPscDocToCorporateEntity(pscDocument);
+                        case "corporate-entity-beneficial-owner" ->
+                                companyPscTransformer.transformPscDocToCorporateEntityBeneficialOwner(pscDocument);
+                        case "legal-person-person-with-significant-control" ->
+                                companyPscTransformer.transformPscDocToLegalPerson(pscDocument);
+                        case "legal-person-beneficial-owner" ->
+                                companyPscTransformer.transformPscDocToLegalPersonBeneficialOwner(pscDocument);
+                        case "super-secure-person-with-significant-control" ->
+                                companyPscTransformer.transformPscDocToSuperSecure(pscDocument);
+                        case "super-secure-beneficial-owner" ->
+                                companyPscTransformer.transformPscDocToSuperSecureBeneficialOwner(pscDocument);
+                        default -> null;
+                    };
+                    changedResource.setDeletedData(deserializedData(pscObject));
                 } catch (JsonProcessingException e) {
                     throw new SerDesException("Failed to serialise/deserialise psc data", e);
                 }

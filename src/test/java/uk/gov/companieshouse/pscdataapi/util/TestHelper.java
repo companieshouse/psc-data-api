@@ -15,15 +15,23 @@ import org.springframework.util.FileCopyUtils;
 import uk.gov.companieshouse.api.metrics.CountsApi;
 import uk.gov.companieshouse.api.metrics.MetricsApi;
 import uk.gov.companieshouse.api.metrics.PscApi;
+import uk.gov.companieshouse.api.psc.CorporateEntity;
+import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
 import uk.gov.companieshouse.api.psc.Data;
 import uk.gov.companieshouse.api.psc.ExternalData;
 import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
 import uk.gov.companieshouse.api.psc.Identification;
+import uk.gov.companieshouse.api.psc.Individual;
+import uk.gov.companieshouse.api.psc.IndividualBeneficialOwner;
 import uk.gov.companieshouse.api.psc.InternalData;
 import uk.gov.companieshouse.api.psc.ItemLinkTypes;
 import uk.gov.companieshouse.api.psc.ListSummary;
+import uk.gov.companieshouse.api.psc.LegalPerson;
+import uk.gov.companieshouse.api.psc.LegalPersonBeneficialOwner;
 import uk.gov.companieshouse.api.psc.PscList;
 import uk.gov.companieshouse.api.psc.SensitiveData;
+import uk.gov.companieshouse.api.psc.SuperSecure;
+import uk.gov.companieshouse.api.psc.SuperSecureBeneficialOwner;
 import uk.gov.companieshouse.api.psc.UsualResidentialAddress;
 import uk.gov.companieshouse.pscdataapi.models.Address;
 import uk.gov.companieshouse.pscdataapi.models.DateOfBirth;
@@ -36,11 +44,16 @@ import uk.gov.companieshouse.pscdataapi.models.PscSensitiveData;
 import uk.gov.companieshouse.pscdataapi.models.Updated;
 
 public class TestHelper {
-    public static final String INDIVIDUAL_KIND = "individual-person-with-significant-control";
-    public static final String CORPORATE_KIND = "corporate-entity-person-with-significant-control";
-    public static final String LEGAL_KIND = "legal-person-person-with-significant-control";
-    public static final String SECURE_KIND = "super-secure-person-with-significant-control";
-    public static final String INDIVIDUAL_BO_KIND = "individual-beneficial-owner";
+
+    public static final String INDIVIDUAL_KIND = Individual.KindEnum.INDIVIDUAL_PERSON_WITH_SIGNIFICANT_CONTROL.toString();
+    public static final String CORPORATE_KIND = CorporateEntity.KindEnum.CORPORATE_ENTITY_PERSON_WITH_SIGNIFICANT_CONTROL.toString();
+    public static final String LEGAL_KIND = LegalPerson.KindEnum.LEGAL_PERSON_PERSON_WITH_SIGNIFICANT_CONTROL.toString();
+    public static final String SECURE_KIND = SuperSecure.KindEnum.SUPER_SECURE_PERSON_WITH_SIGNIFICANT_CONTROL.toString();
+    public static final String INDIVIDUAL_BO_KIND = IndividualBeneficialOwner.KindEnum.INDIVIDUAL_BENEFICIAL_OWNER.toString();
+    public static final String CORPORATE_BO_KIND = CorporateEntityBeneficialOwner.KindEnum.CORPORATE_ENTITY_BENEFICIAL_OWNER.toString();
+    public static final String LEGAL_BO_KIND = LegalPersonBeneficialOwner.KindEnum.LEGAL_PERSON_BENEFICIAL_OWNER.toString();
+    public static final String SECURE_BO_KIND = SuperSecureBeneficialOwner.KindEnum.SUPER_SECURE_BENEFICIAL_OWNER.toString();
+
     public static final String COMPANY_NUMBER = "companyNumber";
     public static final String NOTIFICATION_ID = "notificationId";
     public static final String PSC_ID = "pscId";
