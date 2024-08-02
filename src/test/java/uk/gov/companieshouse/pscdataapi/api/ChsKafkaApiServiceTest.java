@@ -24,6 +24,7 @@ import uk.gov.companieshouse.api.error.ApiErrorResponseException;
 import uk.gov.companieshouse.api.handler.chskafka.PrivateChangedResourceHandler;
 import uk.gov.companieshouse.api.handler.chskafka.request.PrivateChangedResourcePost;
 import uk.gov.companieshouse.api.model.ApiResponse;
+import uk.gov.companieshouse.api.psc.Individual;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.exceptions.ServiceUnavailableException;
 import uk.gov.companieshouse.pscdataapi.util.TestHelper;
@@ -148,5 +149,19 @@ class ChsKafkaApiServiceTest {
         verify(privateChangedResourceHandler, times(1)).postChangedResource(any(), changedResourceCaptor.capture());
         verify(privateChangedResourcePost, times(1)).execute();
         Assertions.assertThat(changedResourceCaptor.getValue().getEvent().getType()).isEqualTo("deleted");
+    }
+
+    @Test
+    void invokeChsKafkaEndpointDeleteReturnsCorrectDocument() throws ApiErrorResponseException {
+        when(internalApiClient.privateChangedResourceHandler()).thenReturn(privateChangedResourceHandler);
+        when(privateChangedResourceHandler.postChangedResource(any(), any())).thenReturn(privateChangedResourcePost);
+        when(privateChangedResourcePost.execute()).thenReturn(response);
+
+        ApiResponse<?> apiResponse = chsKafkaApiService.invokeChsKafkaApiWithDeleteEvent(
+                TestHelper.X_REQUEST_ID, TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID, "kind",
+                TestHelper.buildPscDocument("individual-persons-with-significant-control"));
+        Assertions.assertThat(apiResponse).isNotNull();
+
+        Assertions.assertThat(changedResourceCaptor.getValue().getDeletedData()).isInstanceOf(Individual.class);
     }
 }
