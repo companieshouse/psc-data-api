@@ -173,7 +173,7 @@ public class CompanyPscService {
         repository.delete(pscDocument);
         try {
             chsKafkaApiService.invokeChsKafkaApiWithDeleteEvent(contextId,
-                    companyNumber, notificationId, kind, pscDocument.getData());
+                    companyNumber, notificationId, kind, pscDocument);
         } catch (Exception exception) {
             throw new ServiceUnavailableException(exception.getMessage());
         }
