@@ -4,6 +4,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
+import uk.gov.companieshouse.api.api.CompanyExemptionsApiService;
 import uk.gov.companieshouse.api.api.CompanyMetricsApiService;
 import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
 
@@ -20,5 +21,8 @@ public abstract class AbstractIntegrationTest extends AbstractMongoConfig {
 
     @MockBean
     public CompanyMetricsApiService companyMetricsApiService;
+
+    @MockBean
+    CompanyExemptionsApiService companyExemptionsApiService;
 
 }
