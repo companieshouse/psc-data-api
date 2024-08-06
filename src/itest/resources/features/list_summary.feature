@@ -16,7 +16,7 @@ Feature: Get list summary
     Given Psc data api service is running
     And a PSC exists for "<companyNumber>" for List summary
     And Company Metrics "<metricsData>" is available for company number "<companyNumber>"
-    When a Get request is sent for "<companyNumber>" for List summary
+    When a Get request is sent for "<companyNumber>" for List summary with register view
     Then I should receive 200 status code
     And the Get call response body should match file "<result>" for List Summary
 

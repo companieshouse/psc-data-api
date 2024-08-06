@@ -547,7 +547,9 @@ public class CompanyPscService {
             String registerMovedTo = String.valueOf(Optional.of(metricsData)
                     .map(MetricsApi::getRegisters)
                     .map(RegistersApi::getPersonsWithSignificantControl)
-                    .map(RegisterApi::getRegisterMovedTo));
+                    .map(RegisterApi::getRegisterMovedTo)
+                    .orElseThrow(() -> new ResourceNotFoundException(HttpStatus.NOT_FOUND,
+                            String.format(COMPANY_NOT_ON_PUBLIC_REGISTER, companyNumber))));
 
 
             if (registerMovedTo.equals("public-register")) {

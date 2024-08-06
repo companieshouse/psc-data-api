@@ -83,12 +83,13 @@ public class PscDataSteps {
     private ChsKafkaApiService chsKafkaApiService;
     @Autowired
     private CompanyPscTransformer transformer;
+    @Autowired
+    private CompanyMetricsApiService companyMetricsApiService;
 
     @InjectMocks
     private CompanyPscService companyPscService;
 
-    @Mock
-    private CompanyMetricsApiService companyMetricsApiService;
+
 
     private final String COMPANY_NUMBER = "34777772";
     private final String NOTIFICATION_ID = "ZfTs9WeeqpXTqf6dc6FZ4C0H0ZZ";
@@ -1187,6 +1188,27 @@ public class PscDataSteps {
 
         String uri =
                 "/company/{company_number}/persons-with-significant-control";
+        ResponseEntity<PscList> response = restTemplate.exchange(uri,
+                HttpMethod.GET, request, PscList.class, companyNumber);
+
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
+        CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
+    }
+
+    @When("a Get request is sent for {string} for List summary with register view")
+    public void aGetRequestIsSentForForListSummaryRegisterView(String companyNumber) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+        CucumberContext.CONTEXT.set("contextId", this.contextId);
+        headers.set("x-request-id", this.contextId);
+        headers.set("ERIC-Identity", "TEST-IDENTITY");
+        headers.set("ERIC-Identity-Type", "key");
+        headers.set("ERIC-Authorised-Key-Roles", "*");
+        HttpEntity<String> request = new HttpEntity<>(null, headers);
+
+        String uri =
+                "/company/{company_number}/persons-with-significant-control?register_view=true";
         ResponseEntity<PscList> response = restTemplate.exchange(uri,
                 HttpMethod.GET, request, PscList.class, companyNumber);
 
