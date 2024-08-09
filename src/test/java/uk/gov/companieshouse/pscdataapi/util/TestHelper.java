@@ -9,6 +9,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.springframework.util.FileCopyUtils;
@@ -475,7 +476,11 @@ public class TestHelper {
         exemptionItem.exemptFrom(EXEMPTION_DATE);
         exemptionItem.exemptTo(null);
 
-        List<ExemptionItem> exemptionItems = Collections.singletonList(exemptionItem);
+        ExemptionItem ceasedExemptionItem = new ExemptionItem();
+        exemptionItem.exemptFrom(EXEMPTION_DATE);
+        exemptionItem.exemptTo(EXEMPTION_DATE);
+
+        List<ExemptionItem> exemptionItems = Arrays.asList(exemptionItem, ceasedExemptionItem);
 
 
         PscExemptAsTradingOnRegulatedMarketItem nonUkEeaStateMarket = new PscExemptAsTradingOnRegulatedMarketItem();
