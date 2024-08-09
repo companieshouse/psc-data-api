@@ -658,7 +658,7 @@ public class CompanyPscService {
                                         x.getExemptions().getPscExemptAsTradingOnRegulatedMarket().getItems().stream()
                                                 .anyMatch(e -> e.getExemptTo()==null)) ||
                                 (x.getExemptions().getPscExemptAsTradingOnUkRegulatedMarket() != null &&
-                                        x.getExemptions().getPscExemptAsTradingOnRegulatedMarket().getItems().stream()
+                                        x.getExemptions().getPscExemptAsTradingOnUkRegulatedMarket().getItems().stream()
                                                 .anyMatch(e -> e.getExemptTo()==null)))).isPresent();
     }
 
