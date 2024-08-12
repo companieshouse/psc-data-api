@@ -131,8 +131,10 @@ public class CompanyPscTransformer {
             corporateEntity.setLinks(pscData.getLinks());
             corporateEntity.setAddress(mapAddress(pscData.getAddress()));
             corporateEntity.setNaturesOfControl(pscData.getNaturesOfControl());
+            if(pscDocument.getData().getIdentification() != null){
             corporateEntity.setIdentification(
                     mapIdentification(pscData.getIdentification(), CORPORATE));
+            }
         }
         return corporateEntity;
     }
@@ -158,8 +160,10 @@ public class CompanyPscTransformer {
             corporateEntityBo.setNaturesOfControl(pscData.getNaturesOfControl());
             corporateEntityBo.setLinks(pscData.getLinks());
             corporateEntityBo.setIsSanctioned(pscData.getSanctioned());
-            corporateEntityBo.setIdentification(mapIdentification(
-                    pscData.getIdentification(), CORPORATE));
+            if(pscDocument.getData().getIdentification() != null) {
+                corporateEntityBo.setIdentification(mapIdentification(
+                        pscData.getIdentification(), CORPORATE));
+            }
             corporateEntityBo.setNotifiedOn(pscData.getNotifiedOn());
             corporateEntityBo.setPrincipalOfficeAddress(mapPrincipleAddress(
                     pscData.getPrincipalOfficeAddress()));
@@ -189,8 +193,10 @@ public class CompanyPscTransformer {
             legalPerson.setLinks(pscData.getLinks());
             legalPerson.setCeasedOn(pscData.getCeasedOn());
             legalPerson.setNotifiedOn(pscData.getNotifiedOn());
-            legalPerson.setIdentification(mapIdentification(
-                    pscData.getIdentification(), LEGAL));
+            if(pscDocument.getData().getIdentification() != null) {
+                legalPerson.setIdentification(mapIdentification(
+                        pscData.getIdentification(), LEGAL));
+            }
         }
         return legalPerson;
     }
@@ -218,8 +224,10 @@ public class CompanyPscTransformer {
             legalPersonBo.setCeasedOn(pscData.getCeasedOn());
             legalPersonBo.setNotifiedOn(pscData.getNotifiedOn());
             legalPersonBo.setIsSanctioned(pscData.getSanctioned());
-            legalPersonBo.setIdentification(mapIdentification(
-                    pscData.getIdentification(), LEGAL));
+            if(pscDocument.getData().getIdentification() != null) {
+                legalPersonBo.setIdentification(mapIdentification(
+                        pscData.getIdentification(), LEGAL));
+            }
             legalPersonBo.setPrincipalOfficeAddress(mapPrincipleAddress(
                     pscData.getPrincipalOfficeAddress()));
         }
@@ -420,10 +428,12 @@ public class CompanyPscTransformer {
         }
         pscData.setServiceAddressIsSameAsRegisteredOfficeAddress(
                 data.getServiceAddressSameAsRegisteredOfficeAddress());
+
         if (pscData.getKind().contains(CORPORATE) || pscData.getKind().contains(LEGAL)) {
             PscIdentification identification = new PscIdentification(data.getIdentification());
             pscData.setIdentification(identification);
         }
+
         return pscData;
     }
 
