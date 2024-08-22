@@ -420,7 +420,8 @@ public class CompanyPscTransformer {
         }
         pscData.setServiceAddressIsSameAsRegisteredOfficeAddress(
                 data.getServiceAddressSameAsRegisteredOfficeAddress());
-        if (pscData.getKind().contains(CORPORATE) || pscData.getKind().contains(LEGAL)) {
+        if (data.getIdentification() != null &&
+                (pscData.getKind().contains(CORPORATE) || pscData.getKind().contains(LEGAL))) {
             PscIdentification identification = new PscIdentification(data.getIdentification());
             pscData.setIdentification(identification);
         }
