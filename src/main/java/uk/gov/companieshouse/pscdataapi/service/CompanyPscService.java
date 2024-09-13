@@ -81,7 +81,6 @@ public class CompanyPscService {
      * @param contextId   Id used for chsKafkaCall.
      * @param requestBody Data to be saved.
      */
-    @Transactional
     public void insertPscRecord(String contextId, FullRecordCompanyPSCApi requestBody)
             throws ServiceUnavailableException, BadRequestException {
 

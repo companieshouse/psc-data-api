@@ -1,13 +1,14 @@
 package uk.gov.companieshouse.pscdataapi.service;
 
-import static com.mongodb.internal.connection.tlschannel.util.Util.assertTrue;
 import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -19,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -120,7 +120,8 @@ class CompanyPscServiceTest {
         service.insertPscRecord("", request);
 
         verify(repository).save(pscDocument);
-        Assertions.assertEquals(dateString, dateCaptor.getValue());
+        verify(chsKafkaApiService).invokeChsKafkaApi(any(), any(), any(), any());
+        assertEquals(dateString, dateCaptor.getValue());
         assertNotNull(pscDocument.getCreated().getAt());
     }
 
@@ -136,22 +137,42 @@ class CompanyPscServiceTest {
         service.insertPscRecord("", request);
 
         verify(repository).save(pscDocument);
-        Assertions.assertEquals(dateString, dateCaptor.getValue());
+        verify(chsKafkaApiService).invokeChsKafkaApi(any(), any(), any(), any());
+        assertEquals(dateString, dateCaptor.getValue());
         assertNotNull(pscDocument.getCreated().getAt());
-        Assertions.assertEquals(localDateTime, pscDocument.getCreated().getAt());
+        assertEquals(localDateTime, pscDocument.getCreated().getAt());
     }
 
     @Test
-    void insertPscRecordDoesNotSavePscWhenUpdateAlreadyMade() {
+    void retryOfFailedInsertUpdatePscRecordSavesPsc() {
+        PscDocument oldRecord = new PscDocument();
+        LocalDateTime localDateTime = LocalDateTime.now();
+        oldRecord.setCreated(new Created().setAt(localDateTime));
+        pscDocument.setCreated(new Created().setAt(localDateTime));
 
-        List<PscDocument> documents = new ArrayList<>();
-        documents.add(new PscDocument());
-        when(repository.findUpdatedPsc(eq(NOTIFICATION_ID), dateCaptor.capture())).thenReturn(documents);
+        when(repository.findUpdatedPsc(eq(NOTIFICATION_ID), dateCaptor.capture())).thenReturn(List.of());
+        when(repository.findById(NOTIFICATION_ID)).thenReturn(Optional.of(oldRecord));
+        when(transformer.transformPscOnInsert(NOTIFICATION_ID, request)).thenReturn(pscDocument);
 
         service.insertPscRecord("", request);
 
-        verify(repository, times(0)).save(pscDocument);
-        Assertions.assertEquals(dateString, dateCaptor.getValue());
+        verify(repository).save(pscDocument);
+        verify(chsKafkaApiService).invokeChsKafkaApi(any(), any(), any(), any());
+        assertEquals(dateString, dateCaptor.getValue());
+        assertNotNull(pscDocument.getCreated().getAt());
+        assertEquals(localDateTime, pscDocument.getCreated().getAt());
+    }
+
+    @Test
+    void insertStalePscRecordDoesNotSavePscWhenUpdateAlreadyMade() {
+
+        when(repository.findUpdatedPsc(eq(NOTIFICATION_ID), dateCaptor.capture())).thenReturn(List.of(new PscDocument()));
+
+        service.insertPscRecord("", request);
+
+        verify(repository, never()).save(pscDocument);
+        verify(chsKafkaApiService, never()).invokeChsKafkaApi(any(), any(), any(), any());
+        assertEquals(dateString, dateCaptor.getValue());
     }
 
     @Test
@@ -173,6 +194,7 @@ class CompanyPscServiceTest {
         service.insertPscRecord("", request);
 
         verify(repository).save(pscDocument);
+        verify(chsKafkaApiService).invokeChsKafkaApi(any(), any(), any(), any());
         assertNotNull(pscDocument.getCreated().getAt());
     }
 
@@ -184,6 +206,7 @@ class CompanyPscServiceTest {
 
         verify(repository, times(1)).getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID);
         verify(repository, times(1)).delete(pscDocument);
+        verify(chsKafkaApiService).invokeChsKafkaApiWithDeleteEvent(any(), any(), any(), any(), any());
     }
 
     @Test
@@ -194,7 +217,8 @@ class CompanyPscServiceTest {
         assertThrows(ResourceNotFoundException.class, () -> service.deletePsc("", NOTIFICATION_ID, ""));
 
         verify(repository, times(1)).getPscByCompanyNumberAndId("", NOTIFICATION_ID);
-        verify(repository, times(0)).delete(any());
+        verify(repository, never()).delete(any());
+        verify(chsKafkaApiService, never()).invokeChsKafkaApiWithDeleteEvent(any(), any(), any(), any(), any());
     }
 
     @Test
@@ -205,7 +229,8 @@ class CompanyPscServiceTest {
         assertThrows(ResourceNotFoundException.class, () -> service.deletePsc("", "", ""));
 
         verify(repository, times(1)).getPscByCompanyNumberAndId("", "");
-        verify(repository, times(0)).delete(any());
+        verify(repository, never()).delete(any());
+        verify(chsKafkaApiService, never()).invokeChsKafkaApiWithDeleteEvent(any(), any(), any(), any(), any());
     }
 
     @Test
@@ -216,7 +241,7 @@ class CompanyPscServiceTest {
         ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () ->
                 service.getIndividualPsc(COMPANY_NUMBER, NOTIFICATION_ID, REGISTER_VIEW_TRUE));
         String expectedErrorMessage = "404 NOT_FOUND \"No company metrics data found for company number: " + COMPANY_NUMBER + "\"";
-        Assertions.assertEquals(expectedErrorMessage, exception.getMessage());
+        assertEquals(expectedErrorMessage, exception.getMessage());
     }
 
     @Test
@@ -228,7 +253,7 @@ class CompanyPscServiceTest {
         ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () ->
                 service.getIndividualPsc(COMPANY_NUMBER, NOTIFICATION_ID, REGISTER_VIEW_TRUE));
         String expectedErrorMessage = "404 NOT_FOUND \"not-on-public-register\"";
-        Assertions.assertEquals(expectedErrorMessage, exception.getMessage());
+        assertEquals(expectedErrorMessage, exception.getMessage());
     }
 
     @Test
@@ -244,7 +269,7 @@ class CompanyPscServiceTest {
         ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () ->
                 service.getIndividualPsc(COMPANY_NUMBER, NOTIFICATION_ID, REGISTER_VIEW_TRUE));
         String expectedErrorMessage = "404 NOT_FOUND \"not-on-public-register\"";
-        Assertions.assertEquals(expectedErrorMessage, exception.getMessage());
+        assertEquals(expectedErrorMessage, exception.getMessage());
     }
 
     @Test
@@ -260,7 +285,7 @@ class CompanyPscServiceTest {
         ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () ->
                 service.getIndividualPsc(COMPANY_NUMBER, NOTIFICATION_ID, REGISTER_VIEW_TRUE));
         String expectedErrorMessage = "404 NOT_FOUND \"not-on-public-register\"";
-        Assertions.assertEquals(expectedErrorMessage, exception.getMessage());
+        assertEquals(expectedErrorMessage, exception.getMessage());
     }
 
     @Test
@@ -283,7 +308,7 @@ class CompanyPscServiceTest {
         ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () ->
                 service.getIndividualPsc(COMPANY_NUMBER, NOTIFICATION_ID, REGISTER_VIEW_TRUE));
         String expectedErrorMessage = "404 NOT_FOUND \"not-on-public-register\"";
-        Assertions.assertEquals(expectedErrorMessage, exception.getMessage());
+        assertEquals(expectedErrorMessage, exception.getMessage());
     }
 
     @Test
@@ -307,7 +332,7 @@ class CompanyPscServiceTest {
         ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () ->
                 service.getIndividualPsc(COMPANY_NUMBER, NOTIFICATION_ID, REGISTER_VIEW_TRUE));
         String expectedErrorMessage = "404 NOT_FOUND \"not-on-public-register\"";
-        Assertions.assertEquals(expectedErrorMessage, exception.getMessage());
+        assertEquals(expectedErrorMessage, exception.getMessage());
     }
 
     @Test
@@ -331,7 +356,7 @@ class CompanyPscServiceTest {
         ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () ->
                 service.getIndividualPsc(COMPANY_NUMBER, NOTIFICATION_ID, REGISTER_VIEW_TRUE));
         String expectedErrorMessage = "404 NOT_FOUND \"not-on-public-register\"";
-        Assertions.assertEquals(expectedErrorMessage, exception.getMessage());
+        assertEquals(expectedErrorMessage, exception.getMessage());
     }
 
     @Test
@@ -356,7 +381,7 @@ class CompanyPscServiceTest {
         when(transformer.transformPscDocToIndividual(pscDocument, SHOW_FULL_DOB_TRUE)).thenReturn(individual);
 
         Individual result = service.getIndividualPsc(COMPANY_NUMBER, NOTIFICATION_ID, REGISTER_VIEW_TRUE);
-        Assertions.assertEquals(individual, result);
+        assertEquals(individual, result);
     }
 
     @Test
@@ -368,7 +393,7 @@ class CompanyPscServiceTest {
         when(transformer.transformPscDocToIndividual(pscDocument, SHOW_FULL_DOB_FALSE)).thenReturn(individual);
 
         Individual result = service.getIndividualPsc(COMPANY_NUMBER, NOTIFICATION_ID, REGISTER_VIEW_FALSE);
-        Assertions.assertEquals(individual, result);
+        assertEquals(individual, result);
     }
 
     @Test
@@ -401,7 +426,7 @@ class CompanyPscServiceTest {
         ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () ->
                 service.getIndividualBeneficialOwnerPsc(COMPANY_NUMBER, NOTIFICATION_ID, REGISTER_VIEW_TRUE));
         String expectedErrorMessage = "404 NOT_FOUND \"not-on-public-register\"";
-        Assertions.assertEquals(expectedErrorMessage, exception.getMessage());
+        assertEquals(expectedErrorMessage, exception.getMessage());
     }
 
     @Test
@@ -427,7 +452,7 @@ class CompanyPscServiceTest {
         when(transformer.transformPscDocToIndividualBeneficialOwner(pscDocument, SHOW_FULL_DOB_TRUE)).thenReturn(individualBo);
 
         IndividualBeneficialOwner result = service.getIndividualBeneficialOwnerPsc(COMPANY_NUMBER, NOTIFICATION_ID, REGISTER_VIEW_TRUE);
-        Assertions.assertEquals(individualBo, result);
+        assertEquals(individualBo, result);
     }
 
     @Test
@@ -441,7 +466,7 @@ class CompanyPscServiceTest {
         IndividualBeneficialOwner result = service
                 .getIndividualBeneficialOwnerPsc(COMPANY_NUMBER, NOTIFICATION_ID, REGISTER_VIEW_FALSE);
 
-        Assertions.assertEquals(individualBeneficialOwner, result);
+        assertEquals(individualBeneficialOwner, result);
     }
 
     @Test
@@ -473,7 +498,7 @@ class CompanyPscServiceTest {
         CorporateEntityBeneficialOwner result = service
                 .getCorporateEntityBeneficialOwnerPsc(COMPANY_NUMBER, NOTIFICATION_ID);
 
-        Assertions.assertEquals(corporateEntityBeneficialOwner, result);
+        assertEquals(corporateEntityBeneficialOwner, result);
     }
 
     @Test
@@ -505,7 +530,7 @@ class CompanyPscServiceTest {
         LegalPerson result = service
                 .getLegalPersonPsc(COMPANY_NUMBER, NOTIFICATION_ID);
 
-        Assertions.assertEquals(legalPerson, result);
+        assertEquals(legalPerson, result);
     }
 
     @Test
@@ -525,7 +550,7 @@ class CompanyPscServiceTest {
         SuperSecure result = service
                 .getSuperSecurePsc(COMPANY_NUMBER, NOTIFICATION_ID);
 
-        Assertions.assertEquals(superSecure, result);
+        assertEquals(superSecure, result);
     }
 
     @Test
@@ -556,7 +581,7 @@ class CompanyPscServiceTest {
         SuperSecureBeneficialOwner result = service
                 .getSuperSecureBeneficialOwnerPsc(COMPANY_NUMBER, NOTIFICATION_ID);
 
-        Assertions.assertEquals(superSecureBeneficialOwner, result);
+        assertEquals(superSecureBeneficialOwner, result);
     }
 
     @Test
@@ -586,7 +611,7 @@ class CompanyPscServiceTest {
 
         CorporateEntity result = service.getCorporateEntityPsc(COMPANY_NUMBER, NOTIFICATION_ID);
 
-        Assertions.assertEquals(corporateEntity, result);
+        assertEquals(corporateEntity, result);
     }
 
     @Test
@@ -619,7 +644,7 @@ class CompanyPscServiceTest {
         LegalPersonBeneficialOwner result = service
                 .getLegalPersonBeneficialOwnerPsc(COMPANY_NUMBER, NOTIFICATION_ID);
 
-        Assertions.assertEquals(legalPersonBeneficialOwner, result);
+        assertEquals(legalPersonBeneficialOwner, result);
     }
 
     @Test
@@ -658,9 +683,9 @@ class CompanyPscServiceTest {
         when(transformer.transformPscDocToListSummary(pscDocument, false))
                 .thenReturn(listSummary);
 
-        PscList PscDocumentList = service.retrievePscListSummaryFromDb(COMPANY_NUMBER, 0, false, 25);
+        PscList pscDocumentList = service.retrievePscListSummaryFromDb(COMPANY_NUMBER, 0, false, 25);
 
-        Assertions.assertEquals(expectedPscList, PscDocumentList);
+        assertEquals(expectedPscList, pscDocumentList);
         verify(repository, times(1)).getPscDocumentList(COMPANY_NUMBER, 0, 25);
     }
 
@@ -685,9 +710,9 @@ class CompanyPscServiceTest {
         when(transformer.transformPscDocToListSummary(pscDocument, false))
                 .thenReturn(listSummary);
 
-        PscList PscDocumentList = service.retrievePscListSummaryFromDb(COMPANY_NUMBER, 0, false, 25);
+        PscList pscDocumentList = service.retrievePscListSummaryFromDb(COMPANY_NUMBER, 0, false, 25);
 
-        Assertions.assertEquals(expectedPscList, PscDocumentList);
+        assertEquals(expectedPscList, pscDocumentList);
         verify(repository, times(1)).getPscDocumentList(COMPANY_NUMBER, 0, 25);
     }
 
@@ -707,8 +732,8 @@ class CompanyPscServiceTest {
         expectedPscList.setItemsPerPage(25);
         expectedPscList.setStartIndex(0);
 
-        PscList PscDocumentList = service.retrievePscListSummaryFromDb(COMPANY_NUMBER, 0, true, 25);
-        Assertions.assertEquals(expectedPscList, PscDocumentList);
+        PscList pscDocumentList = service.retrievePscListSummaryFromDb(COMPANY_NUMBER, 0, true, 25);
+        assertEquals(expectedPscList, pscDocumentList);
 
     }
 
@@ -752,9 +777,9 @@ class CompanyPscServiceTest {
                 .thenReturn(listSummary);
         when(companyExemptionsApiService.getCompanyExemptions(any())).thenReturn(Optional.ofNullable(testHelper.createExemptions()));
 
-        PscList PscDocumentList = service.retrievePscListSummaryFromDb(COMPANY_NUMBER, 0, false, 25);
+        PscList pscDocumentList = service.retrievePscListSummaryFromDb(COMPANY_NUMBER, 0, false, 25);
 
-        Assertions.assertEquals(expectedPscList, PscDocumentList);
+        assertEquals(expectedPscList, pscDocumentList);
         verify(repository, times(1)).getPscDocumentList(COMPANY_NUMBER, 0, 25);
     }
 
@@ -780,13 +805,13 @@ class CompanyPscServiceTest {
         companyExemptions.setExemptions(testHelper.getUkExemptions());
         when(companyExemptionsApiService.getCompanyExemptions(any())).thenReturn(Optional.ofNullable(testHelper.createExemptions()));
 
-        PscList PscDocumentList = service.retrievePscListSummaryFromDb(COMPANY_NUMBER, 0, false, 25);
+        PscList pscDocumentList = service.retrievePscListSummaryFromDb(COMPANY_NUMBER, 0, false, 25);
 
         Links links = new Links();
         links.setSelf("/company/" + COMPANY_NUMBER + "/persons-with-significant-control");
         links.setExemptions("/company/" + COMPANY_NUMBER + "/exemptions");
 
-        Assertions.assertEquals(PscDocumentList.getLinks(), links);
+        assertEquals(pscDocumentList.getLinks(), links);
     }
 
 }
