@@ -6,7 +6,6 @@ import java.io.InputStreamReader;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
-import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
@@ -65,8 +64,6 @@ public class TestHelper {
     public static final String PSC_STATEMENT_ID = "pscStatementId";
     public static final String X_REQUEST_ID = "654321";
     private static final LocalDate EXEMPTION_DATE = LocalDate.of(2022, 11, 3);
-
-    public TestHelper(){}
 
     public static FullRecordCompanyPSCApi buildFullRecordPsc(String kind) {
         return buildFullRecordPsc(kind, false, true);
@@ -501,13 +498,11 @@ public class TestHelper {
     static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
     public static OffsetDateTime createOffsetDateTime() {
         LocalDateTime localDate = LocalDateTime.parse("2023-01-02T13:04:05.678", formatter);
-        ZoneOffset offset = ZoneId.systemDefault().getRules().getOffset(localDate);
-        return OffsetDateTime.of(localDate, offset);
-    }
-    public static OffsetDateTime createLaterOffsetDateTime() {
-        LocalDateTime laterLocalDate = LocalDateTime.parse("2023-01-03T13:04:05.678", formatter);
-        ZoneOffset offset = ZoneId.systemDefault().getRules().getOffset(laterLocalDate);
-        return OffsetDateTime.of(laterLocalDate, offset);
+        return OffsetDateTime.of(localDate, ZoneOffset.UTC);
     }
 
+    public static OffsetDateTime createLaterOffsetDateTime() {
+        LocalDateTime laterLocalDate = LocalDateTime.parse("2023-01-03T13:04:05.678", formatter);
+        return OffsetDateTime.of(laterLocalDate, ZoneOffset.UTC);
+    }
 }

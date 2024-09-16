@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
@@ -27,7 +27,7 @@ public class LocalDateDeSerializer extends JsonDeserializer<LocalDate> {
             JsonNode jsonNode = jsonParser.readValueAsTree();
             JsonNode dateNode = jsonNode.get("$date");
 
-            /** If textValue() returns a value we received a string of
+            /* If textValue() returns a value we received a string of
              * format yyyy-MM-dd'T'HH:mm:ss'Z
              * and use dateTimeFormatter to return LocalDate.
              * 
@@ -38,7 +38,7 @@ public class LocalDateDeSerializer extends JsonDeserializer<LocalDate> {
             return dateNode.textValue() != null
                     ? LocalDate.parse(dateNode.textValue(), dateTimeFormatter)
                     : LocalDate.ofInstant(Instant.ofEpochMilli(dateNode.get("$numberLong")
-                    .asLong()), ZoneId.systemDefault());
+                            .asLong()), ZoneOffset.UTC);
         } catch (Exception exception) {
             LOGGER.error("Deserialization failed.", exception);
             throw new BadRequestException(exception.getMessage());
