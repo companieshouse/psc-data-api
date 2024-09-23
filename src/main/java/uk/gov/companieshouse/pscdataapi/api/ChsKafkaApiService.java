@@ -5,8 +5,6 @@ import static java.time.ZoneOffset.UTC;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Instant;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 
@@ -32,7 +30,8 @@ public class ChsKafkaApiService {
             + "%s/%s";
     private static final String CHANGED_EVENT_TYPE = "changed";
     private static final String DELETE_EVENT_TYPE = "deleted";
-    private static final DateTimeFormatter PUBLISHED_AT_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'hh:mm:ss");
+    private static final DateTimeFormatter PUBLISHED_AT_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'hh:mm:ss")
+            .withZone(UTC);
 
     private final CompanyPscTransformer companyPscTransformer;
     private final InternalApiClient internalApiClient;
@@ -99,7 +98,7 @@ public class ChsKafkaApiService {
                                                String kind, boolean isDelete, PscDocument pscDocument) {
         ChangedResourceEvent event = new ChangedResourceEvent();
         ChangedResource changedResource = new ChangedResource();
-        event.setPublishedAt(Instant.now().atOffset(UTC).format(PUBLISHED_AT_FORMAT));
+        event.setPublishedAt(PUBLISHED_AT_FORMAT.format(Instant.now()));
         if (isDelete) {
             event.setType(DELETE_EVENT_TYPE);
             if (pscDocument != null) {
