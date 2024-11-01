@@ -10,6 +10,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -59,6 +60,7 @@ import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
 import uk.gov.companieshouse.pscdataapi.exceptions.ResourceNotFoundException;
+import uk.gov.companieshouse.pscdataapi.exceptions.ServiceUnavailableException;
 import uk.gov.companieshouse.pscdataapi.models.Created;
 import uk.gov.companieshouse.pscdataapi.models.Links;
 import uk.gov.companieshouse.pscdataapi.models.PscData;
@@ -89,7 +91,7 @@ class CompanyPscServiceTest {
     CompanyExemptionsApiService companyExemptionsApiService;
     @Captor
     private ArgumentCaptor<String> dateCaptor;
-    @Spy
+ //   @Spy
     @InjectMocks
     private CompanyPscService service;
     @Mock
@@ -236,6 +238,32 @@ class CompanyPscServiceTest {
         verify(repository, times(1)).getPscByCompanyNumberAndId("", "");
         verify(repository, never()).delete(any());
         verify(chsKafkaApiService, never()).invokeChsKafkaApiWithDeleteEvent(any(), any(), any(), any(), any());
+    }
+
+    @Test
+    @DisplayName("When Kafka notification fails throw ServiceUnavailableException")
+    void testDeletePSCThrowsServiceUnavailableExceptionWhenKafkaNotification() {
+        when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID)).thenReturn(Optional.of(pscDocument));
+        when(chsKafkaApiService.invokeChsKafkaApiWithDeleteEvent(any(), any(), any(), any(), any()))
+                .thenThrow(new ServiceUnavailableException("message"));
+
+        assertThrows(ServiceUnavailableException.class, () -> service.deletePsc(COMPANY_NUMBER, NOTIFICATION_ID, ""));
+
+        verify(repository).getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID);
+        verify(repository).delete(pscDocument);
+        verify(chsKafkaApiService).invokeChsKafkaApiWithDeleteEvent(any(), any(), any(), any(), any());
+    }
+
+    @Test
+    @DisplayName("Kafka notification succeeds of retry and after document deleted")
+    void testKafkaNotificationSucceedsOnRetryAfterDocumentDeleted() {
+        when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID)).thenReturn(Optional.empty());
+
+        service.deletePsc(COMPANY_NUMBER, NOTIFICATION_ID, "");
+
+        verify(repository).getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID);
+//        verify(repository).delete(pscDocument);
+        verify(chsKafkaApiService).invokeChsKafkaApiWithDeleteEvent(any(), any(), any(), any(), isNull());
     }
 
     @Test

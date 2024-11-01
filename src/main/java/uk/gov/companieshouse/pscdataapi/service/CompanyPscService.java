@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import uk.gov.companieshouse.api.api.CompanyExemptionsApiService;
 import uk.gov.companieshouse.api.api.CompanyMetricsApiService;
 import uk.gov.companieshouse.api.exemptions.CompanyExemptions;
@@ -37,8 +36,6 @@ public class CompanyPscService {
     private static final String NOT_ON_PUBLIC_REGISTER = "not-on-public-register";
     private static final String UNEXPECTED_ERROR_OCCURRED_WHILE_FETCHING_PSC_DOCUMENT =
             "Unexpected error occurred while fetching PSC document";
-    private static final String RESOURCE_NOT_FOUND_FOR_COMPANY_NUMBER =
-            "Resource not found for company number: %s";
     public static final String COMPANY_NOT_ON_PUBLIC_REGISTER =
             "company %s not on public register";
     private final DateTimeFormatter dateTimeFormatter =
@@ -144,36 +141,33 @@ public class CompanyPscService {
         }
     }
 
-    private PscDocument getPscDocument(String companyNumber, String notificationId)
-            throws ResourceNotFoundException {
-        Optional<PscDocument> pscDocument =
-                repository.getPscByCompanyNumberAndId(companyNumber, notificationId);
-        return pscDocument.orElseThrow(() ->
-                new ResourceNotFoundException(HttpStatus.NOT_FOUND, String.format(
-                        RESOURCE_NOT_FOUND_FOR_COMPANY_NUMBER, companyNumber)));
-    }
-
     /**
      * Delete PSC record.
      *
      * @param companyNumber  Company number.
      * @param notificationId Mongo Id.
      */
-    @Transactional
     public void deletePsc(String companyNumber, String notificationId, String contextId)
             throws ResourceNotFoundException, ServiceUnavailableException {
-        PscDocument pscDocument = getPscDocument(companyNumber, notificationId);
-        String kind = pscDocument.getData().getKind();
-        repository.delete(pscDocument);
+
+        logger.info(String.format("Deleting PSC record with company number %s",
+                companyNumber), DataMapHolder.getLogMap());
+
+        Optional<PscDocument> pscDocument = repository.getPscByCompanyNumberAndId(companyNumber, notificationId);
+        String kind = null;
+        PscDocument document = null;
+        if (pscDocument.isPresent()) {
+            document = pscDocument.get();
+            kind = document.getData().getKind();
+            repository.delete(document);
+        }
+
         try {
             chsKafkaApiService.invokeChsKafkaApiWithDeleteEvent(contextId,
-                    companyNumber, notificationId, kind, pscDocument);
+                    companyNumber, notificationId, kind, document);
         } catch (Exception exception) {
             throw new ServiceUnavailableException(exception.getMessage());
         }
-
-        logger.info(String.format("PSC record with company number %s has been deleted",
-                companyNumber), DataMapHolder.getLogMap());
     }
 
     /**
