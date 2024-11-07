@@ -82,6 +82,7 @@ public class CompanyPscTransformer {
         data.setNaturesOfControl(pscData.getNaturesOfControl());
         data.setNationality(pscData.getNationality());
 //        data.setLinks((List<ItemLinkTypes>) pscData.getLinks());
+        data.setServiceAddress(mapAddress(pscData.getAddress()));
         data.setEtag(pscData.getEtag());
         ExternalData externalData = new ExternalData();
         externalData.setData(data);
