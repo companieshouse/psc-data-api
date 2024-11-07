@@ -3,6 +3,7 @@ package uk.gov.companieshouse.pscdataapi.transform;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
+import java.util.List;
 import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.api.psc.*;
 import uk.gov.companieshouse.logging.Logger;
@@ -67,13 +68,14 @@ public class CompanyPscTransformer {
      * @param pscDocument PSC.
      * @return PSC mongo Document.
      */
-    public FullRecordCompanyPSCApi transformPscDocToFullRecord(PscDocument pscDocument) {
+    public FullRecordCompanyPSCApi transformPscDocToFullRecord(final PscDocument pscDocument) {
         logger.info("Attempting to transform pscDocument to Full Record PSC",
                 DataMapHolder.getLogMap());
-        FullRecordCompanyPSCApi fullRecordCompanyPSCApi = new FullRecordCompanyPSCApi();
+        final FullRecordCompanyPSCApi fullRecordCompanyPSCApi = new FullRecordCompanyPSCApi();
 
-        PscData pscData = pscDocument.getData();
-        Data data = new Data();
+        final PscData pscData = pscDocument.getData();
+        final Data data = new Data();
+
         data.setName(pscData.getName());
         data.setNameElements(mapNameElements(pscData.getNameElements()));
         data.setCountryOfResidence(pscData.getCountryOfResidence());
@@ -81,13 +83,16 @@ public class CompanyPscTransformer {
         data.setCeasedOn(pscData.getCeasedOn());
         data.setNaturesOfControl(pscData.getNaturesOfControl());
         data.setNationality(pscData.getNationality());
-//        data.setLinks((List<ItemLinkTypes>) pscData.getLinks());
+        data.setLinks(mapLinksToList(pscData.getLinks()));
         data.setEtag(pscData.getEtag());
-        ExternalData externalData = new ExternalData();
+        
+        final ExternalData externalData = new ExternalData();
+
         externalData.setData(data);
 
-        PscSensitiveData sensitivePscData = pscDocument.getSensitiveData();
-        SensitiveData sensitiveApiData = new SensitiveData();
+        final PscSensitiveData sensitivePscData = pscDocument.getSensitiveData();
+        final SensitiveData sensitiveApiData = new SensitiveData();
+
         sensitiveApiData.setResidentialAddressSameAsServiceAddress(sensitivePscData.getResidentialAddressIsSameAsServiceAddress());
         sensitiveApiData.setDateOfBirth(mapDateOfBirth(sensitivePscData.getDateOfBirth(), true));
         sensitiveApiData.setUsualResidentialAddress(mapToApiUra(sensitivePscData.getUsualResidentialAddress()));
@@ -589,4 +594,11 @@ public class CompanyPscTransformer {
         }
     }
 
+    private static List<ItemLinkTypes> mapLinksToList(final Links links) {
+        final ItemLinkTypes itemLinkTypes = new ItemLinkTypes(links.getSelf());
+
+        itemLinkTypes.setStatement(links.getStatement());
+
+        return List.of(itemLinkTypes);
+    }
 }
