@@ -38,6 +38,7 @@ public class CompanyPscController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger("psc-data-api");
     private static final String GETTING_PSC_DATA_WITH_COMPANY_NUMBER = "Getting PSC data with company number %s";
+    private static final String GETTING_FULL_RECORD_PSC_DATA_WITH_COMPANY_NUMBER = "Getting Full record PSC data with company number %s";
 
     private final CompanyPscService pscService;
 
@@ -103,6 +104,34 @@ public class CompanyPscController {
             LOGGER.error(ex.getMessage(), DataMapHolder.getLogMap());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         } catch (ServiceUnavailableException ex) {
+            LOGGER.error(ex.getMessage(), DataMapHolder.getLogMap());
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    /**
+     * Get the full record data object (including sensitive data) for a company profile number for Individual PSC.
+     *
+     * @param companyNumber The number of the company
+     * @return ResponseEntity
+     */
+    @GetMapping("/individual/{notification_id}/full_record")
+    public ResponseEntity<FullRecordCompanyPSCApi> getIndividualFullRecordPscData(
+            @PathVariable("company_number") String companyNumber,
+            @PathVariable("notification_id") String notificationId) {
+        DataMapHolder.get()
+                .companyNumber(companyNumber)
+                .itemId(notificationId);
+        LOGGER.info(String.format(GETTING_FULL_RECORD_PSC_DATA_WITH_COMPANY_NUMBER, companyNumber),
+                DataMapHolder.getLogMap());
+        try {
+            FullRecordCompanyPSCApi fullRecordPsc = pscService
+                    .getFullRecordPsc(companyNumber, notificationId);
+            return new ResponseEntity<>(fullRecordPsc, HttpStatus.OK);
+        } catch (ResourceNotFoundException ex) {
+            LOGGER.error(ex.getMessage(), DataMapHolder.getLogMap());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (DataAccessException ex) {
             LOGGER.error(ex.getMessage(), DataMapHolder.getLogMap());
             return ResponseEntity.internalServerError().build();
         }

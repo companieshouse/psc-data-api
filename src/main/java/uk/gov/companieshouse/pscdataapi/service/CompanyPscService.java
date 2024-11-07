@@ -187,6 +187,43 @@ public class CompanyPscService {
     }
 
     /**
+     * Get PSC full record and transform it into a Full Record PSC.
+     *
+     * @param companyNumber  Company number.
+     * @param notificationId Mongo Id.
+     * @return Full Record PSC object.
+     */
+    public FullRecordCompanyPSCApi getFullRecordPsc(
+            String companyNumber, String notificationId) {
+        try {
+            Optional<PscDocument> pscDocument =
+                    repository.getPscByCompanyNumberAndId(companyNumber, notificationId)
+                            .filter(document -> document.getData().getKind()
+                                    .equals("individual-person-with-significant-control"));
+            if (pscDocument.isPresent()) {
+
+                FullRecordCompanyPSCApi fullRecordCompanyPSCApi = transformer
+                        .transformPscDocToFullRecord(pscDocument.get());
+
+                if (fullRecordCompanyPSCApi == null) {
+                    throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
+                            "Failed to transform PSCDocument to Individual");
+                }
+                return fullRecordCompanyPSCApi;
+            } else {
+                throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
+                        "Individual PSC document not found in Mongo with id " + notificationId);
+            }
+        } catch (ResourceNotFoundException rnfe) {
+            throw rnfe;
+        } catch (Exception ex) {
+            logger.error(ex.getMessage(), DataMapHolder.getLogMap());
+            throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
+                    UNEXPECTED_ERROR_OCCURRED_WHILE_FETCHING_PSC_DOCUMENT);
+        }
+    }
+
+    /**
      * Get PSC record and transform it into an Individual PSC.
      *
      * @param companyNumber  Company number.

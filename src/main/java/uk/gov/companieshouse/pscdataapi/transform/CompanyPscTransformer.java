@@ -2,22 +2,9 @@ package uk.gov.companieshouse.pscdataapi.transform;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+
 import org.springframework.stereotype.Component;
-import uk.gov.companieshouse.api.psc.CorporateEntity;
-import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
-import uk.gov.companieshouse.api.psc.Data;
-import uk.gov.companieshouse.api.psc.ExternalData;
-import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
-import uk.gov.companieshouse.api.psc.Identification;
-import uk.gov.companieshouse.api.psc.Individual;
-import uk.gov.companieshouse.api.psc.IndividualBeneficialOwner;
-import uk.gov.companieshouse.api.psc.InternalData;
-import uk.gov.companieshouse.api.psc.LegalPerson;
-import uk.gov.companieshouse.api.psc.LegalPersonBeneficialOwner;
-import uk.gov.companieshouse.api.psc.ListSummary;
-import uk.gov.companieshouse.api.psc.SensitiveData;
-import uk.gov.companieshouse.api.psc.SuperSecure;
-import uk.gov.companieshouse.api.psc.SuperSecureBeneficialOwner;
+import uk.gov.companieshouse.api.psc.*;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.data.IndividualPscRoles;
 import uk.gov.companieshouse.pscdataapi.data.SecurePscRoles;
@@ -25,11 +12,7 @@ import uk.gov.companieshouse.pscdataapi.logging.DataMapHolder;
 import uk.gov.companieshouse.pscdataapi.models.Address;
 import uk.gov.companieshouse.pscdataapi.models.DateOfBirth;
 import uk.gov.companieshouse.pscdataapi.models.NameElements;
-import uk.gov.companieshouse.pscdataapi.models.PscData;
-import uk.gov.companieshouse.pscdataapi.models.PscDocument;
-import uk.gov.companieshouse.pscdataapi.models.PscIdentification;
-import uk.gov.companieshouse.pscdataapi.models.PscSensitiveData;
-import uk.gov.companieshouse.pscdataapi.models.Updated;
+import uk.gov.companieshouse.pscdataapi.models.*;
 import uk.gov.companieshouse.pscdataapi.util.PscTransformationHelper;
 
 @Component
@@ -76,6 +59,43 @@ public class CompanyPscTransformer {
                     pscDocument.getSensitiveData().getDateOfBirth(), showFullDateOfBirth));
         }
         return individual;
+    }
+
+    /**
+     * Transform Individual PSC full record.
+     *
+     * @param pscDocument PSC.
+     * @return PSC mongo Document.
+     */
+    public FullRecordCompanyPSCApi transformPscDocToFullRecord(PscDocument pscDocument) {
+        logger.info("Attempting to transform pscDocument to Full Record PSC",
+                DataMapHolder.getLogMap());
+        FullRecordCompanyPSCApi fullRecordCompanyPSCApi = new FullRecordCompanyPSCApi();
+
+        PscData pscData = pscDocument.getData();
+        Data data = new Data();
+        data.setName(pscData.getName());
+        data.setNameElements(mapNameElements(pscData.getNameElements()));
+        data.setCountryOfResidence(pscData.getCountryOfResidence());
+        data.setNotifiedOn(pscData.getNotifiedOn());
+        data.setCeasedOn(pscData.getCeasedOn());
+        data.setNaturesOfControl(pscData.getNaturesOfControl());
+        data.setNationality(pscData.getNationality());
+//        data.setLinks((List<ItemLinkTypes>) pscData.getLinks());
+        data.setEtag(pscData.getEtag());
+        ExternalData externalData = new ExternalData();
+        externalData.setData(data);
+
+        PscSensitiveData sensitivePscData = pscDocument.getSensitiveData();
+        SensitiveData sensitiveApiData = new SensitiveData();
+        sensitiveApiData.setResidentialAddressSameAsServiceAddress(sensitivePscData.getResidentialAddressIsSameAsServiceAddress());
+        sensitiveApiData.setDateOfBirth(mapDateOfBirth(sensitivePscData.getDateOfBirth(), true));
+        sensitiveApiData.setUsualResidentialAddress(mapToApiUra(sensitivePscData.getUsualResidentialAddress()));
+        externalData.setSensitiveData(sensitiveApiData);
+
+        fullRecordCompanyPSCApi.setExternalData(externalData);
+
+        return fullRecordCompanyPSCApi;
     }
 
     /**
@@ -475,6 +495,27 @@ public class CompanyPscTransformer {
             return null;
         }
     }
+
+    private uk.gov.companieshouse.api.psc.UsualResidentialAddress mapToApiUra(
+            Address inputAddress) {
+        if (inputAddress != null) {
+            uk.gov.companieshouse.api.psc.UsualResidentialAddress address =
+                    new uk.gov.companieshouse.api.psc.UsualResidentialAddress();
+            address.setAddressLine1(inputAddress.getAddressLine1());
+            address.setAddressLine2(inputAddress.getAddressLine2());
+            address.setCountry(inputAddress.getCountry());
+            address.setLocality(inputAddress.getLocality());
+            address.setPoBox(inputAddress.getPoBox());
+            address.setPostalCode(inputAddress.getPostalCode());
+            address.setPremise(inputAddress.getPremises());
+            address.setRegion(inputAddress.getRegion());
+            address.setCareOf(inputAddress.getCareOf());
+            return address;
+        } else {
+            return null;
+        }
+    }
+
 
     private uk.gov.companieshouse.api.psc.Address mapPrincipleAddress(
             uk.gov.companieshouse.pscdataapi.models.Address inputPrincipleAddress) {
