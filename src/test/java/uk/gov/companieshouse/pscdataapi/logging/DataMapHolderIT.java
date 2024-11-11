@@ -59,8 +59,8 @@ class DataMapHolderIT {
         );
 
         // then
-        assertTrue(capture.getOut().contains("request_id: %s".formatted(CONTEXT_ID)));
-        assertFalse(capture.getOut().contains("request_id: %s".formatted(UNINITIALISED)));
+        assertTrue(capture.getOut().contains("request-id\":\"%s".formatted(CONTEXT_ID)));
+        assertFalse(capture.getOut().contains("request_id\":\"%s".formatted(UNINITIALISED)));
     }
 
     @Test
@@ -79,6 +79,6 @@ class DataMapHolderIT {
         );
 
         // then
-        assertFalse(capture.getOut().contains("request_id: %s".formatted(UNINITIALISED)));
+        assertFalse(capture.getOut().contains("request_id\":\"%s".formatted(UNINITIALISED)));
     }
 }
