@@ -17,7 +17,7 @@ import uk.gov.companieshouse.pscdataapi.service.CompanyPscService;
 
 @RestController
 @ConditionalOnProperty(prefix = "feature", name = "psc_individual_full_record_get", havingValue = "true")
-@RequestMapping(path = "/company/{company_number}/persons-with-significant-control",
+@RequestMapping(path = "/private/company/{company_number}/persons-with-significant-control",
         produces = "application/json")
 public class CompanyPscFullRecordGetController {
     private static final Logger LOGGER = LoggerFactory.getLogger("psc-data-api");

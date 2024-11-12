@@ -33,7 +33,7 @@ class CompanyPscFullRecordGetDisabledControllerTest {
     private static final String ERIC_AUTH = "internal-app";
 
     private static final String GET_INDIVIDUAL_FULL_RECORD_URL = String.format(
-            "/company/%s/persons-with-significant-control/individual/%s/full_record", MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID);
+            "/private/company/%s/persons-with-significant-control/individual/%s/full_record", MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID);
 
     @MockBean
     private CompanyPscService companyPscService;
