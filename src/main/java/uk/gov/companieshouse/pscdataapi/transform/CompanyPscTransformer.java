@@ -83,6 +83,7 @@ public class CompanyPscTransformer {
         data.setCeasedOn(pscData.getCeasedOn());
         data.setNaturesOfControl(pscData.getNaturesOfControl());
         data.setNationality(pscData.getNationality());
+        data.setKind(pscData.getKind());
         data.setLinks(mapLinksToList(pscData.getLinks()));
         data.setServiceAddress(mapAddress(pscData.getAddress()));
         data.setEtag(pscData.getEtag());
