@@ -84,7 +84,7 @@ public class CompanyPscController {
      * @param companyNumber The number of the company
      * @return ResponseEntity
      */
-    @DeleteMapping(path = "/{notification_id}/full_record")
+    @DeleteMapping(path = "/{notification_id}/delete")
     public ResponseEntity<Void> deletePscData(
             @PathVariable("company_number") String companyNumber,
             @PathVariable("notification_id") String notificationId,
