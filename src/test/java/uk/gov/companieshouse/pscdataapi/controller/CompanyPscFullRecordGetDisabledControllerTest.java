@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +34,8 @@ class CompanyPscFullRecordGetDisabledControllerTest {
     private static final String ERIC_AUTH = "internal-app";
 
     private static final String GET_INDIVIDUAL_FULL_RECORD_URL = String.format(
-            "/private/company/%s/persons-with-significant-control/individual/%s/full_record", MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID);
+        "/private/company/%s/persons-with-significant-control/individual/%s/full_record", MOCK_COMPANY_NUMBER,
+        MOCK_NOTIFICATION_ID);
 
     @MockBean
     private CompanyPscService companyPscService;
@@ -42,30 +44,32 @@ class CompanyPscFullRecordGetDisabledControllerTest {
     @Autowired
     private ApplicationContext context;
 
-    @Test()
-    @DisplayName("Should not create Controller bean when feature flag not enabled")
-    void testControllerBeanAbsentWhenFeatureFlagNotEnabled() {
-        final var exception = assertThrows(NoSuchBeanDefinitionException.class,
-            () -> context.getBean(CompanyPscFullRecordGetController.class));
+    @Nested
+    @DisplayName("When feature flag not enabled")
+    class FeatureFlagNotEnabled {
+        @Test
+        @DisplayName("should not create Controller bean")
+        void shouldNotCreateFullRecordGetControllerBean() {
+            final var exception = assertThrows(NoSuchBeanDefinitionException.class,
+                () -> context.getBean(CompanyPscFullRecordGetController.class));
 
-        assertThat(exception.getBeanType()).isEqualTo(CompanyPscFullRecordGetController.class);
-    }
+            assertThat(exception.getBeanType()).isEqualTo(CompanyPscFullRecordGetController.class);
+        }
 
-    @Test
-    @DisplayName(
-            "Should return 404 status when feature flag not enabled")
-    void getIndividualPSC() throws Exception {
-        when(companyPscService.getIndividualPsc(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID, MOCK_REGISTER_VIEW_FALSE)).thenReturn(new Individual());
+        @Test
+        @DisplayName("should return 404 status for GET request")
+        void shouldReturn404NotFound() throws Exception {
+            when(companyPscService.getIndividualPsc(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID,
+                MOCK_REGISTER_VIEW_FALSE)).thenReturn(new Individual());
 
-        mockMvc.perform(get(GET_INDIVIDUAL_FULL_RECORD_URL)
-                        .header("ERIC-Identity", ERIC_IDENTITY)
-                        .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
-                        .contentType(APPLICATION_JSON)
-                        .header("x-request-id", X_REQUEST_ID)
-                        .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
-                        .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH))
-                .andExpect(status().isNotFound());
+            mockMvc.perform(get(GET_INDIVIDUAL_FULL_RECORD_URL).header("ERIC-Identity", ERIC_IDENTITY)
+                .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
+                .contentType(APPLICATION_JSON)
+                .header("x-request-id", X_REQUEST_ID)
+                .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
+                .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH)).andExpect(status().isNotFound());
 
+        }
     }
 
 }

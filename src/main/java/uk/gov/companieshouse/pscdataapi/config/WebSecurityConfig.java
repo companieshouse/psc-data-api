@@ -3,6 +3,7 @@ package uk.gov.companieshouse.pscdataapi.config;
 import java.util.Arrays;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -19,14 +20,21 @@ import uk.gov.companieshouse.api.interceptor.UserAuthenticationInterceptor;
 
 @Configuration
 public class WebSecurityConfig implements WebMvcConfigurer {
+    // feature flag marked for future removal
+    @Value("${feature.psc_individual_full_record_get:false}")
+    private Boolean featurePscIndividualFullRecordGet;
+// TODO: integration test
 
     List<String> otherAllowedAuthMethods = Arrays.asList("oauth2");
 
     @Override
     public void addInterceptors(final InterceptorRegistry registry) {
         registry.addInterceptor(userAuthenticationInterceptor());
-        registry.addInterceptor(internalUserInterceptor())
+        if (featurePscIndividualFullRecordGet)
+        {
+            registry.addInterceptor(internalUserInterceptor())
                 .addPathPatterns("/private/company/{company_number}/persons-with-significant-control/**");
+        }
     }
 
     @Override

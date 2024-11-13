@@ -26,7 +26,7 @@ import uk.gov.companieshouse.pscdataapi.service.CompanyPscService;
 
 @SpringBootTest(properties = {"feature.psc_individual_full_record_get=true"})
 @AutoConfigureMockMvc
-class CompanyPscFullRecordGetEnabledControllerTest {
+class CompanyPscFullRecordGetControllerTest {
 
     private static final String X_REQUEST_ID = "123456";
     private static final String MOCK_COMPANY_NUMBER = "1234567";
@@ -34,7 +34,7 @@ class CompanyPscFullRecordGetEnabledControllerTest {
     private static final String ERIC_IDENTITY = "Test-Identity";
     private static final String ERIC_IDENTITY_TYPE = "key";
     private static final String ERIC_PRIVILEGES = "*";
-    private static final String ERIC_AUTH = "internal-app";
+    private static final String ERIC_AUTH_INTERNAL = "internal-app";
 
     private static final String GET_INDIVIDUAL_FULL_RECORD_URL = String.format(
         "/private/company/%s/persons-with-significant-control/individual/%s/full_record", MOCK_COMPANY_NUMBER,
@@ -64,7 +64,7 @@ class CompanyPscFullRecordGetEnabledControllerTest {
             .contentType(APPLICATION_JSON)
             .header("x-request-id", X_REQUEST_ID)
             .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
-            .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH)).andExpect(status().isOk())
+                .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH_INTERNAL)).andExpect(status().isOk())
             .andDo(print())
             .andExpect(jsonPath("$.internal_data.delta_at").value("2024-11-12T13:14:15Z"));
         // TODO: expect more (dummy) data in response
@@ -72,7 +72,8 @@ class CompanyPscFullRecordGetEnabledControllerTest {
 
     private static @NotNull FullRecordCompanyPSCApi createFullRecord() {
         return new FullRecordCompanyPSCApi().internalData(
-            new InternalData(OffsetDateTime.ofInstant(FIXED_NOW, ZoneId.of("UTC")))).externalData(new ExternalData());
+            new InternalData(OffsetDateTime.ofInstant(FIXED_NOW, ZoneId.of("UTC"))))
+            .externalData(new ExternalData());
     }
 
 }
