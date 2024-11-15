@@ -38,7 +38,7 @@ class CompanyPscFullRecordGetControllerTest {
     private static final String ERIC_AUTH_INTERNAL = "internal-app";
 
     private static final String GET_INDIVIDUAL_FULL_RECORD_URL = String.format(
-        "/private/company/%s/persons-with-significant-control/individual/%s/full_record", MOCK_COMPANY_NUMBER,
+        "/company/%s/persons-with-significant-control/individual/%s/full_record", MOCK_COMPANY_NUMBER,
         MOCK_NOTIFICATION_ID);
     private static final Instant FIXED_NOW = Instant.parse("2024-11-12T13:14:15Z");
 

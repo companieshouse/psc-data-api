@@ -27,7 +27,7 @@ class WebSecurityConfigTest {
     private static final String MOCK_NOTIFICATION_ID = "123456789";
     private static final String ERIC_IDENTITY = "Test-Identity";
     private static final String GET_INDIVIDUAL_FULL_RECORD_URL = String.format(
-        "/private/company/%s/persons-with-significant-control/individual/%s/full_record", MOCK_COMPANY_NUMBER,
+        "/company/%s/persons-with-significant-control/individual/%s/full_record", MOCK_COMPANY_NUMBER,
         MOCK_NOTIFICATION_ID);
 
     @MockBean

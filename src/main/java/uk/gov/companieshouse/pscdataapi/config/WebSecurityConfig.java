@@ -33,7 +33,7 @@ public class WebSecurityConfig implements WebMvcConfigurer {
         if (featurePscIndividualFullRecordGet)
         {
             registry.addInterceptor(internalUserInterceptor())
-                .addPathPatterns("/private/company/{company_number}/persons-with-significant-control/**");
+                .addPathPatterns("/company/{company_number}/persons-with-significant-control/individual/{notification_id}/full_record");
         }
     }
 
