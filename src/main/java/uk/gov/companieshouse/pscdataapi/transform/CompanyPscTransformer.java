@@ -68,41 +68,30 @@ public class CompanyPscTransformer {
      * @param pscDocument PSC.
      * @return PSC mongo Document.
      */
-    public FullRecordCompanyPSCApi transformPscDocToFullRecord(final PscDocument pscDocument) {
-        logger.info("Attempting to transform pscDocument to Full Record PSC",
+    public IndividualFullRecord transformPscDocToIndividualFullRecord(final PscDocument pscDocument) {
+        logger.info("Attempting to transform pscDocument to Individual Full Record",
                 DataMapHolder.getLogMap());
-        final FullRecordCompanyPSCApi fullRecordCompanyPSCApi = new FullRecordCompanyPSCApi();
+        final IndividualFullRecord individualFullRecord  = new IndividualFullRecord();
 
         final PscData pscData = pscDocument.getData();
-        final Data data = new Data();
-
-        data.setName(pscData.getName());
-        data.setNameElements(mapNameElements(pscData.getNameElements()));
-        data.setCountryOfResidence(pscData.getCountryOfResidence());
-        data.setNotifiedOn(pscData.getNotifiedOn());
-        data.setCeasedOn(pscData.getCeasedOn());
-        data.setNaturesOfControl(pscData.getNaturesOfControl());
-        data.setNationality(pscData.getNationality());
-        data.setKind(pscData.getKind());
-        data.setLinks(mapLinksToList(pscData.getLinks()));
-        data.setServiceAddress(mapAddress(pscData.getAddress()));
-        data.setEtag(pscData.getEtag());
-        
-        final ExternalData externalData = new ExternalData();
-
-        externalData.setData(data);
+        individualFullRecord.setName(pscData.getName());
+        individualFullRecord.setNameElements(mapNameElements(pscData.getNameElements()));
+        individualFullRecord.setCountryOfResidence(pscData.getCountryOfResidence());
+        individualFullRecord.setNotifiedOn(pscData.getNotifiedOn());
+        individualFullRecord.setCeasedOn(pscData.getCeasedOn());
+        individualFullRecord.setNaturesOfControl(pscData.getNaturesOfControl());
+        individualFullRecord.setNationality(pscData.getNationality());
+        individualFullRecord.setKind(IndividualFullRecord.KindEnum.INDIVIDUAL_PERSON_WITH_SIGNIFICANT_CONTROL);
+        individualFullRecord.setLinks(mapLinksToList(pscData.getLinks()));
+        individualFullRecord.address(mapAddress(pscData.getAddress()));
+        individualFullRecord.setEtag(pscData.getEtag());
 
         final PscSensitiveData sensitivePscData = pscDocument.getSensitiveData();
-        final SensitiveData sensitiveApiData = new SensitiveData();
+        individualFullRecord.setResidentialAddressSameAsServiceAddress(sensitivePscData.getResidentialAddressIsSameAsServiceAddress());
+        individualFullRecord.setDateOfBirth(mapDateOfBirth(sensitivePscData.getDateOfBirth(), true));
+        individualFullRecord.setUsualResidentialAddress(mapToApiUra(sensitivePscData.getUsualResidentialAddress()));
 
-        sensitiveApiData.setResidentialAddressSameAsServiceAddress(sensitivePscData.getResidentialAddressIsSameAsServiceAddress());
-        sensitiveApiData.setDateOfBirth(mapDateOfBirth(sensitivePscData.getDateOfBirth(), true));
-        sensitiveApiData.setUsualResidentialAddress(mapToApiUra(sensitivePscData.getUsualResidentialAddress()));
-        externalData.setSensitiveData(sensitiveApiData);
-
-        fullRecordCompanyPSCApi.setExternalData(externalData);
-
-        return fullRecordCompanyPSCApi;
+        return individualFullRecord;
     }
 
     /**

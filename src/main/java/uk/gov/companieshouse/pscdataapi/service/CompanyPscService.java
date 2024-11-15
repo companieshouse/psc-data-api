@@ -17,17 +17,7 @@ import uk.gov.companieshouse.api.exemptions.CompanyExemptions;
 import uk.gov.companieshouse.api.metrics.MetricsApi;
 import uk.gov.companieshouse.api.metrics.RegisterApi;
 import uk.gov.companieshouse.api.metrics.RegistersApi;
-import uk.gov.companieshouse.api.psc.CorporateEntity;
-import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
-import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
-import uk.gov.companieshouse.api.psc.Individual;
-import uk.gov.companieshouse.api.psc.IndividualBeneficialOwner;
-import uk.gov.companieshouse.api.psc.LegalPerson;
-import uk.gov.companieshouse.api.psc.LegalPersonBeneficialOwner;
-import uk.gov.companieshouse.api.psc.ListSummary;
-import uk.gov.companieshouse.api.psc.PscList;
-import uk.gov.companieshouse.api.psc.SuperSecure;
-import uk.gov.companieshouse.api.psc.SuperSecureBeneficialOwner;
+import uk.gov.companieshouse.api.psc.*;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
@@ -187,13 +177,13 @@ public class CompanyPscService {
     }
 
     /**
-     * Get PSC full record and transform it into a Full Record PSC.
+     * Get Individual PSC full record and transform it into a Full Record Individual.
      *
      * @param companyNumber  Company number.
      * @param notificationId Mongo Id.
      * @return Full Record PSC object.
      */
-    public FullRecordCompanyPSCApi getFullRecordPsc(
+    public IndividualFullRecord getIndividualFullRecord(
             String companyNumber, String notificationId) {
         try {
             Optional<PscDocument> pscDocument =
@@ -202,14 +192,14 @@ public class CompanyPscService {
                                     .equals("individual-person-with-significant-control"));
             if (pscDocument.isPresent()) {
 
-                FullRecordCompanyPSCApi fullRecordCompanyPSCApi = transformer
-                        .transformPscDocToFullRecord(pscDocument.get());
+                IndividualFullRecord individualFullRecord = transformer
+                        .transformPscDocToIndividualFullRecord(pscDocument.get());
 
-                if (fullRecordCompanyPSCApi == null) {
+                if (individualFullRecord == null) {
                     throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
                             "Failed to transform PSCDocument to Individual");
                 }
-                return fullRecordCompanyPSCApi;
+                return individualFullRecord;
             } else {
                 throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
                         "Individual PSC document not found in Mongo with id " + notificationId);

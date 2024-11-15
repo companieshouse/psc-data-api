@@ -21,6 +21,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.companieshouse.api.psc.ExternalData;
 import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
+import uk.gov.companieshouse.api.psc.IndividualFullRecord;
 import uk.gov.companieshouse.api.psc.InternalData;
 import uk.gov.companieshouse.pscdataapi.service.CompanyPscService;
 
@@ -56,7 +57,7 @@ class CompanyPscFullRecordGetControllerTest {
     @Test
     @DisplayName("Should return 200 status with full record data")
     void getIndividualPSC() throws Exception {
-        when(companyPscService.getFullRecordPsc(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID)).thenReturn(
+        when(companyPscService.getIndividualFullRecord(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID)).thenReturn(
             createFullRecord());
 
         mockMvc.perform(get(GET_INDIVIDUAL_FULL_RECORD_URL).header("ERIC-Identity", ERIC_IDENTITY)
@@ -66,14 +67,12 @@ class CompanyPscFullRecordGetControllerTest {
             .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
                 .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH_INTERNAL)).andExpect(status().isOk())
             .andDo(print())
-            .andExpect(jsonPath("$.internal_data.delta_at").value("2024-11-12T13:14:15Z"));
+            .andExpect(jsonPath("$.kind").value("individual-person-with-significant-control"));
         // TODO: expect more (dummy) data in response
     }
 
-    private static @NotNull FullRecordCompanyPSCApi createFullRecord() {
-        return new FullRecordCompanyPSCApi().internalData(
-            new InternalData(OffsetDateTime.ofInstant(FIXED_NOW, ZoneId.of("UTC"))))
-            .externalData(new ExternalData());
+    private static @NotNull IndividualFullRecord createFullRecord() {
+        return new IndividualFullRecord().kind(IndividualFullRecord.KindEnum.INDIVIDUAL_PERSON_WITH_SIGNIFICANT_CONTROL);
     }
 
 }
