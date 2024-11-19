@@ -80,7 +80,7 @@ class CompanyPscControllerTest {
     private static final String GET_List_Summary_URL = String.format(
             "/company/%s/persons-with-significant-control", MOCK_COMPANY_NUMBER);
     private static final String DELETE_URL = String.format(
-            "/company/%s/persons-with-significant-control/%s/full_record", MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID);
+            "/company/%s/persons-with-significant-control/%s/delete", MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID);
 
     @MockBean
     private CompanyPscService companyPscService;
@@ -343,7 +343,7 @@ class CompanyPscControllerTest {
     @Test
     @DisplayName("Return 401 when no api key is present")
     void deletePSCWhenNoApiKeyPresent() throws Exception {
-        mockMvc.perform(delete(PUT_URL)).andExpect(status().isUnauthorized());
+        mockMvc.perform(delete(DELETE_URL)).andExpect(status().isUnauthorized());
 
         verify(companyPscService
                 , times(0)).deletePsc(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID, "");
