@@ -50,9 +50,6 @@ public class CompanyPscFullRecordGetController {
         } catch (final ResourceNotFoundException ex) {
             LOGGER.error(ex.getMessage(), DataMapHolder.getLogMap());
             return ResponseEntity.notFound().build();
-        } catch (final DataAccessException ex) {
-            LOGGER.error(ex.getMessage(), DataMapHolder.getLogMap());
-            return ResponseEntity.internalServerError().build();
         }
     }
 
