@@ -183,33 +183,32 @@ public class CompanyPscService {
      * @param notificationId Mongo Id.
      * @return Full Record PSC object.
      */
-    public IndividualFullRecord getIndividualFullRecord(
-            String companyNumber, String notificationId) {
+    public IndividualFullRecord getIndividualFullRecord(final String companyNumber, final String notificationId) {
         try {
-            Optional<PscDocument> pscDocument =
-                    repository.getPscByCompanyNumberAndId(companyNumber, notificationId)
-                            .filter(document -> document.getData().getKind()
-                                    .equals("individual-person-with-significant-control"));
-            if (pscDocument.isPresent()) {
+            final Optional<PscDocument> pscDocument = repository.getPscByCompanyNumberAndId(companyNumber,
+                    notificationId)
+                .filter(document -> document.getData().getKind().equals("individual-person-with-significant-control"));
 
-                IndividualFullRecord individualFullRecord = transformer
-                        .transformPscDocToIndividualFullRecord(pscDocument.get());
+            if (pscDocument.isPresent()) {
+                final IndividualFullRecord individualFullRecord = transformer.transformPscDocToIndividualFullRecord(
+                    pscDocument.get());
 
                 if (individualFullRecord == null) {
                     throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
-                            "Failed to transform PSCDocument to Individual");
+                        "Failed to transform PSCDocument to Individual Full Record");
                 }
                 return individualFullRecord;
-            } else {
-                throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
-                        "Individual PSC document not found in Mongo with id " + notificationId);
             }
-        } catch (ResourceNotFoundException rnfe) {
+            else {
+                throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
+                    "Individual PSC document not found with id " + notificationId);
+            }
+        } catch (final ResourceNotFoundException rnfe) {
             throw rnfe;
-        } catch (Exception ex) {
+        } catch (final Exception ex) {
             logger.error(ex.getMessage(), DataMapHolder.getLogMap());
             throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
-                    UNEXPECTED_ERROR_OCCURRED_WHILE_FETCHING_PSC_DOCUMENT);
+                UNEXPECTED_ERROR_OCCURRED_WHILE_FETCHING_PSC_DOCUMENT);
         }
     }
 
