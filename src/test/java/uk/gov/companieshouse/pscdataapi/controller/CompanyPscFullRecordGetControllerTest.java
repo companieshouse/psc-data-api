@@ -9,7 +9,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.Arrays;
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -124,7 +123,7 @@ class CompanyPscFullRecordGetControllerTest {
             .andExpect(status().isNotFound());
     }
 
-    private static @NotNull IndividualFullRecord createFullRecord() {
+    private static IndividualFullRecord createFullRecord() {
         return new IndividualFullRecord()
                 .kind(IndividualFullRecord.KindEnum.INDIVIDUAL_PERSON_WITH_SIGNIFICANT_CONTROL)
                 .name("Andy Bob Smith")

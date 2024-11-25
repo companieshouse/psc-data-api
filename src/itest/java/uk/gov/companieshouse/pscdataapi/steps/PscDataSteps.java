@@ -29,7 +29,6 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import org.assertj.core.api.Assertions;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -48,6 +47,7 @@ import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
 import uk.gov.companieshouse.api.psc.Identification;
 import uk.gov.companieshouse.api.psc.Individual;
 import uk.gov.companieshouse.api.psc.IndividualBeneficialOwner;
+import uk.gov.companieshouse.api.psc.IndividualFullRecord;
 import uk.gov.companieshouse.api.psc.LegalPerson;
 import uk.gov.companieshouse.api.psc.LegalPersonBeneficialOwner;
 import uk.gov.companieshouse.api.psc.PscList;
@@ -676,7 +676,7 @@ public class PscDataSteps {
         CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
     }
 
-    private @NotNull HttpHeaders setupHeaders(final boolean includeEric, final String keyRoles) {
+    private HttpHeaders setupHeaders(final boolean includeEric, final String keyRoles) {
         final HttpHeaders headers = new HttpHeaders();
 
         headers.setContentType(MediaType.APPLICATION_JSON);

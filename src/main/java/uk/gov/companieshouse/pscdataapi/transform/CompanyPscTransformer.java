@@ -89,7 +89,7 @@ public class CompanyPscTransformer {
         final PscSensitiveData sensitivePscData = pscDocument.getSensitiveData();
         individualFullRecord.setResidentialAddressSameAsServiceAddress(sensitivePscData.getResidentialAddressIsSameAsServiceAddress());
         individualFullRecord.setDateOfBirth(mapDateOfBirth(sensitivePscData.getDateOfBirth(), true));
-        individualFullRecord.setUsualResidentialAddress(mapToApiUra(sensitivePscData.getUsualResidentialAddress()));
+        individualFullRecord.setUsualResidentialAddress(mapAddress(sensitivePscData.getUsualResidentialAddress()));
 
         return individualFullRecord;
     }
@@ -489,26 +489,6 @@ public class CompanyPscTransformer {
             return null;
         }
     }
-
-    private uk.gov.companieshouse.api.psc.Address mapToApiUra(
-            final Address inputAddress) {
-        if (inputAddress != null) {
-            final uk.gov.companieshouse.api.psc.Address address = new uk.gov.companieshouse.api.psc.Address();
-            address.setAddressLine1(inputAddress.getAddressLine1());
-            address.setAddressLine2(inputAddress.getAddressLine2());
-            address.setCountry(inputAddress.getCountry());
-            address.setLocality(inputAddress.getLocality());
-            address.setPoBox(inputAddress.getPoBox());
-            address.setPostalCode(inputAddress.getPostalCode());
-            address.setPremises(inputAddress.getPremises());
-            address.setRegion(inputAddress.getRegion());
-            address.setCareOf(inputAddress.getCareOf());
-            return address;
-        } else {
-            return null;
-        }
-    }
-
 
     private uk.gov.companieshouse.api.psc.Address mapPrincipleAddress(
             uk.gov.companieshouse.pscdataapi.models.Address inputPrincipleAddress) {
