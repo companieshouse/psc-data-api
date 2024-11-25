@@ -12,8 +12,7 @@ locals {
   lb_listener_paths           = [
     "/psc-data-api/healthcheck",
     "/company/*/persons-with-significant-control",
-    "/company/*/persons-with-significant-control/*",
-    "/private/company/*/persons-with-significant-control/*"
+    "/company/*/persons-with-significant-control/*"
   ]
   healthcheck_path            = "/psc-data-api/healthcheck" #healthcheck path for psc-data-api
   healthcheck_matcher         = "200"
