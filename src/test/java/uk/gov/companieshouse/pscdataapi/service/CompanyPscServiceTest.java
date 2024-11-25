@@ -827,6 +827,7 @@ class CompanyPscServiceTest {
 
         service.getIndividualFullRecord(COMPANY_NUMBER, NOTIFICATION_ID);
 
+        // TODO: assert response data matches? need TestHelper to create expected data
         verify(repository).getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID);
         verify(transformer).transformPscDocToIndividualFullRecord(pscDocument);
     }

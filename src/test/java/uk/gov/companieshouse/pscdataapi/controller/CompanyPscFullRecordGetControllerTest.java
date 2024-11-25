@@ -8,7 +8,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.time.Instant;
 import java.util.Arrays;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.DisplayName;
@@ -24,7 +23,6 @@ import uk.gov.companieshouse.api.psc.DateOfBirth;
 import uk.gov.companieshouse.api.psc.IndividualFullRecord;
 import uk.gov.companieshouse.api.psc.ItemLinkTypes;
 import uk.gov.companieshouse.api.psc.NameElements;
-import uk.gov.companieshouse.api.psc.UsualResidentialAddress;
 import uk.gov.companieshouse.pscdataapi.exceptions.ResourceNotFoundException;
 import uk.gov.companieshouse.pscdataapi.service.CompanyPscService;
 
@@ -43,7 +41,6 @@ class CompanyPscFullRecordGetControllerTest {
     private static final String GET_INDIVIDUAL_FULL_RECORD_URL = String.format(
         "/company/%s/persons-with-significant-control/individual/%s/full_record", MOCK_COMPANY_NUMBER,
         MOCK_NOTIFICATION_ID);
-    private static final Instant FIXED_NOW = Instant.parse("2024-11-12T13:14:15Z");
 
     @MockBean
     private CompanyPscService companyPscService;
@@ -83,7 +80,7 @@ class CompanyPscFullRecordGetControllerTest {
                 }
               ],
               "nationality": "British",
-              "address": {
+              "service_address": {
                 "address_line_1": "addressLine1",
                 "postal_code": "CF12 3AB",
                 "premises": "1"
@@ -94,7 +91,7 @@ class CompanyPscFullRecordGetControllerTest {
               "usual_residential_address": {
                 "address_line_1": "Home street",
                 "postal_code": "AB12 3CD",
-                "premise": "Cottage"
+                "premises": "Cottage"
               },
               "residential_address_same_as_service_address": false
             }
@@ -132,9 +129,9 @@ class CompanyPscFullRecordGetControllerTest {
                 .kind(IndividualFullRecord.KindEnum.INDIVIDUAL_PERSON_WITH_SIGNIFICANT_CONTROL)
                 .name("Andy Bob Smith")
                 .nameElements(new NameElements().forename("Andy").middleName("Bob").surname("Smith"))
-                .address(new Address("addressLine1", "CF12 3AB", "1"))
+                .serviceAddress(new Address().addressLine1("addressLine1").postalCode("CF12 3AB").premises("1"))
                 .residentialAddressSameAsServiceAddress(Boolean.FALSE)
-                .usualResidentialAddress(new UsualResidentialAddress().premise("Cottage").addressLine1("Home street").postalCode("AB12 3CD"))
+                .usualResidentialAddress(new Address().premises("Cottage").addressLine1("Home street").postalCode("AB12 3CD"))
                 .nationality("British")
                 .naturesOfControl(Arrays.asList("nature of my control"))
                 .dateOfBirth(new DateOfBirth().day(1).month(2).year(2000))

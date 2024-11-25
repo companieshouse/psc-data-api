@@ -401,7 +401,7 @@ public class PscDataSteps {
     }
 
     @When("a Get request is sent for {string} and {string} for Super Secure Beneficial Owner")
-    public void aGetRequestIsSentForAndForSuperSecureBeneficialOwner(String companyNumber, String notification_id) {
+    public void aGetRequestIsSentForAndForSuperSecureBeneficialOwner(String companyNumber, String notificationId) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -413,9 +413,9 @@ public class PscDataSteps {
         HttpEntity<String> request = new HttpEntity<>(null, headers);
 
         String uri =
-                String.format("/company/%s/persons-with-significant-control/super-secure-beneficial-owner/%s", companyNumber, notification_id);
+                String.format("/company/%s/persons-with-significant-control/super-secure-beneficial-owner/%s", companyNumber, notificationId);
         ResponseEntity<SuperSecureBeneficialOwner> response = restTemplate.exchange(uri,
-                HttpMethod.GET, request, SuperSecureBeneficialOwner.class, companyNumber, notification_id);
+                HttpMethod.GET, request, SuperSecureBeneficialOwner.class, companyNumber, notificationId);
 
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
         CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
@@ -434,7 +434,7 @@ public class PscDataSteps {
     }
 
     @When("a Get request is sent for {string} and {string} without ERIC headers for Super Secure Beneficial Owner")
-    public void aGetRequestIsSentForAndWithoutERICHeadersForSuperSecureBeneficialOwner(String companyNumber, String notification_id) {
+    public void aGetRequestIsSentForAndWithoutERICHeadersForSuperSecureBeneficialOwner(String companyNumber, String notificationId) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -443,9 +443,9 @@ public class PscDataSteps {
         HttpEntity<String> request = new HttpEntity<>(null, headers);
 
         String uri =
-                String.format("/company/%s/persons-with-significant-control/super-secure-beneficial-owner/%s", companyNumber, notification_id);
+                String.format("/company/%s/persons-with-significant-control/super-secure-beneficial-owner/%s", companyNumber, notificationId);
         ResponseEntity<SuperSecureBeneficialOwner> response = restTemplate.exchange(uri,
-                HttpMethod.GET, request, SuperSecureBeneficialOwner.class, companyNumber, notification_id);
+                HttpMethod.GET, request, SuperSecureBeneficialOwner.class, companyNumber, notificationId);
 
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
         CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
@@ -630,6 +630,8 @@ public class PscDataSteps {
         address.setPremises("URA");
         address.setRegion("ura_region");
         pscData.setAddress(address);
+        pscSensitiveData.setUsualResidentialAddress(address);
+        pscSensitiveData.setResidentialAddressIsSameAsServiceAddress(true);
         List<String> list = new ArrayList<>();
         list.add("part-right-to-share-surplus-assets-75-to-100-percent");
         pscData.setNaturesOfControl(list);
@@ -659,6 +661,58 @@ public class PscDataSteps {
         CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
     }
 
+    @When("an {string} Get request is sent for {string} and {string} for Individual Full Record")
+    public void aGetFullRecordRequestIsSentForAnd(final String auth, final String companyNumber, final String notification_id) {
+        final HttpHeaders headers = setupHeaders(!"unauthenticated".equals(auth), "authorized".equals(auth) ? "*": "");
+        CucumberContext.CONTEXT.set("contextId", this.contextId);
+
+        final HttpEntity<String> request = new HttpEntity<>(null, headers);
+
+        final String uri = "/company/{company_number}/persons-with-significant-control/individual/{notification_id}/full_record";
+        final ResponseEntity<IndividualFullRecord> response = restTemplate.exchange(uri, HttpMethod.GET, request,
+            IndividualFullRecord.class, companyNumber, notification_id);
+
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
+        CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
+    }
+
+    private @NotNull HttpHeaders setupHeaders(final boolean includeEric, final String keyRoles) {
+        final HttpHeaders headers = new HttpHeaders();
+
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+        headers.set("x-request-id", this.contextId);
+        if (includeEric) {
+            headers.set("ERIC-Identity", "TEST-IDENTITY");
+            headers.set("ERIC-Identity-Type", "key");
+            headers.set("ERIC-Authorised-Key-Roles", keyRoles);
+        }
+
+        return headers;
+    }
+
+    @When("a Get request is sent for {string} and {string} without ERIC headers for Individual Full Record")
+    public void aGetFullRecordRequestIsSentWithoutEricHeadersForAnd(final String companyNumber, final String notification_id) {
+        final HttpHeaders headers = new HttpHeaders();
+
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+        CucumberContext.CONTEXT.set("contextId", this.contextId);
+        headers.set("x-request-id", this.contextId);
+        headers.set("ERIC-Identity", "TEST-IDENTITY");
+        headers.set("ERIC-Identity-Type", "key");
+        headers.set("ERIC-Authorised-Key-Roles", "*");
+
+        final HttpEntity<String> request = new HttpEntity<>(null, headers);
+
+        final String uri = "/company/{company_number}/persons-with-significant-control/individual/{notification_id}/full_record";
+        final ResponseEntity<IndividualFullRecord> response = restTemplate.exchange(uri, HttpMethod.GET, request,
+            IndividualFullRecord.class, companyNumber, notification_id);
+
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
+        CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
+    }
+
     @And("the Get call response body should match {string} file for Individual")
     public void theGetCallResponseBodyShouldMatchFile(String result) throws IOException {
         String data = FileCopyUtils.copyToString(new InputStreamReader(new FileInputStream("src/itest/resources/json/output/" + result + ".json")));
@@ -668,6 +722,20 @@ public class PscDataSteps {
         assertThat(actual.getName()).isEqualTo(expected.getName());
         assertThat(actual.getCountryOfResidence()).isEqualTo(expected.getCountryOfResidence());
         assertThat(actual.getNaturesOfControl()).isEqualTo(expected.getNaturesOfControl());
+    }
+
+    @And("the Get call response body should match {string} file for Individual Full Record")
+    public void theGetFullRecordCallResponseBodyShouldMatchFile(final String result) throws IOException {
+        final String data = FileCopyUtils.copyToString(new InputStreamReader(new FileInputStream("src/itest/resources/json/output/" + result + ".json")));
+        final IndividualFullRecord expected = objectMapper.readValue(data, IndividualFullRecord.class);
+        final IndividualFullRecord actual = CucumberContext.CONTEXT.get("getResponseBody");
+
+        assertThat(actual.getName()).isEqualTo(expected.getName());
+        assertThat(actual.getCountryOfResidence()).isEqualTo(expected.getCountryOfResidence());
+        assertThat(actual.getNaturesOfControl()).isEqualTo(expected.getNaturesOfControl());
+        assertThat(actual.getDateOfBirth()).isEqualTo(expected.getDateOfBirth());
+        assertThat(actual.getUsualResidentialAddress()).isEqualTo(expected.getUsualResidentialAddress());
+        assertThat(actual.getResidentialAddressSameAsServiceAddress()).isEqualTo(expected.getResidentialAddressSameAsServiceAddress());
     }
 
     @When("a Get request is sent for {string} and {string} without ERIC headers for Individual")

@@ -20,7 +20,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.companieshouse.api.psc.Individual;
 import uk.gov.companieshouse.pscdataapi.service.CompanyPscService;
 
-@SpringBootTest
+@SpringBootTest(properties = {"feature.psc_individual_full_record_get=false"})
 @AutoConfigureMockMvc
 class CompanyPscFullRecordGetDisabledControllerTest {
 

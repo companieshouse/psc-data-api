@@ -83,7 +83,7 @@ public class CompanyPscTransformer {
         individualFullRecord.setNationality(pscData.getNationality());
         individualFullRecord.setKind(IndividualFullRecord.KindEnum.INDIVIDUAL_PERSON_WITH_SIGNIFICANT_CONTROL);
         individualFullRecord.setLinks(mapLinksToList(pscData.getLinks()));
-        individualFullRecord.address(mapAddress(pscData.getAddress()));
+        individualFullRecord.serviceAddress(mapAddress(pscData.getAddress()));
         individualFullRecord.setEtag(pscData.getEtag());
 
         final PscSensitiveData sensitivePscData = pscDocument.getSensitiveData();
@@ -356,18 +356,16 @@ public class CompanyPscTransformer {
             String notificationId, FullRecordCompanyPSCApi requestBody) {
         String pscStatementId = null;
         if (requestBody.getExternalData() != null) {
-            ExternalData externalData = requestBody.getExternalData();
-            if (externalData != null) {
-                pscStatementId = requestBody.getExternalData().getPscStatementId();
-            }
+            final ExternalData externalData = requestBody.getExternalData();
+                pscStatementId = externalData.getPscStatementId();
         }
-        PscDocument pscDocument = new PscDocument();
+        final PscDocument pscDocument = new PscDocument();
         logger.info("Transforming incoming payload", DataMapHolder.getLogMap());
 
         pscDocument.setId(notificationId);
         pscDocument.setNotificationId(notificationId);
         if (requestBody.getExternalData() != null) {
-            ExternalData externalData = requestBody.getExternalData();
+            final ExternalData externalData = requestBody.getExternalData();
             pscDocument.setPscId(externalData.getPscId());
             pscDocument.setCompanyNumber(externalData.getCompanyNumber());
 
@@ -492,18 +490,17 @@ public class CompanyPscTransformer {
         }
     }
 
-    private uk.gov.companieshouse.api.psc.UsualResidentialAddress mapToApiUra(
-            Address inputAddress) {
+    private uk.gov.companieshouse.api.psc.Address mapToApiUra(
+            final Address inputAddress) {
         if (inputAddress != null) {
-            uk.gov.companieshouse.api.psc.UsualResidentialAddress address =
-                    new uk.gov.companieshouse.api.psc.UsualResidentialAddress();
+            final uk.gov.companieshouse.api.psc.Address address = new uk.gov.companieshouse.api.psc.Address();
             address.setAddressLine1(inputAddress.getAddressLine1());
             address.setAddressLine2(inputAddress.getAddressLine2());
             address.setCountry(inputAddress.getCountry());
             address.setLocality(inputAddress.getLocality());
             address.setPoBox(inputAddress.getPoBox());
             address.setPostalCode(inputAddress.getPostalCode());
-            address.setPremise(inputAddress.getPremises());
+            address.setPremises(inputAddress.getPremises());
             address.setRegion(inputAddress.getRegion());
             address.setCareOf(inputAddress.getCareOf());
             return address;
@@ -586,7 +583,7 @@ public class CompanyPscTransformer {
     }
 
     private static List<ItemLinkTypes> mapLinksToList(final Links links) {
-        final ItemLinkTypes itemLinkTypes = new ItemLinkTypes(links.getSelf());
+        final ItemLinkTypes itemLinkTypes = new ItemLinkTypes().self(links.getSelf());
 
         itemLinkTypes.setStatement(links.getStatement());
 
