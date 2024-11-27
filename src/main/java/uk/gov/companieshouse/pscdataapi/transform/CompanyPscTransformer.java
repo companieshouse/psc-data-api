@@ -2,22 +2,10 @@ package uk.gov.companieshouse.pscdataapi.transform;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+
+import java.util.List;
 import org.springframework.stereotype.Component;
-import uk.gov.companieshouse.api.psc.CorporateEntity;
-import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
-import uk.gov.companieshouse.api.psc.Data;
-import uk.gov.companieshouse.api.psc.ExternalData;
-import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
-import uk.gov.companieshouse.api.psc.Identification;
-import uk.gov.companieshouse.api.psc.Individual;
-import uk.gov.companieshouse.api.psc.IndividualBeneficialOwner;
-import uk.gov.companieshouse.api.psc.InternalData;
-import uk.gov.companieshouse.api.psc.LegalPerson;
-import uk.gov.companieshouse.api.psc.LegalPersonBeneficialOwner;
-import uk.gov.companieshouse.api.psc.ListSummary;
-import uk.gov.companieshouse.api.psc.SensitiveData;
-import uk.gov.companieshouse.api.psc.SuperSecure;
-import uk.gov.companieshouse.api.psc.SuperSecureBeneficialOwner;
+import uk.gov.companieshouse.api.psc.*;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.data.IndividualPscRoles;
 import uk.gov.companieshouse.pscdataapi.data.SecurePscRoles;
@@ -25,11 +13,7 @@ import uk.gov.companieshouse.pscdataapi.logging.DataMapHolder;
 import uk.gov.companieshouse.pscdataapi.models.Address;
 import uk.gov.companieshouse.pscdataapi.models.DateOfBirth;
 import uk.gov.companieshouse.pscdataapi.models.NameElements;
-import uk.gov.companieshouse.pscdataapi.models.PscData;
-import uk.gov.companieshouse.pscdataapi.models.PscDocument;
-import uk.gov.companieshouse.pscdataapi.models.PscIdentification;
-import uk.gov.companieshouse.pscdataapi.models.PscSensitiveData;
-import uk.gov.companieshouse.pscdataapi.models.Updated;
+import uk.gov.companieshouse.pscdataapi.models.*;
 import uk.gov.companieshouse.pscdataapi.util.PscTransformationHelper;
 
 @Component
@@ -76,6 +60,38 @@ public class CompanyPscTransformer {
                     pscDocument.getSensitiveData().getDateOfBirth(), showFullDateOfBirth));
         }
         return individual;
+    }
+
+    /**
+     * Transform Individual PSC full record.
+     *
+     * @param pscDocument PSC.
+     * @return PSC mongo Document.
+     */
+    public IndividualFullRecord transformPscDocToIndividualFullRecord(final PscDocument pscDocument) {
+        logger.info("Attempting to transform pscDocument to Individual Full Record",
+                DataMapHolder.getLogMap());
+        final IndividualFullRecord individualFullRecord  = new IndividualFullRecord();
+
+        final PscData pscData = pscDocument.getData();
+        individualFullRecord.setName(pscData.getName());
+        individualFullRecord.setNameElements(mapNameElements(pscData.getNameElements()));
+        individualFullRecord.setCountryOfResidence(pscData.getCountryOfResidence());
+        individualFullRecord.setNotifiedOn(pscData.getNotifiedOn());
+        individualFullRecord.setCeasedOn(pscData.getCeasedOn());
+        individualFullRecord.setNaturesOfControl(pscData.getNaturesOfControl());
+        individualFullRecord.setNationality(pscData.getNationality());
+        individualFullRecord.setKind(IndividualFullRecord.KindEnum.INDIVIDUAL_PERSON_WITH_SIGNIFICANT_CONTROL);
+        individualFullRecord.setLinks(mapLinksToList(pscData.getLinks()));
+        individualFullRecord.serviceAddress(mapAddress(pscData.getAddress()));
+        individualFullRecord.setEtag(pscData.getEtag());
+
+        final PscSensitiveData sensitivePscData = pscDocument.getSensitiveData();
+        individualFullRecord.setResidentialAddressSameAsServiceAddress(sensitivePscData.getResidentialAddressIsSameAsServiceAddress());
+        individualFullRecord.setDateOfBirth(mapDateOfBirth(sensitivePscData.getDateOfBirth(), true));
+        individualFullRecord.setUsualResidentialAddress(mapAddress(sensitivePscData.getUsualResidentialAddress()));
+
+        return individualFullRecord;
     }
 
     /**
@@ -340,18 +356,16 @@ public class CompanyPscTransformer {
             String notificationId, FullRecordCompanyPSCApi requestBody) {
         String pscStatementId = null;
         if (requestBody.getExternalData() != null) {
-            ExternalData externalData = requestBody.getExternalData();
-            if (externalData != null) {
-                pscStatementId = requestBody.getExternalData().getPscStatementId();
-            }
+            final ExternalData externalData = requestBody.getExternalData();
+                pscStatementId = externalData.getPscStatementId();
         }
-        PscDocument pscDocument = new PscDocument();
+        final PscDocument pscDocument = new PscDocument();
         logger.info("Transforming incoming payload", DataMapHolder.getLogMap());
 
         pscDocument.setId(notificationId);
         pscDocument.setNotificationId(notificationId);
         if (requestBody.getExternalData() != null) {
-            ExternalData externalData = requestBody.getExternalData();
+            final ExternalData externalData = requestBody.getExternalData();
             pscDocument.setPscId(externalData.getPscId());
             pscDocument.setCompanyNumber(externalData.getCompanyNumber());
 
@@ -548,4 +562,11 @@ public class CompanyPscTransformer {
         }
     }
 
+    private static List<ItemLinkTypes> mapLinksToList(final Links links) {
+        final ItemLinkTypes itemLinkTypes = new ItemLinkTypes().self(links.getSelf());
+
+        itemLinkTypes.setStatement(links.getStatement());
+
+        return List.of(itemLinkTypes);
+    }
 }

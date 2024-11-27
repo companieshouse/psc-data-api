@@ -9,8 +9,6 @@ import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ActiveProfiles;
-
 import uk.gov.companieshouse.api.InternalApiClient;
 import uk.gov.companieshouse.api.chskafka.ChangedResource;
 import uk.gov.companieshouse.api.error.ApiErrorResponseException;
@@ -23,8 +21,7 @@ import uk.gov.companieshouse.api.sdk.ApiClientService;
 import uk.gov.companieshouse.pscdataapi.exceptions.ServiceUnavailableException;
 import uk.gov.companieshouse.pscdataapi.util.TestHelper;
 
-@SpringBootTest
-@ActiveProfiles("feature_flag_enabled")
+@SpringBootTest(properties = {"feature.seeding_collection_enabled=true"})
 class ResourceChangedApiServiceAspectFeatureFlagEnabledITest {
     @Autowired
     private ChsKafkaApiService chsKafkaApiService;

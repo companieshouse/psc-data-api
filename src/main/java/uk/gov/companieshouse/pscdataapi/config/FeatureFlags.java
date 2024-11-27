@@ -7,13 +7,19 @@ import org.springframework.stereotype.Component;
 public class FeatureFlags {
 
     private final boolean streamHookDisabled;
+    private final boolean individualPscFullRecordGetEnabled;
 
-    public FeatureFlags(
-                    @Value("${feature.seeding_collection_enabled}") boolean streamHookDisabled) {
+    public FeatureFlags(@Value("${feature.seeding_collection_enabled}") final boolean streamHookDisabled,
+        @Value("${feature.psc_individual_full_record_get}") final boolean individualPscFullRecordGetEnabled) {
         this.streamHookDisabled = streamHookDisabled;
+        this.individualPscFullRecordGetEnabled = individualPscFullRecordGetEnabled;
     }
 
     public boolean isStreamHookDisabled() {
         return streamHookDisabled;
+    }
+
+    public boolean isIndividualPscFullRecordGetEnabled() {
+        return individualPscFullRecordGetEnabled;
     }
 }

@@ -1,5 +1,7 @@
 package uk.gov.companieshouse.pscdataapi.service;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -30,6 +32,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.NonTransientDataAccessException;
+import org.springframework.http.HttpStatus;
 import uk.gov.companieshouse.api.api.CompanyExemptionsApiService;
 import uk.gov.companieshouse.api.api.CompanyMetricsApiService;
 import uk.gov.companieshouse.api.exemptions.CompanyExemptions;
@@ -44,6 +48,7 @@ import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
 import uk.gov.companieshouse.api.psc.Identification;
 import uk.gov.companieshouse.api.psc.Individual;
 import uk.gov.companieshouse.api.psc.IndividualBeneficialOwner;
+import uk.gov.companieshouse.api.psc.IndividualFullRecord;
 import uk.gov.companieshouse.api.psc.LegalPerson;
 import uk.gov.companieshouse.api.psc.LegalPersonBeneficialOwner;
 import uk.gov.companieshouse.api.psc.ListSummary;
@@ -812,6 +817,68 @@ class CompanyPscServiceTest {
         links.setExemptions("/company/" + COMPANY_NUMBER + "/exemptions");
 
         assertEquals(pscDocumentList.getLinks(), links);
+    }
+
+    @Test
+    void getIndividualFullRecordShouldReturnFullRecordWhenFound() {
+        when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID)).thenReturn(
+            Optional.of(pscDocument));
+        when(transformer.transformPscDocToIndividualFullRecord(pscDocument)).thenReturn(new IndividualFullRecord());
+
+        service.getIndividualFullRecord(COMPANY_NUMBER, NOTIFICATION_ID);
+
+        // TODO: assert response data matches? need TestHelper to create expected data
+        verify(repository).getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID);
+        verify(transformer).transformPscDocToIndividualFullRecord(pscDocument);
+    }
+
+    @Test
+    void getIndividualFullRecordShouldThrowWhenNotFound() {
+        when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID)).thenReturn(Optional.empty());
+
+        final var exception = assertThrows(ResourceNotFoundException.class,
+            () -> service.getIndividualFullRecord(COMPANY_NUMBER, NOTIFICATION_ID));
+
+        assertThat(exception.getStatusCode(), is(HttpStatus.NOT_FOUND));
+        assertThat(exception.getReason(), is("Individual PSC document not found with id notificationId"));
+    }
+
+    @Test
+    void getIndividualFullRecordShouldThrowWhenRepositoryThrowsRFNE() {
+        when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID)).thenThrow(
+            new ResourceNotFoundException(HttpStatus.NOT_FOUND, "ResourceNotFoundException"));
+
+        final var exception = assertThrows(ResourceNotFoundException.class,
+            () -> service.getIndividualFullRecord(COMPANY_NUMBER, NOTIFICATION_ID));
+
+        assertThat(exception.getStatusCode(), is(HttpStatus.NOT_FOUND));
+        assertThat(exception.getReason(), is("ResourceNotFoundException"));
+    }
+
+    @Test
+    void getIndividualFullRecordShouldThrowWhenRepositoryThrowsException() {
+        when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID)).thenThrow(
+            new NonTransientDataAccessException("NonTransientDataAccessException") {
+            });
+
+        final var exception = assertThrows(ResourceNotFoundException.class,
+            () -> service.getIndividualFullRecord(COMPANY_NUMBER, NOTIFICATION_ID));
+
+        assertThat(exception.getStatusCode(), is(HttpStatus.NOT_FOUND));
+        assertThat(exception.getReason(), is("Unexpected error occurred while fetching PSC document"));
+    }
+
+    @Test
+    void getIndividualFullRecordShouldThrowWhenTransformFails() {
+        when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID)).thenReturn(
+            Optional.of(pscDocument));
+        when(transformer.transformPscDocToIndividualFullRecord(pscDocument)).thenReturn(null);
+
+        final var exception = assertThrows(ResourceNotFoundException.class,
+            () -> service.getIndividualFullRecord(COMPANY_NUMBER, NOTIFICATION_ID));
+
+        assertThat(exception.getStatusCode(), is(HttpStatus.NOT_FOUND));
+        assertThat(exception.getReason(), is("Failed to transform PSCDocument to Individual Full Record"));
     }
 
 }
