@@ -19,6 +19,7 @@ import uk.gov.companieshouse.api.model.ApiResponse;
 import uk.gov.companieshouse.api.request.RequestExecutor;
 import uk.gov.companieshouse.api.sdk.ApiClientService;
 import uk.gov.companieshouse.pscdataapi.exceptions.ServiceUnavailableException;
+import uk.gov.companieshouse.pscdataapi.models.PscDeleteRequest;
 import uk.gov.companieshouse.pscdataapi.util.TestHelper;
 
 @SpringBootTest(properties = {"feature.seeding_collection_enabled=true"})
@@ -72,7 +73,8 @@ class ResourceChangedApiServiceAspectFeatureFlagEnabledITest {
                 changedResourcePost);
         when(changedResourcePost.execute()).thenReturn(response);
 
-        chsKafkaApiService.invokeChsKafkaApiWithDeleteEvent(TestHelper.X_REQUEST_ID, TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID, "kind",
+        chsKafkaApiService.invokeChsKafkaApiWithDeleteEvent(
+                new PscDeleteRequest(TestHelper.X_REQUEST_ID, TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID, "kind", "deltaAt"),
                 TestHelper.buildPscDocument("individual-persons-with-significant-control"));
 
         verifyNoInteractions(apiClientService);

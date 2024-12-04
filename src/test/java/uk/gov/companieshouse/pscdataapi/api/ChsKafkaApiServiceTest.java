@@ -7,6 +7,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.companieshouse.pscdataapi.util.TestHelper.DELTA_AT;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -30,6 +31,7 @@ import uk.gov.companieshouse.api.model.ApiResponse;
 import uk.gov.companieshouse.api.psc.*;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.exceptions.ServiceUnavailableException;
+import uk.gov.companieshouse.pscdataapi.models.PscDeleteRequest;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 import uk.gov.companieshouse.pscdataapi.transform.CompanyPscTransformer;
 import uk.gov.companieshouse.pscdataapi.util.TestHelper;
@@ -97,7 +99,7 @@ class ChsKafkaApiServiceTest {
 
         // when
         ApiResponse<?> apiResponse = chsKafkaApiService.invokeChsKafkaApiWithDeleteEvent(
-                TestHelper.X_REQUEST_ID, TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID, TestHelper.INDIVIDUAL_KIND,
+                new PscDeleteRequest(TestHelper.X_REQUEST_ID, TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID, TestHelper.INDIVIDUAL_KIND, DELTA_AT),
                 document);
         assertThat(apiResponse).isNotNull();
 
@@ -127,7 +129,7 @@ class ChsKafkaApiServiceTest {
 
         // when
         ApiResponse<?> apiResponse = chsKafkaApiService.invokeChsKafkaApiWithDeleteEvent(
-                TestHelper.X_REQUEST_ID, TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID, TestHelper.INDIVIDUAL_KIND,
+                new PscDeleteRequest(TestHelper.X_REQUEST_ID, TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID, TestHelper.INDIVIDUAL_KIND, DELTA_AT),
                 document);
         assertThat(apiResponse).isNotNull();
 
@@ -157,7 +159,7 @@ class ChsKafkaApiServiceTest {
 
         // when
         ApiResponse<?> apiResponse = chsKafkaApiService.invokeChsKafkaApiWithDeleteEvent(
-                TestHelper.X_REQUEST_ID, TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID, TestHelper.LEGAL_KIND,
+                new PscDeleteRequest(TestHelper.X_REQUEST_ID, TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID, TestHelper.LEGAL_KIND, DELTA_AT),
                 document);
         assertThat(apiResponse).isNotNull();
 
@@ -190,7 +192,7 @@ class ChsKafkaApiServiceTest {
 
         // when
         ApiResponse<?> apiResponse = chsKafkaApiService.invokeChsKafkaApiWithDeleteEvent(
-                TestHelper.X_REQUEST_ID, TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID, TestHelper.LEGAL_BO_KIND,
+                new PscDeleteRequest(TestHelper.X_REQUEST_ID, TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID, TestHelper.LEGAL_BO_KIND, DELTA_AT),
                 document);
         assertThat(apiResponse).isNotNull();
 
@@ -220,7 +222,7 @@ class ChsKafkaApiServiceTest {
 
         // when
         ApiResponse<?> apiResponse = chsKafkaApiService.invokeChsKafkaApiWithDeleteEvent(
-                TestHelper.X_REQUEST_ID, TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID, TestHelper.SECURE_KIND,
+                new PscDeleteRequest(TestHelper.X_REQUEST_ID, TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID, TestHelper.SECURE_KIND, DELTA_AT),
                 document);
         assertThat(apiResponse).isNotNull();
 
@@ -250,7 +252,7 @@ class ChsKafkaApiServiceTest {
 
         // when
         ApiResponse<?> apiResponse = chsKafkaApiService.invokeChsKafkaApiWithDeleteEvent(
-                TestHelper.X_REQUEST_ID, TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID, TestHelper.SECURE_BO_KIND,
+                new PscDeleteRequest(TestHelper.X_REQUEST_ID, TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID, TestHelper.SECURE_BO_KIND, DELTA_AT),
                 document);
         assertThat(apiResponse).isNotNull();
 
@@ -280,7 +282,7 @@ class ChsKafkaApiServiceTest {
 
         // when
         ApiResponse<?> apiResponse = chsKafkaApiService.invokeChsKafkaApiWithDeleteEvent(
-                TestHelper.X_REQUEST_ID, TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID, TestHelper.CORPORATE_KIND,
+                new PscDeleteRequest(TestHelper.X_REQUEST_ID, TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID, TestHelper.CORPORATE_KIND, DELTA_AT),
                 document);
         assertThat(apiResponse).isNotNull();
 
@@ -310,7 +312,7 @@ class ChsKafkaApiServiceTest {
 
         // when
         ApiResponse<?> apiResponse = chsKafkaApiService.invokeChsKafkaApiWithDeleteEvent(
-                TestHelper.X_REQUEST_ID, TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID, TestHelper.CORPORATE_BO_KIND,
+                new PscDeleteRequest(TestHelper.X_REQUEST_ID, TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID, TestHelper.CORPORATE_BO_KIND, DELTA_AT),
                 document);
         assertThat(apiResponse).isNotNull();
 
@@ -347,7 +349,7 @@ class ChsKafkaApiServiceTest {
         when(privateChangedResourcePost.execute()).thenThrow(exception);
 
         Executable executable = () -> chsKafkaApiService.invokeChsKafkaApiWithDeleteEvent(
-                TestHelper.X_REQUEST_ID, TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID, "kind", any());
+                new PscDeleteRequest(TestHelper.X_REQUEST_ID, TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID, "kind", "deltaAt"), any());
 
         assertThrows(ServiceUnavailableException.class, executable);
         verify(internalApiClient, times(1)).privateChangedResourceHandler();
@@ -381,7 +383,7 @@ class ChsKafkaApiServiceTest {
         when(privateChangedResourcePost.execute()).thenThrow(exception);
 
         Executable executable = () -> chsKafkaApiService.invokeChsKafkaApiWithDeleteEvent(
-                TestHelper.X_REQUEST_ID, TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID, "kind", any());
+        new PscDeleteRequest(TestHelper.X_REQUEST_ID, TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID, "kind", "deltaAt"), any());
 
         assertThrows(RuntimeException.class, executable);
         verify(internalApiClient, times(1)).privateChangedResourceHandler();

@@ -1,5 +1,7 @@
 package uk.gov.companieshouse.pscdataapi.service;
 
+import static uk.gov.companieshouse.pscdataapi.util.DateUtils.isDeltaStale;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -8,10 +10,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.api.api.CompanyExemptionsApiService;
 import uk.gov.companieshouse.api.api.CompanyMetricsApiService;
+import uk.gov.companieshouse.api.delta.PscDeleteDelta;
 import uk.gov.companieshouse.api.exemptions.CompanyExemptions;
 import uk.gov.companieshouse.api.metrics.MetricsApi;
 import uk.gov.companieshouse.api.metrics.RegisterApi;
@@ -26,6 +30,7 @@ import uk.gov.companieshouse.pscdataapi.logging.DataMapHolder;
 import uk.gov.companieshouse.pscdataapi.models.Created;
 import uk.gov.companieshouse.pscdataapi.models.Links;
 import uk.gov.companieshouse.pscdataapi.models.PscData;
+import uk.gov.companieshouse.pscdataapi.models.PscDeleteRequest;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 import uk.gov.companieshouse.pscdataapi.repository.CompanyPscRepository;
 import uk.gov.companieshouse.pscdataapi.transform.CompanyPscTransformer;
@@ -141,30 +146,21 @@ public class CompanyPscService {
         }
     }
 
-    /**
-     * Delete PSC record.
-     *
-     * @param companyNumber  Company number.
-     * @param notificationId Mongo Id.
-     */
-    public void deletePsc(String companyNumber, String notificationId, String contextId)
+    public void deletePsc(PscDeleteRequest deleteRequest)
             throws ResourceNotFoundException, ServiceUnavailableException {
-
         logger.info(String.format("Deleting PSC record with company number %s",
-                companyNumber), DataMapHolder.getLogMap());
+                deleteRequest.companyNumber()), DataMapHolder.getLogMap());
 
-        Optional<PscDocument> pscDocument = repository.getPscByCompanyNumberAndId(companyNumber, notificationId);
-        String kind = null;
+        Optional<PscDocument> pscDocument = repository.getPscByCompanyNumberAndId(deleteRequest.companyNumber(),
+                deleteRequest.notificationId());
         PscDocument document = null;
         if (pscDocument.isPresent()) {
             document = pscDocument.get();
-            kind = document.getData().getKind();
+            deltaAtCheck(deleteRequest.deltaAt(), document);
             repository.delete(document);
         }
-
         try {
-            chsKafkaApiService.invokeChsKafkaApiWithDeleteEvent(contextId,
-                    companyNumber, notificationId, kind, document);
+            chsKafkaApiService.invokeChsKafkaApiWithDeleteEvent(deleteRequest, document);
         } catch (Exception exception) {
             throw new ServiceUnavailableException(exception.getMessage());
         }
@@ -681,4 +677,11 @@ public class CompanyPscService {
                                                 .anyMatch(e -> e.getExemptTo()==null)))).isPresent();
     }
 
+    private void deltaAtCheck(String requestDeltaAt, PscDocument document) {
+        if (isDeltaStale(requestDeltaAt, document.getDeltaAt())) {
+            logger.error("Stale delta received; request delta_at: [%s] is not after existing delta_at: [%s]".formatted(
+                    requestDeltaAt, document.getDeltaAt()), DataMapHolder.getLogMap());
+            throw new BadRequestException("Stale delta for delete");
+        }
+    }
 }

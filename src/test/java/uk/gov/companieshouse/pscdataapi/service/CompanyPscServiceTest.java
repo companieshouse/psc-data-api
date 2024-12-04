@@ -15,6 +15,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.companieshouse.pscdataapi.util.TestHelper.DELTA_AT;
+import static uk.gov.companieshouse.pscdataapi.util.TestHelper.INDIVIDUAL_KIND;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -64,6 +66,7 @@ import uk.gov.companieshouse.pscdataapi.exceptions.ServiceUnavailableException;
 import uk.gov.companieshouse.pscdataapi.models.Created;
 import uk.gov.companieshouse.pscdataapi.models.Links;
 import uk.gov.companieshouse.pscdataapi.models.PscData;
+import uk.gov.companieshouse.pscdataapi.models.PscDeleteRequest;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 import uk.gov.companieshouse.pscdataapi.repository.CompanyPscRepository;
 import uk.gov.companieshouse.pscdataapi.transform.CompanyPscTransformer;
@@ -209,11 +212,11 @@ class CompanyPscServiceTest {
     @DisplayName("When company number & notification id is provided, delete PSC")
     void testDeletePSC() {
         when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID)).thenReturn(Optional.ofNullable(pscDocument));
-        service.deletePsc(COMPANY_NUMBER, NOTIFICATION_ID, "");
+        service.deletePsc(new PscDeleteRequest(COMPANY_NUMBER, NOTIFICATION_ID, "", INDIVIDUAL_KIND, DELTA_AT));
 
         verify(repository, times(1)).getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID);
         verify(repository, times(1)).delete(pscDocument);
-        verify(chsKafkaApiService).invokeChsKafkaApiWithDeleteEvent(any(), any(), any(), any(), any());
+        verify(chsKafkaApiService).invokeChsKafkaApiWithDeleteEvent(any(), any());
     }
 
     @Test
@@ -221,11 +224,11 @@ class CompanyPscServiceTest {
     void testDeletePSCThrowsResourceNotFoundException() {
         when(repository.getPscByCompanyNumberAndId("", NOTIFICATION_ID)).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> service.deletePsc("", NOTIFICATION_ID, ""));
+        assertThrows(ResourceNotFoundException.class, () -> service.deletePsc(new PscDeleteRequest("", NOTIFICATION_ID, "", INDIVIDUAL_KIND, DELTA_AT)));
 
         verify(repository, times(1)).getPscByCompanyNumberAndId("", NOTIFICATION_ID);
         verify(repository, never()).delete(any());
-        verify(chsKafkaApiService, never()).invokeChsKafkaApiWithDeleteEvent(any(), any(), any(), any(), any());
+        verify(chsKafkaApiService, never()).invokeChsKafkaApiWithDeleteEvent(any(), any());
     }
 
     @Test
@@ -233,25 +236,25 @@ class CompanyPscServiceTest {
     void testDeletePSCThrowsNotFoundExceptionWhenCompanyNumberAndNotificationIdIsNull() {
         when(repository.getPscByCompanyNumberAndId("", "")).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> service.deletePsc("", "", ""));
+        assertThrows(ResourceNotFoundException.class, () -> service.deletePsc(new PscDeleteRequest("", "", "", INDIVIDUAL_KIND, DELTA_AT)));
 
         verify(repository, times(1)).getPscByCompanyNumberAndId("", "");
         verify(repository, never()).delete(any());
-        verify(chsKafkaApiService, never()).invokeChsKafkaApiWithDeleteEvent(any(), any(), any(), any(), any());
+        verify(chsKafkaApiService, never()).invokeChsKafkaApiWithDeleteEvent(any(), any());
     }
 
     @Test
     @DisplayName("When Kafka notification fails throw ServiceUnavailableException")
     void testDeletePSCThrowsServiceUnavailableExceptionWhenKafkaNotification() {
         when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID)).thenReturn(Optional.of(pscDocument));
-        when(chsKafkaApiService.invokeChsKafkaApiWithDeleteEvent(any(), any(), any(), any(), any()))
+        when(chsKafkaApiService.invokeChsKafkaApiWithDeleteEvent(any(), any()))
                 .thenThrow(new ServiceUnavailableException("message"));
 
-        assertThrows(ServiceUnavailableException.class, () -> service.deletePsc(COMPANY_NUMBER, NOTIFICATION_ID, ""));
+        assertThrows(ServiceUnavailableException.class, () -> service.deletePsc(new PscDeleteRequest(COMPANY_NUMBER, NOTIFICATION_ID, "", INDIVIDUAL_KIND, DELTA_AT)));
 
         verify(repository).getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID);
         verify(repository).delete(pscDocument);
-        verify(chsKafkaApiService).invokeChsKafkaApiWithDeleteEvent(any(), any(), any(), any(), any());
+        verify(chsKafkaApiService).invokeChsKafkaApiWithDeleteEvent(any(), any());
     }
 
     @Test
@@ -259,11 +262,10 @@ class CompanyPscServiceTest {
     void testKafkaNotificationSucceedsOnRetryAfterDocumentDeleted() {
         when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID)).thenReturn(Optional.empty());
 
-        service.deletePsc(COMPANY_NUMBER, NOTIFICATION_ID, "");
+        service.deletePsc(new PscDeleteRequest(COMPANY_NUMBER, NOTIFICATION_ID, "", INDIVIDUAL_KIND, DELTA_AT));
 
         verify(repository).getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID);
-//        verify(repository).delete(pscDocument);
-        verify(chsKafkaApiService).invokeChsKafkaApiWithDeleteEvent(any(), any(), any(), any(), isNull());
+        verify(chsKafkaApiService).invokeChsKafkaApiWithDeleteEvent(any(), any());
     }
 
     @Test

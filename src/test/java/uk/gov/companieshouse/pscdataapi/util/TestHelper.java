@@ -58,6 +58,7 @@ public class TestHelper {
     public static final String LEGAL_BO_KIND = LegalPersonBeneficialOwner.KindEnum.LEGAL_PERSON_BENEFICIAL_OWNER.toString();
     public static final String SECURE_BO_KIND = SuperSecureBeneficialOwner.KindEnum.SUPER_SECURE_BENEFICIAL_OWNER.toString();
 
+    public static final String DELTA_AT = "20240219123045999999";
     public static final String COMPANY_NUMBER = "companyNumber";
     public static final String NOTIFICATION_ID = "notificationId";
     public static final String PSC_ID = "pscId";

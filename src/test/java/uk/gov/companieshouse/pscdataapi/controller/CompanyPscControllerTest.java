@@ -41,6 +41,7 @@ import uk.gov.companieshouse.api.psc.SuperSecure;
 import uk.gov.companieshouse.api.psc.SuperSecureBeneficialOwner;
 import uk.gov.companieshouse.pscdataapi.exceptions.ResourceNotFoundException;
 import uk.gov.companieshouse.pscdataapi.exceptions.ServiceUnavailableException;
+import uk.gov.companieshouse.pscdataapi.models.PscDeleteRequest;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 import uk.gov.companieshouse.pscdataapi.service.CompanyPscService;
 import uk.gov.companieshouse.pscdataapi.util.TestHelper;
@@ -52,6 +53,8 @@ class CompanyPscControllerTest {
     private static final String X_REQUEST_ID = "123456";
     private static final String MOCK_COMPANY_NUMBER = "1234567";
     private static final String MOCK_NOTIFICATION_ID = "123456789";
+    private static final String KIND = "individual";
+    private static final String DELTA_AT = "20240219123045999999";
     private static final Boolean MOCK_REGISTER_VIEW_TRUE = true;
     private static final Boolean MOCK_REGISTER_VIEW_FALSE = false;
     private static final String ERIC_IDENTITY = "Test-Identity";
@@ -346,14 +349,15 @@ class CompanyPscControllerTest {
         mockMvc.perform(delete(PUT_URL)).andExpect(status().isUnauthorized());
 
         verify(companyPscService
-                , times(0)).deletePsc(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID, "");
+                , times(0)).deletePsc(new PscDeleteRequest(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID, "", KIND, DELTA_AT));
     }
 
     @Test
     void callPscDeleteRequest() throws Exception {
+        PscDeleteRequest deleteRequest = new PscDeleteRequest(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID, X_REQUEST_ID, KIND, DELTA_AT);
 
         doNothing()
-                .when(companyPscService).deletePsc(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID, X_REQUEST_ID);
+                .when(companyPscService).deletePsc(deleteRequest);
 
         mockMvc.perform(delete(DELETE_URL)
                         .header("ERIC-Identity", ERIC_IDENTITY)
@@ -364,14 +368,15 @@ class CompanyPscControllerTest {
                         .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH))
                 .andExpect(status().isOk());
 
-        verify(companyPscService, times(1)).deletePsc(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID, X_REQUEST_ID);
+        verify(companyPscService, times(1)).deletePsc(deleteRequest);
     }
 
     @Test
     void callPscDeleteRequestAndReturn404() throws Exception {
+        PscDeleteRequest deleteRequest = new PscDeleteRequest(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID, X_REQUEST_ID, KIND, DELTA_AT);
 
         doThrow(ResourceNotFoundException.class)
-                .when(companyPscService).deletePsc(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID, X_REQUEST_ID);
+                .when(companyPscService).deletePsc(deleteRequest);
 
         mockMvc.perform(delete(DELETE_URL)
                         .header("ERIC-Identity", ERIC_IDENTITY)
@@ -382,14 +387,15 @@ class CompanyPscControllerTest {
                         .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH))
                 .andExpect(status().isNotFound());
 
-        verify(companyPscService, times(1)).deletePsc(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID, X_REQUEST_ID);
+        verify(companyPscService, times(1)).deletePsc(deleteRequest);
     }
 
     @Test
     void callPscDeleteRequestWhenServiceUnavailableAndReturn503() throws Exception {
+        PscDeleteRequest deleteRequest = new PscDeleteRequest(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID, X_REQUEST_ID, KIND, DELTA_AT);
 
         doThrow(ServiceUnavailableException.class)
-                .when(companyPscService).deletePsc(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID, X_REQUEST_ID);
+                .when(companyPscService).deletePsc(deleteRequest);
 
         mockMvc.perform(delete(DELETE_URL)
                         .header("ERIC-Identity", ERIC_IDENTITY)
