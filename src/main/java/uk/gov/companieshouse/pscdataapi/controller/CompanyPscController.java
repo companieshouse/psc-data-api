@@ -28,6 +28,7 @@ import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
 import uk.gov.companieshouse.pscdataapi.exceptions.ResourceNotFoundException;
 import uk.gov.companieshouse.pscdataapi.exceptions.ServiceUnavailableException;
 import uk.gov.companieshouse.pscdataapi.logging.DataMapHolder;
+import uk.gov.companieshouse.pscdataapi.models.PscDeleteRequest;
 import uk.gov.companieshouse.pscdataapi.service.CompanyPscService;
 
 
@@ -88,14 +89,16 @@ public class CompanyPscController {
     public ResponseEntity<Void> deletePscData(
             @PathVariable("company_number") String companyNumber,
             @PathVariable("notification_id") String notificationId,
-            @RequestHeader("x-request-id") String contextId) {
+            @RequestHeader("x-request-id") String contextId,
+            @RequestHeader("x-kind") String kind,
+            @RequestHeader("x-delta-at") String deltaAt) {
         DataMapHolder.get()
                 .companyNumber(companyNumber)
                 .itemId(notificationId);
         LOGGER.info(String.format("Deleting PSC data with company number %s", companyNumber),
                 DataMapHolder.getLogMap());
         try {
-            pscService.deletePsc(companyNumber, notificationId, contextId);
+            pscService.deletePsc(new PscDeleteRequest(companyNumber, notificationId, contextId, kind, deltaAt));
             LOGGER.info(String.format("Successfully deleted PSC with company number %s",
                     companyNumber), DataMapHolder.getLogMap());
             return ResponseEntity.status(HttpStatus.OK).build();
