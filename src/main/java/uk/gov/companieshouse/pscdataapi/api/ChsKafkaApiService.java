@@ -129,8 +129,6 @@ public class ChsKafkaApiService {
                 mapKind(kind), notificationId));
         changedResource.event(event);
         changedResource.setResourceKind(PscTransformationHelper.mapResourceKind(kind));
-        //TODO I think this above line is going to be a problem with deletes. Kind is mapped from the kindEnum to another value in upsert deltas, then to
-        // yet another different value here when it is sent to chs-kafka-api and out on stream.
         changedResource.setContextId(contextId);
         return changedResource;
     }

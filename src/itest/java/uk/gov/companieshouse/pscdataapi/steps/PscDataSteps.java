@@ -71,6 +71,12 @@ import uk.gov.companieshouse.pscdataapi.util.FileReaderUtil;
 
 public class PscDataSteps {
 
+    private static final String KIND = "individual-person-with-significant-control";
+    private static final String DELTA_AT = "20240219123045999999";
+    private static final String COMPANY_NUMBER = "34777772";
+    private static final String NOTIFICATION_ID = "ZfTs9WeeqpXTqf6dc6FZ4C0H0ZZ";
+    private static final String CONTEXT_ID = "5234234234";
+
     @Autowired
     private ObjectMapper objectMapper;
     @Autowired
@@ -88,12 +94,6 @@ public class PscDataSteps {
 
     @InjectMocks
     private CompanyPscService companyPscService;
-
-
-
-    private final String COMPANY_NUMBER = "34777772";
-    private final String NOTIFICATION_ID = "ZfTs9WeeqpXTqf6dc6FZ4C0H0ZZ";
-    private final String contextId = "5234234234";
 
     private AutoCloseable autoCloseable;
 
@@ -162,8 +162,8 @@ public class PscDataSteps {
         String data = FileReaderUtil.readFile("src/itest/resources/json/input/" + dataFile + ".json");
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        CucumberContext.CONTEXT.set("contextId", this.contextId);
-        headers.set("x-request-id", this.contextId);
+        CucumberContext.CONTEXT.set("contextId", CONTEXT_ID);
+        headers.set("x-request-id", CONTEXT_ID);
         headers.set("ERIC-Identity", "TEST-IDENTITY");
         headers.set("ERIC-Identity-Type", "key");
         headers.set("ERIC-Authorised-Key-Roles", "*");
@@ -181,8 +181,8 @@ public class PscDataSteps {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-        CucumberContext.CONTEXT.set("contextId", this.contextId);
-        headers.set("x-request-id", this.contextId);
+        CucumberContext.CONTEXT.set("contextId", CONTEXT_ID);
+        headers.set("x-request-id", CONTEXT_ID);
         headers.set("ERIC-Identity", "TEST-IDENTITY");
         headers.set("ERIC-Identity-Type", "key");
         headers.set("ERIC-Authorised-Key-Roles", "*");
@@ -200,8 +200,8 @@ public class PscDataSteps {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-        CucumberContext.CONTEXT.set("contextId", this.contextId);
-        headers.set("x-request-id", this.contextId);
+        CucumberContext.CONTEXT.set("contextId", CONTEXT_ID);
+        headers.set("x-request-id", CONTEXT_ID);
         headers.set("ERIC-Identity", "TEST-IDENTITY");
         headers.set("ERIC-Identity-Type", "key");
         headers.set("ERIC-Authorised-Key-Roles", "*");
@@ -237,8 +237,8 @@ public class PscDataSteps {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-        CucumberContext.CONTEXT.set("contextId", this.contextId);
-        headers.set("x-request-id", this.contextId);
+        CucumberContext.CONTEXT.set("contextId", CONTEXT_ID);
+        headers.set("x-request-id", CONTEXT_ID);
 
         HttpEntity<String> request = new HttpEntity<>(null, headers);
         String uri = "/company/{company_number}/persons-with-significant-control/{notification_id}/full_record";
@@ -249,15 +249,17 @@ public class PscDataSteps {
 
 
     @When("a DELETE request is sent for {string}")
-    public void aDELETERequestIsSentFor(String companyNumber) {
+    public void aDeleteRequestIsSentFor(String companyNumber) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-        CucumberContext.CONTEXT.set("contextId", this.contextId);
-        headers.set("x-request-id", this.contextId);
+        CucumberContext.CONTEXT.set("contextId", CONTEXT_ID);
+        headers.set("x-request-id", CONTEXT_ID);
         headers.set("ERIC-Identity", "TEST-IDENTITY");
         headers.set("ERIC-Identity-Type", "key");
         headers.set("ERIC-Authorised-Key-Roles", "*");
+        headers.set("x-kind", KIND);
+        headers.set("x-delta-at", DELTA_AT);
 
         HttpEntity<String> request = new HttpEntity<>(null, headers);
         String uri = "/company/%s/persons-with-significant-control/%s/full_record".formatted(companyNumber, NOTIFICATION_ID);
@@ -311,8 +313,8 @@ public class PscDataSteps {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-        CucumberContext.CONTEXT.set("contextId", this.contextId);
-        headers.set("x-request-id", this.contextId);
+        CucumberContext.CONTEXT.set("contextId", CONTEXT_ID);
+        headers.set("x-request-id", CONTEXT_ID);
         headers.set("ERIC-Identity", "TEST-IDENTITY");
         headers.set("ERIC-Identity-Type", "key");
         headers.set("ERIC-Authorised-Key-Roles", "*");
@@ -343,8 +345,8 @@ public class PscDataSteps {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-        CucumberContext.CONTEXT.set("contextId", this.contextId);
-        headers.set("x-request-id", this.contextId);
+        CucumberContext.CONTEXT.set("contextId", CONTEXT_ID);
+        headers.set("x-request-id", CONTEXT_ID);
         HttpEntity<String> request = new HttpEntity<>(null, headers);
 
         String uri =
@@ -361,8 +363,8 @@ public class PscDataSteps {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-        CucumberContext.CONTEXT.set("contextId", this.contextId);
-        headers.set("x-request-id", this.contextId);
+        CucumberContext.CONTEXT.set("contextId", CONTEXT_ID);
+        headers.set("x-request-id", CONTEXT_ID);
         headers.set("ERIC-Identity", "TEST-IDENTITY");
         headers.set("ERIC-Identity-Type", "key");
         headers.set("ERIC-Authorised-Key-Roles", "*");
@@ -405,8 +407,8 @@ public class PscDataSteps {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-        CucumberContext.CONTEXT.set("contextId", this.contextId);
-        headers.set("x-request-id", this.contextId);
+        CucumberContext.CONTEXT.set("contextId", CONTEXT_ID);
+        headers.set("x-request-id", CONTEXT_ID);
         headers.set("ERIC-Identity", "TEST-IDENTITY");
         headers.set("ERIC-Identity-Type", "key");
         headers.set("ERIC-Authorised-Key-Roles", "*");
@@ -438,8 +440,8 @@ public class PscDataSteps {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-        CucumberContext.CONTEXT.set("contextId", this.contextId);
-        headers.set("x-request-id", this.contextId);
+        CucumberContext.CONTEXT.set("contextId", CONTEXT_ID);
+        headers.set("x-request-id", CONTEXT_ID);
         HttpEntity<String> request = new HttpEntity<>(null, headers);
 
         String uri =
@@ -456,8 +458,8 @@ public class PscDataSteps {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-        CucumberContext.CONTEXT.set("contextId", this.contextId);
-        headers.set("x-request-id", this.contextId);
+        CucumberContext.CONTEXT.set("contextId", CONTEXT_ID);
+        headers.set("x-request-id", CONTEXT_ID);
         headers.set("ERIC-Identity", "TEST-IDENTITY");
         headers.set("ERIC-Identity-Type", "key");
         headers.set("ERIC-Authorised-Key-Roles", "*");
@@ -521,8 +523,8 @@ public class PscDataSteps {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-        CucumberContext.CONTEXT.set("contextId", this.contextId);
-        headers.set("x-request-id", this.contextId);
+        CucumberContext.CONTEXT.set("contextId", CONTEXT_ID);
+        headers.set("x-request-id", CONTEXT_ID);
         headers.set("ERIC-Identity", "TEST-IDENTITY");
         headers.set("ERIC-Identity-Type", "key");
         headers.set("ERIC-Authorised-Key-Roles", "*");
@@ -553,8 +555,8 @@ public class PscDataSteps {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-        CucumberContext.CONTEXT.set("contextId", this.contextId);
-        headers.set("x-request-id", this.contextId);
+        CucumberContext.CONTEXT.set("contextId", CONTEXT_ID);
+        headers.set("x-request-id", CONTEXT_ID);
         headers.set("ERIC-Identity", "TEST-IDENTITY");
         headers.set("ERIC-Identity-Type", "key");
         headers.set("ERIC-Authorised-Key-Roles", "*");
@@ -573,8 +575,8 @@ public class PscDataSteps {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-        CucumberContext.CONTEXT.set("contextId", this.contextId);
-        headers.set("x-request-id", this.contextId);
+        CucumberContext.CONTEXT.set("contextId", CONTEXT_ID);
+        headers.set("x-request-id", CONTEXT_ID);
         HttpEntity<String> request = new HttpEntity<>(null, headers);
 
         String uri =
@@ -646,8 +648,8 @@ public class PscDataSteps {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-        CucumberContext.CONTEXT.set("contextId", this.contextId);
-        headers.set("x-request-id", this.contextId);
+        CucumberContext.CONTEXT.set("contextId", CONTEXT_ID);
+        headers.set("x-request-id", CONTEXT_ID);
         headers.set("ERIC-Identity", "TEST-IDENTITY");
         headers.set("ERIC-Identity-Type", "key");
         headers.set("ERIC-Authorised-Key-Roles", "*");
@@ -664,7 +666,7 @@ public class PscDataSteps {
     @When("an {string} Get request is sent for {string} and {string} for Individual Full Record")
     public void aGetFullRecordRequestIsSentForAnd(final String auth, final String companyNumber, final String notification_id) {
         final HttpHeaders headers = setupHeaders(!"unauthenticated".equals(auth), "authorized".equals(auth) ? "*": "");
-        CucumberContext.CONTEXT.set("contextId", this.contextId);
+        CucumberContext.CONTEXT.set("contextId", CONTEXT_ID);
 
         final HttpEntity<String> request = new HttpEntity<>(null, headers);
 
@@ -681,7 +683,7 @@ public class PscDataSteps {
 
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-        headers.set("x-request-id", this.contextId);
+        headers.set("x-request-id", CONTEXT_ID);
         if (includeEric) {
             headers.set("ERIC-Identity", "TEST-IDENTITY");
             headers.set("ERIC-Identity-Type", "key");
@@ -697,8 +699,8 @@ public class PscDataSteps {
 
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-        CucumberContext.CONTEXT.set("contextId", this.contextId);
-        headers.set("x-request-id", this.contextId);
+        CucumberContext.CONTEXT.set("contextId", CONTEXT_ID);
+        headers.set("x-request-id", CONTEXT_ID);
         headers.set("ERIC-Identity", "TEST-IDENTITY");
         headers.set("ERIC-Identity-Type", "key");
         headers.set("ERIC-Authorised-Key-Roles", "*");
@@ -743,8 +745,8 @@ public class PscDataSteps {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-        CucumberContext.CONTEXT.set("contextId", this.contextId);
-        headers.set("x-request-id", this.contextId);
+        CucumberContext.CONTEXT.set("contextId", CONTEXT_ID);
+        headers.set("x-request-id", CONTEXT_ID);
         HttpEntity<String> request = new HttpEntity<>(null, headers);
 
         String uri = "/company/{company_number}/persons-with-significant-control/individual/{notification_id}";
@@ -760,8 +762,8 @@ public class PscDataSteps {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-        CucumberContext.CONTEXT.set("contextId", this.contextId);
-        headers.set("x-request-id", this.contextId);
+        CucumberContext.CONTEXT.set("contextId", CONTEXT_ID);
+        headers.set("x-request-id", CONTEXT_ID);
         headers.set("ERIC-Identity", "TEST-IDENTITY");
         headers.set("ERIC-Identity-Type", "key");
         headers.set("ERIC-Authorised-Key-Roles", "*");
@@ -807,8 +809,8 @@ public class PscDataSteps {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-        CucumberContext.CONTEXT.set("contextId", this.contextId);
-        headers.set("x-request-id", this.contextId);
+        CucumberContext.CONTEXT.set("contextId", CONTEXT_ID);
+        headers.set("x-request-id", CONTEXT_ID);
         headers.set("ERIC-Identity", "TEST-IDENTITY");
         headers.set("ERIC-Identity-Type", "key");
         headers.set("ERIC-Authorised-Key-Roles", "*");
@@ -839,8 +841,8 @@ public class PscDataSteps {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-        CucumberContext.CONTEXT.set("contextId", this.contextId);
-        headers.set("x-request-id", this.contextId);
+        CucumberContext.CONTEXT.set("contextId", CONTEXT_ID);
+        headers.set("x-request-id", CONTEXT_ID);
         headers.set("ERIC-Identity", "TEST-IDENTITY");
         headers.set("ERIC-Identity-Type", "key");
         headers.set("ERIC-Authorised-Key-Roles", "*");
@@ -859,8 +861,8 @@ public class PscDataSteps {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-        CucumberContext.CONTEXT.set("contextId", this.contextId);
-        headers.set("x-request-id", this.contextId);
+        CucumberContext.CONTEXT.set("contextId", CONTEXT_ID);
+        headers.set("x-request-id", CONTEXT_ID);
         HttpEntity<String> request = new HttpEntity<>(null, headers);
 
         String uri = "/company/{company_number}/persons-with-significant-control/individual-beneficial-owner/{notification_id}";
@@ -909,8 +911,8 @@ public class PscDataSteps {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-        CucumberContext.CONTEXT.set("contextId", this.contextId);
-        headers.set("x-request-id", this.contextId);
+        CucumberContext.CONTEXT.set("contextId", CONTEXT_ID);
+        headers.set("x-request-id", CONTEXT_ID);
         headers.set("ERIC-Identity", "TEST-IDENTITY");
         headers.set("ERIC-Identity-Type", "key");
         headers.set("ERIC-Authorised-Key-Roles", "*");
@@ -943,8 +945,8 @@ public class PscDataSteps {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-        CucumberContext.CONTEXT.set("contextId", this.contextId);
-        headers.set("x-request-id", this.contextId);
+        CucumberContext.CONTEXT.set("contextId", CONTEXT_ID);
+        headers.set("x-request-id", CONTEXT_ID);
         HttpEntity<String> request = new HttpEntity<>(null, headers);
 
         String uri = "/company/{company_number}/persons-with-significant-control/corporate-entity-beneficial-owner/{notification_id}";
@@ -960,8 +962,8 @@ public class PscDataSteps {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-        CucumberContext.CONTEXT.set("contextId", this.contextId);
-        headers.set("x-request-id", this.contextId);
+        CucumberContext.CONTEXT.set("contextId", CONTEXT_ID);
+        headers.set("x-request-id", CONTEXT_ID);
         headers.set("ERIC-Identity", "TEST-IDENTITY");
         headers.set("ERIC-Identity-Type", "key");
         headers.set("ERIC-Authorised-Key-Roles", "*");
@@ -1002,8 +1004,8 @@ public class PscDataSteps {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-        CucumberContext.CONTEXT.set("contextId", this.contextId);
-        headers.set("x-request-id", this.contextId);
+        CucumberContext.CONTEXT.set("contextId", CONTEXT_ID);
+        headers.set("x-request-id", CONTEXT_ID);
         headers.set("ERIC-Identity", "TEST-IDENTITY");
         headers.set("ERIC-Identity-Type", "key");
         headers.set("ERIC-Authorised-Key-Roles", "*");
@@ -1034,8 +1036,8 @@ public class PscDataSteps {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-        CucumberContext.CONTEXT.set("contextId", this.contextId);
-        headers.set("x-request-id", this.contextId);
+        CucumberContext.CONTEXT.set("contextId", CONTEXT_ID);
+        headers.set("x-request-id", CONTEXT_ID);
         HttpEntity<String> request = new HttpEntity<>(null, headers);
 
         String uri = "/company/{company_number}/persons-with-significant-control/legal-person/{notification_id}";
@@ -1051,8 +1053,8 @@ public class PscDataSteps {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-        CucumberContext.CONTEXT.set("contextId", this.contextId);
-        headers.set("x-request-id", this.contextId);
+        CucumberContext.CONTEXT.set("contextId", CONTEXT_ID);
+        headers.set("x-request-id", CONTEXT_ID);
         headers.set("ERIC-Identity", "TEST-IDENTITY");
         headers.set("ERIC-Identity-Type", "key");
         headers.set("ERIC-Authorised-Key-Roles", "*");
@@ -1103,8 +1105,8 @@ public class PscDataSteps {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-        CucumberContext.CONTEXT.set("contextId", this.contextId);
-        headers.set("x-request-id", this.contextId);
+        CucumberContext.CONTEXT.set("contextId", CONTEXT_ID);
+        headers.set("x-request-id", CONTEXT_ID);
         headers.set("ERIC-Identity", "TEST-IDENTITY");
         headers.set("ERIC-Identity-Type", "key");
         headers.set("ERIC-Authorised-Key-Roles", "*");
@@ -1137,8 +1139,8 @@ public class PscDataSteps {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-        CucumberContext.CONTEXT.set("contextId", this.contextId);
-        headers.set("x-request-id", this.contextId);
+        CucumberContext.CONTEXT.set("contextId", CONTEXT_ID);
+        headers.set("x-request-id", CONTEXT_ID);
         HttpEntity<String> request = new HttpEntity<>(null, headers);
 
         String uri = "/company/{company_number}/persons-with-significant-control/legal-person-beneficial-owner/{notification_id}";
@@ -1154,8 +1156,8 @@ public class PscDataSteps {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-        CucumberContext.CONTEXT.set("contextId", this.contextId);
-        headers.set("x-request-id", this.contextId);
+        CucumberContext.CONTEXT.set("contextId", CONTEXT_ID);
+        headers.set("x-request-id", CONTEXT_ID);
         headers.set("ERIC-Identity", "TEST-IDENTITY");
         headers.set("ERIC-Identity-Type", "key");
         headers.set("ERIC-Authorised-Key-Roles", "*");
@@ -1247,8 +1249,8 @@ public class PscDataSteps {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-        CucumberContext.CONTEXT.set("contextId", this.contextId);
-        headers.set("x-request-id", this.contextId);
+        CucumberContext.CONTEXT.set("contextId", CONTEXT_ID);
+        headers.set("x-request-id", CONTEXT_ID);
         headers.set("ERIC-Identity", "TEST-IDENTITY");
         headers.set("ERIC-Identity-Type", "key");
         headers.set("ERIC-Authorised-Key-Roles", "*");
@@ -1268,8 +1270,8 @@ public class PscDataSteps {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-        CucumberContext.CONTEXT.set("contextId", this.contextId);
-        headers.set("x-request-id", this.contextId);
+        CucumberContext.CONTEXT.set("contextId", CONTEXT_ID);
+        headers.set("x-request-id", CONTEXT_ID);
         headers.set("ERIC-Identity", "TEST-IDENTITY");
         headers.set("ERIC-Identity-Type", "key");
         headers.set("ERIC-Authorised-Key-Roles", "*");
@@ -1301,8 +1303,8 @@ public class PscDataSteps {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-        CucumberContext.CONTEXT.set("contextId", this.contextId);
-        headers.set("x-request-id", this.contextId);
+        CucumberContext.CONTEXT.set("contextId", CONTEXT_ID);
+        headers.set("x-request-id", CONTEXT_ID);
         HttpEntity<String> request = new HttpEntity<>(null, headers);
 
         String uri =

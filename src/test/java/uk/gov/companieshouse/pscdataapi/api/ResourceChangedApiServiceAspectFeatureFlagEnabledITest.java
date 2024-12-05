@@ -56,7 +56,7 @@ class ResourceChangedApiServiceAspectFeatureFlagEnabledITest {
                 changedResourcePost);
         when(changedResourcePost.execute()).thenReturn(response);
 
-        chsKafkaApiService.invokeChsKafkaApi(TestHelper.X_REQUEST_ID, TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID, "kind");
+        chsKafkaApiService.invokeChsKafkaApi(TestHelper.X_REQUEST_ID, TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID, "individual-person-with-significant-control");
 
         verifyNoInteractions(apiClientService);
         verifyNoInteractions(internalApiClient);
@@ -74,7 +74,7 @@ class ResourceChangedApiServiceAspectFeatureFlagEnabledITest {
         when(changedResourcePost.execute()).thenReturn(response);
 
         chsKafkaApiService.invokeChsKafkaApiWithDeleteEvent(
-                new PscDeleteRequest(TestHelper.X_REQUEST_ID, TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID, "kind", "deltaAt"),
+                new PscDeleteRequest(TestHelper.X_REQUEST_ID, TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID, "individual-person-with-significant-control", "deltaAt"),
                 TestHelper.buildPscDocument("individual-persons-with-significant-control"));
 
         verifyNoInteractions(apiClientService);

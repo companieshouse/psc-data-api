@@ -10,7 +10,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -33,7 +32,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.NonTransientDataAccessException;
 import org.springframework.http.HttpStatus;
@@ -94,7 +92,6 @@ class CompanyPscServiceTest {
     CompanyExemptionsApiService companyExemptionsApiService;
     @Captor
     private ArgumentCaptor<String> dateCaptor;
- //   @Spy
     @InjectMocks
     private CompanyPscService service;
     @Mock
@@ -220,11 +217,11 @@ class CompanyPscServiceTest {
     }
 
     @Test
-    @DisplayName("When company number is null throw ResourceNotFound Exception")
+    @DisplayName("When company number is null throw Bad Request Exception")
     void testDeletePSCThrowsResourceNotFoundException() {
-        when(repository.getPscByCompanyNumberAndId("", NOTIFICATION_ID)).thenReturn(Optional.empty());
+        when(repository.getPscByCompanyNumberAndId("", NOTIFICATION_ID)).thenThrow(BadRequestException.class);
 
-        assertThrows(ResourceNotFoundException.class, () -> service.deletePsc(new PscDeleteRequest("", NOTIFICATION_ID, "", INDIVIDUAL_KIND, DELTA_AT)));
+        assertThrows(BadRequestException.class, () -> service.deletePsc(new PscDeleteRequest("", NOTIFICATION_ID, "", INDIVIDUAL_KIND, DELTA_AT)));
 
         verify(repository, times(1)).getPscByCompanyNumberAndId("", NOTIFICATION_ID);
         verify(repository, never()).delete(any());
@@ -234,9 +231,9 @@ class CompanyPscServiceTest {
     @Test
     @DisplayName("When company number and id is null throw ResourceNotFound Exception")
     void testDeletePSCThrowsNotFoundExceptionWhenCompanyNumberAndNotificationIdIsNull() {
-        when(repository.getPscByCompanyNumberAndId("", "")).thenReturn(Optional.empty());
+        when(repository.getPscByCompanyNumberAndId("", "")).thenThrow(BadRequestException.class);
 
-        assertThrows(ResourceNotFoundException.class, () -> service.deletePsc(new PscDeleteRequest("", "", "", INDIVIDUAL_KIND, DELTA_AT)));
+        assertThrows(BadRequestException.class, () -> service.deletePsc(new PscDeleteRequest("", "", "", INDIVIDUAL_KIND, DELTA_AT)));
 
         verify(repository, times(1)).getPscByCompanyNumberAndId("", "");
         verify(repository, never()).delete(any());
@@ -258,7 +255,7 @@ class CompanyPscServiceTest {
     }
 
     @Test
-    @DisplayName("Kafka notification succeeds of retry and after document deleted")
+    @DisplayName("Kafka notification succeeds on retry and after document deleted")
     void testKafkaNotificationSucceedsOnRetryAfterDocumentDeleted() {
         when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID)).thenReturn(Optional.empty());
 
@@ -266,6 +263,7 @@ class CompanyPscServiceTest {
 
         verify(repository).getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID);
         verify(chsKafkaApiService).invokeChsKafkaApiWithDeleteEvent(any(), any());
+
     }
 
     @Test
@@ -773,7 +771,7 @@ class CompanyPscServiceTest {
     }
 
     @Test
-    void whenCompanyNotInPublicRegisterGetPSCListShouldThrow() throws ResourceNotFoundException {
+    void whenCompanyNotInPublicRegisterGetPSCListShouldThrowNotFound() throws ResourceNotFoundException {
         MetricsApi metricsApi = TestHelper.createMetrics();
         RegistersApi registersApi = new RegistersApi();
         metricsApi.setRegisters(registersApi);
@@ -787,7 +785,6 @@ class CompanyPscServiceTest {
         String actualMessage = ex.getMessage();
         assertNotNull(actualMessage);
         assertTrue(actualMessage.contains(expectedMessage));
-        verify(service, times(1)).retrievePscListSummaryFromDb(COMPANY_NUMBER, 0, true, 25);
         verify(repository, times(0)).getListSummaryRegisterView(COMPANY_NUMBER, 0, OffsetDateTime.parse("2020-12-20T06:00Z"), 25);
     }
 

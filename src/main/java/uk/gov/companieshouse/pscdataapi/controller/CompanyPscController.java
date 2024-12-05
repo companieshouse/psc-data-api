@@ -85,8 +85,7 @@ public class CompanyPscController {
      * @param companyNumber The number of the company
      * @return ResponseEntity
      */
-    @DeleteMapping(path = "/{notification_id}/full_record/delete")
-    // TODO Add header for X-PSC-KIND
+    @DeleteMapping(path = "/{notification_id}/full_record")
     public ResponseEntity<Void> deletePscData(
             @PathVariable("company_number") String companyNumber,
             @PathVariable("notification_id") String notificationId,
@@ -99,7 +98,6 @@ public class CompanyPscController {
         LOGGER.info(String.format("Deleting PSC data with company number %s", companyNumber),
                 DataMapHolder.getLogMap());
         try {
-            // TODO Add X-PSC-KIND to arguments
             pscService.deletePsc(new PscDeleteRequest(companyNumber, notificationId, contextId, kind, deltaAt));
             LOGGER.info(String.format("Successfully deleted PSC with company number %s",
                     companyNumber), DataMapHolder.getLogMap());

@@ -10,17 +10,26 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.api.api.CompanyExemptionsApiService;
 import uk.gov.companieshouse.api.api.CompanyMetricsApiService;
-import uk.gov.companieshouse.api.delta.PscDeleteDelta;
 import uk.gov.companieshouse.api.exemptions.CompanyExemptions;
 import uk.gov.companieshouse.api.metrics.MetricsApi;
 import uk.gov.companieshouse.api.metrics.RegisterApi;
 import uk.gov.companieshouse.api.metrics.RegistersApi;
-import uk.gov.companieshouse.api.psc.*;
+import uk.gov.companieshouse.api.psc.CorporateEntity;
+import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
+import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
+import uk.gov.companieshouse.api.psc.Individual;
+import uk.gov.companieshouse.api.psc.IndividualBeneficialOwner;
+import uk.gov.companieshouse.api.psc.IndividualFullRecord;
+import uk.gov.companieshouse.api.psc.LegalPerson;
+import uk.gov.companieshouse.api.psc.LegalPersonBeneficialOwner;
+import uk.gov.companieshouse.api.psc.ListSummary;
+import uk.gov.companieshouse.api.psc.PscList;
+import uk.gov.companieshouse.api.psc.SuperSecure;
+import uk.gov.companieshouse.api.psc.SuperSecureBeneficialOwner;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
@@ -158,11 +167,11 @@ public class CompanyPscService {
             document = pscDocument.get();
             deltaAtCheck(deleteRequest.deltaAt(), document);
             repository.delete(document);
-        }
-        try {
             chsKafkaApiService.invokeChsKafkaApiWithDeleteEvent(deleteRequest, document);
-        } catch (Exception exception) {
-            throw new ServiceUnavailableException(exception.getMessage());
+        } else {
+            logger.info("No document to delete, calling resource-changed with empty deleted data",
+                    DataMapHolder.getLogMap());
+            chsKafkaApiService.invokeChsKafkaApiWithDeleteEvent(deleteRequest, document);
         }
     }
 

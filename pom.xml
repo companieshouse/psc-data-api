@@ -26,7 +26,7 @@
 
         <!-- Internal -->
         <structured-logging.version>3.0.20</structured-logging.version>
-        <private-api-sdk-java.version>4.0.241</private-api-sdk-java.version>
+        <private-api-sdk-java.version>4.0.248</private-api-sdk-java.version>
         <data-sync-api-sdk-java.version>1.0.6</data-sync-api-sdk-java.version>
         <api-security-java.version>2.0.5</api-security-java.version>
         <api-sdk-manager-java-library.version>3.0.5</api-sdk-manager-java-library.version>
@@ -111,8 +111,16 @@
             <exclusions>
                 <!-- Exclusion due to transitive dependency being an older version-->
                 <exclusion>
+                    <groupId>com.github.docker-java</groupId>
+                    <artifactId>docker-java-api</artifactId>
+                </exclusion>
+                <exclusion>
                     <groupId>commons-beanutils</groupId>
                     <artifactId>commons-beanutils</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>commons-collections</groupId>
+                    <artifactId>commons-collections</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.codehaus.plexus</groupId>
