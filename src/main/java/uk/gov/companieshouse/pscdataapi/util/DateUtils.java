@@ -2,12 +2,8 @@ package uk.gov.companieshouse.pscdataapi.util;
 
 import static java.time.ZoneOffset.UTC;
 
-import java.time.Instant;
-import java.time.LocalDate;
 import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.Optional;
 import org.apache.commons.lang.StringUtils;
 
 public final class DateUtils {
