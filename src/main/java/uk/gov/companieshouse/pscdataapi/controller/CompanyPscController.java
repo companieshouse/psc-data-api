@@ -98,7 +98,12 @@ public class CompanyPscController {
         LOGGER.info(String.format("Deleting PSC data with company number %s", companyNumber),
                 DataMapHolder.getLogMap());
         try {
-            pscService.deletePsc(new PscDeleteRequest(companyNumber, notificationId, contextId, kind, deltaAt));
+            pscService.deletePsc(PscDeleteRequest.builder()
+                    .companyNumber(companyNumber)
+                    .notificationId(notificationId)
+                    .contextId(contextId).kind(kind)
+                    .deltaAt(deltaAt)
+                    .build());
             LOGGER.info(String.format("Successfully deleted PSC with company number %s",
                     companyNumber), DataMapHolder.getLogMap());
             return ResponseEntity.status(HttpStatus.OK).build();
