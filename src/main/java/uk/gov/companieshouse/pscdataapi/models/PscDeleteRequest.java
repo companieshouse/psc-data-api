@@ -15,10 +15,6 @@ public record PscDeleteRequest (String companyNumber, String notificationId, Str
         private Builder() {
         }
 
-        public static Builder builder() {
-            return new Builder();
-        }
-
         public Builder companyNumber(String companyNumber) {
             this.companyNumber = companyNumber;
             return this;
