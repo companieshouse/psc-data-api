@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import uk.gov.companieshouse.api.exception.ResourceStateConflictException;
 import uk.gov.companieshouse.api.psc.CorporateEntity;
 import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
 import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
@@ -110,6 +111,9 @@ public class CompanyPscController {
         } catch (ResourceNotFoundException ex) {
             LOGGER.error(ex.getMessage(), DataMapHolder.getLogMap());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (ResourceStateConflictException ex) {
+            LOGGER.error(ex.getMessage(), DataMapHolder.getLogMap());
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
         } catch (ServiceUnavailableException ex) {
             LOGGER.error(ex.getMessage(), DataMapHolder.getLogMap());
             return ResponseEntity.internalServerError().build();

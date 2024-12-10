@@ -268,6 +268,26 @@ public class PscDataSteps {
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
     }
 
+    @When("a DELETE request is sent for {string} with a stale {string}")
+    public void aDeleteRequestIsSentFor(String companyNumber, String deltaAt) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+        CucumberContext.CONTEXT.set("contextId", CONTEXT_ID);
+        headers.set("x-request-id", CONTEXT_ID);
+        headers.set("ERIC-Identity", "TEST-IDENTITY");
+        headers.set("ERIC-Identity-Type", "key");
+        headers.set("ERIC-Authorised-Key-Roles", "*");
+        headers.set("x-kind", KIND);
+        headers.set("x-delta-at", deltaAt);
+
+        HttpEntity<String> request = new HttpEntity<>(null, headers);
+        String uri = "/company/%s/persons-with-significant-control/%s/full_record".formatted(companyNumber, NOTIFICATION_ID);
+        ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.DELETE, request, Void.class);
+
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
+    }
+
     @Given("a PSC does not exist for {string}")
     public void aPSCDoesNotExistFor(String companyNumber) {
         assertThat(companyPscRepository.existsById(companyNumber)).isFalse();
@@ -638,6 +658,62 @@ public class PscDataSteps {
         list.add("part-right-to-share-surplus-assets-75-to-100-percent");
         pscData.setNaturesOfControl(list);
         document.setData(pscData);
+
+        mongoTemplate.save(document);
+        assertThat(companyPscRepository.findById(NOTIFICATION_ID)).isNotEmpty();
+    }
+
+    @And("a PSC {string} exists for {string} for Individual with {string}")
+    public void pscExistsWithDeltaAt(String dataFile, String companyNumber, String deltaAt) throws JsonProcessingException {
+        String pscDataFile = FileReaderUtil.readFile("src/itest/resources/json/input/" + dataFile + ".json");
+        PscData pscData = objectMapper.readValue(pscDataFile, PscData.class);
+        PscSensitiveData pscSensitiveData = objectMapper.readValue(pscDataFile, PscSensitiveData.class);
+        PscDocument document = new PscDocument();
+
+        document.setId(NOTIFICATION_ID);
+        document.setCompanyNumber(companyNumber);
+        document.setPscId(NOTIFICATION_ID);
+        document.setDeltaAt("20231120084745378000");
+        pscData.setEtag("string");
+        pscData.setCeasedOn(LocalDate.from(LocalDateTime.now()));
+        pscData.setKind("individual-person-with-significant-control");
+        pscData.setCountryOfResidence("United Kingdom");
+        pscData.setName(companyNumber);
+        NameElements nameElements = new NameElements();
+        nameElements.setTitle("Mr");
+        nameElements.setForename("PHIL");
+        nameElements.setMiddleName("tom");
+        nameElements.setSurname("JONES");
+        pscData.setNameElements(nameElements);
+        DateOfBirth dateOfBirth = new DateOfBirth();
+        dateOfBirth.setDay(2);
+        dateOfBirth.setMonth(3);
+        dateOfBirth.setYear(1994);
+        pscSensitiveData.setDateOfBirth(dateOfBirth);
+        document.setSensitiveData(pscSensitiveData);
+        Links links = new Links();
+        links.setSelf("/company/" + companyNumber + "/persons-with-significant-control/individual/" + NOTIFICATION_ID);
+        links.setStatement("string");
+        pscData.setLinks(links);
+        pscData.setNationality("British");
+        Address address = new Address();
+        address.setAddressLine1("ura_line1");
+        address.setAddressLine2("ura_line2");
+        address.setCareOf("ura_care_of");
+        address.setCountry("United Kingdom");
+        address.setLocality("Cardiff");
+        address.setPoBox("ura_po");
+        address.setPostalCode("CF2 1B6");
+        address.setPremises("URA");
+        address.setRegion("ura_region");
+        pscData.setAddress(address);
+        pscSensitiveData.setUsualResidentialAddress(address);
+        pscSensitiveData.setResidentialAddressIsSameAsServiceAddress(true);
+        List<String> list = new ArrayList<>();
+        list.add("part-right-to-share-surplus-assets-75-to-100-percent");
+        pscData.setNaturesOfControl(list);
+        document.setData(pscData);
+        document.setDeltaAt(deltaAt);
 
         mongoTemplate.save(document);
         assertThat(companyPscRepository.findById(NOTIFICATION_ID)).isNotEmpty();
