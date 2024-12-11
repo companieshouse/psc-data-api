@@ -21,12 +21,11 @@ Feature: Delete PSC
       | company_number |
       | 34777772       |
 
-  Scenario Outline: Delete PSC unsuccessfully - PSC resource does not exist
+  Scenario Outline: Delete PSC unsuccessfully but chs-kafka-api invoked - PSC resource does not exist
     Given a PSC does not exist for "<company_number>"
     When a DELETE request is sent for "<company_number>"
     Then the CHS Kafka API is invoked with a DELETE event
     And I should receive 200 status code
-
 
     Examples:
       | company_number |

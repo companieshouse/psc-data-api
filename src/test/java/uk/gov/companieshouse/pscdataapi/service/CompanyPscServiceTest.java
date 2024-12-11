@@ -231,7 +231,7 @@ class CompanyPscServiceTest {
     }
 
     @Test
-    @DisplayName("When company number and id is null throw ResourceNotFound Exception")
+    @DisplayName("When company number and id is null throw BadRequestException")
     void testDeletePSCThrowsNotFoundExceptionWhenCompanyNumberAndNotificationIdIsNull() {
         when(repository.getPscByCompanyNumberAndId("", "")).thenThrow(BadRequestException.class);
 
