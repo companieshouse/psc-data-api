@@ -54,8 +54,7 @@ class ChsKafkaApiServiceTest {
     private static final String EVENT_TYPE_CHANGED = "changed";
     private static final String EVENT_TYPE_DELETED = "deleted";
     private static final String DELTA_AT = "20240219123045999999";
-    private static final String PSC_URI = "/company/%s/persons-with-significant-control/"
-            + "%s/%s";
+    private static final String PSC_URI = "/company/%s/persons-with-significant-control/%s/%s";
     private static final DateTimeFormatter ROUNDED_TO_SECONDS_FORMATTER =
             DateTimeFormatter.ofPattern("yyyy-MM-dd'T'hh:mm:ss");
 

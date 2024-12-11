@@ -220,7 +220,7 @@ class CompanyPscServiceTest {
 
     @Test
     @DisplayName("When company number is null throw Bad Request Exception")
-    void testDeletePSCThrowsResourceNotFoundException() {
+    void testDeletePSCThrowsResourceBadRequestException() {
         when(repository.getPscByCompanyNumberAndId("", NOTIFICATION_ID)).thenThrow(BadRequestException.class);
 
         assertThrows(BadRequestException.class, () -> service.deletePsc(new PscDeleteRequest("", NOTIFICATION_ID, "", INDIVIDUAL_KIND, DELTA_AT)));
@@ -232,7 +232,7 @@ class CompanyPscServiceTest {
 
     @Test
     @DisplayName("When company number and id is null throw BadRequestException")
-    void testDeletePSCThrowsNotFoundExceptionWhenCompanyNumberAndNotificationIdIsNull() {
+    void testDeletePSCThrowsBadRequestExceptionWhenCompanyNumberAndNotificationIdIsNull() {
         when(repository.getPscByCompanyNumberAndId("", "")).thenThrow(BadRequestException.class);
 
         assertThrows(BadRequestException.class, () -> service.deletePsc(new PscDeleteRequest("", "", "", INDIVIDUAL_KIND, DELTA_AT)));
