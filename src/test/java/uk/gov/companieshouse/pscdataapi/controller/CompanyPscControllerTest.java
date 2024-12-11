@@ -16,6 +16,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static uk.gov.companieshouse.pscdataapi.util.TestHelper.STALE_DELTA_AT;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -37,6 +38,7 @@ import uk.gov.companieshouse.api.psc.LegalPersonBeneficialOwner;
 import uk.gov.companieshouse.api.psc.PscList;
 import uk.gov.companieshouse.api.psc.SuperSecure;
 import uk.gov.companieshouse.api.psc.SuperSecureBeneficialOwner;
+import uk.gov.companieshouse.pscdataapi.exceptions.ConflictException;
 import uk.gov.companieshouse.pscdataapi.exceptions.ResourceNotFoundException;
 import uk.gov.companieshouse.pscdataapi.exceptions.ServiceUnavailableException;
 import uk.gov.companieshouse.pscdataapi.models.PscDeleteRequest;
@@ -387,6 +389,27 @@ class CompanyPscControllerTest {
                         .header("x-kind", KIND)
                         .header("x-delta-at", DELTA_AT))
                 .andExpect(status().isNotFound());
+
+        verify(companyPscService, times(1)).deletePsc(deleteRequest);
+    }
+
+    @Test
+    void callPscDeleteShouldReturn409WhenStaleDeltaAt () throws Exception {
+        PscDeleteRequest deleteRequest = new PscDeleteRequest(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID, X_REQUEST_ID, KIND, STALE_DELTA_AT);
+
+        doThrow(ConflictException.class)
+                .when(companyPscService).deletePsc(deleteRequest);
+
+        mockMvc.perform(delete(DELETE_URL)
+                        .header("ERIC-Identity", ERIC_IDENTITY)
+                        .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
+                        .contentType(APPLICATION_JSON)
+                        .header("x-request-id", X_REQUEST_ID)
+                        .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
+                        .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH)
+                        .header("x-kind", KIND)
+                        .header("x-delta-at", STALE_DELTA_AT))
+                .andExpect(status().isConflict());
 
         verify(companyPscService, times(1)).deletePsc(deleteRequest);
     }

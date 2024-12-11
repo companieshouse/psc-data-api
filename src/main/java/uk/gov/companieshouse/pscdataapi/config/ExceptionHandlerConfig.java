@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
+import uk.gov.companieshouse.pscdataapi.exceptions.ConflictException;
 import uk.gov.companieshouse.pscdataapi.exceptions.MethodNotAllowedException;
 import uk.gov.companieshouse.pscdataapi.exceptions.SerDesException;
 import uk.gov.companieshouse.pscdataapi.exceptions.ServiceUnavailableException;
@@ -132,5 +133,25 @@ public class ExceptionHandlerConfig {
         responseBody.put(MESSAGE, "Bad request.");
         request.setAttribute(EXCEPTION_ATTRIBUTE, ex, 0);
         return new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
+    }
+
+
+    /**
+     * Conflict exception handler.
+     * Thrown when data is given in the wrong format.
+     *
+     * @param ex      exception to handle.
+     * @param request request.
+     * @return error response to return.
+     */
+    @ExceptionHandler(value = {ConflictException.class})
+    public ResponseEntity<Object> handleConflictException(Exception ex, WebRequest request) {
+        logger.error(String.format("Conflict, response code: %s", HttpStatus.CONFLICT), ex);
+
+        Map<String, Object> responseBody = new LinkedHashMap<>();
+        responseBody.put(TIMESTAMP, LocalDateTime.now());
+        responseBody.put(MESSAGE, "Conflict.");
+        request.setAttribute(EXCEPTION_ATTRIBUTE, ex, 0);
+        return new ResponseEntity<>(responseBody, HttpStatus.CONFLICT);
     }
 }

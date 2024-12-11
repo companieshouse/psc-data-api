@@ -74,4 +74,13 @@ class ExceptionHandlerConfigTest {
         assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
         assertThat(responseBody.get("message"), is("Bad request."));
     }
+
+    @Test
+    void handleConflictException() {
+        ResponseEntity response = exceptionHandlerConfigConfig.handleConflictException(new Exception("exception"), request);
+        Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
+        assertThat(response, is(not(nullValue())));
+        assertThat(response.getStatusCode(), is(HttpStatus.CONFLICT));
+        assertThat(responseBody.get("message"), is("Conflict."));
+    }
 }
