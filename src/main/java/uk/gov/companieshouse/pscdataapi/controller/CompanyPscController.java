@@ -25,7 +25,6 @@ import uk.gov.companieshouse.api.psc.SuperSecureBeneficialOwner;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
-import uk.gov.companieshouse.pscdataapi.exceptions.ConflictException;
 import uk.gov.companieshouse.pscdataapi.exceptions.ResourceNotFoundException;
 import uk.gov.companieshouse.pscdataapi.exceptions.ServiceUnavailableException;
 import uk.gov.companieshouse.pscdataapi.logging.DataMapHolder;
@@ -111,9 +110,6 @@ public class CompanyPscController {
         } catch (ResourceNotFoundException ex) {
             LOGGER.error(ex.getMessage(), DataMapHolder.getLogMap());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        } catch (ConflictException ex) {
-            LOGGER.error(ex.getMessage(), DataMapHolder.getLogMap());
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
         } catch (ServiceUnavailableException ex) {
             LOGGER.error(ex.getMessage(), DataMapHolder.getLogMap());
             return ResponseEntity.internalServerError().build();
