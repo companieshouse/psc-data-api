@@ -14,6 +14,9 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.companieshouse.pscdataapi.util.TestHelper.DELTA_AT;
+import static uk.gov.companieshouse.pscdataapi.util.TestHelper.INDIVIDUAL_KIND;
+import static uk.gov.companieshouse.pscdataapi.util.TestHelper.STALE_DELTA_AT;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -30,7 +33,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.NonTransientDataAccessException;
 import org.springframework.http.HttpStatus;
@@ -58,10 +60,13 @@ import uk.gov.companieshouse.api.psc.SuperSecureBeneficialOwner;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
+import uk.gov.companieshouse.pscdataapi.exceptions.ConflictException;
 import uk.gov.companieshouse.pscdataapi.exceptions.ResourceNotFoundException;
+import uk.gov.companieshouse.pscdataapi.exceptions.ServiceUnavailableException;
 import uk.gov.companieshouse.pscdataapi.models.Created;
 import uk.gov.companieshouse.pscdataapi.models.Links;
 import uk.gov.companieshouse.pscdataapi.models.PscData;
+import uk.gov.companieshouse.pscdataapi.models.PscDeleteRequest;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 import uk.gov.companieshouse.pscdataapi.repository.CompanyPscRepository;
 import uk.gov.companieshouse.pscdataapi.transform.CompanyPscTransformer;
@@ -89,7 +94,6 @@ class CompanyPscServiceTest {
     CompanyExemptionsApiService companyExemptionsApiService;
     @Captor
     private ArgumentCaptor<String> dateCaptor;
-    @Spy
     @InjectMocks
     private CompanyPscService service;
     @Mock
@@ -207,36 +211,75 @@ class CompanyPscServiceTest {
     @DisplayName("When company number & notification id is provided, delete PSC")
     void testDeletePSC() {
         when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID)).thenReturn(Optional.ofNullable(pscDocument));
-        service.deletePsc(COMPANY_NUMBER, NOTIFICATION_ID, "");
+        service.deletePsc(new PscDeleteRequest(COMPANY_NUMBER, NOTIFICATION_ID, "", INDIVIDUAL_KIND, DELTA_AT));
 
         verify(repository, times(1)).getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID);
         verify(repository, times(1)).delete(pscDocument);
-        verify(chsKafkaApiService).invokeChsKafkaApiWithDeleteEvent(any(), any(), any(), any(), any());
+        verify(chsKafkaApiService).invokeChsKafkaApiWithDeleteEvent(any(), any());
     }
 
     @Test
-    @DisplayName("When company number is null throw ResourceNotFound Exception")
-    void testDeletePSCThrowsResourceNotFoundException() {
-        when(repository.getPscByCompanyNumberAndId("", NOTIFICATION_ID)).thenReturn(Optional.empty());
+    @DisplayName("When company number is null throw Bad Request Exception")
+    void testDeletePSCThrowsResourceBadRequestException() {
+        when(repository.getPscByCompanyNumberAndId("", NOTIFICATION_ID)).thenThrow(BadRequestException.class);
 
-        assertThrows(ResourceNotFoundException.class, () -> service.deletePsc("", NOTIFICATION_ID, ""));
+        assertThrows(BadRequestException.class, () -> service.deletePsc(new PscDeleteRequest("", NOTIFICATION_ID, "", INDIVIDUAL_KIND, DELTA_AT)));
 
         verify(repository, times(1)).getPscByCompanyNumberAndId("", NOTIFICATION_ID);
         verify(repository, never()).delete(any());
-        verify(chsKafkaApiService, never()).invokeChsKafkaApiWithDeleteEvent(any(), any(), any(), any(), any());
+        verify(chsKafkaApiService, never()).invokeChsKafkaApiWithDeleteEvent(any(), any());
     }
 
     @Test
-    @DisplayName("When company number and id is null throw ResourceNotFound Exception")
-    void testDeletePSCThrowsNotFoundExceptionWhenCompanyNumberAndNotificationIdIsNull() {
-        when(repository.getPscByCompanyNumberAndId("", "")).thenReturn(Optional.empty());
+    @DisplayName("When company number and id is null throw BadRequestException")
+    void testDeletePSCThrowsBadRequestExceptionWhenCompanyNumberAndNotificationIdIsNull() {
+        when(repository.getPscByCompanyNumberAndId("", "")).thenThrow(BadRequestException.class);
 
-        assertThrows(ResourceNotFoundException.class, () -> service.deletePsc("", "", ""));
+        assertThrows(BadRequestException.class, () -> service.deletePsc(new PscDeleteRequest("", "", "", INDIVIDUAL_KIND, DELTA_AT)));
 
         verify(repository, times(1)).getPscByCompanyNumberAndId("", "");
         verify(repository, never()).delete(any());
-        verify(chsKafkaApiService, never()).invokeChsKafkaApiWithDeleteEvent(any(), any(), any(), any(), any());
+        verify(chsKafkaApiService, never()).invokeChsKafkaApiWithDeleteEvent(any(), any());
     }
+
+    @Test
+    @DisplayName("When Kafka notification fails throw ServiceUnavailableException")
+    void testDeletePSCThrowsServiceUnavailableExceptionWhenKafkaNotification() {
+        when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID)).thenReturn(Optional.of(pscDocument));
+        when(chsKafkaApiService.invokeChsKafkaApiWithDeleteEvent(any(), any()))
+                .thenThrow(new ServiceUnavailableException("message"));
+
+        assertThrows(ServiceUnavailableException.class, () -> service.deletePsc(new PscDeleteRequest(COMPANY_NUMBER, NOTIFICATION_ID, "", INDIVIDUAL_KIND, DELTA_AT)));
+
+        verify(repository).getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID);
+        verify(repository).delete(pscDocument);
+        verify(chsKafkaApiService).invokeChsKafkaApiWithDeleteEvent(any(), any());
+    }
+
+    @Test
+    @DisplayName("Kafka notification succeeds on retry and after document deleted")
+    void testKafkaNotificationSucceedsOnRetryAfterDocumentDeleted() {
+        when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID)).thenReturn(Optional.empty());
+
+        service.deletePsc(new PscDeleteRequest(COMPANY_NUMBER, NOTIFICATION_ID, "", INDIVIDUAL_KIND, DELTA_AT));
+
+        verify(repository).getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID);
+        verify(chsKafkaApiService).invokeChsKafkaApiWithDeleteEvent(any(), any());
+
+    }
+
+    @Test
+    void deleteIndividualFullRecordThrowsConflictWhenDeltaAtCheckFails() {
+        PscDocument document = new PscDocument();
+        document.setDeltaAt(DELTA_AT);
+        when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID)).thenReturn(Optional.of(document));
+
+        assertThrows(ConflictException.class, () -> service.deletePsc(new PscDeleteRequest(COMPANY_NUMBER, NOTIFICATION_ID, "", INDIVIDUAL_KIND, STALE_DELTA_AT)));
+
+        verify(repository).getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID);
+        verify(chsKafkaApiService, never()).invokeChsKafkaApiWithDeleteEvent(any(), any());
+    }
+
 
     @Test
     void GetIndividualPscReturns404WhenRegisterViewIsTrueAndNoMetrics() {
@@ -743,7 +786,7 @@ class CompanyPscServiceTest {
     }
 
     @Test
-    void whenCompanyNotInPublicRegisterGetPSCListShouldThrow() throws ResourceNotFoundException {
+    void whenCompanyNotInPublicRegisterGetPSCListShouldThrowNotFound() throws ResourceNotFoundException {
         MetricsApi metricsApi = TestHelper.createMetrics();
         RegistersApi registersApi = new RegistersApi();
         metricsApi.setRegisters(registersApi);
@@ -757,7 +800,6 @@ class CompanyPscServiceTest {
         String actualMessage = ex.getMessage();
         assertNotNull(actualMessage);
         assertTrue(actualMessage.contains(expectedMessage));
-        verify(service, times(1)).retrievePscListSummaryFromDb(COMPANY_NUMBER, 0, true, 25);
         verify(repository, times(0)).getListSummaryRegisterView(COMPANY_NUMBER, 0, OffsetDateTime.parse("2020-12-20T06:00Z"), 25);
     }
 
@@ -880,5 +922,4 @@ class CompanyPscServiceTest {
         assertThat(exception.getStatusCode(), is(HttpStatus.NOT_FOUND));
         assertThat(exception.getReason(), is("Failed to transform PSCDocument to Individual Full Record"));
     }
-
 }

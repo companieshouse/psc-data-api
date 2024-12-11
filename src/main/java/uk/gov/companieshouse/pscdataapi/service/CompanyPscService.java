@@ -1,5 +1,7 @@
 package uk.gov.companieshouse.pscdataapi.service;
 
+import static uk.gov.companieshouse.pscdataapi.util.DateUtils.isDeltaStale;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -10,23 +12,35 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import uk.gov.companieshouse.api.api.CompanyExemptionsApiService;
 import uk.gov.companieshouse.api.api.CompanyMetricsApiService;
 import uk.gov.companieshouse.api.exemptions.CompanyExemptions;
 import uk.gov.companieshouse.api.metrics.MetricsApi;
 import uk.gov.companieshouse.api.metrics.RegisterApi;
 import uk.gov.companieshouse.api.metrics.RegistersApi;
-import uk.gov.companieshouse.api.psc.*;
+import uk.gov.companieshouse.api.psc.CorporateEntity;
+import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
+import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
+import uk.gov.companieshouse.api.psc.Individual;
+import uk.gov.companieshouse.api.psc.IndividualBeneficialOwner;
+import uk.gov.companieshouse.api.psc.IndividualFullRecord;
+import uk.gov.companieshouse.api.psc.LegalPerson;
+import uk.gov.companieshouse.api.psc.LegalPersonBeneficialOwner;
+import uk.gov.companieshouse.api.psc.ListSummary;
+import uk.gov.companieshouse.api.psc.PscList;
+import uk.gov.companieshouse.api.psc.SuperSecure;
+import uk.gov.companieshouse.api.psc.SuperSecureBeneficialOwner;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
+import uk.gov.companieshouse.pscdataapi.exceptions.ConflictException;
 import uk.gov.companieshouse.pscdataapi.exceptions.ResourceNotFoundException;
 import uk.gov.companieshouse.pscdataapi.exceptions.ServiceUnavailableException;
 import uk.gov.companieshouse.pscdataapi.logging.DataMapHolder;
 import uk.gov.companieshouse.pscdataapi.models.Created;
 import uk.gov.companieshouse.pscdataapi.models.Links;
 import uk.gov.companieshouse.pscdataapi.models.PscData;
+import uk.gov.companieshouse.pscdataapi.models.PscDeleteRequest;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 import uk.gov.companieshouse.pscdataapi.repository.CompanyPscRepository;
 import uk.gov.companieshouse.pscdataapi.transform.CompanyPscTransformer;
@@ -37,8 +51,6 @@ public class CompanyPscService {
     private static final String NOT_ON_PUBLIC_REGISTER = "not-on-public-register";
     private static final String UNEXPECTED_ERROR_OCCURRED_WHILE_FETCHING_PSC_DOCUMENT =
             "Unexpected error occurred while fetching PSC document";
-    private static final String RESOURCE_NOT_FOUND_FOR_COMPANY_NUMBER =
-            "Resource not found for company number: %s";
     public static final String COMPANY_NOT_ON_PUBLIC_REGISTER =
             "company %s not on public register";
     private final DateTimeFormatter dateTimeFormatter =
@@ -144,36 +156,24 @@ public class CompanyPscService {
         }
     }
 
-    private PscDocument getPscDocument(String companyNumber, String notificationId)
-            throws ResourceNotFoundException {
-        Optional<PscDocument> pscDocument =
-                repository.getPscByCompanyNumberAndId(companyNumber, notificationId);
-        return pscDocument.orElseThrow(() ->
-                new ResourceNotFoundException(HttpStatus.NOT_FOUND, String.format(
-                        RESOURCE_NOT_FOUND_FOR_COMPANY_NUMBER, companyNumber)));
-    }
-
-    /**
-     * Delete PSC record.
-     *
-     * @param companyNumber  Company number.
-     * @param notificationId Mongo Id.
-     */
-    @Transactional
-    public void deletePsc(String companyNumber, String notificationId, String contextId)
+    public void deletePsc(PscDeleteRequest deleteRequest)
             throws ResourceNotFoundException, ServiceUnavailableException {
-        PscDocument pscDocument = getPscDocument(companyNumber, notificationId);
-        String kind = pscDocument.getData().getKind();
-        repository.delete(pscDocument);
-        try {
-            chsKafkaApiService.invokeChsKafkaApiWithDeleteEvent(contextId,
-                    companyNumber, notificationId, kind, pscDocument);
-        } catch (Exception exception) {
-            throw new ServiceUnavailableException(exception.getMessage());
-        }
+        logger.info(String.format("Deleting PSC record with company number %s",
+                deleteRequest.companyNumber()), DataMapHolder.getLogMap());
 
-        logger.info(String.format("PSC record with company number %s has been deleted",
-                companyNumber), DataMapHolder.getLogMap());
+        Optional<PscDocument> pscDocument = repository.getPscByCompanyNumberAndId(deleteRequest.companyNumber(),
+                deleteRequest.notificationId());
+        PscDocument document = null;
+        if (pscDocument.isPresent()) {
+            document = pscDocument.get();
+            deltaAtCheck(deleteRequest.deltaAt(), document);
+            repository.delete(document);
+            chsKafkaApiService.invokeChsKafkaApiWithDeleteEvent(deleteRequest, document);
+        } else {
+            logger.info("No document to delete, calling resource-changed with empty deleted data",
+                    DataMapHolder.getLogMap());
+            chsKafkaApiService.invokeChsKafkaApiWithDeleteEvent(deleteRequest, document);
+        }
     }
 
     /**
@@ -687,4 +687,11 @@ public class CompanyPscService {
                                                 .anyMatch(e -> e.getExemptTo()==null)))).isPresent();
     }
 
+    private void deltaAtCheck(String requestDeltaAt, PscDocument document) {
+        if (isDeltaStale(requestDeltaAt, document.getDeltaAt())) {
+            logger.error("Stale delta received; request delta_at: [%s] is not after existing delta_at: [%s]".formatted(
+                    requestDeltaAt, document.getDeltaAt()), DataMapHolder.getLogMap());
+            throw new ConflictException("Stale delta for delete");
+        }
+    }
 }

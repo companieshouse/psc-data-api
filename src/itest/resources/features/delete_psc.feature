@@ -21,10 +21,11 @@ Feature: Delete PSC
       | company_number |
       | 34777772       |
 
-  Scenario Outline: Delete PSC unsuccessfully - PSC resource does not exist
+  Scenario Outline: Delete PSC unsuccessfully but chs-kafka-api invoked - PSC resource does not exist
     Given a PSC does not exist for "<company_number>"
     When a DELETE request is sent for "<company_number>"
-    Then I should receive 404 status code
+    Then the CHS Kafka API is invoked with a DELETE event
+    And I should receive 200 status code
 
     Examples:
       | company_number |
@@ -41,3 +42,14 @@ Feature: Delete PSC
     Examples:
       | company_number |
       | 34777772       |
+
+    Scenario Outline: Delete PSC throws conflict exception if deltaAt is stale
+      Given Psc data api service is running
+      And a PSC "<data>" exists for "<company_number>" for Individual with "<existingDeltaAt>"
+      When a DELETE request is sent for "<company_number>" with a stale "<deltaAt>"
+      Then I should receive 409 status code
+      And the CHS Kafka API is not invoked with a DELETE event
+
+      Examples:
+        | data           | company_number | existingDeltaAt          | deltaAt              |
+        | get_individual | 34777772       | 20231020084745378999     | 20230724093435661593 |

@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.api.InternalApiClient;
@@ -19,6 +18,7 @@ import uk.gov.companieshouse.api.model.ApiResponse;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.exceptions.SerDesException;
 import uk.gov.companieshouse.pscdataapi.exceptions.ServiceUnavailableException;
+import uk.gov.companieshouse.pscdataapi.models.PscDeleteRequest;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 import uk.gov.companieshouse.pscdataapi.transform.CompanyPscTransformer;
 import uk.gov.companieshouse.pscdataapi.util.PscTransformationHelper;
@@ -44,7 +44,7 @@ public class ChsKafkaApiService {
     private String resourceChangedUri;
 
     public ChsKafkaApiService(InternalApiClient internalApiClient, Logger logger,
-                              ObjectMapper objectMapper, CompanyPscTransformer companyPscTransformer) {
+            ObjectMapper objectMapper, CompanyPscTransformer companyPscTransformer) {
         this.internalApiClient = internalApiClient;
         this.logger = logger;
         this.objectMapper = objectMapper;
@@ -62,7 +62,7 @@ public class ChsKafkaApiService {
 
     @StreamEvents
     public ApiResponse<Void> invokeChsKafkaApi(String contextId, String companyNumber,
-                                               String notificationId, String kind) {
+            String notificationId, String kind) {
         internalApiClient.setBasePath(chsKafkaApiUrl);
         PrivateChangedResourcePost changedResourcePost = internalApiClient
                 .privateChangedResourceHandler().postChangedResource(resourceChangedUri,
@@ -74,28 +74,22 @@ public class ChsKafkaApiService {
     /**
      * Creates a ChangedResource object to send a delete request to the chs kafka api.
      *
-     * @param contextId      chs kafka id
-     * @param companyNumber  company number of psc
-     * @param notificationId mongo id
      * @return passes request to api response handling
      */
     @StreamEvents
-    public ApiResponse<Void> invokeChsKafkaApiWithDeleteEvent(String contextId,
-                                                              String companyNumber,
-                                                              String notificationId,
-                                                              String kind, PscDocument pscDocument) {
+    public ApiResponse<Void> invokeChsKafkaApiWithDeleteEvent(PscDeleteRequest deleteRequest, PscDocument pscDocument) {
+
         internalApiClient.setBasePath(chsKafkaApiUrl);
         PrivateChangedResourcePost changedResourcePost =
                 internalApiClient.privateChangedResourceHandler()
                         .postChangedResource(resourceChangedUri,
-                                mapChangedResource(contextId, companyNumber,
-                                        notificationId, kind, true, pscDocument));
+                                mapChangedResource(deleteRequest.contextId(), deleteRequest.companyNumber(),
+                                        deleteRequest.notificationId(), deleteRequest.kind(), true, pscDocument));
         return handleApiCall(changedResourcePost);
     }
 
-    private ChangedResource mapChangedResource(String contextId, String companyNumber,
-                                               String notificationId,
-                                               String kind, boolean isDelete, PscDocument pscDocument) {
+    private ChangedResource mapChangedResource(String contextId, String companyNumber, String notificationId,
+            String kind, boolean isDelete, PscDocument pscDocument) {
         ChangedResourceEvent event = new ChangedResourceEvent();
         ChangedResource changedResource = new ChangedResource();
         event.setPublishedAt(PUBLISHED_AT_FORMAT.format(Instant.now()));
