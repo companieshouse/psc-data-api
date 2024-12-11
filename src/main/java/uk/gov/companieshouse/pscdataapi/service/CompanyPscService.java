@@ -14,7 +14,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.api.api.CompanyExemptionsApiService;
 import uk.gov.companieshouse.api.api.CompanyMetricsApiService;
-import uk.gov.companieshouse.api.exception.ResourceStateConflictException;
 import uk.gov.companieshouse.api.exemptions.CompanyExemptions;
 import uk.gov.companieshouse.api.metrics.MetricsApi;
 import uk.gov.companieshouse.api.metrics.RegisterApi;
@@ -34,6 +33,7 @@ import uk.gov.companieshouse.api.psc.SuperSecureBeneficialOwner;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
+import uk.gov.companieshouse.pscdataapi.exceptions.ConflictException;
 import uk.gov.companieshouse.pscdataapi.exceptions.ResourceNotFoundException;
 import uk.gov.companieshouse.pscdataapi.exceptions.ServiceUnavailableException;
 import uk.gov.companieshouse.pscdataapi.logging.DataMapHolder;
@@ -691,7 +691,7 @@ public class CompanyPscService {
         if (isDeltaStale(requestDeltaAt, document.getDeltaAt())) {
             logger.error("Stale delta received; request delta_at: [%s] is not after existing delta_at: [%s]".formatted(
                     requestDeltaAt, document.getDeltaAt()), DataMapHolder.getLogMap());
-            throw new ResourceStateConflictException("Stale delta for delete");
+            throw new ConflictException("Stale delta for delete");
         }
     }
 }

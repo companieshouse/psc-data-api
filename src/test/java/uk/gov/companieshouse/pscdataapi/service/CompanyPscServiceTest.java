@@ -16,6 +16,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.companieshouse.pscdataapi.util.TestHelper.DELTA_AT;
 import static uk.gov.companieshouse.pscdataapi.util.TestHelper.INDIVIDUAL_KIND;
+import static uk.gov.companieshouse.pscdataapi.util.TestHelper.STALE_DELTA_AT;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -59,6 +60,7 @@ import uk.gov.companieshouse.api.psc.SuperSecureBeneficialOwner;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
+import uk.gov.companieshouse.pscdataapi.exceptions.ConflictException;
 import uk.gov.companieshouse.pscdataapi.exceptions.ResourceNotFoundException;
 import uk.gov.companieshouse.pscdataapi.exceptions.ServiceUnavailableException;
 import uk.gov.companieshouse.pscdataapi.models.Created;
@@ -265,6 +267,19 @@ class CompanyPscServiceTest {
         verify(chsKafkaApiService).invokeChsKafkaApiWithDeleteEvent(any(), any());
 
     }
+
+    @Test
+    void deleteIndividualFullRecordThrowsConflictWhenDeltaAtCheckFails() {
+        PscDocument document = new PscDocument();
+        document.setDeltaAt(DELTA_AT);
+        when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID)).thenReturn(Optional.of(document));
+
+        assertThrows(ConflictException.class, () -> service.deletePsc(new PscDeleteRequest(COMPANY_NUMBER, NOTIFICATION_ID, "", INDIVIDUAL_KIND, STALE_DELTA_AT)));
+
+        verify(repository).getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID);
+        verify(chsKafkaApiService, never()).invokeChsKafkaApiWithDeleteEvent(any(), any());
+    }
+
 
     @Test
     void GetIndividualPscReturns404WhenRegisterViewIsTrueAndNoMetrics() {
@@ -907,5 +922,4 @@ class CompanyPscServiceTest {
         assertThat(exception.getStatusCode(), is(HttpStatus.NOT_FOUND));
         assertThat(exception.getReason(), is("Failed to transform PSCDocument to Individual Full Record"));
     }
-
 }
