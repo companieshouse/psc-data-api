@@ -63,13 +63,6 @@
     </dependencyManagement>
 
     <dependencies>
-<!--        Vulnerable transitive deps start here-->
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-webmvc</artifactId>
-            <version>6.2.1</version>
-        </dependency>
-<!--        Vulnerable transitive deps end here-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
