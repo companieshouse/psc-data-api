@@ -61,7 +61,15 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
     <dependencies>
+<!--        Vulnerable transitive deps start here-->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-webmvc</artifactId>
+            <version>6.2.1</version>
+        </dependency>
+<!--        Vulnerable transitive deps end here-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
@@ -125,6 +133,10 @@
                 <exclusion>
                     <groupId>org.codehaus.plexus</groupId>
                     <artifactId>plexus-utils</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.sonarsource.scanner.maven</groupId>
+                    <artifactId>sonar-maven-plugin</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
