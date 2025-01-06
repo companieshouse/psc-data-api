@@ -2,7 +2,7 @@ package uk.gov.companieshouse.pscdataapi.service;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -29,6 +29,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.function.Executable;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
@@ -177,8 +178,9 @@ class CompanyPscServiceTest {
 
         when(repository.findUpdatedPsc(eq(NOTIFICATION_ID), dateCaptor.capture())).thenReturn(List.of(new PscDocument()));
 
-        service.insertPscRecord("", request);
+        Executable actual = () -> service.insertPscRecord("", request);
 
+        assertThrows(ConflictException.class, actual);
         verify(repository, never()).save(pscDocument);
         verify(chsKafkaApiService, never()).invokeChsKafkaApi(any(), any(), any(), any());
         assertEquals(dateString, dateCaptor.getValue());

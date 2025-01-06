@@ -16,7 +16,7 @@ Feature: Process Psc Data Requests
     Given Psc data api service is running
     And a psc data record "<existingData>" exists with notification id "<notificationId>" and delta_at "<deltaAt>"
     When I send a PUT request with payload "<oldData>" file for record with notification Id "<notificationId>"
-    Then I should receive 201 status code
+    Then I should receive 409 status code
     And a record exists with id "<notificationId>" and delta_at "<deltaAt>"
 
     Examples:
