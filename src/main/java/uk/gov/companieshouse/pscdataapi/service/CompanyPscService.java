@@ -103,8 +103,9 @@ public class CompanyPscService {
                     notificationId, requestBody.getExternalData().getData().getKind());
 
         } else {
-            logger.info("PSC not persisted as the record provided is not the latest record.",
+            logger.error("PSC not persisted as the record provided is not the latest record.",
                     DataMapHolder.getLogMap());
+            throw new ConflictException("Received stale delta");
         }
     }
 
