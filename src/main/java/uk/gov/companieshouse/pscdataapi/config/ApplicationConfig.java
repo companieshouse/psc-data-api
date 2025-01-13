@@ -32,16 +32,16 @@ import uk.gov.companieshouse.pscdataapi.serialization.LocalDateSerializer;
 public class ApplicationConfig {
 
     private final String apiKey;
-    private final String kafkaApiUrl;
+    private final String internalApiUrl;
     private final String metricsApiUrl;
     private final String exemptionsApiUrl;
 
     public ApplicationConfig(@Value("${api.key}") String apiKey,
-            @Value("${kafka.api.url}") String kafkaApiUrl,
+            @Value("${kafka.api.url}") String internalApiUrl,
             @Value("${metrics.api.url}") String metricsApiUrl,
             @Value("${exemptions.api.url}") String exemptionsApiUrl) {
         this.apiKey = apiKey;
-        this.kafkaApiUrl = kafkaApiUrl;
+        this.internalApiUrl = internalApiUrl;
         this.metricsApiUrl = metricsApiUrl;
         this.exemptionsApiUrl = exemptionsApiUrl;
     }
@@ -63,7 +63,7 @@ public class ApplicationConfig {
 
     @Bean
     public Supplier<InternalApiClient> kafkaApiClientSupplier() {
-        return () -> buildClient(kafkaApiUrl);
+        return () -> buildClient(internalApiUrl);
     }
 
     @Bean
@@ -75,6 +75,21 @@ public class ApplicationConfig {
     public Supplier<InternalApiClient> exemptionsApiClientSupplier() {
         return () -> buildClient(exemptionsApiUrl);
     }
+
+//    @Bean
+//    public InternalApiClient internalApiClient() {
+//        return ApiSdkManager.getPrivateSDK();
+//    }
+
+//    @Bean
+//    public CompanyMetricsApiService companyMetricsApiService() {
+//        return new CompanyMetricsApiService();
+//    }
+//
+//    @Bean
+//    public CompanyExemptionsApiService companyExemptionsApiService(){
+//        return new CompanyExemptionsApiService();
+//    }
 
     @Bean
     @Primary
