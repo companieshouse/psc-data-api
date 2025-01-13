@@ -16,6 +16,7 @@ import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
 @DirtiesContext
 @ActiveProfiles({"test"})
 public abstract class AbstractIntegrationTest extends AbstractMongoConfig {
+
     @MockBean
     public ChsKafkaApiService chsKafkaApiService;
 
