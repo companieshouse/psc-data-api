@@ -83,4 +83,13 @@ class ExceptionHandlerConfigTest {
         assertThat(response.getStatusCode(), is(HttpStatus.CONFLICT));
         assertThat(responseBody.get("message"), is("Conflict."));
     }
+
+    @Test
+    void handleBadGatewayException() {
+        ResponseEntity response = exceptionHandlerConfigConfig.handleBadGatewayException(new Exception("exception"), request);
+        Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
+        assertThat(response, is(not(nullValue())));
+        assertThat(response.getStatusCode(), is(HttpStatus.BAD_GATEWAY));
+        assertThat(responseBody.get("message"), is("Bad Gateway."));
+    }
 }
