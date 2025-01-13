@@ -12,8 +12,6 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import uk.gov.companieshouse.api.api.CompanyExemptionsApiService;
-import uk.gov.companieshouse.api.api.CompanyMetricsApiService;
 import uk.gov.companieshouse.api.exemptions.CompanyExemptions;
 import uk.gov.companieshouse.api.metrics.MetricsApi;
 import uk.gov.companieshouse.api.metrics.RegisterApi;
@@ -60,21 +58,21 @@ public class CompanyPscService {
     private final CompanyPscTransformer transformer;
     private final CompanyPscRepository repository;
     private final ChsKafkaApiService chsKafkaApiService;
-    private final CompanyMetricsApiService companyMetricsApiService;
     private final CompanyExemptionsApiService companyExemptionsApiService;
+    private final CompanyMetricsApiService companyMetricsApiService;
 
     public CompanyPscService(Logger logger,
-                             CompanyPscTransformer transformer,
-                             CompanyPscRepository repository,
-                             ChsKafkaApiService chsKafkaApiService,
-                             CompanyMetricsApiService companyMetricsApiService,
-                             CompanyExemptionsApiService companyExemptionsApiService) {
+            CompanyPscTransformer transformer,
+            CompanyPscRepository repository,
+            ChsKafkaApiService chsKafkaApiService,
+            CompanyExemptionsApiService companyExemptionsApiService,
+            CompanyMetricsApiService companyMetricsApiService) {
         this.logger = logger;
         this.transformer = transformer;
         this.repository = repository;
         this.chsKafkaApiService = chsKafkaApiService;
-        this.companyMetricsApiService = companyMetricsApiService;
         this.companyExemptionsApiService = companyExemptionsApiService;
+        this.companyMetricsApiService = companyMetricsApiService;
     }
 
     /**
@@ -124,7 +122,7 @@ public class CompanyPscService {
      * @param document       Transformed Data.
      */
     private void save(String contextId, String notificationId,
-                      PscDocument document) {
+            PscDocument document) {
         Created created = getCreatedFromCurrentRecord(notificationId);
         if (created == null) {
             document.setCreated(new Created().setAt(LocalDateTime.now()));
@@ -187,29 +185,29 @@ public class CompanyPscService {
     public IndividualFullRecord getIndividualFullRecord(final String companyNumber, final String notificationId) {
         try {
             final Optional<PscDocument> pscDocument = repository.getPscByCompanyNumberAndId(companyNumber,
-                    notificationId)
-                .filter(document -> document.getData().getKind().equals("individual-person-with-significant-control"));
+                            notificationId)
+                    .filter(document -> document.getData().getKind()
+                            .equals("individual-person-with-significant-control"));
 
             if (pscDocument.isPresent()) {
                 final IndividualFullRecord individualFullRecord = transformer.transformPscDocToIndividualFullRecord(
-                    pscDocument.get());
+                        pscDocument.get());
 
                 if (individualFullRecord == null) {
                     throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
-                        "Failed to transform PSCDocument to Individual Full Record");
+                            "Failed to transform PSCDocument to Individual Full Record");
                 }
                 return individualFullRecord;
-            }
-            else {
+            } else {
                 throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
-                    "Individual PSC document not found with id " + notificationId);
+                        "Individual PSC document not found with id " + notificationId);
             }
         } catch (final ResourceNotFoundException rnfe) {
             throw rnfe;
         } catch (final Exception ex) {
             logger.error(ex.getMessage(), DataMapHolder.getLogMap());
             throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
-                UNEXPECTED_ERROR_OCCURRED_WHILE_FETCHING_PSC_DOCUMENT);
+                    UNEXPECTED_ERROR_OCCURRED_WHILE_FETCHING_PSC_DOCUMENT);
         }
     }
 
@@ -296,12 +294,11 @@ public class CompanyPscService {
     }
 
     private boolean determineShowFullDob(String companyNumber, boolean registerView,
-                                         PscDocument pscDocument) throws ResourceNotFoundException {
+            PscDocument pscDocument) throws ResourceNotFoundException {
         if (!registerView) {
             return false;
         } else {
-            Optional<MetricsApi> companyMetrics = companyMetricsApiService
-                    .getCompanyMetrics(companyNumber);
+            Optional<MetricsApi> companyMetrics = companyMetricsApiService.getCompanyMetrics(companyNumber);
 
             if (companyMetrics.isPresent()) {
                 try {
@@ -549,9 +546,8 @@ public class CompanyPscService {
      * @return PscList object.
      */
     public PscList retrievePscListSummaryFromDb(String companyNumber, Integer startIndex,
-                                                Boolean registerView, Integer itemsPerPage) {
-        Optional<MetricsApi> companyMetrics =
-                companyMetricsApiService.getCompanyMetrics(companyNumber);
+            Boolean registerView, Integer itemsPerPage) {
+        Optional<MetricsApi> companyMetrics = companyMetricsApiService.getCompanyMetrics(companyNumber);
 
         if (Boolean.TRUE.equals(registerView)) {
             return retrievePscDocumentListFromDbRegisterView(companyMetrics,
@@ -568,7 +564,7 @@ public class CompanyPscService {
     }
 
     private PscList retrievePscDocumentListFromDbRegisterView(Optional<MetricsApi> companyMetrics,
-                                                              String companyNumber, Integer startIndex, Integer itemsPerPage) {
+            String companyNumber, Integer startIndex, Integer itemsPerPage) {
 
         logger.info(String.format("In register view for company number: %s", companyNumber),
                 DataMapHolder.getLogMap());
@@ -581,7 +577,6 @@ public class CompanyPscService {
                     .map(RegisterApi::getRegisterMovedTo)
                     .orElseThrow(() -> new ResourceNotFoundException(HttpStatus.NOT_FOUND,
                             String.format(COMPANY_NOT_ON_PUBLIC_REGISTER, companyNumber))));
-
 
             if (registerMovedTo.equals("public-register")) {
                 Optional<List<PscDocument>> pscListOptional = repository
@@ -606,9 +601,9 @@ public class CompanyPscService {
     }
 
     private PscList createPscDocumentList(List<PscDocument> pscDocuments,
-                                          Integer startIndex, Integer itemsPerPage,
-                                          String companyNumber, boolean registerView,
-                                          Optional<MetricsApi> companyMetrics) {
+            Integer startIndex, Integer itemsPerPage,
+            String companyNumber, boolean registerView,
+            Optional<MetricsApi> companyMetrics) {
         PscList pscList = new PscList();
 
         List<PscData> pscData = pscDocuments.stream()
@@ -621,7 +616,7 @@ public class CompanyPscService {
             documents.add(listSummary);
         }
 
-        if(pscDocuments.isEmpty()) {
+        if (pscDocuments.isEmpty()) {
             pscList.setActiveCount(0);
             pscList.setCeasedCount(0);
             pscList.setTotalResults(0);
@@ -674,18 +669,18 @@ public class CompanyPscService {
 
         return companyExemptions.filter(x ->
                 x.getExemptions() != null &&
-                        ((x.getExemptions().getPscExemptAsSharesAdmittedOnMarket()!= null &&
+                        ((x.getExemptions().getPscExemptAsSharesAdmittedOnMarket() != null &&
                                 x.getExemptions().getPscExemptAsSharesAdmittedOnMarket().getItems().stream()
-                                        .anyMatch(e -> e.getExemptTo()==null)) ||
+                                        .anyMatch(e -> e.getExemptTo() == null)) ||
                                 (x.getExemptions().getPscExemptAsTradingOnEuRegulatedMarket() != null &&
                                         x.getExemptions().getPscExemptAsTradingOnEuRegulatedMarket().getItems().stream()
-                                                .anyMatch(e -> e.getExemptTo()==null)) ||
+                                                .anyMatch(e -> e.getExemptTo() == null)) ||
                                 (x.getExemptions().getPscExemptAsTradingOnRegulatedMarket() != null &&
                                         x.getExemptions().getPscExemptAsTradingOnRegulatedMarket().getItems().stream()
-                                                .anyMatch(e -> e.getExemptTo()==null)) ||
+                                                .anyMatch(e -> e.getExemptTo() == null)) ||
                                 (x.getExemptions().getPscExemptAsTradingOnUkRegulatedMarket() != null &&
                                         x.getExemptions().getPscExemptAsTradingOnUkRegulatedMarket().getItems().stream()
-                                                .anyMatch(e -> e.getExemptTo()==null)))).isPresent();
+                                                .anyMatch(e -> e.getExemptTo() == null)))).isPresent();
     }
 
     private void deltaAtCheck(String requestDeltaAt, PscDocument document) {

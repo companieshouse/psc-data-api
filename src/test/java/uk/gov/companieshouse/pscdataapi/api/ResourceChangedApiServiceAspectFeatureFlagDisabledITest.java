@@ -5,6 +5,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.function.Supplier;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,12 +33,18 @@ class ResourceChangedApiServiceAspectFeatureFlagDisabledITest {
     @InjectMocks
     private ChsKafkaApiService chsKafkaApiService;
 
+    @Captor
+    ArgumentCaptor<ChangedResource> changedResourceCaptor;
+
     @MockBean
     private ApiClientService apiClientService;
+    @MockBean
+    private ChsKafkaApiService mapper;
 
     @Mock
-    private InternalApiClient internalApiClient;
-
+    private Supplier<InternalApiClient> kafkaApiClientSupplier;
+    @Mock
+    private InternalApiClient client;
     @Mock
     private ChangedResource changedResource;
     @Mock
@@ -51,24 +58,10 @@ class ResourceChangedApiServiceAspectFeatureFlagDisabledITest {
     @Mock
     private ObjectMapper objectMapper;
 
-    @MockBean
-    private ChsKafkaApiService mapper;
-
-    @Captor
-    ArgumentCaptor<ChangedResource> changedResourceCaptor;
-
-
-
-    @BeforeEach
-    void setup() {
-        when(internalApiClient.getHttpClient()).thenReturn(httpClient);
-    }
-
     @Test
-    void testThatKafkaApiShouldBeCalledWhenFeatureFlagDisabled()
-            throws ApiErrorResponseException {
-
-        when(internalApiClient.privateChangedResourceHandler()).thenReturn(
+    void testThatKafkaApiShouldBeCalledWhenFeatureFlagDisabled() throws ApiErrorResponseException {
+        when(kafkaApiClientSupplier.get()).thenReturn(client);
+        when(client.privateChangedResourceHandler()).thenReturn(
                 privateChangedResourceHandler);
         when(privateChangedResourceHandler.postChangedResource(Mockito.any(), Mockito.any())).thenReturn(
                 changedResourcePost);
@@ -78,16 +71,15 @@ class ResourceChangedApiServiceAspectFeatureFlagDisabledITest {
 
         Assertions.assertThat(apiResponse).isNotNull();
 
-        verify(internalApiClient).privateChangedResourceHandler();
+        verify(client).privateChangedResourceHandler();
         verify(privateChangedResourceHandler,times(1)).postChangedResource(Mockito.any(), changedResourceCaptor.capture());
         verify(changedResourcePost, times(1)).execute();
     }
 
     @Test
-    void testThatKafkaApiShouldBeCalledOnDeleteWhenFeatureFlagDisabled()
-            throws ApiErrorResponseException {
-
-        when(internalApiClient.privateChangedResourceHandler()).thenReturn(
+    void testThatKafkaApiShouldBeCalledOnDeleteWhenFeatureFlagDisabled() throws ApiErrorResponseException {
+        when(kafkaApiClientSupplier.get()).thenReturn(client);
+        when(client.privateChangedResourceHandler()).thenReturn(
                 privateChangedResourceHandler);
         when(privateChangedResourceHandler.postChangedResource(Mockito.any(), Mockito.any())).thenReturn(
                 changedResourcePost);
@@ -99,7 +91,7 @@ class ResourceChangedApiServiceAspectFeatureFlagDisabledITest {
 
         Assertions.assertThat(apiResponse).isNotNull();
 
-        verify(internalApiClient).privateChangedResourceHandler();
+        verify(client).privateChangedResourceHandler();
         verify(privateChangedResourceHandler,times(1)).postChangedResource(Mockito.any(), changedResourceCaptor.capture());
         verify(changedResourcePost, times(1)).execute();
     }
