@@ -10,7 +10,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.MongoDatabaseFactory;
 import org.springframework.data.mongodb.MongoTransactionManager;
 import org.springframework.data.mongodb.config.AbstractMongoClientConfiguration;
-import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @Configuration
@@ -23,20 +22,9 @@ public class MongoPscConfig extends AbstractMongoClientConfiguration {
     @Value("${spring.data.mongodb.uri}")
     private String databaseUri;
 
-    private final MongoCustomConversions mongoCustomConversions;
-
-    public MongoPscConfig(MongoCustomConversions mongoCustomConversions) {
-        this.mongoCustomConversions = mongoCustomConversions;
-    }
-
     @Bean
     MongoTransactionManager transactionManager(MongoDatabaseFactory dbFactory) {
         return new MongoTransactionManager(dbFactory);
-    }
-
-    @Override
-    public MongoCustomConversions customConversions() {
-        return this.mongoCustomConversions;
     }
 
     @Override
