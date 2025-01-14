@@ -7,7 +7,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
-import static uk.gov.companieshouse.pscdataapi.config.AbstractMongoConfig.mongoDBContainer;
+import static uk.gov.companieshouse.pscdataapi.CucumberFeaturesRunnerIT.mongoDBContainer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

@@ -27,7 +27,7 @@ import uk.gov.companieshouse.pscdataapi.models.PscDeleteRequest;
 import uk.gov.companieshouse.pscdataapi.util.TestHelper;
 
 @SpringBootTest
-class ResourceChangedApiServiceAspectFeatureFlagDisabledITest {
+class ResourceChangedApiServiceAspectFeatureFlagDisabledIT {
 
     @InjectMocks
     private ChsKafkaApiService chsKafkaApiService;
