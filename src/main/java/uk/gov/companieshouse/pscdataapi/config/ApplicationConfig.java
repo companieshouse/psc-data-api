@@ -8,14 +8,23 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.function.Supplier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
 import uk.gov.companieshouse.api.InternalApiClient;
 import uk.gov.companieshouse.api.http.ApiKeyHttpClient;
+import uk.gov.companieshouse.pscdataapi.converter.CompanyPscReadConverter;
+import uk.gov.companieshouse.pscdataapi.converter.CompanyPscSensitiveReadConverter;
+import uk.gov.companieshouse.pscdataapi.converter.CompanyPscSensitiveWriteConverter;
+import uk.gov.companieshouse.pscdataapi.converter.CompanyPscWriteConverter;
+import uk.gov.companieshouse.pscdataapi.converter.EnumWriteConverter;
 import uk.gov.companieshouse.pscdataapi.logging.DataMapHolder;
+import uk.gov.companieshouse.pscdataapi.models.PscData;
+import uk.gov.companieshouse.pscdataapi.models.PscSensitiveData;
 import uk.gov.companieshouse.pscdataapi.serialization.LocalDateDeSerializer;
 import uk.gov.companieshouse.pscdataapi.serialization.LocalDateSerializer;
 
@@ -35,6 +44,21 @@ public class ApplicationConfig {
         this.kafkaApiUrl = kafkaApiUrl;
         this.metricsApiUrl = metricsApiUrl;
         this.exemptionsApiUrl = exemptionsApiUrl;
+    }
+
+    /*
+    These custom converters allow us to only use @JsonProperty instead of needing the @Field annotation also on fields
+    that require snake casing. Without these custom converters, and in the absence of the @Field annotation, we would
+    get camel casing on fields with multiple words.
+     */
+    @Bean
+    public MongoCustomConversions mongoCustomConversions() {
+        ObjectMapper objectMapper = mongoDbObjectMapper();
+        return new MongoCustomConversions(List.of(new CompanyPscWriteConverter(objectMapper),
+                new CompanyPscSensitiveWriteConverter(objectMapper),
+                new CompanyPscReadConverter(objectMapper, PscData.class),
+                new CompanyPscSensitiveReadConverter(objectMapper, PscSensitiveData.class),
+                new EnumWriteConverter()));
     }
 
     @Bean
@@ -63,11 +87,6 @@ public class ApplicationConfig {
                 .configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
     }
 
-    /**
-     * Mongo DB Object Mapper.
-     *
-     * @return ObjectMapper.
-     */
     private ObjectMapper mongoDbObjectMapper() {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);

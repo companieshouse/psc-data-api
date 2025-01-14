@@ -23,6 +23,7 @@
         <maven-surefire-plugin.version>3.3.0</maven-surefire-plugin.version>
         <jib-maven-plugin.version>3.4.4</jib-maven-plugin.version>
         <jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
+        <commons.io.version>2.17.0</commons.io.version>
 
         <!-- Internal -->
         <structured-logging.version>3.0.20</structured-logging.version>
@@ -154,6 +155,12 @@
                     <artifactId>snakeyaml</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>${commons.io.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

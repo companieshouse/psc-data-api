@@ -1,0 +1,18 @@
+{
+  "usual_residential_address": {
+    "address_line_1": "ura_line1",
+    "address_line_2": "ura_line2",
+    "country": "United Kingdom",
+    "locality": "Cardiff",
+    "postal_code": "CF2 1B6",
+    "region": "ura_region",
+    "care_of": "ura_care_of",
+    "po_box": "ura_po"
+  },
+  "date_of_birth": {
+    "day": 1,
+    "month": 1,
+    "year": 1990
+  },
+  "residential_address_is_same_as_service_address": true
+}
