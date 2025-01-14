@@ -23,7 +23,7 @@ import uk.gov.companieshouse.pscdataapi.models.PscDeleteRequest;
 import uk.gov.companieshouse.pscdataapi.util.TestHelper;
 
 @SpringBootTest(properties = {"feature.seeding_collection_enabled=true"})
-class ResourceChangedApiServiceAspectFeatureFlagEnabledITest {
+class ResourceChangedApiServiceAspectFeatureFlagEnabledIT {
     @Autowired
     private ChsKafkaApiService chsKafkaApiService;
 
