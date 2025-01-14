@@ -13,21 +13,20 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.system.CapturedOutput;
 import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.companieshouse.api.psc.PscList;
 import uk.gov.companieshouse.logging.Logger;
-import uk.gov.companieshouse.pscdataapi.controller.CompanyPscController;
 import uk.gov.companieshouse.pscdataapi.service.CompanyPscService;
 
+@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
-@WebMvcTest(value = CompanyPscController.class)
-@TestPropertySource(properties = "logging.level.root=INFO")
+@ExtendWith(OutputCaptureExtension.class)
 class DataMapHolderIT {
 
     private static final String GET_REQUEST_URI = "/company/{company_number}/persons-with-significant-control";
@@ -37,13 +36,12 @@ class DataMapHolderIT {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private CompanyPscService companyPscService;
-    @MockBean
+    @MockitoBean
     private Logger logger;
 
     @Test
-    @ExtendWith(OutputCaptureExtension.class)
     void shouldSuccessfullyInitialiseRequestId(CapturedOutput capture) throws Exception {
         // given
         when(companyPscService.retrievePscListSummaryFromDb(anyString(), anyInt(), anyBoolean(), anyInt()))
@@ -59,12 +57,11 @@ class DataMapHolderIT {
         );
 
         // then
-        assertTrue(capture.getOut().contains("request-id\":\"%s".formatted(CONTEXT_ID)));
-        assertFalse(capture.getOut().contains("request_id\":\"%s".formatted(UNINITIALISED)));
+        assertTrue(capture.getAll().contains("request-id\":\"%s".formatted(CONTEXT_ID)));
+        assertFalse(capture.getAll().contains("request_id\":\"%s".formatted(UNINITIALISED)));
     }
 
     @Test
-    @ExtendWith(OutputCaptureExtension.class)
     void shouldSuccessfullyInitialiseRequestIdWhenNoRequestIdProvided(CapturedOutput capture) throws Exception {
         // given
         when(companyPscService.retrievePscListSummaryFromDb(anyString(), anyInt(), anyBoolean(), anyInt()))
@@ -79,6 +76,7 @@ class DataMapHolderIT {
         );
 
         // then
-        assertFalse(capture.getOut().contains("request_id\":\"%s".formatted(UNINITIALISED)));
+        assertTrue(capture.getAll().contains("request_id\":\""));
+        assertFalse(capture.getAll().contains("request_id\":\"%s".formatted(UNINITIALISED)));
     }
 }

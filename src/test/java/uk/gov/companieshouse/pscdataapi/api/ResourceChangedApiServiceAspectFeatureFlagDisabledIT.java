@@ -14,7 +14,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import uk.gov.companieshouse.api.InternalApiClient;
 import uk.gov.companieshouse.api.chskafka.ChangedResource;
 import uk.gov.companieshouse.api.error.ApiErrorResponseException;
@@ -35,9 +35,9 @@ class ResourceChangedApiServiceAspectFeatureFlagDisabledIT {
     @Captor
     ArgumentCaptor<ChangedResource> changedResourceCaptor;
 
-    @MockBean
+    @MockitoBean
     private ApiClientService apiClientService;
-    @MockBean
+    @MockitoBean
     private ChsKafkaApiService mapper;
 
     @Mock
