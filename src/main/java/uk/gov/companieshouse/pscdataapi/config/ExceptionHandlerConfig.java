@@ -20,7 +20,6 @@ import uk.gov.companieshouse.pscdataapi.exceptions.BadGatewayException;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
 import uk.gov.companieshouse.pscdataapi.exceptions.ConflictException;
 import uk.gov.companieshouse.pscdataapi.exceptions.MethodNotAllowedException;
-import uk.gov.companieshouse.pscdataapi.exceptions.NotFoundException;
 import uk.gov.companieshouse.pscdataapi.exceptions.SerDesException;
 import uk.gov.companieshouse.pscdataapi.exceptions.ServiceUnavailableException;
 
@@ -63,7 +62,7 @@ public class ExceptionHandlerConfig {
      * @param request request.
      * @return error response to return.
      */
-    @ExceptionHandler(value = {NotFoundException.class, IllegalArgumentException.class, NoHandlerFoundException.class})
+    @ExceptionHandler(value = {IllegalArgumentException.class, NoHandlerFoundException.class})
     public ResponseEntity<Object> handleNotFoundException(Exception ex, WebRequest request) {
         logger.error(String.format("Resource not found, response code: %s",
                 HttpStatus.NOT_FOUND), ex);

@@ -32,7 +32,6 @@ import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
 import uk.gov.companieshouse.pscdataapi.exceptions.ConflictException;
-import uk.gov.companieshouse.pscdataapi.exceptions.NotFoundException;
 import uk.gov.companieshouse.pscdataapi.exceptions.ResourceNotFoundException;
 import uk.gov.companieshouse.pscdataapi.exceptions.ServiceUnavailableException;
 import uk.gov.companieshouse.pscdataapi.logging.DataMapHolder;
@@ -559,7 +558,7 @@ public class CompanyPscService {
         if (pscDocuments == null || pscDocuments.isEmpty()) {
             final String msg = "No list of PSCs found during GET";
             logger.info(msg, DataMapHolder.getLogMap());
-            throw new NotFoundException(msg);
+            throw new ResourceNotFoundException(HttpStatus.NOT_FOUND, msg);
         }
 
         return createPscDocumentList(pscDocuments,
