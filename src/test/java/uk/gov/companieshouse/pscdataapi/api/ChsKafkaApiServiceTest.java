@@ -56,7 +56,7 @@ class ChsKafkaApiServiceTest {
     private static final String DELTA_AT = "20240219123045999999";
     private static final String PSC_URI = "/company/%s/persons-with-significant-control/%s/%s";
     private static final DateTimeFormatter ROUNDED_TO_SECONDS_FORMATTER =
-            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'hh:mm:ss");
+            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
 
     @Mock
     private Logger logger;
