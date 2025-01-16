@@ -27,7 +27,7 @@ build:
 test: test-unit test-integration
 
 .PHONY: test-unit
-test-unit:
+test-unit: clean
 	mvn test
 
 .PHONY: test-integration
