@@ -554,12 +554,10 @@ public class CompanyPscService {
                     companyNumber, startIndex, itemsPerPage);
         }
 
-        List<PscDocument> pscDocuments = repository.getPscDocumentList(companyNumber, startIndex, itemsPerPage);
-        if (pscDocuments == null || pscDocuments.isEmpty()) {
-            final String msg = "No list of PSCs found during GET";
-            logger.info(msg, DataMapHolder.getLogMap());
-            throw new ResourceNotFoundException(HttpStatus.NOT_FOUND, msg);
-        }
+        List<PscDocument> pscDocuments = Optional.of(
+                        repository.getPscDocumentList(companyNumber, startIndex, itemsPerPage))
+                .filter(docs -> !docs.isEmpty())
+                .orElse(Collections.emptyList());
 
         return createPscDocumentList(pscDocuments,
                 startIndex, itemsPerPage, companyNumber, false, companyMetrics);
