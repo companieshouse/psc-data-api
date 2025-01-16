@@ -34,6 +34,10 @@ test-unit: clean
 test-integration: clean
 	mvn verify -Dskip.unit.tests=true
 
+.PHONY: docker-image
+docker-image: clean
+	mvn package -Dskip.unit.tests=true -Dskip.integration.tests=true jib:dockerBuild
+
 .PHONY: coverage
 coverage:
 	mvn verify
