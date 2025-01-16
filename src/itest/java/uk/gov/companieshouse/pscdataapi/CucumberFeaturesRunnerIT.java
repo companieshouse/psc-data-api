@@ -26,13 +26,13 @@ public class CucumberFeaturesRunnerIT {
             DockerImageName.parse("mongo:5"));
 
     @MockitoBean
-    public ChsKafkaApiService chsKafkaApiService;
+    private ChsKafkaApiService chsKafkaApiService;
 
     @MockitoBean
-    public CompanyMetricsApiService companyMetricsApiService;
+    private CompanyMetricsApiService companyMetricsApiService;
 
     @MockitoBean
-    public CompanyExemptionsApiService companyExemptionsApiService;
+    private CompanyExemptionsApiService companyExemptionsApiService;
 
     @DynamicPropertySource
     public static void setProperties(DynamicPropertyRegistry registry) {
