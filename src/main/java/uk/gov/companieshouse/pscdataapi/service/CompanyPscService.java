@@ -579,13 +579,13 @@ public class CompanyPscService {
                             String.format(COMPANY_NOT_ON_PUBLIC_REGISTER, companyNumber))));
 
             if (registerMovedTo.equals("public-register")) {
-                Optional<List<PscDocument>> pscListOptional = repository
-                        .getListSummaryRegisterView(companyNumber, startIndex,
-                                metricsData.getRegisters().getPersonsWithSignificantControl()
-                                        .getMovedOn(),
-                                itemsPerPage);
-                List<PscDocument> pscStatementDocuments = pscListOptional
-                        .filter(docs -> !docs.isEmpty()).orElse(Collections.emptyList());
+                List<PscDocument> pscStatementDocuments = Optional.of(repository
+                                .getListSummaryRegisterView(companyNumber, startIndex,
+                                        metricsData.getRegisters().getPersonsWithSignificantControl()
+                                                .getMovedOn(),
+                                        itemsPerPage))
+                        .filter(docs -> !docs.isEmpty())
+                        .orElse(Collections.emptyList());
 
                 return createPscDocumentList(pscStatementDocuments,
                         startIndex, itemsPerPage, companyNumber, true, companyMetrics);

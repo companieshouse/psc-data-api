@@ -54,14 +54,6 @@
     </dependencyManagement>
 
     <dependencies>
-<!--        Vulnerable transitive deps start here-->
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-core</artifactId>
-            <version>1.5.16</version>
-        </dependency>
-<!--        Vulnerable transitive deps end here-->
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
@@ -77,6 +69,7 @@
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
         <dependency>
+<!--            Can't upgrade vulernable logback-core due to higher versions being incomaptible-->
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
         </dependency>

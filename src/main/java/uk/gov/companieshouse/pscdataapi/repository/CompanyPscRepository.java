@@ -34,6 +34,6 @@ public interface CompanyPscRepository extends MongoRepository<PscDocument, Strin
             "{'$skip': ?1}",
             "{'$limit': ?3}",
             })
-    Optional<List<PscDocument>> getListSummaryRegisterView(
+    List<PscDocument> getListSummaryRegisterView(
             String companyNumber, Integer startIndex, OffsetDateTime movedOn, Integer itemsPerPage);
 }
