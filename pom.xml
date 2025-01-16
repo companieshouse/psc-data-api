@@ -54,6 +54,14 @@
     </dependencyManagement>
 
     <dependencies>
+<!--        Vulnerable transitive deps start here-->
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-core</artifactId>
+            <version>1.5.16</version>
+        </dependency>
+<!--        Vulnerable transitive deps end here-->
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
@@ -71,12 +79,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
-<!--            <exclusions>-->
-<!--                <exclusion>-->
-<!--                    <groupId>ch.qos.logback</groupId>-->
-<!--                    <artifactId>logback-core</artifactId>-->
-<!--                </exclusion>-->
-<!--            </exclusions>-->
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
