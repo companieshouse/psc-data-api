@@ -73,5 +73,5 @@ sonar:
 
 .PHONY: sonar-pr-analysis
 sonar-pr-analysis:
-	mvn verify -Dskip.unit.tests=true -Dskip.integration.tests=true
+	mvn verify -Dskip.unit.tests=true -Dskip.integration.tests=false
 	#mvn sonar:sonar -P sonar-pr-analysis #temporary until sonar available for Java 21
