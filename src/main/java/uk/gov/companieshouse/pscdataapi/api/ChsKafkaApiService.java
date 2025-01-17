@@ -31,7 +31,7 @@ public class ChsKafkaApiService {
     private static final String PSC_URI = "/company/%s/persons-with-significant-control/%s/%s";
     private static final String CHANGED_EVENT_TYPE = "changed";
     private static final String DELETE_EVENT_TYPE = "deleted";
-    private static final DateTimeFormatter PUBLISHED_AT_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'hh:mm:ss")
+    private static final DateTimeFormatter PUBLISHED_AT_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
             .withZone(UTC);
 
     private final CompanyPscTransformer companyPscTransformer;
