@@ -16,12 +16,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
 import uk.gov.companieshouse.api.InternalApiClient;
-import uk.gov.companieshouse.api.converter.EnumWriteConverter;
 import uk.gov.companieshouse.api.http.ApiKeyHttpClient;
 import uk.gov.companieshouse.pscdataapi.converter.CompanyPscReadConverter;
 import uk.gov.companieshouse.pscdataapi.converter.CompanyPscSensitiveReadConverter;
 import uk.gov.companieshouse.pscdataapi.converter.CompanyPscSensitiveWriteConverter;
 import uk.gov.companieshouse.pscdataapi.converter.CompanyPscWriteConverter;
+import uk.gov.companieshouse.pscdataapi.converter.EnumWriteConverter;
 import uk.gov.companieshouse.pscdataapi.logging.DataMapHolder;
 import uk.gov.companieshouse.pscdataapi.models.PscData;
 import uk.gov.companieshouse.pscdataapi.models.PscSensitiveData;
@@ -46,10 +46,10 @@ public class ApplicationConfig {
         this.exemptionsApiUrl = exemptionsApiUrl;
     }
 
-    /**
-     * mongoCustomConversions.
-     *
-     * @return MongoCustomConversions.
+    /*
+    These custom converters allow us to only use @JsonProperty instead of needing the @Field annotation also on fields
+    that require snake casing. Without these custom converters, and in the absence of the @Field annotation, we would
+    get camel casing on fields with multiple words.
      */
     @Bean
     public MongoCustomConversions mongoCustomConversions() {
@@ -87,11 +87,6 @@ public class ApplicationConfig {
                 .configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
     }
 
-    /**
-     * Mongo DB Object Mapper.
-     *
-     * @return ObjectMapper.
-     */
     private ObjectMapper mongoDbObjectMapper() {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);

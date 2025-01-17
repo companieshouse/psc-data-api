@@ -50,8 +50,7 @@ public class MongoPscConfig extends AbstractMongoClientConfiguration {
 
     @Override
     public MongoClient mongoClient() {
-        final ConnectionString connectionString =
-                new ConnectionString(getDatabaseUri());
+        final ConnectionString connectionString = new ConnectionString(getDatabaseUri());
         final MongoClientSettings mongoClientSettings = MongoClientSettings.builder()
                 .applyConnectionString(connectionString)
                 .build();
