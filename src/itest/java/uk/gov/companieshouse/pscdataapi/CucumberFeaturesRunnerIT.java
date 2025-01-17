@@ -23,7 +23,7 @@ import uk.gov.companieshouse.pscdataapi.service.CompanyMetricsApiService;
 public class CucumberFeaturesRunnerIT {
 
     public static final MongoDBContainer mongoDBContainer = new MongoDBContainer(
-            DockerImageName.parse("mongo:6.0.19"));
+            DockerImageName.parse("mongo:7.0.16"));
 
     @MockitoBean
     private ChsKafkaApiService chsKafkaApiService;
