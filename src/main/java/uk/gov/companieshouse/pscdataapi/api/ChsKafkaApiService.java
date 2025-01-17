@@ -7,7 +7,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
-import org.springframework.beans.factory.annotation.Value;
+import java.util.function.Supplier;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.api.InternalApiClient;
 import uk.gov.companieshouse.api.chskafka.ChangedResource;
@@ -26,63 +27,45 @@ import uk.gov.companieshouse.pscdataapi.util.PscTransformationHelper;
 @Service
 public class ChsKafkaApiService {
 
-    private static final String PSC_URI = "/company/%s/persons-with-significant-control/"
-            + "%s/%s";
+    private static final String RESOURCE_CHANGED_URI = "/private/resource-changed";
+    private static final String PSC_URI = "/company/%s/persons-with-significant-control/%s/%s";
     private static final String CHANGED_EVENT_TYPE = "changed";
     private static final String DELETE_EVENT_TYPE = "deleted";
     private static final DateTimeFormatter PUBLISHED_AT_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'hh:mm:ss")
             .withZone(UTC);
 
     private final CompanyPscTransformer companyPscTransformer;
-    private final InternalApiClient internalApiClient;
+    private final Supplier<InternalApiClient> kafkaApiClientSupplier;
     private final Logger logger;
     private final ObjectMapper objectMapper;
 
-    @Value("${chs.api.kafka.url}")
-    private String chsKafkaApiUrl;
-    @Value("${chs.api.kafka.resource-changed.uri}")
-    private String resourceChangedUri;
-
-    public ChsKafkaApiService(InternalApiClient internalApiClient, Logger logger,
-            ObjectMapper objectMapper, CompanyPscTransformer companyPscTransformer) {
-        this.internalApiClient = internalApiClient;
+    public ChsKafkaApiService(CompanyPscTransformer companyPscTransformer,
+            @Qualifier("kafkaApiClientSupplier") Supplier<InternalApiClient> kafkaApiClientSupplier, Logger logger,
+            ObjectMapper objectMapper) {
+        this.companyPscTransformer = companyPscTransformer;
+        this.kafkaApiClientSupplier = kafkaApiClientSupplier;
         this.logger = logger;
         this.objectMapper = objectMapper;
-        this.companyPscTransformer = companyPscTransformer;
     }
-
-    /**
-     * Creates a ChangedResource object to send a request to the chs kafka api.
-     *
-     * @param contextId      chs kafka id
-     * @param companyNumber  company number of psc
-     * @param notificationId mongo id
-     * @return passes request to api response handling
-     */
 
     @StreamEvents
     public ApiResponse<Void> invokeChsKafkaApi(String contextId, String companyNumber,
             String notificationId, String kind) {
-        internalApiClient.setBasePath(chsKafkaApiUrl);
-        PrivateChangedResourcePost changedResourcePost = internalApiClient
-                .privateChangedResourceHandler().postChangedResource(resourceChangedUri,
-                        mapChangedResource(contextId, companyNumber, notificationId, kind,
-                                false, null));
+        PrivateChangedResourcePost changedResourcePost =
+                kafkaApiClientSupplier.get()
+                        .privateChangedResourceHandler()
+                        .postChangedResource(RESOURCE_CHANGED_URI,
+                                mapChangedResource(contextId, companyNumber, notificationId, kind,
+                                        false, null));
         return handleApiCall(changedResourcePost);
     }
 
-    /**
-     * Creates a ChangedResource object to send a delete request to the chs kafka api.
-     *
-     * @return passes request to api response handling
-     */
     @StreamEvents
     public ApiResponse<Void> invokeChsKafkaApiWithDeleteEvent(PscDeleteRequest deleteRequest, PscDocument pscDocument) {
-
-        internalApiClient.setBasePath(chsKafkaApiUrl);
         PrivateChangedResourcePost changedResourcePost =
-                internalApiClient.privateChangedResourceHandler()
-                        .postChangedResource(resourceChangedUri,
+                kafkaApiClientSupplier.get()
+                        .privateChangedResourceHandler()
+                        .postChangedResource(RESOURCE_CHANGED_URI,
                                 mapChangedResource(deleteRequest.contextId(), deleteRequest.companyNumber(),
                                         deleteRequest.notificationId(), deleteRequest.kind(), true, pscDocument));
         return handleApiCall(changedResourcePost);

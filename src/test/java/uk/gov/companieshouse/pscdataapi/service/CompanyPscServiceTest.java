@@ -37,8 +37,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.NonTransientDataAccessException;
 import org.springframework.http.HttpStatus;
-import uk.gov.companieshouse.api.api.CompanyExemptionsApiService;
-import uk.gov.companieshouse.api.api.CompanyMetricsApiService;
 import uk.gov.companieshouse.api.exemptions.CompanyExemptions;
 import uk.gov.companieshouse.api.exemptions.Exemptions;
 import uk.gov.companieshouse.api.exemptions.PscExemptAsTradingOnUkRegulatedMarketItem;
@@ -83,6 +81,12 @@ class CompanyPscServiceTest {
     private static final boolean SHOW_FULL_DOB_TRUE = true;
     private static final boolean SHOW_FULL_DOB_FALSE = false;
 
+    @InjectMocks
+    private CompanyPscService service;
+
+    @Captor
+    private ArgumentCaptor<String> dateCaptor;
+
     @Mock
     private Logger logger;
     @Mock
@@ -92,13 +96,9 @@ class CompanyPscServiceTest {
     @Mock
     private ChsKafkaApiService chsKafkaApiService;
     @Mock
-    CompanyExemptionsApiService companyExemptionsApiService;
-    @Captor
-    private ArgumentCaptor<String> dateCaptor;
-    @InjectMocks
-    private CompanyPscService service;
+    private CompanyExemptionsApiService companyExemptionsApiService;
     @Mock
-    CompanyMetricsApiService companyMetricsApiService;
+    private CompanyMetricsApiService companyMetricsApiService;
 
     private FullRecordCompanyPSCApi request;
     private PscDocument pscDocument;
