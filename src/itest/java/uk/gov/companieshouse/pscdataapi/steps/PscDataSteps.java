@@ -7,7 +7,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
-import static uk.gov.companieshouse.pscdataapi.config.AbstractMongoConfig.mongoDBContainer;
+import static uk.gov.companieshouse.pscdataapi.CucumberFeaturesRunnerIT.mongoDBContainer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -40,7 +40,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.FileCopyUtils;
-import uk.gov.companieshouse.api.api.CompanyMetricsApiService;
 import uk.gov.companieshouse.api.metrics.MetricsApi;
 import uk.gov.companieshouse.api.psc.CorporateEntity;
 import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
@@ -65,6 +64,7 @@ import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 import uk.gov.companieshouse.pscdataapi.models.PscIdentification;
 import uk.gov.companieshouse.pscdataapi.models.PscSensitiveData;
 import uk.gov.companieshouse.pscdataapi.repository.CompanyPscRepository;
+import uk.gov.companieshouse.pscdataapi.service.CompanyMetricsApiService;
 import uk.gov.companieshouse.pscdataapi.service.CompanyPscService;
 import uk.gov.companieshouse.pscdataapi.transform.CompanyPscTransformer;
 import uk.gov.companieshouse.pscdataapi.util.FileReaderUtil;
@@ -1332,10 +1332,8 @@ public class PscDataSteps {
         headers.set("ERIC-Authorised-Key-Roles", "*");
         HttpEntity<String> request = new HttpEntity<>(null, headers);
 
-        String uri =
-                "/company/{company_number}/persons-with-significant-control";
-        ResponseEntity<PscList> response = restTemplate.exchange(uri,
-                HttpMethod.GET, request, PscList.class, companyNumber);
+        final String uri = "/company/{company_number}/persons-with-significant-control";
+        ResponseEntity<PscList> response = restTemplate.exchange(uri, HttpMethod.GET, request, PscList.class, companyNumber);
 
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
         CucumberContext.CONTEXT.set("getResponseBody", response.getBody());

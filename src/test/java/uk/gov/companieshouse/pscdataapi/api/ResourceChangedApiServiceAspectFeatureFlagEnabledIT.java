@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import uk.gov.companieshouse.api.InternalApiClient;
 import uk.gov.companieshouse.api.chskafka.ChangedResource;
 import uk.gov.companieshouse.api.error.ApiErrorResponseException;
@@ -23,11 +23,11 @@ import uk.gov.companieshouse.pscdataapi.models.PscDeleteRequest;
 import uk.gov.companieshouse.pscdataapi.util.TestHelper;
 
 @SpringBootTest(properties = {"feature.seeding_collection_enabled=true"})
-class ResourceChangedApiServiceAspectFeatureFlagEnabledITest {
+class ResourceChangedApiServiceAspectFeatureFlagEnabledIT {
     @Autowired
     private ChsKafkaApiService chsKafkaApiService;
 
-    @MockBean
+    @MockitoBean
     private ApiClientService apiClientService;
 
     @Mock

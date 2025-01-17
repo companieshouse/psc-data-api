@@ -1,0 +1,27 @@
+{
+  "address": {
+    "address_line_1": "sa_line1",
+    "address_line_2": "sa_line2",
+    "country": "United Kingdom",
+    "locality": "Cardiff",
+    "postal_code": "CF2 1B6",
+    "premises": "SA",
+    "region": "sa_region",
+    "care_of": "sa_care_of",
+    "po_box": "sa_po"
+  },
+  "nationality": "British",
+  "country_of_residence": "United Kingdom",
+  "kind": "individual-person-with-significant-control",
+  "natures_of_control": [
+    "part-right-to-share-surplus-assets-75-to-100-percent"
+  ],
+  "name_elements": {
+    "title": "Mr.",
+    "forename": "JOHN",
+    "surname": "TESTER"
+  },
+  "links": {
+    "self": "/company/12345678/persons-with-significant-control/test_id/full_record"
+  }
+}

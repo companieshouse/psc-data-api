@@ -14,7 +14,9 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.servlet.NoHandlerFoundException;
 import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.pscdataapi.exceptions.BadGatewayException;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
 import uk.gov.companieshouse.pscdataapi.exceptions.ConflictException;
 import uk.gov.companieshouse.pscdataapi.exceptions.MethodNotAllowedException;
@@ -60,7 +62,7 @@ public class ExceptionHandlerConfig {
      * @param request request.
      * @return error response to return.
      */
-    @ExceptionHandler(value = {IllegalArgumentException.class})
+    @ExceptionHandler(value = {IllegalArgumentException.class, NoHandlerFoundException.class})
     public ResponseEntity<Object> handleNotFoundException(Exception ex, WebRequest request) {
         logger.error(String.format("Resource not found, response code: %s",
                 HttpStatus.NOT_FOUND), ex);
@@ -153,5 +155,16 @@ public class ExceptionHandlerConfig {
         responseBody.put(MESSAGE, "Conflict.");
         request.setAttribute(EXCEPTION_ATTRIBUTE, ex, 0);
         return new ResponseEntity<>(responseBody, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(value = {BadGatewayException.class})
+    public ResponseEntity<Object> handleBadGatewayException(Exception ex, WebRequest request) {
+        logger.error(String.format("Bad Gateway, response code: %s", HttpStatus.BAD_GATEWAY), ex);
+
+        Map<String, Object> responseBody = new LinkedHashMap<>();
+        responseBody.put(TIMESTAMP, LocalDateTime.now());
+        responseBody.put(MESSAGE, "Bad Gateway.");
+        request.setAttribute(EXCEPTION_ATTRIBUTE, ex, 0);
+        return new ResponseEntity<>(responseBody, HttpStatus.BAD_GATEWAY);
     }
 }

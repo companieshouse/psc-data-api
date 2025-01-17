@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>uk.gov.companieshouse</groupId>
         <artifactId>companies-house-parent</artifactId>
         <version>2.1.11</version>
-        <relativePath />
     </parent>
     <artifactId>psc-data-api</artifactId>
     <version>unversioned</version>
@@ -16,24 +15,25 @@
     <properties>
         <java.version>21</java.version>
         <start-class>uk.gov.companieshouse.pscdataapi.PscDataApiApplication</start-class>
-        <spring-boot-dependencies.version>3.3.7</spring-boot-dependencies.version>
-        <spring-boot-maven-plugin.version>3.3.7</spring-boot-maven-plugin.version>
+        <spring-boot-dependencies.version>3.4.1</spring-boot-dependencies.version>
+        <spring-boot-maven-plugin.version>3.4.1</spring-boot-maven-plugin.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
-        <maven-surefire-plugin.version>3.3.0</maven-surefire-plugin.version>
+        <maven-surefire-plugin.version>3.5.2</maven-surefire-plugin.version>
+        <maven-failsafe-plugin.version>3.5.2</maven-failsafe-plugin.version>
+        <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
+        <maven-build-helper-plugin.version>3.6.0</maven-build-helper-plugin.version>
         <jib-maven-plugin.version>3.4.4</jib-maven-plugin.version>
         <jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
+        <commons.io.version>2.18.0</commons.io.version>
 
         <!-- Internal -->
         <structured-logging.version>3.0.20</structured-logging.version>
         <private-api-sdk-java.version>4.0.258</private-api-sdk-java.version>
-        <data-sync-api-sdk-java.version>1.0.6</data-sync-api-sdk-java.version>
         <api-security-java.version>2.0.5</api-security-java.version>
-        <api-sdk-manager-java-library.version>3.0.5</api-sdk-manager-java-library.version>
 
         <!-- tests -->
-        <io-cucumber.version>7.18.0</io-cucumber.version>
-        <test-containers.version>1.19.8</test-containers.version>
+        <io-cucumber.version>7.20.1</io-cucumber.version>
         <skip.integration.tests>false</skip.integration.tests>
         <skip.unit.tests>false</skip.unit.tests>
 
@@ -49,13 +49,6 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
                 <version>${spring-boot-dependencies.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.testcontainers</groupId>
-                <artifactId>testcontainers-bom</artifactId>
-                <version>${test-containers.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -78,6 +71,7 @@
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
         <dependency>
+<!--            Can't upgrade vulernable logback-core due to higher versions being incomaptible-->
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
         </dependency>
@@ -106,34 +100,6 @@
             <version>${private-api-sdk-java.version}</version>
         </dependency>
         <dependency>
-            <groupId>uk.gov.companieshouse</groupId>
-            <artifactId>data-sync-api-sdk-java</artifactId>
-            <version>${data-sync-api-sdk-java.version}</version>
-            <exclusions>
-                <!-- Exclusion due to transitive dependency being an older version-->
-                <exclusion>
-                    <groupId>com.github.docker-java</groupId>
-                    <artifactId>docker-java-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>commons-beanutils</groupId>
-                    <artifactId>commons-beanutils</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>commons-collections</groupId>
-                    <artifactId>commons-collections</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.codehaus.plexus</groupId>
-                    <artifactId>plexus-utils</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.sonarsource.scanner.maven</groupId>
-                    <artifactId>sonar-maven-plugin</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
@@ -149,12 +115,8 @@
             <artifactId>api-security-java</artifactId>
             <version>${api-security-java.version}</version>
         </dependency>
-        <dependency>
-            <groupId>io.cucumber</groupId>
-            <artifactId>cucumber-core</artifactId>
-            <version>${io-cucumber.version}</version>
-            <scope>test</scope>
-        </dependency>
+
+        <!--  Cucumber  -->
         <dependency>
             <groupId>io.cucumber</groupId>
             <artifactId>cucumber-java</artifactId>
@@ -163,15 +125,22 @@
         </dependency>
         <dependency>
             <groupId>io.cucumber</groupId>
-            <artifactId>cucumber-junit</artifactId>
+            <artifactId>cucumber-spring</artifactId>
             <version>${io-cucumber.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>io.cucumber</groupId>
-            <artifactId>cucumber-spring</artifactId>
+            <artifactId>cucumber-junit-platform-engine</artifactId>
             <version>${io-cucumber.version}</version>
+            <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-suite</artifactId>
+            <scope>test</scope>
+        </dependency>
+
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>mongodb</artifactId>
@@ -192,6 +161,12 @@
                     <artifactId>snakeyaml</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>${commons.io.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -219,15 +194,7 @@
                 <configuration>
                     <argLine>-Dfile.encoding=UTF-8</argLine>
                     <argLine>${surefireArgLine}</argLine>
-                    <excludes>
-                        <exclude>**/*ITest.java</exclude>
-                    </excludes>
                     <skipTests>${skip.unit.tests}</skipTests>
-                    <environmentVariables>
-                        <CHS_API_KEY>key</CHS_API_KEY>
-                        <API_URL>key</API_URL>
-                        <PAYMENTS_API_URL>key</PAYMENTS_API_URL>
-                    </environmentVariables>
                 </configuration>
             </plugin>
             <plugin>
@@ -305,6 +272,77 @@
                     </to>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>${maven-failsafe-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <properties>
+                        <property>
+                            <name>listener</name>
+                            <value>org.sonar.java.jacoco.JUnitListener</value>
+                        </property>
+                    </properties>
+                    <argLine>-Dfile.encoding=UTF-8</argLine>
+                    <argLine>${failsafeArgLine}</argLine>
+                    <classesDirectory>${project.build.outputDirectory}</classesDirectory>
+                    <skipITs>${skip.integration.tests}</skipITs>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>${maven-build-helper-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>add-integration-test-sources</id>
+                        <phase>generate-test-sources</phase>
+                        <goals>
+                            <goal>add-test-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>src/itest/java</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>${maven-resources-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>copy-resources</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <encoding>UTF-8</encoding>
+                            <outputDirectory>${basedir}/target/test-classes</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${basedir}/src/itest/resources</directory>
+                                    <includes>
+                                        <include>**/*.*</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
         </plugins>
     </build>
 
