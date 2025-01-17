@@ -32,7 +32,7 @@ test-unit: clean
 
 .PHONY: test-integration
 test-integration: clean
-	mvn integration-test -Dskip.unit.tests=true failsafe:verify
+	mvn verify -Dskip.unit.tests=true
 
 .PHONY: coverage
 coverage:
