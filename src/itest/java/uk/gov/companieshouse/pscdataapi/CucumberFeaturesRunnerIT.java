@@ -5,10 +5,10 @@ import org.junit.platform.suite.api.SelectClasspathResource;
 import org.junit.platform.suite.api.Suite;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.utility.DockerImageName;
 import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
@@ -23,16 +23,16 @@ import uk.gov.companieshouse.pscdataapi.service.CompanyMetricsApiService;
 public class CucumberFeaturesRunnerIT {
 
     public static final MongoDBContainer mongoDBContainer = new MongoDBContainer(
-            DockerImageName.parse("mongo:4"));
+            DockerImageName.parse("mongo:5"));
 
-    @MockBean
-    public ChsKafkaApiService chsKafkaApiService;
+    @MockitoBean
+    private ChsKafkaApiService chsKafkaApiService;
 
-    @MockBean
-    public CompanyMetricsApiService companyMetricsApiService;
+    @MockitoBean
+    private CompanyMetricsApiService companyMetricsApiService;
 
-    @MockBean
-    public CompanyExemptionsApiService companyExemptionsApiService;
+    @MockitoBean
+    private CompanyExemptionsApiService companyExemptionsApiService;
 
     @DynamicPropertySource
     public static void setProperties(DynamicPropertyRegistry registry) {

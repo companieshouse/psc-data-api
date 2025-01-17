@@ -12,6 +12,18 @@ Feature: Get list summary
       | company_number | result          |
       | 34777777       | psc_list_output |
 
+  Scenario Outline: Processing empty Psc List GET request successfully
+    Given Psc data api service is running
+    And nothing is persisted to the database
+    And Company Metrics "company_metrics_data" is available for company number "<company_number>"
+    When a Get request is sent for "<company_number>" for List summary
+    Then I should receive 200 status code
+    And the Get call response body should match file "<result>" for List Summary
+
+    Examples:
+      | company_number | result                              |
+      | 34777777       | empty_psc_list_register_view_output |
+
   Scenario Outline: Processing Psc List GET register view request successfully
     Given Psc data api service is running
     And a PSC exists for "<companyNumber>" for List summary
@@ -35,7 +47,7 @@ Feature: Get list summary
     And the Get call response body should match file "<result>" for List Summary
 
     Examples:
-      | company_number | result                        |
+      | company_number | result                              |
       | 34777777       | empty_psc_list_register_view_output |
 
 
