@@ -15,7 +15,6 @@ import uk.gov.companieshouse.api.model.ApiResponse;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadGatewayException;
-import uk.gov.companieshouse.pscdataapi.exceptions.ResourceNotFoundException;
 import uk.gov.companieshouse.pscdataapi.logging.DataMapHolder;
 
 @Component
@@ -31,7 +30,7 @@ public class CompanyExemptionsApiService {
     }
 
     public Optional<CompanyExemptions> getCompanyExemptions(final String companyNumber) {
-        ApiResponse<CompanyExemptions> response;
+        ApiResponse<CompanyExemptions> response = null;
         try {
             response = exemptionsApiClientSupplier.get()
                     .privateDeltaResourceHandler()
@@ -39,12 +38,9 @@ public class CompanyExemptionsApiService {
                     .execute();
         } catch (ApiErrorResponseException ex) {
             final int statusCode = ex.getStatusCode();
-            LOGGER.info("Company Exemptions API call failed with status code [%s]".formatted(statusCode),
+            LOGGER.info("Company Exemptions API GET failed with status code [%s]".formatted(statusCode),
                     DataMapHolder.getLogMap());
-            if (statusCode == 404) {
-                throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
-                        "Company Exemptions API responded with 404 Not Found");
-            } else {
+            if (statusCode != 404) {
                 throw new BadGatewayException("Error calling Company Exemptions API endpoint", ex);
             }
         } catch (URIValidationException ex) {

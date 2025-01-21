@@ -89,7 +89,7 @@ class CompanyExemptionsApiServiceTest {
     }
 
     @Test
-    void shouldThrowResourceNotFoundExceptionWhenApiRespondsWith404NotFound() throws Exception {
+    void shouldReturnEmptyOptionalWhenApiRespondsWith404NotFound() throws Exception {
         // given
         when(supplier.get()).thenReturn(client);
         when(client.privateDeltaResourceHandler()).thenReturn(privateDeltaResourceHandler);
@@ -98,11 +98,11 @@ class CompanyExemptionsApiServiceTest {
         when(privateCompanyExemptionsGetAll.execute()).thenThrow(buildApiErrorResponseException(404));
 
         // when
-        Executable executable = () -> service.getCompanyExemptions(COMPANY_NUMBER);
+        final Optional<CompanyExemptions> actual = service.getCompanyExemptions(COMPANY_NUMBER);
 
         // then
-        assertThrows(ResourceNotFoundException.class, executable);
         verify(privateDeltaResourceHandler).getCompanyExemptionsResource(URL);
+        assertEquals(Optional.empty(), actual);
     }
 
     @ParameterizedTest
