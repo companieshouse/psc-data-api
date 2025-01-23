@@ -48,6 +48,7 @@ public class CompanyExemptionsApiService {
             throw new BadGatewayException("URI validation error when calling Company Exemptions API", ex);
         }
 
-        return response != null ? Optional.of(response.getData()) : Optional.empty();
+        return Optional.ofNullable(response)
+                .map(ApiResponse::getData);
     }
 }

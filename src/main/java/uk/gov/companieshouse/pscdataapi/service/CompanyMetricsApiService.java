@@ -5,7 +5,6 @@ import static uk.gov.companieshouse.pscdataapi.PscDataApiApplication.APPLICATION
 import java.util.Optional;
 import java.util.function.Supplier;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.api.InternalApiClient;
 import uk.gov.companieshouse.api.error.ApiErrorResponseException;
@@ -15,7 +14,6 @@ import uk.gov.companieshouse.api.model.ApiResponse;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadGatewayException;
-import uk.gov.companieshouse.pscdataapi.exceptions.ResourceNotFoundException;
 import uk.gov.companieshouse.pscdataapi.logging.DataMapHolder;
 
 @Component
@@ -31,7 +29,7 @@ public class CompanyMetricsApiService {
     }
 
     public Optional<MetricsApi> getCompanyMetrics(final String companyNumber) {
-        ApiResponse<MetricsApi> response;
+        ApiResponse<MetricsApi> response = null;
         try {
             response = metricsApiClientSupplier.get()
                     .privateCompanyMetricsResourceHandler()
@@ -41,10 +39,7 @@ public class CompanyMetricsApiService {
             final int statusCode = ex.getStatusCode();
             LOGGER.info("Company Metrics API call failed with status code [%s]".formatted(statusCode),
                     DataMapHolder.getLogMap());
-            if (statusCode == 404) {
-                throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
-                        "Company Metrics API responded with 404 Not Found");
-            } else {
+            if (statusCode != 404) {
                 throw new BadGatewayException("Error calling Company Metrics API endpoint", ex);
             }
         } catch (URIValidationException ex) {
@@ -52,6 +47,7 @@ public class CompanyMetricsApiService {
             throw new BadGatewayException("URI validation error when calling Company Metrics API", ex);
         }
 
-        return response != null ? Optional.of(response.getData()) : Optional.empty();
+        return Optional.ofNullable(response)
+                .map(ApiResponse::getData);
     }
 }

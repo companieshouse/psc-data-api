@@ -1,7 +1,9 @@
 package uk.gov.companieshouse.pscdataapi.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -86,7 +88,7 @@ class CompanyMetricsApiServiceTest {
     }
 
     @Test
-    void shouldThrowResourceNotFoundExceptionWhenApiRespondsWith404NotFound() throws Exception {
+    void shouldContinueProcessingWhenApiRespondsWith404NotFound() throws Exception {
         // given
         when(supplier.get()).thenReturn(client);
         when(client.privateCompanyMetricsResourceHandler()).thenReturn(privateCompanyMetricsResourceHandler);
@@ -94,10 +96,10 @@ class CompanyMetricsApiServiceTest {
         when(privateCompanyMetricsGet.execute()).thenThrow(buildApiErrorResponseException(404));
 
         // when
-        Executable executable = () -> service.getCompanyMetrics(COMPANY_NUMBER);
+        Optional<MetricsApi> actual = service.getCompanyMetrics(COMPANY_NUMBER);
 
         // then
-        assertThrows(ResourceNotFoundException.class, executable);
+        assertTrue(actual.isEmpty());
         verify(privateCompanyMetricsResourceHandler).getCompanyMetrics(URL);
     }
 
