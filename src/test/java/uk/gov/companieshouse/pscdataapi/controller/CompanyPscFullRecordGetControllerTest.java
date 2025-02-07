@@ -17,9 +17,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import uk.gov.companieshouse.api.psc.Address;
+import uk.gov.companieshouse.api.model.common.Address;
+import uk.gov.companieshouse.api.model.psc.IndividualFullRecord;
 import uk.gov.companieshouse.api.psc.DateOfBirth;
-import uk.gov.companieshouse.api.psc.IndividualFullRecord;
 import uk.gov.companieshouse.api.psc.ItemLinkTypes;
 import uk.gov.companieshouse.api.psc.NameElements;
 import uk.gov.companieshouse.pscdataapi.exceptions.ResourceNotFoundException;
@@ -124,13 +124,23 @@ class CompanyPscFullRecordGetControllerTest {
     }
 
     private static IndividualFullRecord createFullRecord() {
+        final Address serviceAddress = new Address();
+        serviceAddress.setAddressLine1("addressLine1");
+        serviceAddress.setPostalCode("CF12 3AB");
+        serviceAddress.setPremises("1");
+
+        final Address residentialAddress = new Address();
+        residentialAddress.setPremises("Cottage");
+        residentialAddress.setAddressLine1("Home street");
+        residentialAddress.setPostalCode("AB12 3CD");
+
         return new IndividualFullRecord()
                 .kind(IndividualFullRecord.KindEnum.INDIVIDUAL_PERSON_WITH_SIGNIFICANT_CONTROL)
                 .name("Andy Bob Smith")
                 .nameElements(new NameElements().forename("Andy").middleName("Bob").surname("Smith"))
-                .serviceAddress(new Address().addressLine1("addressLine1").postalCode("CF12 3AB").premises("1"))
+                .serviceAddress(serviceAddress)
                 .residentialAddressSameAsServiceAddress(Boolean.FALSE)
-                .usualResidentialAddress(new Address().premises("Cottage").addressLine1("Home street").postalCode("AB12 3CD"))
+                .usualResidentialAddress(residentialAddress)
                 .nationality("British")
                 .naturesOfControl(Arrays.asList("nature of my control"))
                 .dateOfBirth(new DateOfBirth().day(1).month(2).year(2000))
