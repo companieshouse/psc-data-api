@@ -63,9 +63,6 @@ public class PscData {
     @JsonProperty("identification")
     private PscIdentification identification;
 
-    @JsonProperty("internal_id")
-    private Long internalId;
-
     public Address getPrincipalOfficeAddress() {
         return principalOfficeAddress;
     }
@@ -204,14 +201,6 @@ public class PscData {
         this.ceased = ceased;
     }
 
-    public Long getInternalId() {
-        return internalId;
-    }
-
-    public void setInternalId(final Long internalId) {
-        this.internalId = internalId;
-    }
-
     @Override
     public String toString() {
         return "PscData{"
@@ -253,8 +242,6 @@ public class PscData {
                 + links
                 + ", identification="
                 + identification
-                + ", internalId="
-                + internalId
                 + '}';
     }
 
@@ -283,8 +270,7 @@ public class PscData {
                 && Objects.equals(naturesOfControl, pscData.naturesOfControl)
                 && Objects.equals(nameElements, pscData.nameElements)
                 && Objects.equals(links, pscData.links)
-                && Objects.equals(identification, pscData.identification)
-                && Objects.equals(internalId, pscData.internalId);
+                && Objects.equals(identification, pscData.identification);
     }
 
     @Override
@@ -292,6 +278,6 @@ public class PscData {
         return Objects.hash(ceasedOn, etag, address, name, nationality, countryOfResidence,
                 kind, notifiedOn, description, serviceAddressIsSameAsRegisteredOfficeAddress,
                 isSanctioned, ceased, naturesOfControl,
-                nameElements, links, identification, internalId);
+                nameElements, links, identification);
     }
 }
