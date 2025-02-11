@@ -92,7 +92,8 @@ class CompanyPscFullRecordGetControllerTest {
                 "postal_code": "AB12 3CD",
                 "premises": "Cottage"
               },
-              "residential_address_same_as_service_address": false
+              "residential_address_same_as_service_address": false,
+              "internal_id" : 123456789
             }
             """;
 
@@ -144,6 +145,7 @@ class CompanyPscFullRecordGetControllerTest {
                 .nationality("British")
                 .naturesOfControl(Arrays.asList("nature of my control"))
                 .dateOfBirth(new DateOfBirth().day(1).month(2).year(2000))
+                .internalId(123456789L)
                 .links(Arrays.asList(new ItemLinkTypes().self("/company/123/persons-with-significant-control/456")));
     }
 
