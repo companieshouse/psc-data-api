@@ -106,12 +106,12 @@ public class CompanyPscTransformer {
         individualFullRecord.setLinks(mapLinksToList(pscData.getLinks()));
         individualFullRecord.serviceAddress(mapFullRecordAddress(pscData.getAddress()));
         individualFullRecord.setEtag(pscData.getEtag());
-        individualFullRecord.setInternalId(pscData.getInternalId());
 
         final PscSensitiveData sensitivePscData = pscDocument.getSensitiveData();
         individualFullRecord.setResidentialAddressSameAsServiceAddress(sensitivePscData.getResidentialAddressIsSameAsServiceAddress());
         individualFullRecord.setDateOfBirth(mapDateOfBirth(sensitivePscData.getDateOfBirth(), true));
         individualFullRecord.setUsualResidentialAddress(mapFullRecordAddress(sensitivePscData.getUsualResidentialAddress()));
+        individualFullRecord.setInternalId(sensitivePscData.getInternalId());
 
         return individualFullRecord;
     }

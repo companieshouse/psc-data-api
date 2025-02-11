@@ -10,6 +10,8 @@ public class PscSensitiveData {
     private DateOfBirth dateOfBirth;
     @JsonProperty("residential_address_is_same_as_service_address")
     private Boolean residentialAddressIsSameAsServiceAddress;
+    @JsonProperty("internal_id")
+    private Long internalId;
 
     public Address getUsualResidentialAddress() {
         return usualResidentialAddress;
@@ -37,6 +39,14 @@ public class PscSensitiveData {
                 = residentialAddressIsSameAsServiceAddress;
     }
 
+    public Long getInternalId() {
+        return internalId;
+    }
+
+    public void setInternalId(final Long internalId) {
+        this.internalId = internalId;
+    }
+
     @Override
     public String toString() {
         return "PscSensitiveData{"
@@ -46,6 +56,8 @@ public class PscSensitiveData {
                 + dateOfBirth
                 + ", residentialAddressIsSameAsServiceAddress="
                 + residentialAddressIsSameAsServiceAddress
+                + ", internalId="
+                + internalId
                 + '}';
     }
 
@@ -61,12 +73,13 @@ public class PscSensitiveData {
         return Objects.equals(usualResidentialAddress, that.usualResidentialAddress)
                 && Objects.equals(dateOfBirth, that.dateOfBirth)
                 && Objects.equals(residentialAddressIsSameAsServiceAddress,
-                that.residentialAddressIsSameAsServiceAddress);
+                that.residentialAddressIsSameAsServiceAddress)
+                && Objects.equals(internalId, that.internalId);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(usualResidentialAddress, dateOfBirth,
-                residentialAddressIsSameAsServiceAddress);
+                residentialAddressIsSameAsServiceAddress, internalId);
     }
 }
