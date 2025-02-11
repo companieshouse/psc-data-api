@@ -5,6 +5,7 @@ import java.time.format.DateTimeFormatter;
 
 import java.util.List;
 import org.springframework.stereotype.Component;
+import uk.gov.companieshouse.api.model.psc.IndividualFullRecord;
 import uk.gov.companieshouse.api.psc.Identification;
 import uk.gov.companieshouse.api.psc.CorporateEntity;
 import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
@@ -13,7 +14,6 @@ import uk.gov.companieshouse.api.psc.ExternalData;
 import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
 import uk.gov.companieshouse.api.psc.Individual;
 import uk.gov.companieshouse.api.psc.IndividualBeneficialOwner;
-import uk.gov.companieshouse.api.psc.IndividualFullRecord;
 import uk.gov.companieshouse.api.psc.InternalData;
 import uk.gov.companieshouse.api.psc.ItemLinkTypes;
 import uk.gov.companieshouse.api.psc.LegalPerson;
@@ -104,13 +104,14 @@ public class CompanyPscTransformer {
         individualFullRecord.setNationality(pscData.getNationality());
         individualFullRecord.setKind(IndividualFullRecord.KindEnum.INDIVIDUAL_PERSON_WITH_SIGNIFICANT_CONTROL);
         individualFullRecord.setLinks(mapLinksToList(pscData.getLinks()));
-        individualFullRecord.serviceAddress(mapAddress(pscData.getAddress()));
+        individualFullRecord.serviceAddress(mapFullRecordAddress(pscData.getAddress()));
         individualFullRecord.setEtag(pscData.getEtag());
+        individualFullRecord.setInternalId(pscData.getInternalId());
 
         final PscSensitiveData sensitivePscData = pscDocument.getSensitiveData();
         individualFullRecord.setResidentialAddressSameAsServiceAddress(sensitivePscData.getResidentialAddressIsSameAsServiceAddress());
         individualFullRecord.setDateOfBirth(mapDateOfBirth(sensitivePscData.getDateOfBirth(), true));
-        individualFullRecord.setUsualResidentialAddress(mapAddress(sensitivePscData.getUsualResidentialAddress()));
+        individualFullRecord.setUsualResidentialAddress(mapFullRecordAddress(sensitivePscData.getUsualResidentialAddress()));
 
         return individualFullRecord;
     }
@@ -536,6 +537,26 @@ public class CompanyPscTransformer {
         if (inputAddress != null) {
             uk.gov.companieshouse.api.psc.BeneficialOwnerAddress address =
                     new uk.gov.companieshouse.api.psc.BeneficialOwnerAddress();
+            address.setAddressLine1(inputAddress.getAddressLine1());
+            address.setAddressLine2(inputAddress.getAddressLine2());
+            address.setCountry(inputAddress.getCountry());
+            address.setLocality(inputAddress.getLocality());
+            address.setPoBox(inputAddress.getPoBox());
+            address.setPostalCode(inputAddress.getPostalCode());
+            address.setPremises(inputAddress.getPremises());
+            address.setRegion(inputAddress.getRegion());
+            address.setCareOf(inputAddress.getCareOf());
+            return address;
+        } else {
+            return null;
+        }
+    }
+
+    private uk.gov.companieshouse.api.model.common.Address mapFullRecordAddress(
+            uk.gov.companieshouse.pscdataapi.models.Address inputAddress) {
+        if (inputAddress != null) {
+            uk.gov.companieshouse.api.model.common.Address address =
+                    new uk.gov.companieshouse.api.model.common.Address();
             address.setAddressLine1(inputAddress.getAddressLine1());
             address.setAddressLine2(inputAddress.getAddressLine2());
             address.setCountry(inputAddress.getCountry());
