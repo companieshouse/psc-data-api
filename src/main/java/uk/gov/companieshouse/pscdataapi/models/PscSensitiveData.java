@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 
 public class PscSensitiveData {
+
     @JsonProperty("usual_residential_address")
     private Address usualResidentialAddress;
     @JsonProperty("date_of_birth")
@@ -40,12 +41,12 @@ public class PscSensitiveData {
                 = residentialAddressIsSameAsServiceAddress;
     }
 
-    public void setInternalId(Long internalId) {
-        this.internalId = internalId;
-    }
-
     public Long getInternalId() {
         return internalId;
+    }
+
+    public void setInternalId(final Long internalId) {
+        this.internalId = internalId;
     }
 
     @Override
