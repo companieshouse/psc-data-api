@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.api.exemptions.CompanyExemptions;
@@ -17,17 +18,8 @@ import uk.gov.companieshouse.api.metrics.MetricsApi;
 import uk.gov.companieshouse.api.metrics.RegisterApi;
 import uk.gov.companieshouse.api.metrics.RegistersApi;
 import uk.gov.companieshouse.api.model.psc.IndividualFullRecord;
-import uk.gov.companieshouse.api.psc.CorporateEntity;
-import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
-import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
-import uk.gov.companieshouse.api.psc.Individual;
-import uk.gov.companieshouse.api.psc.IndividualBeneficialOwner;
-import uk.gov.companieshouse.api.psc.LegalPerson;
-import uk.gov.companieshouse.api.psc.LegalPersonBeneficialOwner;
-import uk.gov.companieshouse.api.psc.ListSummary;
-import uk.gov.companieshouse.api.psc.PscList;
-import uk.gov.companieshouse.api.psc.SuperSecure;
-import uk.gov.companieshouse.api.psc.SuperSecureBeneficialOwner;
+import uk.gov.companieshouse.api.model.psc.VerificationState;
+import uk.gov.companieshouse.api.psc.*;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
@@ -35,11 +27,7 @@ import uk.gov.companieshouse.pscdataapi.exceptions.ConflictException;
 import uk.gov.companieshouse.pscdataapi.exceptions.ResourceNotFoundException;
 import uk.gov.companieshouse.pscdataapi.exceptions.ServiceUnavailableException;
 import uk.gov.companieshouse.pscdataapi.logging.DataMapHolder;
-import uk.gov.companieshouse.pscdataapi.models.Created;
-import uk.gov.companieshouse.pscdataapi.models.Links;
-import uk.gov.companieshouse.pscdataapi.models.PscData;
-import uk.gov.companieshouse.pscdataapi.models.PscDeleteRequest;
-import uk.gov.companieshouse.pscdataapi.models.PscDocument;
+import uk.gov.companieshouse.pscdataapi.models.*;
 import uk.gov.companieshouse.pscdataapi.repository.CompanyPscRepository;
 import uk.gov.companieshouse.pscdataapi.transform.CompanyPscTransformer;
 
@@ -60,19 +48,22 @@ public class CompanyPscService {
     private final ChsKafkaApiService chsKafkaApiService;
     private final CompanyExemptionsApiService companyExemptionsApiService;
     private final CompanyMetricsApiService companyMetricsApiService;
+    private final VerificationStateService verificationStateService;
 
     public CompanyPscService(Logger logger,
             CompanyPscTransformer transformer,
             CompanyPscRepository repository,
             ChsKafkaApiService chsKafkaApiService,
             CompanyExemptionsApiService companyExemptionsApiService,
-            CompanyMetricsApiService companyMetricsApiService) {
+            CompanyMetricsApiService companyMetricsApiService,
+            VerificationStateService verificationStateService) {
         this.logger = logger;
         this.transformer = transformer;
         this.repository = repository;
         this.chsKafkaApiService = chsKafkaApiService;
         this.companyExemptionsApiService = companyExemptionsApiService;
         this.companyMetricsApiService = companyMetricsApiService;
+        this.verificationStateService = verificationStateService;
     }
 
     /**
@@ -197,6 +188,10 @@ public class CompanyPscService {
                     throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
                             "Failed to transform PSCDocument to Individual Full Record");
                 }
+
+                VerificationState verificationState = verificationStateService.retrieveVerificationState(individualFullRecord.getInternalId());
+                individualFullRecord.setVerificationState(verificationState);
+
                 return individualFullRecord;
             } else {
                 throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
