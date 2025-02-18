@@ -90,8 +90,8 @@ public class CompanyPscTransformer {
      * @return PSC mongo Document.
      */
     public IndividualFullRecord transformPscDocToIndividualFullRecord(final PscDocument pscDocument) {
-        logger.info("Attempting to transform pscDocument to Individual Full Record",
-                DataMapHolder.getLogMap());
+        logger.info("Attempting to transform pscDocument to Individual Full Record", DataMapHolder.getLogMap());
+
         final IndividualFullRecord individualFullRecord  = new IndividualFullRecord();
 
         final PscData pscData = pscDocument.getData();
@@ -111,6 +111,7 @@ public class CompanyPscTransformer {
         individualFullRecord.setResidentialAddressSameAsServiceAddress(sensitivePscData.getResidentialAddressIsSameAsServiceAddress());
         individualFullRecord.setDateOfBirth(mapDateOfBirth(sensitivePscData.getDateOfBirth(), true));
         individualFullRecord.setUsualResidentialAddress(mapAddress(sensitivePscData.getUsualResidentialAddress()));
+        individualFullRecord.setInternalId(null);
 
         return individualFullRecord;
     }
@@ -398,8 +399,7 @@ public class CompanyPscTransformer {
                 String kind = data.getKind();
                 if (IndividualPscRoles.includes(kind)) {
                     if (externalData.getSensitiveData() != null) {
-                        pscDocument.setSensitiveData(transformSensitiveDataFields(
-                                externalData.getSensitiveData()));
+                        pscDocument.setSensitiveData(transformSensitiveDataFields(externalData.getSensitiveData()));
                     }
 
                     handleIndividualFields(data, pscData);
@@ -432,9 +432,9 @@ public class CompanyPscTransformer {
         pscSensitiveData.setResidentialAddressIsSameAsServiceAddress(
                 sensitiveData.getResidentialAddressSameAsServiceAddress());
         if (sensitiveData.getUsualResidentialAddress() != null) {
-            pscSensitiveData.setUsualResidentialAddress(
-                    new Address(sensitiveData.getUsualResidentialAddress()));
+            pscSensitiveData.setUsualResidentialAddress(new Address(sensitiveData.getUsualResidentialAddress()));
         }
+        pscSensitiveData.setInternalId(sensitiveData.getInternalId());
         return pscSensitiveData;
     }
 

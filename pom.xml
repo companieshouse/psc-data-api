@@ -29,7 +29,7 @@
 
         <!-- Internal -->
         <structured-logging.version>3.0.20</structured-logging.version>
-        <private-api-sdk-java.version>4.0.258</private-api-sdk-java.version>
+        <private-api-sdk-java.version>4.0.267</private-api-sdk-java.version>
         <api-security-java.version>2.0.5</api-security-java.version>
 
         <!-- tests -->
