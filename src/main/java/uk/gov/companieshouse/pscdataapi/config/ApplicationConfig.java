@@ -35,15 +35,18 @@ public class ApplicationConfig {
     private final String kafkaApiUrl;
     private final String metricsApiUrl;
     private final String exemptionsApiUrl;
+    private final String verificationStateApiUrl;
 
     public ApplicationConfig(@Value("${api.key}") String apiKey,
             @Value("${kafka.api.url}") String kafkaApiUrl,
             @Value("${metrics.api.url}") String metricsApiUrl,
-            @Value("${exemptions.api.url}") String exemptionsApiUrl) {
+            @Value("${exemptions.api.url}") String exemptionsApiUrl,
+            @Value("${verification-state.api.url}") final String verificationStateApiUrl) {
         this.apiKey = apiKey;
         this.kafkaApiUrl = kafkaApiUrl;
         this.metricsApiUrl = metricsApiUrl;
         this.exemptionsApiUrl = exemptionsApiUrl;
+        this.verificationStateApiUrl = verificationStateApiUrl;
     }
 
     /*
@@ -74,6 +77,15 @@ public class ApplicationConfig {
     @Bean
     public Supplier<InternalApiClient> exemptionsApiClientSupplier() {
         return () -> buildClient(exemptionsApiUrl);
+    }
+
+    @Bean
+    public Supplier<InternalApiClient> verificationStateApiClientSupplier() {
+        return () -> {
+            final var internalApiClient = buildClient(verificationStateApiUrl);
+            internalApiClient.setInternalBasePath(verificationStateApiUrl);
+            return internalApiClient;
+        };
     }
 
     @Bean
