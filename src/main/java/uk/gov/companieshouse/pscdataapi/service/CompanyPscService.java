@@ -18,7 +18,6 @@ import uk.gov.companieshouse.api.metrics.MetricsApi;
 import uk.gov.companieshouse.api.metrics.RegisterApi;
 import uk.gov.companieshouse.api.metrics.RegistersApi;
 import uk.gov.companieshouse.api.model.psc.IndividualFullRecord;
-import uk.gov.companieshouse.api.model.psc.VerificationState;
 import uk.gov.companieshouse.api.psc.*;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
@@ -30,6 +29,7 @@ import uk.gov.companieshouse.pscdataapi.logging.DataMapHolder;
 import uk.gov.companieshouse.pscdataapi.models.*;
 import uk.gov.companieshouse.pscdataapi.repository.CompanyPscRepository;
 import uk.gov.companieshouse.pscdataapi.transform.CompanyPscTransformer;
+import uk.gov.companieshouse.pscdataapi.transform.VerificationStateMapper;
 
 @Service
 public class CompanyPscService {
@@ -48,7 +48,8 @@ public class CompanyPscService {
     private final ChsKafkaApiService chsKafkaApiService;
     private final CompanyExemptionsApiService companyExemptionsApiService;
     private final CompanyMetricsApiService companyMetricsApiService;
-    private final VerificationStateService verificationStateService;
+    private final VerificationStateApiService verificationStateApiService;
+    private final VerificationStateMapper verificationStateMapper;
 
     public CompanyPscService(Logger logger,
             CompanyPscTransformer transformer,
@@ -56,14 +57,16 @@ public class CompanyPscService {
             ChsKafkaApiService chsKafkaApiService,
             CompanyExemptionsApiService companyExemptionsApiService,
             CompanyMetricsApiService companyMetricsApiService,
-            VerificationStateService verificationStateService) {
+            VerificationStateApiService verificationStateApiService,
+            VerificationStateMapper verificationStateMapper) {
         this.logger = logger;
         this.transformer = transformer;
         this.repository = repository;
         this.chsKafkaApiService = chsKafkaApiService;
         this.companyExemptionsApiService = companyExemptionsApiService;
         this.companyMetricsApiService = companyMetricsApiService;
-        this.verificationStateService = verificationStateService;
+        this.verificationStateApiService = verificationStateApiService;
+        this.verificationStateMapper = verificationStateMapper;
     }
 
     /**
@@ -189,10 +192,12 @@ public class CompanyPscService {
                             "Failed to transform PSCDocument to Individual Full Record");
                 }
 
-                VerificationState verificationState = verificationStateService.retrieveVerificationState(individualFullRecord.getInternalId());
-                individualFullRecord.setVerificationState(verificationState);
+                verificationStateApiService.getPscVerificationState(individualFullRecord.getInternalId())
+                        .map(verificationStateMapper::mapToVerificationState)
+                        .ifPresent(individualFullRecord::setVerificationState);
 
                 return individualFullRecord;
+
             } else {
                 throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
                         "Individual PSC document not found with id " + notificationId);
