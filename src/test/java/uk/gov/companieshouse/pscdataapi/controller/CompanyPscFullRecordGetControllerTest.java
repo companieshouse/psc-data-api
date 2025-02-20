@@ -8,7 +8,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.time.LocalDate;
 import java.util.Arrays;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +21,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.companieshouse.api.model.common.Address;
 import uk.gov.companieshouse.api.model.psc.IndividualFullRecord;
+import uk.gov.companieshouse.api.model.psc.VerificationState;
+import uk.gov.companieshouse.api.model.psc.VerificationStatus;
 import uk.gov.companieshouse.api.psc.DateOfBirth;
 import uk.gov.companieshouse.api.psc.ItemLinkTypes;
 import uk.gov.companieshouse.api.psc.NameElements;
@@ -93,7 +97,12 @@ class CompanyPscFullRecordGetControllerTest {
                 "premises": "Cottage"
               },
               "residential_address_same_as_service_address": false,
-              "internal_id" : 123456789
+              "internal_id" : 123456789,
+              "verification_state": {
+                "verification_status": "VERIFIED",
+                "verification_start_date": "2025-01-10",
+                "verification_statement_due_date": "2025-02-05"
+              }
             }
             """;
 
@@ -146,7 +155,8 @@ class CompanyPscFullRecordGetControllerTest {
                 .naturesOfControl(Arrays.asList("nature of my control"))
                 .dateOfBirth(new DateOfBirth().day(1).month(2).year(2000))
                 .internalId(123456789L)
-                .links(Arrays.asList(new ItemLinkTypes().self("/company/123/persons-with-significant-control/456")));
+                .links(Arrays.asList(new ItemLinkTypes().self("/company/123/persons-with-significant-control/456")))
+                .verificationState(new VerificationState(VerificationStatus.VERIFIED, LocalDate.of(2025, 1, 10), LocalDate.of(2025, 2, 5)));
     }
 
 }

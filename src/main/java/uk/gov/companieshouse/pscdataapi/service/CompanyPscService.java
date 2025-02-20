@@ -21,6 +21,7 @@ import uk.gov.companieshouse.api.model.psc.IndividualFullRecord;
 import uk.gov.companieshouse.api.psc.*;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
+import uk.gov.companieshouse.pscdataapi.config.FeatureFlags;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
 import uk.gov.companieshouse.pscdataapi.exceptions.ConflictException;
 import uk.gov.companieshouse.pscdataapi.exceptions.ResourceNotFoundException;
@@ -43,6 +44,7 @@ public class CompanyPscService {
             DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSSSSS");
 
     private final Logger logger;
+    private final FeatureFlags featureFlags;
     private final CompanyPscTransformer transformer;
     private final CompanyPscRepository repository;
     private final ChsKafkaApiService chsKafkaApiService;
@@ -52,6 +54,7 @@ public class CompanyPscService {
     private final VerificationStateMapper verificationStateMapper;
 
     public CompanyPscService(Logger logger,
+            FeatureFlags featureFlags,
             CompanyPscTransformer transformer,
             CompanyPscRepository repository,
             ChsKafkaApiService chsKafkaApiService,
@@ -60,6 +63,7 @@ public class CompanyPscService {
             VerificationStateApiService verificationStateApiService,
             VerificationStateMapper verificationStateMapper) {
         this.logger = logger;
+        this.featureFlags = featureFlags;
         this.transformer = transformer;
         this.repository = repository;
         this.chsKafkaApiService = chsKafkaApiService;
@@ -192,10 +196,11 @@ public class CompanyPscService {
                             "Failed to transform PSCDocument to Individual Full Record");
                 }
 
-                verificationStateApiService.getPscVerificationState(individualFullRecord.getInternalId())
-                        .map(verificationStateMapper::mapToVerificationState)
-                        .ifPresent(individualFullRecord::setVerificationState);
-
+                if (featureFlags.isIndividualPscFullRecordAddVerificationStateEnabled()) {
+                    verificationStateApiService.getPscVerificationState(individualFullRecord.getInternalId())
+                            .map(verificationStateMapper::mapToVerificationState)
+                            .ifPresent(individualFullRecord::setVerificationState);
+                }
                 return individualFullRecord;
 
             } else {
