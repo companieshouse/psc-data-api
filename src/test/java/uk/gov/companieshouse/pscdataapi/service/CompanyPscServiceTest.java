@@ -18,6 +18,7 @@ import static uk.gov.companieshouse.pscdataapi.util.TestHelper.DELTA_AT;
 import static uk.gov.companieshouse.pscdataapi.util.TestHelper.INDIVIDUAL_KIND;
 import static uk.gov.companieshouse.pscdataapi.util.TestHelper.STALE_DELTA_AT;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
@@ -43,7 +44,7 @@ import uk.gov.companieshouse.api.exemptions.PscExemptAsTradingOnUkRegulatedMarke
 import uk.gov.companieshouse.api.metrics.MetricsApi;
 import uk.gov.companieshouse.api.metrics.RegisterApi;
 import uk.gov.companieshouse.api.metrics.RegistersApi;
-import uk.gov.companieshouse.api.model.psc.IndividualFullRecord;
+import uk.gov.companieshouse.api.model.psc.*;
 import uk.gov.companieshouse.api.psc.CorporateEntity;
 import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
 import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
@@ -58,6 +59,7 @@ import uk.gov.companieshouse.api.psc.SuperSecure;
 import uk.gov.companieshouse.api.psc.SuperSecureBeneficialOwner;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
+import uk.gov.companieshouse.pscdataapi.config.FeatureFlags;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
 import uk.gov.companieshouse.pscdataapi.exceptions.ConflictException;
 import uk.gov.companieshouse.pscdataapi.exceptions.ResourceNotFoundException;
@@ -69,6 +71,7 @@ import uk.gov.companieshouse.pscdataapi.models.PscDeleteRequest;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 import uk.gov.companieshouse.pscdataapi.repository.CompanyPscRepository;
 import uk.gov.companieshouse.pscdataapi.transform.CompanyPscTransformer;
+import uk.gov.companieshouse.pscdataapi.transform.VerificationStateMapper;
 import uk.gov.companieshouse.pscdataapi.util.TestHelper;
 
 @ExtendWith(MockitoExtension.class)
@@ -99,6 +102,12 @@ class CompanyPscServiceTest {
     private CompanyExemptionsApiService companyExemptionsApiService;
     @Mock
     private CompanyMetricsApiService companyMetricsApiService;
+    @Mock
+    private FeatureFlags featureFlags;
+    @Mock
+    private VerificationStateApiService verificationStateApiService;
+    @Mock
+    private VerificationStateMapper verificationStateMapper;
 
     private FullRecordCompanyPSCApi request;
     private PscDocument pscDocument;
@@ -895,14 +904,30 @@ class CompanyPscServiceTest {
     }
 
     @Test
-    void getIndividualFullRecordShouldReturnFullRecordWhenFound() {
+    void getIndividualFullRecordShouldReturnFullRecordWhenFound_FlagVerifyStateFalse() {
         when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID)).thenReturn(
                 Optional.of(pscDocument));
+        when(featureFlags.isIndividualPscFullRecordAddVerificationStateEnabled()).thenReturn(false);
         when(transformer.transformPscDocToIndividualFullRecord(pscDocument)).thenReturn(new IndividualFullRecord());
 
         service.getIndividualFullRecord(COMPANY_NUMBER, NOTIFICATION_ID);
 
         // TODO: assert response data matches? need TestHelper to create expected data
+        verify(repository).getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID);
+        verify(transformer).transformPscDocToIndividualFullRecord(pscDocument);
+    }
+
+    @Test
+    void getIndividualFullRecordShouldReturnFullRecordWhenFound_FlagVerifyStateTrue() {
+        when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID)).thenReturn(
+                Optional.of(pscDocument));
+        when(featureFlags.isIndividualPscFullRecordAddVerificationStateEnabled()).thenReturn(true);
+        when(verificationStateApiService.getPscVerificationState(123L))
+                .thenReturn(Optional.of(new PscVerificationStateApi(VerificationStatusTypeApi.VERIFIED, LocalDate.of(2025, 1, 10), LocalDate.of(2025, 2, 5))));
+        when(transformer.transformPscDocToIndividualFullRecord(pscDocument)).thenReturn(new IndividualFullRecord().internalId(123L));
+
+        service.getIndividualFullRecord(COMPANY_NUMBER, NOTIFICATION_ID);
+
         verify(repository).getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID);
         verify(transformer).transformPscDocToIndividualFullRecord(pscDocument);
     }

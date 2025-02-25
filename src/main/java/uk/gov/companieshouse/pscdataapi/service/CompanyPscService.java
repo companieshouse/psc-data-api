@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.api.exemptions.CompanyExemptions;
@@ -30,6 +31,7 @@ import uk.gov.companieshouse.api.psc.SuperSecure;
 import uk.gov.companieshouse.api.psc.SuperSecureBeneficialOwner;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
+import uk.gov.companieshouse.pscdataapi.config.FeatureFlags;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
 import uk.gov.companieshouse.pscdataapi.exceptions.ConflictException;
 import uk.gov.companieshouse.pscdataapi.exceptions.ResourceNotFoundException;
@@ -42,6 +44,7 @@ import uk.gov.companieshouse.pscdataapi.models.PscDeleteRequest;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 import uk.gov.companieshouse.pscdataapi.repository.CompanyPscRepository;
 import uk.gov.companieshouse.pscdataapi.transform.CompanyPscTransformer;
+import uk.gov.companieshouse.pscdataapi.transform.VerificationStateMapper;
 
 @Service
 public class CompanyPscService {
@@ -55,24 +58,33 @@ public class CompanyPscService {
             DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSSSSS");
 
     private final Logger logger;
+    private final FeatureFlags featureFlags;
     private final CompanyPscTransformer transformer;
     private final CompanyPscRepository repository;
     private final ChsKafkaApiService chsKafkaApiService;
     private final CompanyExemptionsApiService companyExemptionsApiService;
     private final CompanyMetricsApiService companyMetricsApiService;
+    private final VerificationStateApiService verificationStateApiService;
+    private final VerificationStateMapper verificationStateMapper;
 
     public CompanyPscService(Logger logger,
+            FeatureFlags featureFlags,
             CompanyPscTransformer transformer,
             CompanyPscRepository repository,
             ChsKafkaApiService chsKafkaApiService,
             CompanyExemptionsApiService companyExemptionsApiService,
-            CompanyMetricsApiService companyMetricsApiService) {
+            CompanyMetricsApiService companyMetricsApiService,
+            VerificationStateApiService verificationStateApiService,
+            VerificationStateMapper verificationStateMapper) {
         this.logger = logger;
+        this.featureFlags = featureFlags;
         this.transformer = transformer;
         this.repository = repository;
         this.chsKafkaApiService = chsKafkaApiService;
         this.companyExemptionsApiService = companyExemptionsApiService;
         this.companyMetricsApiService = companyMetricsApiService;
+        this.verificationStateApiService = verificationStateApiService;
+        this.verificationStateMapper = verificationStateMapper;
     }
 
     /**
@@ -197,7 +209,14 @@ public class CompanyPscService {
                     throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
                             "Failed to transform PSCDocument to Individual Full Record");
                 }
+
+                if (featureFlags.isIndividualPscFullRecordAddVerificationStateEnabled()) {
+                    verificationStateApiService.getPscVerificationState(individualFullRecord.getInternalId())
+                            .map(verificationStateMapper::mapToVerificationState)
+                            .ifPresent(individualFullRecord::setVerificationState);
+                }
                 return individualFullRecord;
+
             } else {
                 throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
                         "Individual PSC document not found with id " + notificationId);
