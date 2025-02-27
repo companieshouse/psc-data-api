@@ -14,7 +14,7 @@ import uk.gov.companieshouse.pscdataapi.logging.DataMapHolder;
 import uk.gov.companieshouse.pscdataapi.service.CompanyPscService;
 
 @RestController
-@ConditionalOnProperty(prefix = "feature", name = "psc_individual_full_record_get", havingValue = "true")
+@ConditionalOnProperty(prefix = "feature", name = "identity_verification", havingValue = "true")
 @RequestMapping(path = "/company/{company_number}/persons-with-significant-control",
         produces = "application/json")
 public class CompanyPscFullRecordGetController {

@@ -29,7 +29,7 @@ import uk.gov.companieshouse.api.psc.NameElements;
 import uk.gov.companieshouse.pscdataapi.exceptions.ResourceNotFoundException;
 import uk.gov.companieshouse.pscdataapi.service.CompanyPscService;
 
-@SpringBootTest(properties = {"feature.psc_individual_full_record_get=true"})
+@SpringBootTest(properties = {"feature.identity_verification=true"})
 @AutoConfigureMockMvc
 class CompanyPscFullRecordGetControllerTest {
 
