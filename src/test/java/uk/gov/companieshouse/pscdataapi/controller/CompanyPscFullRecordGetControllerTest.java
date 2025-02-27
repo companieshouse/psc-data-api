@@ -20,12 +20,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.companieshouse.api.model.common.Address;
-import uk.gov.companieshouse.api.model.psc.IndividualFullRecord;
+import uk.gov.companieshouse.api.model.common.Date3Tuple;
+import uk.gov.companieshouse.api.model.psc.NameElementsApi;
+import uk.gov.companieshouse.api.model.psc.PscIndividualFullRecordApi;
+import uk.gov.companieshouse.api.model.psc.PscLinks;
 import uk.gov.companieshouse.api.model.psc.VerificationState;
 import uk.gov.companieshouse.api.model.psc.VerificationStatus;
-import uk.gov.companieshouse.api.psc.DateOfBirth;
-import uk.gov.companieshouse.api.psc.ItemLinkTypes;
-import uk.gov.companieshouse.api.psc.NameElements;
 import uk.gov.companieshouse.pscdataapi.exceptions.ResourceNotFoundException;
 import uk.gov.companieshouse.pscdataapi.service.CompanyPscService;
 
@@ -77,11 +77,9 @@ class CompanyPscFullRecordGetControllerTest {
                 "forename": "Andy",
                 "middle_name": "Bob"
               },
-              "links": [
-                {
+              "links": {
                   "self": "/company/123/persons-with-significant-control/456"
-                }
-              ],
+                },
               "nationality": "British",
               "service_address": {
                 "address_line_1": "addressLine1",
@@ -133,7 +131,7 @@ class CompanyPscFullRecordGetControllerTest {
             .andExpect(status().isNotFound());
     }
 
-    private static IndividualFullRecord createFullRecord() {
+    private static PscIndividualFullRecordApi createFullRecord() {
         final Address serviceAddress = new Address();
         serviceAddress.setAddressLine1("addressLine1");
         serviceAddress.setPostalCode("CF12 3AB");
@@ -144,18 +142,26 @@ class CompanyPscFullRecordGetControllerTest {
         residentialAddress.setAddressLine1("Home street");
         residentialAddress.setPostalCode("AB12 3CD");
 
-        return new IndividualFullRecord()
-                .kind(IndividualFullRecord.KindEnum.INDIVIDUAL_PERSON_WITH_SIGNIFICANT_CONTROL)
+        final NameElementsApi nameElementsApi = new NameElementsApi();
+        nameElementsApi.setForename("Andy");
+        nameElementsApi.setMiddleName("Bob");
+        nameElementsApi.setSurname("Smith");
+
+        final PscLinks pscLinks = new PscLinks();
+        pscLinks.setSelf("/company/123/persons-with-significant-control/456");
+
+        return new PscIndividualFullRecordApi()
+                .kind(PscIndividualFullRecordApi.KindEnum.INDIVIDUAL_PERSON_WITH_SIGNIFICANT_CONTROL)
                 .name("Andy Bob Smith")
-                .nameElements(new NameElements().forename("Andy").middleName("Bob").surname("Smith"))
+                .nameElements(nameElementsApi)
                 .serviceAddress(serviceAddress)
                 .residentialAddressSameAsServiceAddress(Boolean.FALSE)
                 .usualResidentialAddress(residentialAddress)
                 .nationality("British")
                 .naturesOfControl(Arrays.asList("nature of my control"))
-                .dateOfBirth(new DateOfBirth().day(1).month(2).year(2000))
+                .dateOfBirth(new Date3Tuple(1, 2, 2000))
                 .internalId(123456789L)
-                .links(Arrays.asList(new ItemLinkTypes().self("/company/123/persons-with-significant-control/456")))
+                .links(pscLinks)
                 .verificationState(new VerificationState(VerificationStatus.VERIFIED, LocalDate.of(2025, 1, 10), LocalDate.of(2025, 2, 5)));
     }
 

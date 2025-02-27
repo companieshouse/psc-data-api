@@ -2,16 +2,18 @@ package uk.gov.companieshouse.pscdataapi.transform;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-
 import java.util.List;
+
 import org.springframework.stereotype.Component;
-import uk.gov.companieshouse.api.model.psc.IndividualFullRecord;
-import uk.gov.companieshouse.api.psc.Identification;
+import uk.gov.companieshouse.api.model.psc.NameElementsApi;
+import uk.gov.companieshouse.api.model.psc.PscIndividualFullRecordApi;
+import uk.gov.companieshouse.api.model.psc.PscLinks;
 import uk.gov.companieshouse.api.psc.CorporateEntity;
 import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
 import uk.gov.companieshouse.api.psc.Data;
 import uk.gov.companieshouse.api.psc.ExternalData;
 import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
+import uk.gov.companieshouse.api.psc.Identification;
 import uk.gov.companieshouse.api.psc.Individual;
 import uk.gov.companieshouse.api.psc.IndividualBeneficialOwner;
 import uk.gov.companieshouse.api.psc.InternalData;
@@ -89,31 +91,31 @@ public class CompanyPscTransformer {
      * @param pscDocument PSC.
      * @return PSC mongo Document.
      */
-    public IndividualFullRecord transformPscDocToIndividualFullRecord(final PscDocument pscDocument) {
+    public PscIndividualFullRecordApi transformPscDocToIndividualFullRecord(final PscDocument pscDocument) {
         logger.info("Attempting to transform pscDocument to Individual Full Record",
                 DataMapHolder.getLogMap());
-        final IndividualFullRecord individualFullRecord  = new IndividualFullRecord();
+        final PscIndividualFullRecordApi pscIndividualFullRecordApi  = new PscIndividualFullRecordApi();
 
         final PscData pscData = pscDocument.getData();
-        individualFullRecord.setName(pscData.getName());
-        individualFullRecord.setNameElements(mapNameElements(pscData.getNameElements()));
-        individualFullRecord.setCountryOfResidence(pscData.getCountryOfResidence());
-        individualFullRecord.setNotifiedOn(pscData.getNotifiedOn());
-        individualFullRecord.setCeasedOn(pscData.getCeasedOn());
-        individualFullRecord.setNaturesOfControl(pscData.getNaturesOfControl());
-        individualFullRecord.setNationality(pscData.getNationality());
-        individualFullRecord.setKind(IndividualFullRecord.KindEnum.INDIVIDUAL_PERSON_WITH_SIGNIFICANT_CONTROL);
-        individualFullRecord.setLinks(mapLinksToList(pscData.getLinks()));
-        individualFullRecord.serviceAddress(mapFullRecordAddress(pscData.getAddress()));
-        individualFullRecord.setEtag(pscData.getEtag());
+        pscIndividualFullRecordApi.setName(pscData.getName());
+        pscIndividualFullRecordApi.setNameElements(mapNameElementsApi(pscData.getNameElements()));
+        pscIndividualFullRecordApi.setCountryOfResidence(pscData.getCountryOfResidence());
+        pscIndividualFullRecordApi.setNotifiedOn(pscData.getNotifiedOn());
+        pscIndividualFullRecordApi.setCeasedOn(pscData.getCeasedOn());
+        pscIndividualFullRecordApi.setNaturesOfControl(pscData.getNaturesOfControl());
+        pscIndividualFullRecordApi.setNationality(pscData.getNationality());
+        pscIndividualFullRecordApi.setKind(PscIndividualFullRecordApi.KindEnum.INDIVIDUAL_PERSON_WITH_SIGNIFICANT_CONTROL);
+        pscIndividualFullRecordApi.setLinks(mapLinksToPscLinks(pscData.getLinks()));
+        pscIndividualFullRecordApi.serviceAddress(mapFullRecordAddress(pscData.getAddress()));
+        pscIndividualFullRecordApi.setEtag(pscData.getEtag());
 
         final PscSensitiveData sensitivePscData = pscDocument.getSensitiveData();
-        individualFullRecord.setResidentialAddressSameAsServiceAddress(sensitivePscData.getResidentialAddressIsSameAsServiceAddress());
-        individualFullRecord.setDateOfBirth(mapDateOfBirth(sensitivePscData.getDateOfBirth(), true));
-        individualFullRecord.setUsualResidentialAddress(mapFullRecordAddress(sensitivePscData.getUsualResidentialAddress()));
-        individualFullRecord.setInternalId(sensitivePscData.getInternalId());
+        pscIndividualFullRecordApi.setResidentialAddressSameAsServiceAddress(sensitivePscData.getResidentialAddressIsSameAsServiceAddress());
+//        pscIndividualFullRecordApi.setDateOfBirth(mapDateOfBirth(sensitivePscData.getDateOfBirth(), true));
+        pscIndividualFullRecordApi.setUsualResidentialAddress(mapFullRecordAddress(sensitivePscData.getUsualResidentialAddress()));
+        pscIndividualFullRecordApi.setInternalId(sensitivePscData.getInternalId());
 
-        return individualFullRecord;
+        return pscIndividualFullRecordApi;
     }
 
     /**
@@ -572,6 +574,21 @@ public class CompanyPscTransformer {
         }
     }
 
+    private NameElementsApi mapNameElementsApi(
+            NameElements inputNameElements) {
+        if (inputNameElements != null) {
+            NameElementsApi nameElementsApi =
+                    new NameElementsApi();
+            nameElementsApi.setTitle(inputNameElements.getTitle());
+            nameElementsApi.setForename(inputNameElements.getForename());
+            nameElementsApi.setMiddleName(inputNameElements.getMiddleName());
+            nameElementsApi.setSurname(inputNameElements.getSurname());
+            return nameElementsApi;
+        } else {
+            return null;
+        }
+    }
+
     private uk.gov.companieshouse.api.psc.NameElements mapNameElements(
             NameElements inputNameElements) {
         if (inputNameElements != null) {
@@ -604,11 +621,11 @@ public class CompanyPscTransformer {
         }
     }
 
-    private static List<ItemLinkTypes> mapLinksToList(final Links links) {
-        final ItemLinkTypes itemLinkTypes = new ItemLinkTypes().self(links.getSelf());
+    private static PscLinks mapLinksToPscLinks(final Links links) {
+        final PscLinks pscLinks = new PscLinks();
+        pscLinks.setSelf(links.getSelf());
+        pscLinks.setStatement(links.getStatement());
 
-        itemLinkTypes.setStatement(links.getStatement());
-
-        return List.of(itemLinkTypes);
+        return pscLinks;
     }
 }

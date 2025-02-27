@@ -17,7 +17,7 @@ import uk.gov.companieshouse.api.exemptions.CompanyExemptions;
 import uk.gov.companieshouse.api.metrics.MetricsApi;
 import uk.gov.companieshouse.api.metrics.RegisterApi;
 import uk.gov.companieshouse.api.metrics.RegistersApi;
-import uk.gov.companieshouse.api.model.psc.IndividualFullRecord;
+import uk.gov.companieshouse.api.model.psc.PscIndividualFullRecordApi;
 import uk.gov.companieshouse.api.psc.CorporateEntity;
 import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
 import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
@@ -194,7 +194,7 @@ public class CompanyPscService {
      * @param notificationId Mongo Id.
      * @return Full Record PSC object.
      */
-    public IndividualFullRecord getIndividualFullRecord(final String companyNumber, final String notificationId) {
+    public PscIndividualFullRecordApi getIndividualFullRecord(final String companyNumber, final String notificationId) {
         try {
             final Optional<PscDocument> pscDocument = repository.getPscByCompanyNumberAndId(companyNumber,
                             notificationId)
@@ -202,7 +202,7 @@ public class CompanyPscService {
                             .equals("individual-person-with-significant-control"));
 
             if (pscDocument.isPresent()) {
-                final IndividualFullRecord individualFullRecord = transformer.transformPscDocToIndividualFullRecord(
+                final PscIndividualFullRecordApi individualFullRecord = transformer.transformPscDocToIndividualFullRecord(
                         pscDocument.get());
 
                 if (individualFullRecord == null) {
