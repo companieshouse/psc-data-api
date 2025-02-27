@@ -1,9 +1,11 @@
 package uk.gov.companieshouse.pscdataapi.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.Objects;
 
 public class PscSensitiveData {
+
     @JsonProperty("usual_residential_address")
     private Address usualResidentialAddress;
     @JsonProperty("date_of_birth")

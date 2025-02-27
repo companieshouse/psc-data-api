@@ -402,8 +402,7 @@ public class CompanyPscTransformer {
                 String kind = data.getKind();
                 if (IndividualPscRoles.includes(kind)) {
                     if (externalData.getSensitiveData() != null) {
-                        pscDocument.setSensitiveData(transformSensitiveDataFields(
-                                externalData.getSensitiveData()));
+                        pscDocument.setSensitiveData(transformSensitiveDataFields(externalData.getSensitiveData()));
                     }
 
                     handleIndividualFields(data, pscData);
@@ -436,9 +435,9 @@ public class CompanyPscTransformer {
         pscSensitiveData.setResidentialAddressIsSameAsServiceAddress(
                 sensitiveData.getResidentialAddressSameAsServiceAddress());
         if (sensitiveData.getUsualResidentialAddress() != null) {
-            pscSensitiveData.setUsualResidentialAddress(
-                    new Address(sensitiveData.getUsualResidentialAddress()));
+            pscSensitiveData.setUsualResidentialAddress(new Address(sensitiveData.getUsualResidentialAddress()));
         }
+        pscSensitiveData.setInternalId(sensitiveData.getInternalId());
         return pscSensitiveData;
     }
 
