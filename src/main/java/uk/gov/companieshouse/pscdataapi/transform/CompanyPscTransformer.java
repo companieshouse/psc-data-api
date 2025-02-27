@@ -5,6 +5,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import org.springframework.stereotype.Component;
+import uk.gov.companieshouse.api.model.common.Date3Tuple;
 import uk.gov.companieshouse.api.model.psc.NameElementsApi;
 import uk.gov.companieshouse.api.model.psc.PscIndividualFullRecordApi;
 import uk.gov.companieshouse.api.model.psc.PscLinks;
@@ -111,7 +112,7 @@ public class CompanyPscTransformer {
 
         final PscSensitiveData sensitivePscData = pscDocument.getSensitiveData();
         pscIndividualFullRecordApi.setResidentialAddressSameAsServiceAddress(sensitivePscData.getResidentialAddressIsSameAsServiceAddress());
-//        pscIndividualFullRecordApi.setDateOfBirth(mapDateOfBirth(sensitivePscData.getDateOfBirth(), true));
+        pscIndividualFullRecordApi.setDateOfBirth(mapDate3Tuple(sensitivePscData.getDateOfBirth(), true));
         pscIndividualFullRecordApi.setUsualResidentialAddress(mapFullRecordAddress(sensitivePscData.getUsualResidentialAddress()));
         pscIndividualFullRecordApi.setInternalId(sensitivePscData.getInternalId());
 
@@ -494,6 +495,18 @@ public class CompanyPscTransformer {
         }
     }
 
+    private Date3Tuple mapDate3Tuple(DateOfBirth inputDateOfBirth, boolean showFullDateOfBirth) {
+        if (inputDateOfBirth != null) {
+            int day = showFullDateOfBirth ? inputDateOfBirth.getDay() : 0;
+            int month = inputDateOfBirth.getMonth();
+            int year = inputDateOfBirth.getYear();
+
+            return new Date3Tuple(day, month, year);
+        } else {
+            return null;
+        }
+    }
+
     private uk.gov.companieshouse.api.psc.Address mapAddress(
             uk.gov.companieshouse.pscdataapi.models.Address inputAddress) {
         if (inputAddress != null) {
@@ -574,11 +587,9 @@ public class CompanyPscTransformer {
         }
     }
 
-    private NameElementsApi mapNameElementsApi(
-            NameElements inputNameElements) {
+    private NameElementsApi mapNameElementsApi(final NameElements inputNameElements) {
         if (inputNameElements != null) {
-            NameElementsApi nameElementsApi =
-                    new NameElementsApi();
+            final NameElementsApi nameElementsApi = new NameElementsApi();
             nameElementsApi.setTitle(inputNameElements.getTitle());
             nameElementsApi.setForename(inputNameElements.getForename());
             nameElementsApi.setMiddleName(inputNameElements.getMiddleName());
