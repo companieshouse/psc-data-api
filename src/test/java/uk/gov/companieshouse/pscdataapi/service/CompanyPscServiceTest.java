@@ -105,7 +105,7 @@ class CompanyPscServiceTest {
     @Mock
     private FeatureFlags featureFlags;
     @Mock
-    private VerificationStateApiService verificationStateApiService;
+    private OracleQueryApiService oracleQueryApiService;
     @Mock
     private VerificationStateMapper verificationStateMapper;
 
@@ -922,7 +922,7 @@ class CompanyPscServiceTest {
         when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID)).thenReturn(
                 Optional.of(pscDocument));
         when(featureFlags.isIndividualPscFullRecordAddVerificationStateEnabled()).thenReturn(true);
-        when(verificationStateApiService.getPscVerificationState(123L))
+        when(oracleQueryApiService.getPscVerificationState(123L))
                 .thenReturn(Optional.of(new PscVerificationStateApi(VerificationStatusTypeApi.VERIFIED, LocalDate.of(2025, 1, 10), LocalDate.of(2025, 2, 5))));
         when(transformer.transformPscDocToIndividualFullRecord(pscDocument)).thenReturn(new PscIndividualFullRecordApi().internalId(123L));
 

@@ -64,7 +64,7 @@ public class CompanyPscService {
     private final ChsKafkaApiService chsKafkaApiService;
     private final CompanyExemptionsApiService companyExemptionsApiService;
     private final CompanyMetricsApiService companyMetricsApiService;
-    private final VerificationStateApiService verificationStateApiService;
+    private final OracleQueryApiService oracleQueryApiService;
     private final VerificationStateMapper verificationStateMapper;
 
     public CompanyPscService(Logger logger,
@@ -74,7 +74,7 @@ public class CompanyPscService {
             ChsKafkaApiService chsKafkaApiService,
             CompanyExemptionsApiService companyExemptionsApiService,
             CompanyMetricsApiService companyMetricsApiService,
-            VerificationStateApiService verificationStateApiService,
+            OracleQueryApiService oracleQueryApiService,
             VerificationStateMapper verificationStateMapper) {
         this.logger = logger;
         this.featureFlags = featureFlags;
@@ -83,7 +83,7 @@ public class CompanyPscService {
         this.chsKafkaApiService = chsKafkaApiService;
         this.companyExemptionsApiService = companyExemptionsApiService;
         this.companyMetricsApiService = companyMetricsApiService;
-        this.verificationStateApiService = verificationStateApiService;
+        this.oracleQueryApiService = oracleQueryApiService;
         this.verificationStateMapper = verificationStateMapper;
     }
 
@@ -211,7 +211,7 @@ public class CompanyPscService {
                 }
 
                 if (featureFlags.isIndividualPscFullRecordAddVerificationStateEnabled()) {
-                    verificationStateApiService.getPscVerificationState(individualFullRecord.getInternalId())
+                    oracleQueryApiService.getPscVerificationState(individualFullRecord.getInternalId())
                             .map(verificationStateMapper::mapToVerificationState)
                             .ifPresent(individualFullRecord::setVerificationState);
                 }
