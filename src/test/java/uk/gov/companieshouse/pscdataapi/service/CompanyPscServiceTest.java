@@ -908,7 +908,7 @@ class CompanyPscServiceTest {
         when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID)).thenReturn(
                 Optional.of(pscDocument));
         when(featureFlags.isIndividualPscFullRecordAddVerificationStateEnabled()).thenReturn(false);
-        when(transformer.transformPscDocToIndividualFullRecord(pscDocument)).thenReturn(new IndividualFullRecord());
+        when(transformer.transformPscDocToIndividualFullRecord(pscDocument)).thenReturn(new PscIndividualFullRecordApi());
 
         service.getIndividualFullRecord(COMPANY_NUMBER, NOTIFICATION_ID);
 
@@ -924,7 +924,7 @@ class CompanyPscServiceTest {
         when(featureFlags.isIndividualPscFullRecordAddVerificationStateEnabled()).thenReturn(true);
         when(verificationStateApiService.getPscVerificationState(123L))
                 .thenReturn(Optional.of(new PscVerificationStateApi(VerificationStatusTypeApi.VERIFIED, LocalDate.of(2025, 1, 10), LocalDate.of(2025, 2, 5))));
-        when(transformer.transformPscDocToIndividualFullRecord(pscDocument)).thenReturn(new IndividualFullRecord().internalId(123L));
+        when(transformer.transformPscDocToIndividualFullRecord(pscDocument)).thenReturn(new PscIndividualFullRecordApi().internalId(123L));
 
         service.getIndividualFullRecord(COMPANY_NUMBER, NOTIFICATION_ID);
 

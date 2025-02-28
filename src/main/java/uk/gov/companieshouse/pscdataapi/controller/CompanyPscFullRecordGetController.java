@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.companieshouse.api.model.psc.IndividualFullRecord;
+import uk.gov.companieshouse.api.model.psc.PscIndividualFullRecordApi;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.companieshouse.pscdataapi.exceptions.ResourceNotFoundException;
@@ -35,7 +35,7 @@ public class CompanyPscFullRecordGetController {
      * @return ResponseEntity
      */
     @GetMapping("/individual/{notification_id}/full_record")
-    public ResponseEntity<IndividualFullRecord> getIndividualFullRecordPscData(
+    public ResponseEntity<PscIndividualFullRecordApi> getIndividualFullRecordPscData(
             @PathVariable("company_number") final String companyNumber,
             @PathVariable("notification_id") final String notificationId) {
         DataMapHolder.get()
@@ -44,7 +44,7 @@ public class CompanyPscFullRecordGetController {
         LOGGER.info(String.format(GETTING_FULL_RECORD_PSC_DATA_WITH_COMPANY_NUMBER, companyNumber),
                 DataMapHolder.getLogMap());
         try {
-            final IndividualFullRecord individualFullRecord = pscService.getIndividualFullRecord(companyNumber, notificationId);
+            final PscIndividualFullRecordApi individualFullRecord = pscService.getIndividualFullRecord(companyNumber, notificationId);
             return ResponseEntity.ok(individualFullRecord);
         } catch (final ResourceNotFoundException ex) {
             LOGGER.error(ex.getMessage(), DataMapHolder.getLogMap());
