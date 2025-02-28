@@ -2,12 +2,12 @@ package uk.gov.companieshouse.pscdataapi.transform;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 
 import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.api.model.common.Date3Tuple;
 import uk.gov.companieshouse.api.model.psc.NameElementsApi;
 import uk.gov.companieshouse.api.model.psc.PscIndividualFullRecordApi;
+import uk.gov.companieshouse.api.model.psc.PscIndividualWithVerificationStateApi;
 import uk.gov.companieshouse.api.model.psc.PscLinks;
 import uk.gov.companieshouse.api.psc.CorporateEntity;
 import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
@@ -18,7 +18,6 @@ import uk.gov.companieshouse.api.psc.Identification;
 import uk.gov.companieshouse.api.psc.Individual;
 import uk.gov.companieshouse.api.psc.IndividualBeneficialOwner;
 import uk.gov.companieshouse.api.psc.InternalData;
-import uk.gov.companieshouse.api.psc.ItemLinkTypes;
 import uk.gov.companieshouse.api.psc.LegalPerson;
 import uk.gov.companieshouse.api.psc.LegalPersonBeneficialOwner;
 import uk.gov.companieshouse.api.psc.ListSummary;
@@ -87,6 +86,39 @@ public class CompanyPscTransformer {
     }
 
     /**
+     * Transform Individual with Verification State PSC.
+     *
+     * @param pscDocument PSC.
+     * @return PSC mongo Document.
+     */
+    public PscIndividualWithVerificationStateApi transformPscDocToIndividualWithVerificationState(
+            PscDocument pscDocument, boolean showFullDateOfBirth) {
+        logger.info("Attempting to transform pscDocument to IndividualWithVerificationState",
+                DataMapHolder.getLogMap());
+        PscIndividualWithVerificationStateApi individualWithVerificationState = new PscIndividualWithVerificationStateApi();
+        individualWithVerificationState
+                .setKind(PscIndividualWithVerificationStateApi.KindEnum.INDIVIDUAL_PERSON_WITH_SIGNIFICANT_CONTROL);
+        if (pscDocument.getData() != null) {
+            PscData pscData = pscDocument.getData();
+            individualWithVerificationState.setEtag(pscData.getEtag());
+            individualWithVerificationState.setCountryOfResidence(pscData.getCountryOfResidence());
+            individualWithVerificationState.setName(pscData.getName());
+            individualWithVerificationState.setNameElements(mapNameElementsApi(pscData.getNameElements()));
+            individualWithVerificationState.setAddress(mapCommonAddress(pscData.getAddress()));
+            individualWithVerificationState.setNaturesOfControl(pscData.getNaturesOfControl());
+            individualWithVerificationState.setNationality(pscData.getNationality());
+            individualWithVerificationState.setLinks(mapLinksToPscLinks(pscData.getLinks()));
+            individualWithVerificationState.setNotifiedOn(pscData.getNotifiedOn());
+            individualWithVerificationState.setCeasedOn(pscData.getCeasedOn());
+        }
+        if (pscDocument.getSensitiveData() != null) {
+            individualWithVerificationState.setDateOfBirth(
+                    mapDate3Tuple(pscDocument.getSensitiveData().getDateOfBirth(), showFullDateOfBirth));
+        }
+        return individualWithVerificationState;
+    }
+
+    /**
      * Transform Individual PSC full record.
      *
      * @param pscDocument PSC.
@@ -107,13 +139,13 @@ public class CompanyPscTransformer {
         pscIndividualFullRecordApi.setNationality(pscData.getNationality());
         pscIndividualFullRecordApi.setKind(PscIndividualFullRecordApi.KindEnum.INDIVIDUAL_PERSON_WITH_SIGNIFICANT_CONTROL);
         pscIndividualFullRecordApi.setLinks(mapLinksToPscLinks(pscData.getLinks()));
-        pscIndividualFullRecordApi.serviceAddress(mapFullRecordAddress(pscData.getAddress()));
+        pscIndividualFullRecordApi.serviceAddress(mapCommonAddress(pscData.getAddress()));
         pscIndividualFullRecordApi.setEtag(pscData.getEtag());
 
         final PscSensitiveData sensitivePscData = pscDocument.getSensitiveData();
         pscIndividualFullRecordApi.setResidentialAddressSameAsServiceAddress(sensitivePscData.getResidentialAddressIsSameAsServiceAddress());
         pscIndividualFullRecordApi.setDateOfBirth(mapDate3Tuple(sensitivePscData.getDateOfBirth(), true));
-        pscIndividualFullRecordApi.setUsualResidentialAddress(mapFullRecordAddress(sensitivePscData.getUsualResidentialAddress()));
+        pscIndividualFullRecordApi.setUsualResidentialAddress(mapCommonAddress(sensitivePscData.getUsualResidentialAddress()));
         pscIndividualFullRecordApi.setInternalId(sensitivePscData.getInternalId());
 
         return pscIndividualFullRecordApi;
@@ -566,7 +598,7 @@ public class CompanyPscTransformer {
         }
     }
 
-    private uk.gov.companieshouse.api.model.common.Address mapFullRecordAddress(
+    private uk.gov.companieshouse.api.model.common.Address mapCommonAddress(
             uk.gov.companieshouse.pscdataapi.models.Address inputAddress) {
         if (inputAddress != null) {
             uk.gov.companieshouse.api.model.common.Address address =

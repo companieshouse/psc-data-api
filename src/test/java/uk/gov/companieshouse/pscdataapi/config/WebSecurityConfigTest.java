@@ -17,17 +17,23 @@ import uk.gov.companieshouse.api.util.security.EricConstants;
 import uk.gov.companieshouse.api.util.security.SecurityConstants;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.controller.CompanyPscFullRecordGetController;
+import uk.gov.companieshouse.pscdataapi.controller.CompanyPscWithVerificationStateGetController;
 import uk.gov.companieshouse.pscdataapi.service.CompanyPscService;
 
 @ExtendWith(SpringExtension.class)
-@WebMvcTest(value = CompanyPscFullRecordGetController.class,
-    properties = {"feature.identity_verification=true"})
+@WebMvcTest(controllers = {
+        CompanyPscFullRecordGetController.class,
+        CompanyPscWithVerificationStateGetController.class,
+    }, properties = {"feature.identity_verification=true"})
 class WebSecurityConfigTest {
     private static final String MOCK_COMPANY_NUMBER = "1234567";
     private static final String MOCK_NOTIFICATION_ID = "123456789";
     private static final String ERIC_IDENTITY = "Test-Identity";
     private static final String GET_INDIVIDUAL_FULL_RECORD_URL = String.format(
         "/company/%s/persons-with-significant-control/individual/%s/full_record", MOCK_COMPANY_NUMBER,
+        MOCK_NOTIFICATION_ID);
+    private static final String GET_INDIVIDUAL_WITH_VERIFICATION_STATE_URL = String.format(
+        "/company/%s/persons-with-significant-control/individual/%s/verification-state", MOCK_COMPANY_NUMBER,
         MOCK_NOTIFICATION_ID);
 
     @MockitoBean
@@ -47,6 +53,10 @@ class WebSecurityConfigTest {
                 .headers(headers)
                 .contentType(APPLICATION_JSON))
             .andExpect(status().isForbidden());
+        mockMvc.perform(get(GET_INDIVIDUAL_WITH_VERIFICATION_STATE_URL)
+                .headers(headers)
+                .contentType(APPLICATION_JSON))
+            .andExpect(status().isForbidden());
 
     }
 
@@ -56,6 +66,10 @@ class WebSecurityConfigTest {
         final var headers = createHttpHeaders(true);
 
         mockMvc.perform(get(GET_INDIVIDUAL_FULL_RECORD_URL)
+                .headers(headers)
+                .contentType(APPLICATION_JSON))
+            .andExpect(status().isOk());
+        mockMvc.perform(get(GET_INDIVIDUAL_WITH_VERIFICATION_STATE_URL)
                 .headers(headers)
                 .contentType(APPLICATION_JSON))
             .andExpect(status().isOk());
