@@ -88,7 +88,6 @@ public class ApplicationConfig {
         };
     }
 
-
     @Bean
     @Primary
     public ObjectMapper objectMapper() {
