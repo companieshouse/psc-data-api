@@ -18,6 +18,7 @@ import uk.gov.companieshouse.api.metrics.MetricsApi;
 import uk.gov.companieshouse.api.metrics.RegisterApi;
 import uk.gov.companieshouse.api.metrics.RegistersApi;
 import uk.gov.companieshouse.api.model.psc.PscIndividualFullRecordApi;
+import uk.gov.companieshouse.api.model.psc.PscIndividualWithVerificationStateApi;
 import uk.gov.companieshouse.api.psc.CorporateEntity;
 import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
 import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
@@ -210,7 +211,7 @@ public class CompanyPscService {
                             "Failed to transform PSCDocument to Individual Full Record");
                 }
 
-                if (featureFlags.isIndividualPscFullRecordAddVerificationStateEnabled()) {
+                if (featureFlags.isIndividualPscIdentityVerificationEnabled()) {
                     verificationStateApiService.getPscVerificationState(individualFullRecord.getInternalId())
                             .map(verificationStateMapper::mapToVerificationState)
                             .ifPresent(individualFullRecord::setVerificationState);
@@ -260,6 +261,50 @@ public class CompanyPscService {
             } else {
                 throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
                         "Individual PSC document not found in Mongo with id " + notificationId);
+            }
+        } catch (ResourceNotFoundException rnfe) {
+            throw rnfe;
+        } catch (Exception ex) {
+            logger.error(ex.getMessage(), DataMapHolder.getLogMap());
+            throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
+                    UNEXPECTED_ERROR_OCCURRED_WHILE_FETCHING_PSC_DOCUMENT);
+        }
+    }
+
+    /**
+     * Get PSC record and transform it into an Individual with Verification State
+     * PSC.
+     *
+     * @param companyNumber  Company number.
+     * @param notificationId Mongo Id.
+     * @param registerView   Register View permission.
+     * @return PscIndividualWithVerificationStateApi PSC object.
+     */
+    public PscIndividualWithVerificationStateApi getIndividualWithVerificationState(
+            String companyNumber, String notificationId, Boolean registerView) {
+        try {
+            Optional<PscDocument> pscDocument = repository.getPscByCompanyNumberAndId(companyNumber, notificationId)
+                    .filter(document -> document.getData().getKind()
+                            .equals("individual-person-with-significant-control"));
+            if (pscDocument.isPresent()) {
+                boolean showFullDateOfBirth = determineShowFullDob(
+                        companyNumber, registerView, pscDocument.get());
+                Long internalId = pscDocument.get().getSensitiveData().getInternalId();
+
+                PscIndividualWithVerificationStateApi individualWithVerificationState = transformer
+                        .transformPscDocToIndividualWithVerificationState(pscDocument.get(), showFullDateOfBirth);
+
+                if (individualWithVerificationState == null) {
+                    throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
+                            "Failed to transform PSCDocument to PscIndividualWithVerificationStateApi");
+                }
+                verificationStateApiService.getPscVerificationState(internalId)
+                        .map(verificationStateMapper::mapToVerificationState)
+                        .ifPresent(individualWithVerificationState::setVerificationState);
+                return individualWithVerificationState;
+            } else {
+                throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
+                        "PscIndividualWithVerificationStateApi PSC document not found in Mongo with id " + notificationId);
             }
         } catch (ResourceNotFoundException rnfe) {
             throw rnfe;
