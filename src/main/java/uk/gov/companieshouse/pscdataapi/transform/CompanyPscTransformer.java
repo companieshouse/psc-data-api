@@ -635,6 +635,7 @@ public class CompanyPscTransformer {
         final PscLinks pscLinks = new PscLinks();
         pscLinks.setSelf(links.getSelf());
         pscLinks.setStatement(links.getStatement());
+        pscLinks.setExemptions(links.getExemptions());
 
         return pscLinks;
     }
