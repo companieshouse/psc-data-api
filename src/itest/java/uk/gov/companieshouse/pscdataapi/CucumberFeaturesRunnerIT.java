@@ -36,7 +36,7 @@ public class CucumberFeaturesRunnerIT {
 
     @DynamicPropertySource
     public static void setProperties(DynamicPropertyRegistry registry) {
-        registry.add("feature.psc_individual_full_record_get", () -> true);
+        registry.add("feature.identity_verification", () -> true);
         registry.add("spring.data.mongodb.uri", mongoDBContainer::getReplicaSetUrl);
         mongoDBContainer.start();
     }

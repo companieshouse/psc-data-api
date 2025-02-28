@@ -21,7 +21,7 @@ import uk.gov.companieshouse.api.interceptor.UserAuthenticationInterceptor;
 @Configuration
 public class WebSecurityConfig implements WebMvcConfigurer {
     // feature flag marked for future removal
-    @Value("${feature.psc_individual_full_record_get:false}")
+    @Value("${feature.identity_verification:false}")
     private Boolean featurePscIndividualFullRecordGet;
 
     List<String> otherAllowedAuthMethods = Arrays.asList("oauth2");
