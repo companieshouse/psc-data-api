@@ -277,22 +277,18 @@ public class CompanyPscService {
      *
      * @param companyNumber  Company number.
      * @param notificationId Mongo Id.
-     * @param registerView   Register View permission.
      * @return PscIndividualWithVerificationStateApi PSC object.
      */
-    public PscIndividualWithVerificationStateApi getIndividualWithVerificationState(
-            String companyNumber, String notificationId, Boolean registerView) {
+    public PscIndividualWithVerificationStateApi getIndividualWithVerificationState(String companyNumber, String notificationId) {
         try {
             Optional<PscDocument> pscDocument = repository.getPscByCompanyNumberAndId(companyNumber, notificationId)
                     .filter(document -> document.getData().getKind()
                             .equals("individual-person-with-significant-control"));
             if (pscDocument.isPresent()) {
-                boolean showFullDateOfBirth = determineShowFullDob(
-                        companyNumber, registerView, pscDocument.get());
                 Long internalId = pscDocument.get().getSensitiveData().getInternalId();
 
                 PscIndividualWithVerificationStateApi individualWithVerificationState = transformer
-                        .transformPscDocToIndividualWithVerificationState(pscDocument.get(), showFullDateOfBirth);
+                        .transformPscDocToIndividualWithVerificationState(pscDocument.get());
 
                 if (individualWithVerificationState == null) {
                     throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,

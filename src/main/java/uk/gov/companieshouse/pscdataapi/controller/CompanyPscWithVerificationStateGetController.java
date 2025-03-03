@@ -42,8 +42,7 @@ public class CompanyPscWithVerificationStateGetController {
     @GetMapping("/individual/{notification_id}/verification-state")
     public ResponseEntity<PscIndividualWithVerificationStateApi> getIndividualPscDataWithVerificationState(
             @PathVariable("company_number") String companyNumber,
-            @PathVariable("notification_id") String notificationId,
-            @RequestParam(required = false, name = "register_view", defaultValue = "false") Boolean registerView) {
+            @PathVariable("notification_id") String notificationId) {
         DataMapHolder.get()
                 .companyNumber(companyNumber)
                 .itemId(notificationId);
@@ -51,7 +50,7 @@ public class CompanyPscWithVerificationStateGetController {
                 DataMapHolder.getLogMap());
         try {
             PscIndividualWithVerificationStateApi individualWithVerificationState = pscService
-                    .getIndividualWithVerificationState(companyNumber, notificationId, registerView);
+                    .getIndividualWithVerificationState(companyNumber, notificationId);
             return ResponseEntity.ok(individualWithVerificationState);
         } catch (ResourceNotFoundException ex) {
             LOGGER.error(ex.getMessage(), DataMapHolder.getLogMap());

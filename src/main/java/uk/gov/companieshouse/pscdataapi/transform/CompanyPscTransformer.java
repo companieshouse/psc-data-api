@@ -91,8 +91,7 @@ public class CompanyPscTransformer {
      * @param pscDocument PSC.
      * @return PSC mongo Document.
      */
-    public PscIndividualWithVerificationStateApi transformPscDocToIndividualWithVerificationState(
-            PscDocument pscDocument, boolean showFullDateOfBirth) {
+    public PscIndividualWithVerificationStateApi transformPscDocToIndividualWithVerificationState(PscDocument pscDocument) {
         logger.info("Attempting to transform pscDocument to IndividualWithVerificationState",
                 DataMapHolder.getLogMap());
         PscIndividualWithVerificationStateApi individualWithVerificationState = new PscIndividualWithVerificationStateApi();
@@ -113,7 +112,7 @@ public class CompanyPscTransformer {
         }
         if (pscDocument.getSensitiveData() != null) {
             individualWithVerificationState.setDateOfBirth(
-                    mapDate3Tuple(pscDocument.getSensitiveData().getDateOfBirth(), showFullDateOfBirth));
+                    mapDate3Tuple(pscDocument.getSensitiveData().getDateOfBirth(), false));
         }
         return individualWithVerificationState;
     }

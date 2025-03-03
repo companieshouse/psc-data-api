@@ -60,7 +60,7 @@ class CompanyPscWithVerificationStateGetControllerTest {
     @Test
     @DisplayName("Should return 200 status with PSC data + verification state")
     void getIndividualPSC() throws Exception {
-        when(companyPscService.getIndividualWithVerificationState(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID, false))
+        when(companyPscService.getIndividualWithVerificationState(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID))
                 .thenReturn(
                         createIndividualWithVerificationState());
 
@@ -110,7 +110,7 @@ class CompanyPscWithVerificationStateGetControllerTest {
     @Test
     @DisplayName("Should return 404 when Individual PSC not found")
     void shouldReturn404WhenIndividualPscNotFound() throws Exception {
-        when(companyPscService.getIndividualWithVerificationState(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID, false))
+        when(companyPscService.getIndividualWithVerificationState(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID))
                 .thenThrow(new ResourceNotFoundException(
                         HttpStatus.NOT_FOUND,
                         "Individual PSC document not found in Mongo with id " + MOCK_NOTIFICATION_ID));
