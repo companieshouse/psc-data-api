@@ -212,7 +212,7 @@ public class CompanyPscService {
                 }
 
                 if (featureFlags.isIdentityVerificationEnabled()) {
-                    verificationStateApiService.getPscVerificationState(individualFullRecord.getInternalId())
+                    oracleQueryApiService.getPscVerificationState(individualFullRecord.getInternalId())
                             .map(verificationStateMapper::mapToVerificationState)
                             .ifPresent(individualFullRecord::setVerificationState);
                 }
@@ -298,7 +298,7 @@ public class CompanyPscService {
                     throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
                             "Failed to transform PSCDocument to PscIndividualWithVerificationStateApi");
                 }
-                verificationStateApiService.getPscVerificationState(internalId)
+                oracleQueryApiService.getPscVerificationState(internalId)
                         .map(verificationStateMapper::mapToVerificationState)
                         .ifPresent(individualWithVerificationState::setVerificationState);
                 return individualWithVerificationState;
