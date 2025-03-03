@@ -907,7 +907,7 @@ class CompanyPscServiceTest {
     void getIndividualFullRecordShouldReturnFullRecordWhenFound_FlagVerifyStateFalse() {
         when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID)).thenReturn(
                 Optional.of(pscDocument));
-        when(featureFlags.isIndividualPscFullRecordAddVerificationStateEnabled()).thenReturn(false);
+        when(featureFlags.isIdentityVerificationEnabled()).thenReturn(false);
         when(transformer.transformPscDocToIndividualFullRecord(pscDocument)).thenReturn(new PscIndividualFullRecordApi());
 
         service.getIndividualFullRecord(COMPANY_NUMBER, NOTIFICATION_ID);
@@ -921,7 +921,7 @@ class CompanyPscServiceTest {
     void getIndividualFullRecordShouldReturnFullRecordWhenFound_FlagVerifyStateTrue() {
         when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID)).thenReturn(
                 Optional.of(pscDocument));
-        when(featureFlags.isIndividualPscFullRecordAddVerificationStateEnabled()).thenReturn(true);
+        when(featureFlags.isIdentityVerificationEnabled()).thenReturn(true);
         when(oracleQueryApiService.getPscVerificationState(123L))
                 .thenReturn(Optional.of(new PscVerificationStateApi(VerificationStatusTypeApi.VERIFIED, LocalDate.of(2025, 1, 10), LocalDate.of(2025, 2, 5))));
         when(transformer.transformPscDocToIndividualFullRecord(pscDocument)).thenReturn(new PscIndividualFullRecordApi().internalId(123L));
