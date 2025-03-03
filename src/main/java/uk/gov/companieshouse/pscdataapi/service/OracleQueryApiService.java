@@ -18,22 +18,22 @@ import uk.gov.companieshouse.pscdataapi.exceptions.BadGatewayException;
 import uk.gov.companieshouse.pscdataapi.logging.DataMapHolder;
 
 @Component
-public class VerificationStateApiService {
+public class OracleQueryApiService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(APPLICATION_NAME_SPACE);
 
-    private final Supplier<InternalApiClient> verificationStateApiClientSupplier;
+    private final Supplier<InternalApiClient> oracleQueryApiClientSupplier;
 
-    public VerificationStateApiService(
-            @Qualifier("verificationStateApiClientSupplier") Supplier<InternalApiClient> verificationStateApiClientSupplier) {
-        this.verificationStateApiClientSupplier = verificationStateApiClientSupplier;
+    public OracleQueryApiService(
+            @Qualifier("oracleQueryApiClientSupplier") Supplier<InternalApiClient> oracleQueryApiClientSupplier) {
+        this.oracleQueryApiClientSupplier = oracleQueryApiClientSupplier;
     }
 
     public Optional<PscVerificationStateApi> getPscVerificationState(final Long applicationId) {
         ApiResponse<PscVerificationStateApi> response = null;
 
         try {
-            response = verificationStateApiClientSupplier.get()
+            response = oracleQueryApiClientSupplier.get()
                     .privatePscResourceHandler()
                     .getPscVerificationState(
                             "/corporate-body-appointments/persons-of-significant-control/verification-state",

@@ -30,7 +30,7 @@ import uk.gov.companieshouse.api.model.psc.VerificationStatusTypeApi;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadGatewayException;
 
 @ExtendWith(MockitoExtension.class)
-class VerificationStateApiServiceTest {
+class OracleQueryApiServiceTest {
 
     private static final String URL = "/corporate-body-appointments/persons-of-significant-control/verification-state";
     private static final PscVerificationStateApi pscVerificationStateApi = new PscVerificationStateApi(
@@ -44,7 +44,7 @@ class VerificationStateApiServiceTest {
             = new ApiResponse<>(200, null, pscVerificationStateApi);
 
     @InjectMocks
-    private VerificationStateApiService service;
+    private OracleQueryApiService service;
     @Mock
     private Supplier<InternalApiClient> supplier;
     @Mock
