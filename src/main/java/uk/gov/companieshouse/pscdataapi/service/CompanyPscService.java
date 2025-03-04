@@ -212,9 +212,13 @@ public class CompanyPscService {
                 }
 
                 if (featureFlags.isIndividualPscFullRecordAddVerificationStateEnabled()) {
-                    oracleQueryApiService.getPscVerificationState(individualFullRecord.getInternalId())
-                            .map(verificationStateMapper::mapToVerificationState)
-                            .ifPresent(individualFullRecord::setVerificationState);
+                    if (individualFullRecord.getInternalId() != null) {
+                        oracleQueryApiService.getPscVerificationState(individualFullRecord.getInternalId())
+                                .map(verificationStateMapper::mapToVerificationState)
+                                .ifPresent(individualFullRecord::setVerificationState);
+                    } else {
+                        logger.error("Internal ID not found in PSC document.", DataMapHolder.getLogMap());
+                    }
                 }
                 return individualFullRecord;
 
