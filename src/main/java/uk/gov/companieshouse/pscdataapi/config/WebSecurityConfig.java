@@ -22,17 +22,18 @@ import uk.gov.companieshouse.api.interceptor.UserAuthenticationInterceptor;
 public class WebSecurityConfig implements WebMvcConfigurer {
     // feature flag marked for future removal
     @Value("${feature.identity_verification:false}")
-    private Boolean featurePscIndividualFullRecordGet;
+    private Boolean identityVerificationEnabled;
 
     List<String> otherAllowedAuthMethods = Arrays.asList("oauth2");
 
     @Override
     public void addInterceptors(final InterceptorRegistry registry) {
         registry.addInterceptor(userAuthenticationInterceptor());
-        if (featurePscIndividualFullRecordGet)
+        if (identityVerificationEnabled)
         {
             registry.addInterceptor(internalUserInterceptor())
-                .addPathPatterns("/company/{company_number}/persons-with-significant-control/individual/{notification_id}/full_record");
+                .addPathPatterns("/company/{company_number}/persons-with-significant-control/individual/{notification_id}/full_record")
+                .addPathPatterns("/company/{company_number}/persons-with-significant-control/individual/{notification_id}/verification-state");
         }
     }
 
