@@ -24,6 +24,7 @@ import uk.gov.companieshouse.pscdataapi.interceptor.FullRecordAuthenticationInte
 public class WebSecurityConfig implements WebMvcConfigurer {
     // feature flag marked for future removal
     @Value("${feature.identity_verification:false}")
+    private Boolean identityVerificationEnabled;
     private Boolean featurePscIndividualFullRecordGet;
     public static final String PATTERN_FULL_RECORD =
         "/company/{company_number}/persons-with-significant-control/individual/{notification_id}/full_record";
@@ -33,10 +34,11 @@ public class WebSecurityConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(final InterceptorRegistry registry) {
         registry.addInterceptor(userAuthenticationInterceptor());
-        if (featurePscIndividualFullRecordGet)
+        if (identityVerificationEnabled)
         {
             registry.addInterceptor(internalUserInterceptor())
-                .addPathPatterns(PATTERN_FULL_RECORD);
+                .addPathPatterns(PATTERN_FULL_RECORD)
+                .addPathPatterns("/company/{company_number}/persons-with-significant-control/individual/{notification_id}/verification-state");
             registry.addInterceptor(fullRecordAuthenticationInterceptor())
                 .addPathPatterns(PATTERN_FULL_RECORD);
         }
