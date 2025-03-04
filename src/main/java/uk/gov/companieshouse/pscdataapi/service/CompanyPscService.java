@@ -211,7 +211,7 @@ public class CompanyPscService {
                             "Failed to transform PSCDocument to Individual Full Record");
                 }
 
-                if (featureFlags.isIdentityVerificationEnabled()) {
+                if (featureFlags.isIndividualPscFullRecordAddVerificationStateEnabled()) {
                     oracleQueryApiService.getPscVerificationState(individualFullRecord.getInternalId())
                             .map(verificationStateMapper::mapToVerificationState)
                             .ifPresent(individualFullRecord::setVerificationState);
