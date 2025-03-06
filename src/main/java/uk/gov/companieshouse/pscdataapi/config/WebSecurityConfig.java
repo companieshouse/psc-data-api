@@ -12,6 +12,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import uk.gov.companieshouse.api.filter.CustomCorsFilter;
 import uk.gov.companieshouse.api.interceptor.InternalUserInterceptor;
@@ -42,6 +43,11 @@ public class WebSecurityConfig implements WebMvcConfigurer {
             registry.addInterceptor(fullRecordAuthenticationInterceptor())
                 .addPathPatterns(PATTERN_FULL_RECORD);
         }
+    }
+
+    @Override
+    public void configurePathMatch(final PathMatchConfigurer configurer) {
+        configurer.setUseTrailingSlashMatch(true);
     }
 
     @Bean
