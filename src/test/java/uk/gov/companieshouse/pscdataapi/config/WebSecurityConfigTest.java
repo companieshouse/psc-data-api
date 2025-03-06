@@ -3,6 +3,7 @@ package uk.gov.companieshouse.pscdataapi.config;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static uk.gov.companieshouse.pscdataapi.interceptor.AuthenticationHelperImpl.ERIC_AUTHORISED_KEY_PRIVILEGES_HEADER;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -83,6 +84,8 @@ class WebSecurityConfigTest {
         headers.add(EricConstants.ERIC_IDENTITY_TYPE, SecurityConstants.API_KEY_IDENTITY_TYPE);
         headers.add(EricConstants.ERIC_AUTHORISED_KEY_ROLES,
             hasInternalPrivilege ? SecurityConstants.INTERNAL_USER_ROLE : "any_other_role");
+        headers.add(ERIC_AUTHORISED_KEY_PRIVILEGES_HEADER,
+            hasInternalPrivilege ? "sensitive-data" : "internal-app");
 
         return headers;
     }

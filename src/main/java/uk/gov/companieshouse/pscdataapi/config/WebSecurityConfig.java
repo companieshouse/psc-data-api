@@ -17,6 +17,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import uk.gov.companieshouse.api.filter.CustomCorsFilter;
 import uk.gov.companieshouse.api.interceptor.InternalUserInterceptor;
 import uk.gov.companieshouse.api.interceptor.UserAuthenticationInterceptor;
+import uk.gov.companieshouse.pscdataapi.interceptor.AuthenticationHelperImpl;
+import uk.gov.companieshouse.pscdataapi.interceptor.FullRecordAuthenticationInterceptor;
 
 @Configuration
 public class WebSecurityConfig implements WebMvcConfigurer {
@@ -24,16 +26,22 @@ public class WebSecurityConfig implements WebMvcConfigurer {
     @Value("${feature.identity_verification:false}")
     private Boolean identityVerificationEnabled;
 
+    public static final String PATTERN_FULL_RECORD =
+        "/company/{company_number}/persons-with-significant-control/individual/{notification_id}/full_record";
+    public static final String PATTERN_VERIFICATION_STATE =
+        "/company/{company_number}/persons-with-significant-control/individual/{notification_id}/verification-state";
+
     List<String> otherAllowedAuthMethods = Arrays.asList("oauth2");
 
     @Override
     public void addInterceptors(final InterceptorRegistry registry) {
         registry.addInterceptor(userAuthenticationInterceptor());
-        if (identityVerificationEnabled)
+        if (Boolean.TRUE.equals(identityVerificationEnabled))
         {
             registry.addInterceptor(internalUserInterceptor())
-                .addPathPatterns("/company/{company_number}/persons-with-significant-control/individual/{notification_id}/full_record")
-                .addPathPatterns("/company/{company_number}/persons-with-significant-control/individual/{notification_id}/verification-state");
+                .addPathPatterns(PATTERN_VERIFICATION_STATE);
+            registry.addInterceptor(fullRecordAuthenticationInterceptor())
+                .addPathPatterns(PATTERN_FULL_RECORD);
         }
     }
 
@@ -45,6 +53,15 @@ public class WebSecurityConfig implements WebMvcConfigurer {
     @Bean
     public InternalUserInterceptor internalUserInterceptor() {
         return new InternalUserInterceptor();
+    }
+
+    @Bean
+    public FullRecordAuthenticationInterceptor fullRecordAuthenticationInterceptor() {
+        return new FullRecordAuthenticationInterceptor(authenticationHelper());
+    }
+
+    public AuthenticationHelperImpl authenticationHelper() {
+        return new AuthenticationHelperImpl();
     }
 
     /**
