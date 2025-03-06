@@ -32,9 +32,8 @@ public class FullRecordAuthenticationInterceptor implements HandlerInterceptor {
         Map<String, Object> logMap = DataMapHolder.getLogMap();
 
         if (authHelper.isOauth2IdentityType(identityType)) {
-            String companyNumber = request.getRequestURI().split("/")[2];
 
-            if (authHelper.isTokenProtectedAndCompanyAuthorised(request, companyNumber)) {
+            if (authHelper.isTokenProtected(request)) {
                 return true;
             } else {
                 LOGGER.errorRequest(request, "User not authorised. Token has insufficient permissions.", logMap);

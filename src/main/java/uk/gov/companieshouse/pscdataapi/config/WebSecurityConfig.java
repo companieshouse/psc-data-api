@@ -12,7 +12,6 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
-import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import uk.gov.companieshouse.api.filter.CustomCorsFilter;
 import uk.gov.companieshouse.api.interceptor.InternalUserInterceptor;
@@ -25,28 +24,24 @@ public class WebSecurityConfig implements WebMvcConfigurer {
     // feature flag marked for future removal
     @Value("${feature.identity_verification:false}")
     private Boolean identityVerificationEnabled;
-    private Boolean featurePscIndividualFullRecordGet;
+
     public static final String PATTERN_FULL_RECORD =
         "/company/{company_number}/persons-with-significant-control/individual/{notification_id}/full_record";
+    public static final String PATTERN_VERIFICATION_STATE =
+        "/company/{company_number}/persons-with-significant-control/individual/{notification_id}/verification-state";
 
     List<String> otherAllowedAuthMethods = Arrays.asList("oauth2");
 
     @Override
     public void addInterceptors(final InterceptorRegistry registry) {
         registry.addInterceptor(userAuthenticationInterceptor());
-        if (identityVerificationEnabled)
+        if (Boolean.TRUE.equals(identityVerificationEnabled))
         {
             registry.addInterceptor(internalUserInterceptor())
-                .addPathPatterns(PATTERN_FULL_RECORD)
-                .addPathPatterns("/company/{company_number}/persons-with-significant-control/individual/{notification_id}/verification-state");
+                .addPathPatterns(PATTERN_VERIFICATION_STATE);
             registry.addInterceptor(fullRecordAuthenticationInterceptor())
                 .addPathPatterns(PATTERN_FULL_RECORD);
         }
-    }
-
-    @Override
-    public void configurePathMatch(final PathMatchConfigurer configurer) {
-        configurer.setUseTrailingSlashMatch(true);
     }
 
     @Bean

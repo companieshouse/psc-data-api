@@ -10,14 +10,6 @@ import jakarta.servlet.http.HttpServletRequest;
 public interface AuthenticationHelper {
 
     /**
-     * Returns the authorised identity
-     *
-     * @param request the {@link HttpServletRequest}
-     * @return the identity
-     */
-    String getAuthorisedIdentity(HttpServletRequest request);
-
-    /**
      * Returns the authorised identity type
      *
      * @param request the {@link HttpServletRequest}
@@ -50,63 +42,6 @@ public interface AuthenticationHelper {
     String getAuthorisedUser(HttpServletRequest request);
 
     /**
-     * Returns the authorised user email
-     *
-     * @param request the {@link HttpServletRequest}
-     * @return the user email
-     */
-    String getAuthorisedUserEmail(HttpServletRequest request);
-
-    /**
-     * Returns the authorised user forename
-     *
-     * @param request the {@link HttpServletRequest}
-     * @return the authorised user forename
-     */
-    String getAuthorisedUserForename(HttpServletRequest request);
-
-    /**
-     * Returns the authorised user surname
-     *
-     * @param request the {@link HttpServletRequest}
-     * @return the authorised user surname
-     */
-    String getAuthorisedUserSurname(HttpServletRequest request);
-
-    /**
-     * Returns the authorised scope
-     *
-     * @param request the {@link HttpServletRequest}
-     * @return the authorised scope
-     */
-    String getAuthorisedScope(HttpServletRequest request);
-
-    /**
-     * Returns the authorised roles information
-     *
-     * @param request the {@link HttpServletRequest}
-     * @return the authorised roles
-     */
-    String getAuthorisedRoles(HttpServletRequest request);
-
-    /**
-     * Returns an array of the authorised roles
-     *
-     * @param request the {@link HttpServletRequest}
-     * @return the authorised roles
-     */
-    String[] getAuthorisedRolesArray(HttpServletRequest request);
-
-    /**
-     * Checks whether the specified role has authorisation
-     *
-     * @param request the {@link HttpServletRequest}
-     * @param role    the role to be checked
-     * @return true if the role is authorised
-     */
-    boolean isRoleAuthorised(HttpServletRequest request, String role);
-
-    /**
      * Returns the privileges granted to the API key
      *
      * @param request the {@link HttpServletRequest}
@@ -136,5 +71,5 @@ public interface AuthenticationHelper {
      * @param request the {@link HttpServletRequest}
      * @return true if the token has required permissions
      */
-    boolean isTokenProtectedAndCompanyAuthorised(HttpServletRequest request, String companyNumber);
+    boolean isTokenProtected(HttpServletRequest request);
 }
