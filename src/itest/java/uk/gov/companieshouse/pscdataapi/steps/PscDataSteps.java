@@ -766,6 +766,10 @@ public class PscDataSteps {
             headers.set("ERIC-Authorised-Key-Roles", keyRoles);
         }
 
+        if (keyRoles.equals("*")) {
+            headers.set("ERIC-Authorised-Key-Privileges", "sensitive-data");
+        }
+
         return headers;
     }
 

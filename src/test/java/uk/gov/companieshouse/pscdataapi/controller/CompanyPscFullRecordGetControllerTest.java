@@ -39,7 +39,7 @@ class CompanyPscFullRecordGetControllerTest {
     private static final String ERIC_IDENTITY = "Test-Identity";
     private static final String ERIC_IDENTITY_TYPE = "key";
     private static final String ERIC_PRIVILEGES = "*";
-    private static final String ERIC_AUTH_INTERNAL = "internal-app";
+    private static final String ERIC_AUTH_SENSITIVE = "sensitive-data";
 
     private static final String GET_INDIVIDUAL_FULL_RECORD_URL = String.format(
         "/company/%s/persons-with-significant-control/individual/%s/full_record", MOCK_COMPANY_NUMBER,
@@ -109,7 +109,7 @@ class CompanyPscFullRecordGetControllerTest {
             .contentType(APPLICATION_JSON)
             .header("x-request-id", X_REQUEST_ID)
             .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
-            .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH_INTERNAL)).andExpect(status().isOk())
+            .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH_SENSITIVE)).andExpect(status().isOk())
             .andDo(print())
             .andExpect(content().json(expectedData, true));
     }
@@ -126,7 +126,7 @@ class CompanyPscFullRecordGetControllerTest {
                 .contentType(APPLICATION_JSON)
                 .header("x-request-id", X_REQUEST_ID)
                 .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
-                .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH_INTERNAL))
+                .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH_SENSITIVE))
             .andDo(print())
             .andExpect(status().isNotFound());
     }
