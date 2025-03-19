@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -17,6 +18,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import uk.gov.companieshouse.api.filter.CustomCorsFilter;
 import uk.gov.companieshouse.api.interceptor.InternalUserInterceptor;
 import uk.gov.companieshouse.api.interceptor.UserAuthenticationInterceptor;
+import uk.gov.companieshouse.pscdataapi.interceptor.AuthenticationHelper;
 import uk.gov.companieshouse.pscdataapi.interceptor.AuthenticationHelperImpl;
 import uk.gov.companieshouse.pscdataapi.interceptor.FullRecordAuthenticationInterceptor;
 
@@ -60,7 +62,9 @@ public class WebSecurityConfig implements WebMvcConfigurer {
         return new FullRecordAuthenticationInterceptor(authenticationHelper());
     }
 
-    public AuthenticationHelperImpl authenticationHelper() {
+    @Bean
+    @Primary
+    public AuthenticationHelper authenticationHelper() {
         return new AuthenticationHelperImpl();
     }
 
