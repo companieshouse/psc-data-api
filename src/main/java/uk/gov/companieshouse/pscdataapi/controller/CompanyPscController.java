@@ -55,7 +55,7 @@ public class CompanyPscController {
      */
     @PutMapping(path = "/{notification_id}/full_record", consumes = "application/json")
     public ResponseEntity<Void> submitPscData(@RequestHeader("x-request-id") String contextId,
-                                              @RequestBody final FullRecordCompanyPSCApi request) {
+            @RequestBody final FullRecordCompanyPSCApi request) {
         try {
             DataMapHolder.get()
                     .companyNumber(request.getExternalData().getCompanyNumber())

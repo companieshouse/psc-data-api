@@ -1,11 +1,11 @@
 package uk.gov.companieshouse.pscdataapi.interceptor;
 
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang.ArrayUtils;
 import org.springframework.stereotype.Component;
 
@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class AuthenticationHelperImpl implements AuthenticationHelper {
+
     public static final String OAUTH2_IDENTITY_TYPE = "oauth2";
     public static final String API_KEY_IDENTITY_TYPE = "key";
 

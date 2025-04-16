@@ -7,7 +7,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.companieshouse.api.model.psc.PscIndividualWithVerificationStateApi;
 import uk.gov.companieshouse.logging.Logger;
@@ -21,6 +20,7 @@ import uk.gov.companieshouse.pscdataapi.service.CompanyPscService;
 @RequestMapping(path = "/company/{company_number}/persons-with-significant-control",
         produces = "application/json")
 public class CompanyPscWithVerificationStateGetController {
+
     private static final Logger LOGGER = LoggerFactory.getLogger("psc-data-api");
     private static final String GETTING_PSC_DATA_WITH_VERIFICATION_STATE_WITH_COMPANY_NUMBER =
             "Getting PSC data + verification state with company number %s";
@@ -32,10 +32,9 @@ public class CompanyPscWithVerificationStateGetController {
     }
 
     /**
-     * Get the data object with verification state for a company profile number for
-     * Individual PSC.
+     * Get the data object with verification state for a company profile number for Individual PSC.
      *
-     * @param companyNumber The number of the company
+     * @param companyNumber  The number of the company
      * @param notificationId The PSC notification ID
      * @return ResponseEntity
      */

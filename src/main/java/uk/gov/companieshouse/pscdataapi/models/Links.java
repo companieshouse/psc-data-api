@@ -30,9 +30,13 @@ public class Links {
         this.statement = statement;
     }
 
-    public String getExemptions() { return exemptions; }
+    public String getExemptions() {
+        return exemptions;
+    }
 
-    public void setExemptions(String exemptions) { this.exemptions = exemptions; }
+    public void setExemptions(String exemptions) {
+        this.exemptions = exemptions;
+    }
 
     @Override
     public String toString() {

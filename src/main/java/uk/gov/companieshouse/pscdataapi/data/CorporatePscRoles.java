@@ -21,8 +21,9 @@ public enum CorporatePscRoles {
 
     /**
      * Checks if enum contains entry.
+     *
      * @param role the entry to check
-     * */
+     */
     public static boolean includes(final String role) {
         return EnumSet.allOf(CorporatePscRoles.class).stream()
                 .map(CorporatePscRoles::getRole)

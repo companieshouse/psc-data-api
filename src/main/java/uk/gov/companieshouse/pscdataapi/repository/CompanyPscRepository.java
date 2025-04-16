@@ -9,6 +9,7 @@ import org.springframework.data.mongodb.repository.Query;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 
 public interface CompanyPscRepository extends MongoRepository<PscDocument, String> {
+
     @Query("{'_id': ?0, 'delta_at':{$gt : '?1' }}")
     List<PscDocument> findUpdatedPsc(String notificationId, String at);
 
@@ -23,9 +24,10 @@ public interface CompanyPscRepository extends MongoRepository<PscDocument, Strin
             "{'$sort': {'data.notified_on': -1, 'data.ceased_on': -1, 'created.at': 1 } }",
             "{'$skip': ?1}",
             "{'$limit': ?2}",
-            })
+    })
     List<PscDocument> getPscDocumentList(String companyNumber,
-                                                   Integer startIndex, Integer itemsPerPage);
+            Integer startIndex, Integer itemsPerPage);
+
     @Aggregation(pipeline = {
             "{'$match': { 'company_number' : ?0, "
                     + "$or:[ { '" + "data.ceased_on': { $gte : { \"$date\" : \"?2\" }} },"
@@ -33,7 +35,7 @@ public interface CompanyPscRepository extends MongoRepository<PscDocument, Strin
             "{'$sort': {'data.notified_on': -1, 'data.ceased_on': -1, 'created.at': 1 } }",
             "{'$skip': ?1}",
             "{'$limit': ?3}",
-            })
+    })
     List<PscDocument> getListSummaryRegisterView(
             String companyNumber, Integer startIndex, OffsetDateTime movedOn, Integer itemsPerPage);
 }

@@ -1,25 +1,25 @@
 {
   "address": {
-    "address_line_1" : "ura_line1",
-    "address_line_2" : "ura_line2",
-    "care_of" : "ura_care_of",
-    "country" : "United Kingdom",
-    "locality" : "Cardiff",
-    "po_box" : "ura_po",
-    "postal_code" : "CF2 1B6",
-    "premises" : "URA",
-    "region" : "ura_region"
+    "address_line_1": "ura_line1",
+    "address_line_2": "ura_line2",
+    "care_of": "ura_care_of",
+    "country": "United Kingdom",
+    "locality": "Cardiff",
+    "po_box": "ura_po",
+    "postal_code": "CF2 1B6",
+    "premises": "URA",
+    "region": "ura_region"
   },
-  "principal_office_address" : {
-    "address_line_1" : "ura_line1",
-    "address_line_2" : "ura_line2",
-    "care_of" : "ura_care_of",
-    "country" : "United Kingdom",
-    "locality" : "Cardiff",
-    "po_box" : "ura_po",
-    "postal_code" : "CF2 1B6",
-    "premises" : "URA",
-    "region" : "ura_region"
+  "principal_office_address": {
+    "address_line_1": "ura_line1",
+    "address_line_2": "ura_line2",
+    "care_of": "ura_care_of",
+    "country": "United Kingdom",
+    "locality": "Cardiff",
+    "po_box": "ura_po",
+    "postal_code": "CF2 1B6",
+    "premises": "URA",
+    "region": "ura_region"
   },
   "country_of_residence": "United Kingdom",
   "date_of_birth": {

@@ -1,5 +1,8 @@
 package uk.gov.companieshouse.pscdataapi.util;
 
+import static uk.gov.companieshouse.api.exemptions.PscExemptAsTradingOnRegulatedMarketItem.ExemptionTypeEnum.PSC_EXEMPT_AS_TRADING_ON_REGULATED_MARKET;
+import static uk.gov.companieshouse.api.exemptions.PscExemptAsTradingOnUkRegulatedMarketItem.ExemptionTypeEnum.PSC_EXEMPT_AS_TRADING_ON_UK_REGULATED_MARKET;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -30,9 +33,9 @@ import uk.gov.companieshouse.api.psc.Individual;
 import uk.gov.companieshouse.api.psc.IndividualBeneficialOwner;
 import uk.gov.companieshouse.api.psc.InternalData;
 import uk.gov.companieshouse.api.psc.ItemLinkTypes;
-import uk.gov.companieshouse.api.psc.ListSummary;
 import uk.gov.companieshouse.api.psc.LegalPerson;
 import uk.gov.companieshouse.api.psc.LegalPersonBeneficialOwner;
+import uk.gov.companieshouse.api.psc.ListSummary;
 import uk.gov.companieshouse.api.psc.PscList;
 import uk.gov.companieshouse.api.psc.SensitiveData;
 import uk.gov.companieshouse.api.psc.SuperSecure;
@@ -47,9 +50,6 @@ import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 import uk.gov.companieshouse.pscdataapi.models.PscIdentification;
 import uk.gov.companieshouse.pscdataapi.models.PscSensitiveData;
 import uk.gov.companieshouse.pscdataapi.models.Updated;
-
-import static uk.gov.companieshouse.api.exemptions.PscExemptAsTradingOnRegulatedMarketItem.ExemptionTypeEnum.PSC_EXEMPT_AS_TRADING_ON_REGULATED_MARKET;
-import static uk.gov.companieshouse.api.exemptions.PscExemptAsTradingOnUkRegulatedMarketItem.ExemptionTypeEnum.PSC_EXEMPT_AS_TRADING_ON_UK_REGULATED_MARKET;
 
 public class TestHelper {
 
@@ -75,8 +75,9 @@ public class TestHelper {
         return buildFullRecordPsc(kind, false, true);
     }
 
-    public static FullRecordCompanyPSCApi buildFullRecordPsc(String kind, boolean showFullDateOfBirth, boolean pscStatementsExists) {
-        FullRecordCompanyPSCApi output  = new FullRecordCompanyPSCApi();
+    public static FullRecordCompanyPSCApi buildFullRecordPsc(String kind, boolean showFullDateOfBirth,
+            boolean pscStatementsExists) {
+        FullRecordCompanyPSCApi output = new FullRecordCompanyPSCApi();
         ExternalData externalData = new ExternalData();
         Data data = new Data();
 
@@ -95,8 +96,8 @@ public class TestHelper {
         output.setInternalData(internalData);
 
         data.setKind(kind);
-        data.setCeasedOn(LocalDate.of(2012,12,12));
-        data.setNotifiedOn(LocalDate.of(2000,12,12));
+        data.setCeasedOn(LocalDate.of(2012, 12, 12));
+        data.setNotifiedOn(LocalDate.of(2000, 12, 12));
         data.setEtag("etag");
         data.setName("wholeName");
         ItemLinkTypes links = new ItemLinkTypes();
@@ -125,7 +126,6 @@ public class TestHelper {
             data.setPrincipalOfficeAddress(principalOfficeAddress);
         }
 
-
         data.naturesOfControl(List.of("part-right-to-share-surplus-assets-75-to-100-percent",
                 "right-to-appoint-and-remove-directors-as-trust-registered-overseas-entity",
                 "significant-influence-or-control-as-trust-registered-overseas-entity"));
@@ -143,16 +143,16 @@ public class TestHelper {
         if (!kind.contains("secure")) {
             data.setServiceAddress(address);
         }
-        if (kind.contains("beneficial")){
+        if (kind.contains("beneficial")) {
             data.setIsSanctioned(true);
         }
 
-        if(kind.contains("individual")) {
+        if (kind.contains("individual")) {
             SensitiveData sensitiveData = new SensitiveData();
             uk.gov.companieshouse.api.psc.DateOfBirth dateOfBirth = new uk.gov.companieshouse.api.psc.DateOfBirth();
-            if(showFullDateOfBirth){
+            if (showFullDateOfBirth) {
                 dateOfBirth.setDay(21);
-            } else{
+            } else {
                 dateOfBirth.setDay(null);
             }
             dateOfBirth.setMonth(12);
@@ -182,7 +182,7 @@ public class TestHelper {
 
             data.setNationality("British");
             data.setCountryOfResidence("England");
-        } else if(kind.contains("corporate")) {
+        } else if (kind.contains("corporate")) {
             Identification identification = new Identification();
             identification.setLegalForm("Form");
             identification.setLegalAuthority("Authority");
@@ -190,12 +190,12 @@ public class TestHelper {
             identification.setPlaceRegistered("Cardiff");
             identification.setRegistrationNumber("16102009");
             data.setIdentification(identification);
-        } else if(kind.contains("legal")) {
+        } else if (kind.contains("legal")) {
             Identification identification = new Identification();
             identification.setLegalForm("Form");
             identification.setLegalAuthority("Authority");
             data.setIdentification(identification);
-        } else if(kind.contains("secure")) {
+        } else if (kind.contains("secure")) {
             data.setCeasedOn(LocalDate.parse("2022-01-14"));
             data.setDescription("description");
         }
@@ -205,7 +205,7 @@ public class TestHelper {
         return output;
     }
 
-    public static FullRecordCompanyPSCApi buildBasicFullRecordPsc(){
+    public static FullRecordCompanyPSCApi buildBasicFullRecordPsc() {
         FullRecordCompanyPSCApi result = new FullRecordCompanyPSCApi();
         InternalData internal = new InternalData();
         ExternalData external = new ExternalData();
@@ -236,8 +236,8 @@ public class TestHelper {
         output.setUpdatedBy("user");
 
         pscData.setKind(kind);
-        pscData.setCeasedOn(LocalDate.of(2012,12,12));
-        pscData.setNotifiedOn(LocalDate.of(2000,12,12));
+        pscData.setCeasedOn(LocalDate.of(2012, 12, 12));
+        pscData.setNotifiedOn(LocalDate.of(2000, 12, 12));
         pscData.setEtag("etag");
         pscData.setName("wholeName");
         Links links = new Links();
@@ -282,14 +282,14 @@ public class TestHelper {
         if (!kind.contains("secure")) {
             pscData.setAddress(address);
         }
-        if (kind.contains("beneficial")){
+        if (kind.contains("beneficial")) {
             pscData.setSanctioned(true);
         }
 
-        if(kind.contains("individual")) {
+        if (kind.contains("individual")) {
             PscSensitiveData sensitiveData = new PscSensitiveData();
             DateOfBirth dateOfBirth = new DateOfBirth();
-            if(showFullDateOfBirth){
+            if (showFullDateOfBirth) {
                 dateOfBirth.setDay(21);
             } else {
                 dateOfBirth.setDay(null);
@@ -310,7 +310,7 @@ public class TestHelper {
 
             pscData.setNationality("British");
             pscData.setCountryOfResidence("England");
-        } else if(kind.contains("corporate")) {
+        } else if (kind.contains("corporate")) {
             Identification identification = new Identification();
             identification.setLegalForm("Form");
             identification.setLegalAuthority("Authority");
@@ -318,12 +318,12 @@ public class TestHelper {
             identification.setPlaceRegistered("Cardiff");
             identification.setRegistrationNumber("16102009");
             pscData.setIdentification(new PscIdentification(identification));
-        } else if(kind.contains("legal")) {
+        } else if (kind.contains("legal")) {
             Identification identification = new Identification();
             identification.setLegalForm("Form");
             identification.setLegalAuthority("Authority");
             pscData.setIdentification(new PscIdentification(identification));
-        } else if(kind.contains("secure")) {
+        } else if (kind.contains("secure")) {
             pscData.setCeasedOn(LocalDate.parse("2022-01-14"));
             pscData.setCeased(true);
             pscData.setDescription("description");
@@ -333,7 +333,7 @@ public class TestHelper {
         return output;
     }
 
-    public static PscDocument buildBasicDocument(){
+    public static PscDocument buildBasicDocument() {
         PscDocument document = new PscDocument();
         document.setUpdated(new Updated().setAt(LocalDate.now()));
         document.setCompanyNumber(COMPANY_NUMBER);
@@ -354,7 +354,7 @@ public class TestHelper {
 
     public static String createJsonPayload() throws IOException {
         InputStream inputStream = ClassLoader.getSystemClassLoader().getResourceAsStream("psc_payload.json");
-        if (inputStream == null){
+        if (inputStream == null) {
             throw new IOException("Failed to load Json payload input stream");
         }
         InputStreamReader exampleJsonPayload = new InputStreamReader(inputStream);
@@ -451,7 +451,6 @@ public class TestHelper {
 
         List<ExemptionItem> exemptionItems = Collections.singletonList(exemptionItem);
 
-
         PscExemptAsTradingOnUkRegulatedMarketItem nonUkEeaStateMarket = new PscExemptAsTradingOnUkRegulatedMarketItem();
 
         nonUkEeaStateMarket.setItems(exemptionItems);
@@ -468,7 +467,7 @@ public class TestHelper {
         return exemptions;
     }
 
-    public CompanyExemptions createExemptions () {
+    public CompanyExemptions createExemptions() {
         CompanyExemptions exemptions = new CompanyExemptions();
         exemptions.setExemptions(getExemptions());
         return exemptions;
@@ -484,7 +483,6 @@ public class TestHelper {
         exemptionItem.exemptTo(EXEMPTION_DATE);
 
         List<ExemptionItem> exemptionItems = Arrays.asList(exemptionItem, ceasedExemptionItem);
-
 
         PscExemptAsTradingOnRegulatedMarketItem nonUkEeaStateMarket = new PscExemptAsTradingOnRegulatedMarketItem();
         nonUkEeaStateMarket.setItems(exemptionItems);
@@ -502,6 +500,7 @@ public class TestHelper {
     }
 
     static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
+
     public static OffsetDateTime createOffsetDateTime() {
         LocalDateTime localDate = LocalDateTime.parse("2023-01-02T13:04:05.678", formatter);
         return OffsetDateTime.of(localDate, ZoneOffset.UTC);

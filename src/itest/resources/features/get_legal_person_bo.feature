@@ -28,5 +28,5 @@ Feature: Get Legal Person Beneficial Owner
     Then I should receive 404 status code
 
     Examples:
-      | company_number  | notificationId               |
+      | company_number | notificationId               |
       | 34777776       | ZfTs9WeeqpXTqf6dc6FZ4C0H0ZVV |

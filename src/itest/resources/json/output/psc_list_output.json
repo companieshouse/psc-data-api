@@ -28,7 +28,9 @@
         "region": "ura_region",
         "care_of": "ura_care_of"
       },
-      "natures_of_control": ["part-right-to-share-surplus-assets-75-to-100-percent"],
+      "natures_of_control": [
+        "part-right-to-share-surplus-assets-75-to-100-percent"
+      ],
       "is_sanctioned": true,
       "ceased": false
     },

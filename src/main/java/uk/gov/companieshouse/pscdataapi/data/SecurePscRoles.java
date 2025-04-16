@@ -20,8 +20,9 @@ public enum SecurePscRoles {
 
     /**
      * Checks if enum contains entry.
+     *
      * @param role the entry to check
-     * */
+     */
     public static boolean includes(final String role) {
         return EnumSet.allOf(SecurePscRoles.class).stream()
                 .map(SecurePscRoles::getRole)

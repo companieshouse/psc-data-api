@@ -14,6 +14,7 @@ import uk.gov.companieshouse.pscdataapi.PscDataApiApplication;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
 
 public class LocalDateDeSerializer extends JsonDeserializer<LocalDate> {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(
             PscDataApiApplication.APPLICATION_NAME_SPACE);
 
@@ -30,7 +31,7 @@ public class LocalDateDeSerializer extends JsonDeserializer<LocalDate> {
             /* If textValue() returns a value we received a string of
              * format yyyy-MM-dd'T'HH:mm:ss'Z
              * and use dateTimeFormatter to return LocalDate.
-             * 
+             *
              * Otherwise we received a long of milliseconds away
              * from 01/01/1970 and need to return
              * a LocalDate without dateTimeFormatter.

@@ -21,10 +21,12 @@ public class PscIdentification {
     @JsonProperty("registration_number")
     private String registrationNumber;
 
-    public PscIdentification(){}
+    public PscIdentification() {
+    }
 
     /**
      * Contructor using SDK Identification.
+     *
      * @param identification API Address object.
      */
     public PscIdentification(uk.gov.companieshouse.api.psc.Identification identification) {

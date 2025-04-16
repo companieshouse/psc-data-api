@@ -66,12 +66,13 @@ class ResourceChangedApiServiceAspectFeatureFlagDisabledIT {
                 changedResourcePost);
         when(changedResourcePost.execute()).thenReturn(response);
 
-        ApiResponse<?> apiResponse = chsKafkaApiService.invokeChsKafkaApi(TestHelper.X_REQUEST_ID, TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID, "individual-person-with-significant-control");
+        ApiResponse<?> apiResponse = chsKafkaApiService.invokeChsKafkaApi(TestHelper.X_REQUEST_ID, TestHelper.COMPANY_NUMBER,
+                TestHelper.NOTIFICATION_ID, "individual-person-with-significant-control");
 
         Assertions.assertThat(apiResponse).isNotNull();
 
         verify(client).privateChangedResourceHandler();
-        verify(privateChangedResourceHandler,times(1)).postChangedResource(Mockito.any(), changedResourceCaptor.capture());
+        verify(privateChangedResourceHandler, times(1)).postChangedResource(Mockito.any(), changedResourceCaptor.capture());
         verify(changedResourcePost, times(1)).execute();
     }
 
@@ -85,13 +86,14 @@ class ResourceChangedApiServiceAspectFeatureFlagDisabledIT {
         when(changedResourcePost.execute()).thenReturn(response);
 
         ApiResponse<?> apiResponse = chsKafkaApiService.invokeChsKafkaApiWithDeleteEvent(
-                new PscDeleteRequest(TestHelper.X_REQUEST_ID, TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID, "individual-person-with-significant-control", "deltaAt" ),
+                new PscDeleteRequest(TestHelper.X_REQUEST_ID, TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID,
+                        "individual-person-with-significant-control", "deltaAt"),
                 TestHelper.buildPscDocument("individual-persons-with-significant-control"));
 
         Assertions.assertThat(apiResponse).isNotNull();
 
         verify(client).privateChangedResourceHandler();
-        verify(privateChangedResourceHandler,times(1)).postChangedResource(Mockito.any(), changedResourceCaptor.capture());
+        verify(privateChangedResourceHandler, times(1)).postChangedResource(Mockito.any(), changedResourceCaptor.capture());
         verify(changedResourcePost, times(1)).execute();
     }
 }

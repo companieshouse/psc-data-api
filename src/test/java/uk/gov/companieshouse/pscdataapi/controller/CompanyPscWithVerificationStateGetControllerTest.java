@@ -10,7 +10,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.time.LocalDate;
 import java.util.Arrays;
-
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +28,7 @@ import uk.gov.companieshouse.api.model.psc.VerificationStatus;
 import uk.gov.companieshouse.pscdataapi.exceptions.ResourceNotFoundException;
 import uk.gov.companieshouse.pscdataapi.service.CompanyPscService;
 
-@SpringBootTest(properties = { "feature.identity_verification=true" })
+@SpringBootTest(properties = {"feature.identity_verification=true"})
 @AutoConfigureMockMvc
 class CompanyPscWithVerificationStateGetControllerTest {
 
@@ -98,11 +97,11 @@ class CompanyPscWithVerificationStateGetControllerTest {
                 """;
 
         mockMvc.perform(get(GET_INDIVIDUAL_WITH_VERIFICATION_STATE_URL).header("ERIC-Identity", ERIC_IDENTITY)
-                .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
-                .contentType(APPLICATION_JSON)
-                .header("x-request-id", X_REQUEST_ID)
-                .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
-                .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH_INTERNAL)).andExpect(status().isOk())
+                        .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
+                        .contentType(APPLICATION_JSON)
+                        .header("x-request-id", X_REQUEST_ID)
+                        .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
+                        .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH_INTERNAL)).andExpect(status().isOk())
                 .andDo(print())
                 .andExpect(content().json(expectedData, true));
     }
@@ -116,11 +115,11 @@ class CompanyPscWithVerificationStateGetControllerTest {
                         "Individual PSC document not found in Mongo with id " + MOCK_NOTIFICATION_ID));
 
         mockMvc.perform(get(GET_INDIVIDUAL_WITH_VERIFICATION_STATE_URL).header("ERIC-Identity", ERIC_IDENTITY)
-                .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
-                .contentType(APPLICATION_JSON)
-                .header("x-request-id", X_REQUEST_ID)
-                .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
-                .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH_INTERNAL))
+                        .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
+                        .contentType(APPLICATION_JSON)
+                        .header("x-request-id", X_REQUEST_ID)
+                        .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
+                        .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH_INTERNAL))
                 .andDo(print())
                 .andExpect(status().isNotFound());
     }

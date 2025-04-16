@@ -41,7 +41,7 @@ class CompanyPscTransformerTest {
     private FullRecordCompanyPSCApi fullRecordCompanyPSCApi;
 
     @Test
-    void testInsertEmptyPscTransform(){
+    void testInsertEmptyPscTransform() {
         PscDocument pscDocument = pscTransformer
                 .transformPscOnInsert(null, new FullRecordCompanyPSCApi());
         Assertions.assertNotNull(pscDocument);
@@ -255,7 +255,7 @@ class CompanyPscTransformerTest {
         assertThat(result.getData().getNameElements(), is(expectedDocument.getData().getNameElements()));
         assertThat(result.getData(), is(expectedDocument.getData()));
 
-        assertThat(result.getSensitiveData(),is(expectedDocument.getSensitiveData()));
+        assertThat(result.getSensitiveData(), is(expectedDocument.getSensitiveData()));
         assertThat(result.getData().getIdentification(), is(expectedDocument.getData().getIdentification()));
 
         assertThat(result.getDeltaAt(), is(expectedDocument.getDeltaAt()));
@@ -267,7 +267,7 @@ class CompanyPscTransformerTest {
     }
 
     @Test
-    void testBasicPscDocumentWithNullDataTransform(){
+    void testBasicPscDocumentWithNullDataTransform() {
         PscDocument pscDocument = new PscDocument();
         pscDocument.setData(new PscData());
         pscDocument.setDeltaAt("20230102030405000000");
@@ -279,70 +279,70 @@ class CompanyPscTransformerTest {
     }
 
     @Test
-    void testEmptyPscIndividualTransform(){
+    void testEmptyPscIndividualTransform() {
         Individual individual = pscTransformer
                 .transformPscDocToIndividual(new PscDocument(), SHOW_FULL_DOB_TRUE);
         Assertions.assertNotNull(individual);
     }
 
     @Test
-    void testEmptyPscIndividualBeneficialOwnerTransform(){
+    void testEmptyPscIndividualBeneficialOwnerTransform() {
         IndividualBeneficialOwner individualBeneficialOwner = pscTransformer
                 .transformPscDocToIndividualBeneficialOwner(new PscDocument(), SHOW_FULL_DOB_TRUE);
         Assertions.assertNotNull(individualBeneficialOwner);
     }
 
     @Test
-    void testEmptyPscCorporateEntityTransform(){
+    void testEmptyPscCorporateEntityTransform() {
         CorporateEntity corporateEntity = pscTransformer
                 .transformPscDocToCorporateEntity(new PscDocument());
         Assertions.assertNotNull(corporateEntity);
     }
 
     @Test
-    void testEmptyPscCorporateEntityBeneficialOwnerTransform(){
+    void testEmptyPscCorporateEntityBeneficialOwnerTransform() {
         CorporateEntityBeneficialOwner corporateEntityBeneficialOwner = pscTransformer
                 .transformPscDocToCorporateEntityBeneficialOwner(new PscDocument());
         Assertions.assertNotNull(corporateEntityBeneficialOwner);
     }
 
     @Test
-    void testEmptyPscLegalPersonTransform(){
+    void testEmptyPscLegalPersonTransform() {
         LegalPerson legalPerson = pscTransformer
                 .transformPscDocToLegalPerson(new PscDocument());
         Assertions.assertNotNull(legalPerson);
     }
 
     @Test
-    void testEmptyPscLegalPersonBeneficialOwnerTransform(){
+    void testEmptyPscLegalPersonBeneficialOwnerTransform() {
         LegalPersonBeneficialOwner legalPersonBeneficialOwner = pscTransformer
                 .transformPscDocToLegalPersonBeneficialOwner(new PscDocument());
         Assertions.assertNotNull(legalPersonBeneficialOwner);
     }
 
     @Test
-    void testEmptyPscSuperSecureTransform(){
+    void testEmptyPscSuperSecureTransform() {
         SuperSecure superSecure = pscTransformer
                 .transformPscDocToSuperSecure(new PscDocument());
         Assertions.assertNotNull(superSecure);
     }
 
     @Test
-    void testEmptyPscSuperSecureBeneficialOwnerTransform(){
+    void testEmptyPscSuperSecureBeneficialOwnerTransform() {
         SuperSecureBeneficialOwner superSecureBeneficialOwner = pscTransformer
                 .transformPscDocToSuperSecureBeneficialOwner(new PscDocument());
         Assertions.assertNotNull(superSecureBeneficialOwner);
     }
 
     @Test
-    void testEmptyListSummaryTransform(){
+    void testEmptyListSummaryTransform() {
         ListSummary listSummary = pscTransformer
                 .transformPscDocToListSummary(new PscDocument(), false);
         Assertions.assertNotNull(listSummary);
     }
 
     @Test
-    void testBasicListSummaryWithNullDataTransform(){
+    void testBasicListSummaryWithNullDataTransform() {
         PscDocument pscDocument = new PscDocument();
         PscData pscData = new PscData();
         pscData.setKind("individual-person-with-significant-control");
@@ -356,7 +356,7 @@ class CompanyPscTransformerTest {
     }
 
     @Test
-    void testListSummaryTransform(){
+    void testListSummaryTransform() {
         PscDocument pscDocument = TestHelper.buildPscDocument(TestHelper.CORPORATE_BO_KIND);
 
         ListSummary listSummary = pscTransformer

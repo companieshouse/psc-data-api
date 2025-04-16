@@ -43,13 +43,13 @@ Feature: Delete PSC
       | company_number |
       | 34777772       |
 
-    Scenario Outline: Delete PSC throws conflict exception if deltaAt is stale
-      Given Psc data api service is running
-      And a PSC "<data>" exists for "<company_number>" for Individual with "<existingDeltaAt>"
-      When a DELETE request is sent for "<company_number>" with a stale "<deltaAt>"
-      Then I should receive 409 status code
-      And the CHS Kafka API is not invoked with a DELETE event
+  Scenario Outline: Delete PSC throws conflict exception if deltaAt is stale
+    Given Psc data api service is running
+    And a PSC "<data>" exists for "<company_number>" for Individual with "<existingDeltaAt>"
+    When a DELETE request is sent for "<company_number>" with a stale "<deltaAt>"
+    Then I should receive 409 status code
+    And the CHS Kafka API is not invoked with a DELETE event
 
-      Examples:
-        | data           | company_number | existingDeltaAt          | deltaAt              |
-        | get_individual | 34777772       | 20231020084745378999     | 20230724093435661593 |
+    Examples:
+      | data           | company_number | existingDeltaAt      | deltaAt              |
+      | get_individual | 34777772       | 20231020084745378999 | 20230724093435661593 |

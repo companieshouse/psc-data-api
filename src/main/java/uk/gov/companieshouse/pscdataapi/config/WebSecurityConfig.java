@@ -2,7 +2,6 @@ package uk.gov.companieshouse.pscdataapi.config;
 
 import java.util.Arrays;
 import java.util.List;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,26 +23,26 @@ import uk.gov.companieshouse.pscdataapi.interceptor.FullRecordAuthenticationInte
 
 @Configuration
 public class WebSecurityConfig implements WebMvcConfigurer {
+
     // feature flag marked for future removal
     @Value("${feature.identity_verification:false}")
     private Boolean identityVerificationEnabled;
 
     public static final String PATTERN_FULL_RECORD =
-        "/company/{company_number}/persons-with-significant-control/individual/{notification_id}/full_record";
+            "/company/{company_number}/persons-with-significant-control/individual/{notification_id}/full_record";
     public static final String PATTERN_VERIFICATION_STATE =
-        "/company/{company_number}/persons-with-significant-control/individual/{notification_id}/verification-state";
+            "/company/{company_number}/persons-with-significant-control/individual/{notification_id}/verification-state";
 
     List<String> otherAllowedAuthMethods = Arrays.asList("oauth2");
 
     @Override
     public void addInterceptors(final InterceptorRegistry registry) {
         registry.addInterceptor(userAuthenticationInterceptor());
-        if (Boolean.TRUE.equals(identityVerificationEnabled))
-        {
+        if (Boolean.TRUE.equals(identityVerificationEnabled)) {
             registry.addInterceptor(internalUserInterceptor())
-                .addPathPatterns(PATTERN_VERIFICATION_STATE);
+                    .addPathPatterns(PATTERN_VERIFICATION_STATE);
             registry.addInterceptor(fullRecordAuthenticationInterceptor())
-                .addPathPatterns(PATTERN_FULL_RECORD);
+                    .addPathPatterns(PATTERN_FULL_RECORD);
         }
     }
 
@@ -74,15 +73,15 @@ public class WebSecurityConfig implements WebMvcConfigurer {
     @Bean
     public UserAuthenticationInterceptor userAuthenticationInterceptor() {
         return new UserAuthenticationInterceptor(externalMethods(),
-                                                 otherAllowedAuthMethods,
-                                                 internalUserInterceptor());
+                otherAllowedAuthMethods,
+                internalUserInterceptor());
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(final HttpSecurity http) throws Exception {
         http.cors(AbstractHttpConfigurer::disable)
-            .csrf(AbstractHttpConfigurer::disable)
-            .addFilterBefore(new CustomCorsFilter(externalMethods()), CsrfFilter.class);
+                .csrf(AbstractHttpConfigurer::disable)
+                .addFilterBefore(new CustomCorsFilter(externalMethods()), CsrfFilter.class);
 
         return http.build();
     }

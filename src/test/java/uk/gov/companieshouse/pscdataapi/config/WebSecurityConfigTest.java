@@ -25,17 +25,18 @@ import uk.gov.companieshouse.pscdataapi.service.CompanyPscService;
 @WebMvcTest(controllers = {
         CompanyPscFullRecordGetController.class,
         CompanyPscWithVerificationStateGetController.class,
-    }, properties = {"feature.identity_verification=true"})
+}, properties = {"feature.identity_verification=true"})
 class WebSecurityConfigTest {
+
     private static final String MOCK_COMPANY_NUMBER = "1234567";
     private static final String MOCK_NOTIFICATION_ID = "123456789";
     private static final String ERIC_IDENTITY = "Test-Identity";
     private static final String GET_INDIVIDUAL_FULL_RECORD_URL = String.format(
-        "/company/%s/persons-with-significant-control/individual/%s/full_record", MOCK_COMPANY_NUMBER,
-        MOCK_NOTIFICATION_ID);
+            "/company/%s/persons-with-significant-control/individual/%s/full_record", MOCK_COMPANY_NUMBER,
+            MOCK_NOTIFICATION_ID);
     private static final String GET_INDIVIDUAL_WITH_VERIFICATION_STATE_URL = String.format(
-        "/company/%s/persons-with-significant-control/individual/%s/verification-state", MOCK_COMPANY_NUMBER,
-        MOCK_NOTIFICATION_ID);
+            "/company/%s/persons-with-significant-control/individual/%s/verification-state", MOCK_COMPANY_NUMBER,
+            MOCK_NOTIFICATION_ID);
 
     @MockitoBean
     private Logger logger;
@@ -51,13 +52,13 @@ class WebSecurityConfigTest {
         final var headers = createHttpHeaders(false);
 
         mockMvc.perform(get(GET_INDIVIDUAL_FULL_RECORD_URL)
-                .headers(headers)
-                .contentType(APPLICATION_JSON))
-            .andExpect(status().isForbidden());
+                        .headers(headers)
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isForbidden());
         mockMvc.perform(get(GET_INDIVIDUAL_WITH_VERIFICATION_STATE_URL)
-                .headers(headers)
-                .contentType(APPLICATION_JSON))
-            .andExpect(status().isForbidden());
+                        .headers(headers)
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isForbidden());
 
     }
 
@@ -67,13 +68,13 @@ class WebSecurityConfigTest {
         final var headers = createHttpHeaders(true);
 
         mockMvc.perform(get(GET_INDIVIDUAL_FULL_RECORD_URL)
-                .headers(headers)
-                .contentType(APPLICATION_JSON))
-            .andExpect(status().isOk());
+                        .headers(headers)
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk());
         mockMvc.perform(get(GET_INDIVIDUAL_WITH_VERIFICATION_STATE_URL)
-                .headers(headers)
-                .contentType(APPLICATION_JSON))
-            .andExpect(status().isOk());
+                        .headers(headers)
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk());
 
     }
 
@@ -83,9 +84,9 @@ class WebSecurityConfigTest {
         headers.add(EricConstants.ERIC_IDENTITY, ERIC_IDENTITY);
         headers.add(EricConstants.ERIC_IDENTITY_TYPE, SecurityConstants.API_KEY_IDENTITY_TYPE);
         headers.add(EricConstants.ERIC_AUTHORISED_KEY_ROLES,
-            hasInternalPrivilege ? SecurityConstants.INTERNAL_USER_ROLE : "any_other_role");
+                hasInternalPrivilege ? SecurityConstants.INTERNAL_USER_ROLE : "any_other_role");
         headers.add(ERIC_AUTHORISED_KEY_PRIVILEGES_HEADER,
-            hasInternalPrivilege ? "sensitive-data" : "internal-app");
+                hasInternalPrivilege ? "sensitive-data" : "internal-app");
 
         return headers;
     }

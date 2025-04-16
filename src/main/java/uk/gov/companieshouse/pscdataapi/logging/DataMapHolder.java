@@ -14,7 +14,8 @@ public class DataMapHolder {
         DATAMAP_BUILDER.get().requestId(requestId);
     }
 
-    private DataMapHolder() {}
+    private DataMapHolder() {
+    }
 
     public static void clear() {
         DATAMAP_BUILDER.remove();
@@ -26,6 +27,7 @@ public class DataMapHolder {
 
     /**
      * Get the Log Map from the Builder.
+     *
      * @return Map
      */
     public static Map<String, Object> getLogMap() {

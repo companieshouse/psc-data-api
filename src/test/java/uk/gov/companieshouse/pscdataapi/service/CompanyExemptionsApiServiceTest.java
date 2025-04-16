@@ -27,7 +27,6 @@ import uk.gov.companieshouse.api.handler.delta.exemptions.request.PrivateCompany
 import uk.gov.companieshouse.api.handler.exception.URIValidationException;
 import uk.gov.companieshouse.api.model.ApiResponse;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadGatewayException;
-import uk.gov.companieshouse.pscdataapi.exceptions.ResourceNotFoundException;
 
 @ExtendWith(MockitoExtension.class)
 class CompanyExemptionsApiServiceTest {

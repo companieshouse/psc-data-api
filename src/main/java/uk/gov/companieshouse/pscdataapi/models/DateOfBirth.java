@@ -12,10 +12,12 @@ public class DateOfBirth {
     @Field("year")
     private Integer year;
 
-    public DateOfBirth() {}
+    public DateOfBirth() {
+    }
 
     /**
      * Contructor using SDK DoB.
+     *
      * @param dob API DoB object.
      */
     public DateOfBirth(uk.gov.companieshouse.api.psc.DateOfBirth dob) {

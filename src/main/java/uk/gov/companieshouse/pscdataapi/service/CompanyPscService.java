@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.api.exemptions.CompanyExemptions;
@@ -276,8 +275,7 @@ public class CompanyPscService {
     }
 
     /**
-     * Get PSC record and transform it into an Individual with Verification State
-     * PSC.
+     * Get PSC record and transform it into an Individual with Verification State PSC.
      *
      * @param companyNumber  Company number.
      * @param notificationId Mongo Id.
