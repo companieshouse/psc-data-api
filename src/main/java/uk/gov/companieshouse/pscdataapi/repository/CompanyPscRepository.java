@@ -20,7 +20,7 @@ public interface CompanyPscRepository extends MongoRepository<PscDocument, Strin
 
     @Aggregation(pipeline = {
             "{'$match': { 'company_number': ?0} } }",
-            "{'$sort': {'data.notified_on': -1, 'data.ceased_on': -1 } }",
+            "{'$sort': {'data.notified_on': -1, 'data.ceased_on': -1, 'created.at': 1 } }",
             "{'$skip': ?1}",
             "{'$limit': ?2}",
             })
@@ -30,7 +30,7 @@ public interface CompanyPscRepository extends MongoRepository<PscDocument, Strin
             "{'$match': { 'company_number' : ?0, "
                     + "$or:[ { '" + "data.ceased_on': { $gte : { \"$date\" : \"?2\" }} },"
                     + "{ 'data.ceased_on': {$exists: false }} ]} }",
-            "{'$sort': {'data.notified_on': -1, 'data.ceased_on': -1 } }",
+            "{'$sort': {'data.notified_on': -1, 'data.ceased_on': -1, 'created.at': 1 } }",
             "{'$skip': ?1}",
             "{'$limit': ?3}",
             })
