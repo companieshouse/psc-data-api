@@ -118,7 +118,8 @@ public class PscDataSteps {
     }
 
     @Given("a psc data record {string} exists with notification id {string} and delta_at {string}")
-    public void psc_record_exists_for_company_and_id_with_delta_at(String existingDataFile, String notificationId, String deltaAt) throws IOException {
+    public void psc_record_exists_for_company_and_id_with_delta_at(String existingDataFile, String notificationId, String deltaAt)
+            throws IOException {
         String pscDataFile = FileReaderUtil.readFile(
                 "src/itest/resources/json/input/" + existingDataFile + ".json");
         PscData pscData = objectMapper.readValue(pscDataFile, PscData.class);
@@ -189,7 +190,8 @@ public class PscDataSteps {
 
         HttpEntity<String> request = new HttpEntity<>(data, headers);
         String uri = "/company/{company_number}/persons-with-significant-control/{notfication_id}/full_record";
-        ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.PUT, request, Void.class, COMPANY_NUMBER, notificationId);
+        ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.PUT, request, Void.class, COMPANY_NUMBER,
+                notificationId);
 
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
     }
@@ -208,7 +210,8 @@ public class PscDataSteps {
 
         HttpEntity<String> request = new HttpEntity<>(data, headers);
         String uri = "/company/{company_number}/persons-with-significant-control/{notification_id}/full_record";
-        ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.PUT, request, Void.class, COMPANY_NUMBER, notificationId);
+        ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.PUT, request, Void.class, COMPANY_NUMBER,
+                notificationId);
 
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
     }
@@ -242,7 +245,8 @@ public class PscDataSteps {
 
         HttpEntity<String> request = new HttpEntity<>(null, headers);
         String uri = "/company/{company_number}/persons-with-significant-control/{notification_id}/full_record";
-        ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.DELETE, request, Void.class, companyNumber, NOTIFICATION_ID);
+        ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.DELETE, request, Void.class, companyNumber,
+                NOTIFICATION_ID);
 
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
     }
@@ -351,7 +355,8 @@ public class PscDataSteps {
 
     @And("the Get call response body should match {string} file for Super Secure")
     public void theGetCallResponseBodyShouldMatchFileForSuperSecure(String result) throws IOException {
-        String data = FileCopyUtils.copyToString(new InputStreamReader(new FileInputStream("src/itest/resources/json/output/" + result + ".json")));
+        String data = FileCopyUtils.copyToString(
+                new InputStreamReader(new FileInputStream("src/itest/resources/json/output/" + result + ".json")));
         SuperSecure expected = objectMapper.readValue(data, SuperSecure.class);
         SuperSecure actual = CucumberContext.CONTEXT.get("getResponseBody");
 
@@ -412,7 +417,8 @@ public class PscDataSteps {
         pscData.setKind("super-secure-beneficial-owner");
         pscData.setDescription("super-secure-beneficial-owner");
         Links links = new Links();
-        links.setSelf("/company/" + companyNumber + "/persons-with-significant-control/super-secure-beneficial-owner/" + notificationId);
+        links.setSelf("/company/" + companyNumber + "/persons-with-significant-control/super-secure-beneficial-owner/"
+                + notificationId);
         links.setStatement("string");
         pscData.setLinks(links);
         pscData.setCeased(false);
@@ -435,7 +441,8 @@ public class PscDataSteps {
         HttpEntity<String> request = new HttpEntity<>(null, headers);
 
         String uri =
-                String.format("/company/%s/persons-with-significant-control/super-secure-beneficial-owner/%s", companyNumber, notificationId);
+                String.format("/company/%s/persons-with-significant-control/super-secure-beneficial-owner/%s", companyNumber,
+                        notificationId);
         ResponseEntity<SuperSecureBeneficialOwner> response = restTemplate.exchange(uri,
                 HttpMethod.GET, request, SuperSecureBeneficialOwner.class, companyNumber, notificationId);
 
@@ -445,7 +452,8 @@ public class PscDataSteps {
 
     @And("the Get call response body should match {string} file for Super Secure Beneficial Owner")
     public void theGetCallResponseBodyShouldMatchFileForSuperSecureBeneficialOwner(String result) throws IOException {
-        String data = FileCopyUtils.copyToString(new InputStreamReader(new FileInputStream("src/itest/resources/json/output/" + result + ".json")));
+        String data = FileCopyUtils.copyToString(
+                new InputStreamReader(new FileInputStream("src/itest/resources/json/output/" + result + ".json")));
         SuperSecureBeneficialOwner expected = objectMapper.readValue(data, SuperSecureBeneficialOwner.class);
         SuperSecureBeneficialOwner actual = CucumberContext.CONTEXT.get("getResponseBody");
 
@@ -456,7 +464,8 @@ public class PscDataSteps {
     }
 
     @When("a Get request is sent for {string} and {string} without ERIC headers for Super Secure Beneficial Owner")
-    public void aGetRequestIsSentForAndWithoutERICHeadersForSuperSecureBeneficialOwner(String companyNumber, String notificationId) {
+    public void aGetRequestIsSentForAndWithoutERICHeadersForSuperSecureBeneficialOwner(String companyNumber,
+            String notificationId) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -465,7 +474,8 @@ public class PscDataSteps {
         HttpEntity<String> request = new HttpEntity<>(null, headers);
 
         String uri =
-                String.format("/company/%s/persons-with-significant-control/super-secure-beneficial-owner/%s", companyNumber, notificationId);
+                String.format("/company/%s/persons-with-significant-control/super-secure-beneficial-owner/%s", companyNumber,
+                        notificationId);
         ResponseEntity<SuperSecureBeneficialOwner> response = restTemplate.exchange(uri,
                 HttpMethod.GET, request, SuperSecureBeneficialOwner.class, companyNumber, notificationId);
 
@@ -486,7 +496,8 @@ public class PscDataSteps {
         HttpEntity<String> request = new HttpEntity<>(null, headers);
 
         String uri =
-                String.format("/company/%s/persons-with-significant-control/super-secure-beneficial-owner/%s", companyNumber, notification_id);
+                String.format("/company/%s/persons-with-significant-control/super-secure-beneficial-owner/%s", companyNumber,
+                        notification_id);
         ResponseEntity<SuperSecureBeneficialOwner> response = restTemplate.exchange(uri,
                 HttpMethod.GET, request, SuperSecureBeneficialOwner.class, companyNumber, notification_id);
 
@@ -561,7 +572,8 @@ public class PscDataSteps {
 
     @And("the Get call response body should match {string} file for Corporate Entity")
     public void theGetCallResponseBodyShouldMatchFileForCorporateEntity(String result) throws IOException {
-        String data = FileCopyUtils.copyToString(new InputStreamReader(new FileInputStream("src/itest/resources/json/output/" + result + ".json")));
+        String data = FileCopyUtils.copyToString(
+                new InputStreamReader(new FileInputStream("src/itest/resources/json/output/" + result + ".json")));
         CorporateEntity expected = objectMapper.readValue(data, CorporateEntity.class);
         CorporateEntity actual = CucumberContext.CONTEXT.get("getResponseBody");
 
@@ -741,14 +753,14 @@ public class PscDataSteps {
 
     @When("an {string} Get request is sent for {string} and {string} for Individual Full Record")
     public void aGetFullRecordRequestIsSentForAnd(final String auth, final String companyNumber, final String notification_id) {
-        final HttpHeaders headers = setupHeaders(!"unauthenticated".equals(auth), "authorized".equals(auth) ? "*": "");
+        final HttpHeaders headers = setupHeaders(!"unauthenticated".equals(auth), "authorized".equals(auth) ? "*" : "");
         CucumberContext.CONTEXT.set("contextId", CONTEXT_ID);
 
         final HttpEntity<String> request = new HttpEntity<>(null, headers);
 
         final String uri = "/company/{company_number}/persons-with-significant-control/individual/{notification_id}/full_record";
         final ResponseEntity<IndividualFullRecord> response = restTemplate.exchange(uri, HttpMethod.GET, request,
-            IndividualFullRecord.class, companyNumber, notification_id);
+                IndividualFullRecord.class, companyNumber, notification_id);
 
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
         CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
@@ -789,7 +801,7 @@ public class PscDataSteps {
 
         final String uri = "/company/{company_number}/persons-with-significant-control/individual/{notification_id}/full_record";
         final ResponseEntity<IndividualFullRecord> response = restTemplate.exchange(uri, HttpMethod.GET, request,
-            IndividualFullRecord.class, companyNumber, notification_id);
+                IndividualFullRecord.class, companyNumber, notification_id);
 
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
         CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
@@ -797,7 +809,8 @@ public class PscDataSteps {
 
     @And("the Get call response body should match {string} file for Individual")
     public void theGetCallResponseBodyShouldMatchFile(String result) throws IOException {
-        String data = FileCopyUtils.copyToString(new InputStreamReader(new FileInputStream("src/itest/resources/json/output/" + result + ".json")));
+        String data = FileCopyUtils.copyToString(
+                new InputStreamReader(new FileInputStream("src/itest/resources/json/output/" + result + ".json")));
         Individual expected = objectMapper.readValue(data, Individual.class);
         Individual actual = CucumberContext.CONTEXT.get("getResponseBody");
 
@@ -808,7 +821,8 @@ public class PscDataSteps {
 
     @And("the Get call response body should match {string} file for Individual Full Record")
     public void theGetFullRecordCallResponseBodyShouldMatchFile(final String result) throws IOException {
-        final String data = FileCopyUtils.copyToString(new InputStreamReader(new FileInputStream("src/itest/resources/json/output/" + result + ".json")));
+        final String data = FileCopyUtils.copyToString(
+                new InputStreamReader(new FileInputStream("src/itest/resources/json/output/" + result + ".json")));
         final IndividualFullRecord expected = objectMapper.readValue(data, IndividualFullRecord.class);
         final IndividualFullRecord actual = CucumberContext.CONTEXT.get("getResponseBody");
 
@@ -817,7 +831,8 @@ public class PscDataSteps {
         assertThat(actual.getNaturesOfControl()).isEqualTo(expected.getNaturesOfControl());
         assertThat(actual.getDateOfBirth()).isEqualTo(expected.getDateOfBirth());
         assertThat(actual.getUsualResidentialAddress()).isEqualTo(expected.getUsualResidentialAddress());
-        assertThat(actual.getResidentialAddressSameAsServiceAddress()).isEqualTo(expected.getResidentialAddressSameAsServiceAddress());
+        assertThat(actual.getResidentialAddressSameAsServiceAddress()).isEqualTo(
+                expected.getResidentialAddressSameAsServiceAddress());
     }
 
     @When("a Get request is sent for {string} and {string} without ERIC headers for Individual")
@@ -907,7 +922,8 @@ public class PscDataSteps {
 
     @And("the Get call response body should match {string} file for Individual Beneficial Owner")
     public void theGetCallResponseBodyShouldMatchFileForIndividualBeneficialOwner(String result) throws IOException {
-        String data = FileCopyUtils.copyToString(new InputStreamReader(new FileInputStream("src/itest/resources/json/output/" + result + ".json")));
+        String data = FileCopyUtils.copyToString(
+                new InputStreamReader(new FileInputStream("src/itest/resources/json/output/" + result + ".json")));
         IndividualBeneficialOwner expected = objectMapper.readValue(data, IndividualBeneficialOwner.class);
         IndividualBeneficialOwner actual = CucumberContext.CONTEXT.get("getResponseBody");
 
@@ -937,7 +953,8 @@ public class PscDataSteps {
     }
 
     @When("a Get request is sent for {string} and {string} without ERIC headers for Individual Beneficial Owner")
-    public void aGetRequestIsSentForAndWithoutERICHeadersForIndividualBeneficialOwner(String companyNumber, String notification_id) {
+    public void aGetRequestIsSentForAndWithoutERICHeadersForIndividualBeneficialOwner(String companyNumber,
+            String notification_id) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -954,7 +971,8 @@ public class PscDataSteps {
     }
 
     @And("a PSC {string} exists for {string} for Corporate Entity Beneficial Owner")
-    public void aPSCExistsForForCorporateEntityBeneficialOwner(String dataFile, String companyNumber) throws JsonProcessingException {
+    public void aPSCExistsForForCorporateEntityBeneficialOwner(String dataFile, String companyNumber)
+            throws JsonProcessingException {
         String pscDataFile = FileReaderUtil.readFile("src/itest/resources/json/input/" + dataFile + ".json");
         PscData pscData = objectMapper.readValue(pscDataFile, PscData.class);
         PscDocument document = new PscDocument();
@@ -1215,7 +1233,8 @@ public class PscDataSteps {
     }
 
     @When("a Get request is sent for {string} and {string} without ERIC headers for Legal Person Beneficial Owner")
-    public void aGetRequestIsSentForAndWithoutERICHeadersForLegalPersonBeneficialOwner(String companyNumber, String notification_id) {
+    public void aGetRequestIsSentForAndWithoutERICHeadersForLegalPersonBeneficialOwner(String companyNumber,
+            String notification_id) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -1294,7 +1313,6 @@ public class PscDataSteps {
         document1.setData(pscData);
         mongoTemplate.save(document1);
 
-
         PscData pscData2 = new PscData();
         PscDocument document2 = new PscDocument();
 
@@ -1316,7 +1334,6 @@ public class PscDataSteps {
         pscData2.setIdentification(new PscIdentification(identification));
 
         document2.setData(pscData2);
-
 
         mongoTemplate.save(document2);
 

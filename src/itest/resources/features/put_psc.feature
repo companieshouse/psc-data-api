@@ -8,8 +8,8 @@ Feature: Process Psc Data Requests
     And a record exists with id "<notificationId>"
 
     Examples:
-      | data                 | notificationId              |
-      | put_psc_data         | ZfTs9WeeqpXTqf6dc6FZ4C0H0ZZ |
+      | data         | notificationId              |
+      | put_psc_data | ZfTs9WeeqpXTqf6dc6FZ4C0H0ZZ |
 
   Scenario Outline: Processing old psc data information
 
@@ -20,5 +20,5 @@ Feature: Process Psc Data Requests
     And a record exists with id "<notificationId>" and delta_at "<deltaAt>"
 
     Examples:
-      | existingData         | oldData          | notificationId              | deltaAt                   |
-      | put_psc_data         | put_psc_old_data | ZfTs9WeeqpXTqf6dc6FZ4C0H0ZZ | 2023-11-20T08:47:45.378Z  |
+      | existingData | oldData          | notificationId              | deltaAt                  |
+      | put_psc_data | put_psc_old_data | ZfTs9WeeqpXTqf6dc6FZ4C0H0ZZ | 2023-11-20T08:47:45.378Z |

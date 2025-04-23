@@ -1,7 +1,6 @@
 package uk.gov.companieshouse.pscdataapi.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -29,7 +28,6 @@ import uk.gov.companieshouse.api.handler.metrics.request.PrivateCompanyMetricsGe
 import uk.gov.companieshouse.api.metrics.MetricsApi;
 import uk.gov.companieshouse.api.model.ApiResponse;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadGatewayException;
-import uk.gov.companieshouse.pscdataapi.exceptions.ResourceNotFoundException;
 
 @ExtendWith(MockitoExtension.class)
 class CompanyMetricsApiServiceTest {

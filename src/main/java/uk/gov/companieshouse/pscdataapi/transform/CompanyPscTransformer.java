@@ -2,7 +2,6 @@ package uk.gov.companieshouse.pscdataapi.transform;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-
 import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.api.model.common.Date3Tuple;
 import uk.gov.companieshouse.api.model.psc.NameElementsApi;
@@ -126,7 +125,7 @@ public class CompanyPscTransformer {
     public PscIndividualFullRecordApi transformPscDocToIndividualFullRecord(final PscDocument pscDocument) {
         logger.info("Attempting to transform pscDocument to Individual Full Record",
                 DataMapHolder.getLogMap());
-        final PscIndividualFullRecordApi pscIndividualFullRecordApi  = new PscIndividualFullRecordApi();
+        final PscIndividualFullRecordApi pscIndividualFullRecordApi = new PscIndividualFullRecordApi();
 
         final PscData pscData = pscDocument.getData();
         pscIndividualFullRecordApi.setName(pscData.getName());
@@ -142,7 +141,8 @@ public class CompanyPscTransformer {
         pscIndividualFullRecordApi.setEtag(pscData.getEtag());
 
         final PscSensitiveData sensitivePscData = pscDocument.getSensitiveData();
-        pscIndividualFullRecordApi.setResidentialAddressSameAsServiceAddress(sensitivePscData.getResidentialAddressIsSameAsServiceAddress());
+        pscIndividualFullRecordApi.setResidentialAddressSameAsServiceAddress(
+                sensitivePscData.getResidentialAddressIsSameAsServiceAddress());
         pscIndividualFullRecordApi.setDateOfBirth(mapDate3Tuple(sensitivePscData.getDateOfBirth(), true));
         pscIndividualFullRecordApi.setUsualResidentialAddress(mapCommonAddress(sensitivePscData.getUsualResidentialAddress()));
         pscIndividualFullRecordApi.setInternalId(sensitivePscData.getInternalId());
@@ -360,7 +360,6 @@ public class CompanyPscTransformer {
     public ListSummary transformPscDocToListSummary(PscDocument pscDocument, Boolean registerView) {
         ListSummary listSummary = new ListSummary();
 
-
         if (pscDocument.getData() != null) {
             PscData pscData = pscDocument.getData();
 
@@ -413,7 +412,7 @@ public class CompanyPscTransformer {
         String pscStatementId = null;
         if (requestBody.getExternalData() != null) {
             final ExternalData externalData = requestBody.getExternalData();
-                pscStatementId = externalData.getPscStatementId();
+            pscStatementId = externalData.getPscStatementId();
         }
         final PscDocument pscDocument = new PscDocument();
         logger.info("Transforming incoming payload", DataMapHolder.getLogMap());

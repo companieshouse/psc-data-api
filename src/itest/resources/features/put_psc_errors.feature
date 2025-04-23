@@ -8,8 +8,8 @@ Feature: Error and Retry Psc Data Requests
     And the CHS Kafka API service is not invoked
 
     Examples:
-      | data                 | companyNumber | notificationId              |
-      | put_psc_data         | 34777772      | ZfTs9WeeqpXTqf6dc6FZ4C0H0ZZ |
+      | data         | companyNumber | notificationId              |
+      | put_psc_data | 34777772      | ZfTs9WeeqpXTqf6dc6FZ4C0H0ZZ |
 
   Scenario Outline: Processing bad psc statement payload
     Given Psc data api service is running
@@ -28,5 +28,5 @@ Feature: Error and Retry Psc Data Requests
     Then I should receive 503 status code
 
     Examples:
-      | data                 | companyNumber | notificationId              |
-      | put_psc_data         | 34777772      | ZfTs9WeeqpXTqf6dc6FZ4C0H0ZZ |
+      | data         | companyNumber | notificationId              |
+      | put_psc_data | 34777772      | ZfTs9WeeqpXTqf6dc6FZ4C0H0ZZ |

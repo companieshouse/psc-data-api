@@ -23,6 +23,7 @@ public class ResourceChangedApiServiceAspect {
 
     /**
      * Feature flag check.
+     *
      * @param proceedingJoinPoint the proceeding join point.
      * @return returns an object.
      * @throws Throwable throws something.

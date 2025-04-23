@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 
 public class Address {
+
     @JsonProperty("address_line_1")
     private String addressLine1;
     @JsonProperty("address_line_2")
@@ -23,10 +24,12 @@ public class Address {
     @JsonProperty("po_box")
     private String poBox;
 
-    public Address() {}
+    public Address() {
+    }
 
     /**
      * Contructor using SDK Address.
+     *
      * @param address API Address object.
      */
     public Address(uk.gov.companieshouse.api.psc.Address address) {
@@ -43,6 +46,7 @@ public class Address {
 
     /**
      * Contructor using SDK URA.
+     *
      * @param address API URA object.
      */
     public Address(uk.gov.companieshouse.api.psc.UsualResidentialAddress address) {

@@ -27,8 +27,8 @@ public class RequestLoggingFilter extends OncePerRequestFilter implements Reques
 
     @Override
     protected void doFilterInternal(@Nonnull HttpServletRequest request,
-                                    @Nonnull HttpServletResponse response,
-                                    @Nonnull FilterChain filterChain) throws ServletException, IOException {
+            @Nonnull HttpServletResponse response,
+            @Nonnull FilterChain filterChain) throws ServletException, IOException {
         logStartRequestProcessing(request, LOGGER);
         DataMapHolder.initialise(Optional
                 .ofNullable(request.getHeader(REQUEST_ID.value()))

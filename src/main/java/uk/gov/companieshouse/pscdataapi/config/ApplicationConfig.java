@@ -38,10 +38,10 @@ public class ApplicationConfig {
     private final String oracleQueryApiUrl;
 
     public ApplicationConfig(@Value("${api.key}") String apiKey,
-                             @Value("${kafka.api.url}") String kafkaApiUrl,
-                             @Value("${metrics.api.url}") String metricsApiUrl,
-                             @Value("${exemptions.api.url}") String exemptionsApiUrl,
-                             @Value("${oracle.query.api.url}") final String oracleQueryApiUrl) {
+            @Value("${kafka.api.url}") String kafkaApiUrl,
+            @Value("${metrics.api.url}") String metricsApiUrl,
+            @Value("${exemptions.api.url}") String exemptionsApiUrl,
+            @Value("${oracle.query.api.url}") final String oracleQueryApiUrl) {
         this.apiKey = apiKey;
         this.kafkaApiUrl = kafkaApiUrl;
         this.metricsApiUrl = metricsApiUrl;

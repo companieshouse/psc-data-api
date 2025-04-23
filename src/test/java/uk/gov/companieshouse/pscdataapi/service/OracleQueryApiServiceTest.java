@@ -1,15 +1,16 @@
 package uk.gov.companieshouse.pscdataapi.service;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.google.api.client.http.HttpHeaders;
+import com.google.api.client.http.HttpResponseException;
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.function.Supplier;
-
-import com.google.api.client.http.HttpHeaders;
-import com.google.api.client.http.HttpResponseException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.function.Executable;

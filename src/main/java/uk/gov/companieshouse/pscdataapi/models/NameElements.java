@@ -18,10 +18,12 @@ public class NameElements {
     @JsonProperty("middle_name")
     private String middleName;
 
-    public NameElements() {}
+    public NameElements() {
+    }
 
     /**
      * Contructor using SDK NameElements.
+     *
      * @param nameElements API NameElements object.
      */
     public NameElements(uk.gov.companieshouse.api.psc.NameElements nameElements) {

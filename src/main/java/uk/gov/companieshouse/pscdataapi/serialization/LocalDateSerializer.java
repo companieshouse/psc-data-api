@@ -11,7 +11,7 @@ public class LocalDateSerializer extends JsonSerializer<LocalDate> {
 
     @Override
     public void serialize(LocalDate localDate, JsonGenerator jsonGenerator,
-                          SerializerProvider serializerProvider) throws IOException {
+            SerializerProvider serializerProvider) throws IOException {
         if (localDate == null) {
             jsonGenerator.writeNull();
         } else {

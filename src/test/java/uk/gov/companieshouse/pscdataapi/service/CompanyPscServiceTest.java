@@ -44,7 +44,9 @@ import uk.gov.companieshouse.api.exemptions.PscExemptAsTradingOnUkRegulatedMarke
 import uk.gov.companieshouse.api.metrics.MetricsApi;
 import uk.gov.companieshouse.api.metrics.RegisterApi;
 import uk.gov.companieshouse.api.metrics.RegistersApi;
-import uk.gov.companieshouse.api.model.psc.*;
+import uk.gov.companieshouse.api.model.psc.PscIndividualFullRecordApi;
+import uk.gov.companieshouse.api.model.psc.PscVerificationStateApi;
+import uk.gov.companieshouse.api.model.psc.VerificationStatusTypeApi;
 import uk.gov.companieshouse.api.psc.CorporateEntity;
 import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
 import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
@@ -923,8 +925,10 @@ class CompanyPscServiceTest {
                 Optional.of(pscDocument));
         when(featureFlags.isIndividualPscFullRecordAddVerificationStateEnabled()).thenReturn(true);
         when(oracleQueryApiService.getPscVerificationState(123L))
-                .thenReturn(Optional.of(new PscVerificationStateApi(VerificationStatusTypeApi.VERIFIED, LocalDate.of(2025, 1, 10), LocalDate.of(2025, 2, 5))));
-        when(transformer.transformPscDocToIndividualFullRecord(pscDocument)).thenReturn(new PscIndividualFullRecordApi().internalId(123L));
+                .thenReturn(Optional.of(new PscVerificationStateApi(VerificationStatusTypeApi.VERIFIED, LocalDate.of(2025, 1, 10),
+                        LocalDate.of(2025, 2, 5))));
+        when(transformer.transformPscDocToIndividualFullRecord(pscDocument)).thenReturn(
+                new PscIndividualFullRecordApi().internalId(123L));
 
         service.getIndividualFullRecord(COMPANY_NUMBER, NOTIFICATION_ID);
 

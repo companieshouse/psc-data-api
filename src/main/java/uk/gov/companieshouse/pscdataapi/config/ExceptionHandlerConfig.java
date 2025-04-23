@@ -25,6 +25,7 @@ import uk.gov.companieshouse.pscdataapi.exceptions.ServiceUnavailableException;
 
 @ControllerAdvice
 public class ExceptionHandlerConfig {
+
     private final Logger logger;
 
     @Autowired
@@ -96,8 +97,7 @@ public class ExceptionHandlerConfig {
     }
 
     /**
-     * ServiceUnavailableException exception handler.
-     * To be thrown when there are connection issues.
+     * ServiceUnavailableException exception handler. To be thrown when there are connection issues.
      *
      * @param ex      exception to handle.
      * @param request request.
@@ -106,7 +106,7 @@ public class ExceptionHandlerConfig {
     @ExceptionHandler(value = {ServiceUnavailableException.class,
             DataAccessException.class, MongoException.class})
     public ResponseEntity<Object> handleServiceUnavailableException(Exception ex,
-                                                                    WebRequest request) {
+            WebRequest request) {
         logger.error(String.format("Service unavailable, response code: %s",
                 HttpStatus.SERVICE_UNAVAILABLE), ex);
 
@@ -118,8 +118,7 @@ public class ExceptionHandlerConfig {
     }
 
     /**
-     * BadRequestException exception handler.
-     * Thrown when data is given in the wrong format.
+     * BadRequestException exception handler. Thrown when data is given in the wrong format.
      *
      * @param ex      exception to handle.
      * @param request request.
@@ -139,8 +138,7 @@ public class ExceptionHandlerConfig {
 
 
     /**
-     * Conflict exception handler.
-     * Thrown when data is given in the wrong format.
+     * Conflict exception handler. Thrown when data is given in the wrong format.
      *
      * @param ex      exception to handle.
      * @param request request.

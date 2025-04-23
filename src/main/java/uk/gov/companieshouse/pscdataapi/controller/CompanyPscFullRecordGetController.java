@@ -20,6 +20,7 @@ import uk.gov.companieshouse.pscdataapi.service.CompanyPscService;
 @RequestMapping(path = "/company/{company_number}/persons-with-significant-control",
         produces = "application/json")
 public class CompanyPscFullRecordGetController {
+
     private static final Logger LOGGER = LoggerFactory.getLogger("psc-data-api");
     private static final String GETTING_FULL_RECORD_PSC_DATA_WITH_COMPANY_NUMBER = "Getting Full record PSC data with company number %s";
     public static final String OAUTH_2 = "oauth2";
@@ -35,7 +36,7 @@ public class CompanyPscFullRecordGetController {
     /**
      * Get the individual full record data object (including sensitive data) for a company profile number for Individual PSC.
      *
-     * @param companyNumber The number of the company
+     * @param companyNumber  The number of the company
      * @param notificationId The PSC notification ID
      * @return ResponseEntity
      */
@@ -52,7 +53,8 @@ public class CompanyPscFullRecordGetController {
         LOGGER.info(String.format(GETTING_FULL_RECORD_PSC_DATA_WITH_COMPANY_NUMBER, companyNumber),
                 DataMapHolder.getLogMap());
         try {
-            final PscIndividualFullRecordApi individualFullRecord = pscService.getIndividualFullRecord(companyNumber, notificationId);
+            final PscIndividualFullRecordApi individualFullRecord = pscService.getIndividualFullRecord(companyNumber,
+                    notificationId);
 
             if (identityType.equals(OAUTH_2)) {
                 individualFullRecord.setInternalId(null);

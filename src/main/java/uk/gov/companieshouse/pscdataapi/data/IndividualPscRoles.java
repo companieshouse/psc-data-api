@@ -18,9 +18,10 @@ public enum IndividualPscRoles {
     }
 
     /**
-    * Checks if enum contains entry.
-    * @param role the entry to check
-    * */
+     * Checks if enum contains entry.
+     *
+     * @param role the entry to check
+     */
     public static boolean includes(final String role) {
         return EnumSet.allOf(IndividualPscRoles.class).stream()
                 .map(IndividualPscRoles::getRole)

@@ -18,6 +18,7 @@ import uk.gov.companieshouse.logging.Logger;
 
 @ExtendWith(MockitoExtension.class)
 class ExceptionHandlerConfigTest {
+
     private ExceptionHandlerConfig exceptionHandlerConfigConfig;
 
     @Mock
@@ -50,7 +51,8 @@ class ExceptionHandlerConfigTest {
 
     @Test
     void handleMethodNotAllowedException() {
-        ResponseEntity response = exceptionHandlerConfigConfig.handleMethodNotAllowedException(new Exception("exception"), request);
+        ResponseEntity response = exceptionHandlerConfigConfig.handleMethodNotAllowedException(new Exception("exception"),
+                request);
         Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
         assertThat(response, is(not(nullValue())));
         assertThat(response.getStatusCode(), is(HttpStatus.METHOD_NOT_ALLOWED));
@@ -59,7 +61,8 @@ class ExceptionHandlerConfigTest {
 
     @Test
     void handleServiceUnavailableException() {
-        ResponseEntity response = exceptionHandlerConfigConfig.handleServiceUnavailableException(new Exception("exception"), request);
+        ResponseEntity response = exceptionHandlerConfigConfig.handleServiceUnavailableException(new Exception("exception"),
+                request);
         Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
         assertThat(response, is(not(nullValue())));
         assertThat(response.getStatusCode(), is(HttpStatus.SERVICE_UNAVAILABLE));

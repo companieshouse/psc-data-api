@@ -5,7 +5,6 @@ import static uk.gov.companieshouse.pscdataapi.PscDataApiApplication.APPLICATION
 import java.util.Optional;
 import java.util.function.Supplier;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.api.InternalApiClient;
 import uk.gov.companieshouse.api.error.ApiErrorResponseException;

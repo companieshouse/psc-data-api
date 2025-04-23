@@ -1,8 +1,10 @@
 package uk.gov.companieshouse.pscdataapi.models;
 
-public record PscDeleteRequest (String companyNumber, String notificationId, String contextId, String kind, String deltaAt) {
+public record PscDeleteRequest(String companyNumber, String notificationId, String contextId, String kind, String deltaAt) {
 
-    public static Builder builder() { return new Builder(); }
+    public static Builder builder() {
+        return new Builder();
+    }
 
     public static final class Builder {
 

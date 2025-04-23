@@ -66,19 +66,23 @@ class CompanyPscControllerTest {
     private static final String GET_Individual_URL = String.format(
             "/company/%s/persons-with-significant-control/individual/%s", MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID);
     private static final String GET_IndividualBeneficialOwner_URL = String.format(
-            "/company/%s/persons-with-significant-control/individual-beneficial-owner/%s", MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID);
+            "/company/%s/persons-with-significant-control/individual-beneficial-owner/%s", MOCK_COMPANY_NUMBER,
+            MOCK_NOTIFICATION_ID);
     private static final String GET_CorporateEntity_URL = String.format(
             "/company/%s/persons-with-significant-control/corporate-entity/%s", MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID);
     private static final String GET_CorporateEntityBeneficialOwner_URL = String.format(
-            "/company/%s/persons-with-significant-control/corporate-entity-beneficial-owner/%s", MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID);
+            "/company/%s/persons-with-significant-control/corporate-entity-beneficial-owner/%s", MOCK_COMPANY_NUMBER,
+            MOCK_NOTIFICATION_ID);
     private static final String GET_Legal_Person_URL = String.format(
             "/company/%s/persons-with-significant-control/legal-person/%s", MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID);
     private static final String GET_Legal_Person_Beneficial_Owner_URL = String.format(
-            "/company/%s/persons-with-significant-control/legal-person-beneficial-owner/%s", MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID);
+            "/company/%s/persons-with-significant-control/legal-person-beneficial-owner/%s", MOCK_COMPANY_NUMBER,
+            MOCK_NOTIFICATION_ID);
     private static final String GET_SuperSecure_URL = String.format(
             "/company/%s/persons-with-significant-control/super-secure/%s", MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID);
     private static final String GET_SuperSecureBeneficialOwner_URL = String.format(
-            "/company/%s/persons-with-significant-control/super-secure-beneficial-owner/%s", MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID);
+            "/company/%s/persons-with-significant-control/super-secure-beneficial-owner/%s", MOCK_COMPANY_NUMBER,
+            MOCK_NOTIFICATION_ID);
     private static final String GET_List_Summary_URL = String.format(
             "/company/%s/persons-with-significant-control", MOCK_COMPANY_NUMBER);
     private static final String DELETE_URL = String.format(
@@ -157,7 +161,8 @@ class CompanyPscControllerTest {
     @DisplayName(
             "GET request returns a 503 response when service is unavailable")
     void getSuperSecurePSCDocumentWhenServiceIsDown() throws Exception {
-        when(companyPscService.getSuperSecurePsc(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID)).thenThrow(ServiceUnavailableException.class);
+        when(companyPscService.getSuperSecurePsc(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID)).thenThrow(
+                ServiceUnavailableException.class);
 
         mockMvc.perform(get(GET_SuperSecure_URL)
                         .header("ERIC-Identity", ERIC_IDENTITY)
@@ -176,7 +181,8 @@ class CompanyPscControllerTest {
     @DisplayName(
             "GET request returns a 404 response when Resource is not found")
     void getSuperSecurePSCDocumentWhenResourceNotFound() throws Exception {
-        when(companyPscService.getSuperSecurePsc(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID)).thenThrow(ResourceNotFoundException.class);
+        when(companyPscService.getSuperSecurePsc(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID)).thenThrow(
+                ResourceNotFoundException.class);
 
         mockMvc.perform(get(GET_SuperSecure_URL)
                         .header("ERIC-Identity", ERIC_IDENTITY)
@@ -204,7 +210,8 @@ class CompanyPscControllerTest {
     @DisplayName(
             "GET request returns a 200 response when Super Secure Beneficial Owner PSC found")
     void getSuperSecureBeneficialOwnerPSCFound() throws Exception {
-        when(companyPscService.getSuperSecureBeneficialOwnerPsc(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID)).thenReturn(new SuperSecureBeneficialOwner());
+        when(companyPscService.getSuperSecureBeneficialOwnerPsc(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID)).thenReturn(
+                new SuperSecureBeneficialOwner());
 
         mockMvc.perform(get(GET_SuperSecureBeneficialOwner_URL)
                         .header("ERIC-Identity", ERIC_IDENTITY)
@@ -223,7 +230,8 @@ class CompanyPscControllerTest {
     @DisplayName(
             "GET request returns a 503 response when service is unavailable")
     void getSuperSecureBeneficialOwnerPSCDocumentWhenServiceIsDown() throws Exception {
-        when(companyPscService.getSuperSecureBeneficialOwnerPsc(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID)).thenThrow(ServiceUnavailableException.class);
+        when(companyPscService.getSuperSecureBeneficialOwnerPsc(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID)).thenThrow(
+                ServiceUnavailableException.class);
 
         mockMvc.perform(get(GET_SuperSecureBeneficialOwner_URL)
                         .header("ERIC-Identity", ERIC_IDENTITY)
@@ -242,7 +250,8 @@ class CompanyPscControllerTest {
     @DisplayName(
             "GET request returns a 404 response when Resource is not found")
     void getSuperSecureBeneficialOwnerPSCDocumentWhenResourceNotFound() throws Exception {
-        when(companyPscService.getSuperSecureBeneficialOwnerPsc(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID)).thenThrow(ResourceNotFoundException.class);
+        when(companyPscService.getSuperSecureBeneficialOwnerPsc(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID)).thenThrow(
+                ResourceNotFoundException.class);
 
         mockMvc.perform(get(GET_SuperSecureBeneficialOwner_URL)
                         .header("ERIC-Identity", ERIC_IDENTITY)
@@ -270,7 +279,8 @@ class CompanyPscControllerTest {
     @DisplayName(
             "GET request returns a 200 response when Corporate Entity PSC found")
     void getCorporateEntityPSCFound() throws Exception {
-        when(companyPscService.getCorporateEntityPsc(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID)).thenReturn(new CorporateEntity());
+        when(companyPscService.getCorporateEntityPsc(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID)).thenReturn(
+                new CorporateEntity());
 
         mockMvc.perform(get(GET_CorporateEntity_URL)
                         .header("ERIC-Identity", ERIC_IDENTITY)
@@ -289,7 +299,8 @@ class CompanyPscControllerTest {
     @DisplayName(
             "GET request returns a 200 response when Corporate Entity PSC found")
     void getCorporateEntityPSCWithoutPrivileges() throws Exception {
-        when(companyPscService.getCorporateEntityPsc(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID)).thenReturn(new CorporateEntity());
+        when(companyPscService.getCorporateEntityPsc(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID)).thenReturn(
+                new CorporateEntity());
 
         mockMvc.perform(get(GET_CorporateEntity_URL)
                         .header("ERIC-Identity", ERIC_IDENTITY)
@@ -308,7 +319,8 @@ class CompanyPscControllerTest {
     @DisplayName(
             "GET request returns a 503 response when service is unavailable")
     void getCorporateEntityPSCDocumentWhenServiceIsDown() throws Exception {
-        when(companyPscService.getCorporateEntityPsc(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID)).thenThrow(ServiceUnavailableException.class);
+        when(companyPscService.getCorporateEntityPsc(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID)).thenThrow(
+                ServiceUnavailableException.class);
 
         mockMvc.perform(get(GET_CorporateEntity_URL)
                         .header("ERIC-Identity", ERIC_IDENTITY)
@@ -327,7 +339,8 @@ class CompanyPscControllerTest {
     @DisplayName(
             "GET request returns a 404 response when Resource is not found")
     void getCorporateEntityPSCDocumentWhenResourceNotFound() throws Exception {
-        when(companyPscService.getCorporateEntityPsc(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID)).thenThrow(ResourceNotFoundException.class);
+        when(companyPscService.getCorporateEntityPsc(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID)).thenThrow(
+                ResourceNotFoundException.class);
 
         mockMvc.perform(get(GET_CorporateEntity_URL)
                         .header("ERIC-Identity", ERIC_IDENTITY)
@@ -353,7 +366,8 @@ class CompanyPscControllerTest {
 
     @Test
     void callPscDeleteRequest() throws Exception {
-        PscDeleteRequest deleteRequest = new PscDeleteRequest(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID, X_REQUEST_ID, KIND, DELTA_AT);
+        PscDeleteRequest deleteRequest = new PscDeleteRequest(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID, X_REQUEST_ID, KIND,
+                DELTA_AT);
 
         doNothing()
                 .when(companyPscService).deletePsc(deleteRequest);
@@ -374,7 +388,8 @@ class CompanyPscControllerTest {
 
     @Test
     void callPscDeleteRequestAndReturn404() throws Exception {
-        PscDeleteRequest deleteRequest = new PscDeleteRequest(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID, X_REQUEST_ID, KIND, DELTA_AT);
+        PscDeleteRequest deleteRequest = new PscDeleteRequest(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID, X_REQUEST_ID, KIND,
+                DELTA_AT);
 
         doThrow(ResourceNotFoundException.class)
                 .when(companyPscService).deletePsc(deleteRequest);
@@ -394,8 +409,9 @@ class CompanyPscControllerTest {
     }
 
     @Test
-    void callPscDeleteShouldReturn409WhenStaleDeltaAt () throws Exception {
-        PscDeleteRequest deleteRequest = new PscDeleteRequest(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID, X_REQUEST_ID, KIND, STALE_DELTA_AT);
+    void callPscDeleteShouldReturn409WhenStaleDeltaAt() throws Exception {
+        PscDeleteRequest deleteRequest = new PscDeleteRequest(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID, X_REQUEST_ID, KIND,
+                STALE_DELTA_AT);
 
         doThrow(ConflictException.class)
                 .when(companyPscService).deletePsc(deleteRequest);
@@ -416,7 +432,8 @@ class CompanyPscControllerTest {
 
     @Test
     void callPscDeleteRequestWhenServiceUnavailableAndReturn503() throws Exception {
-        PscDeleteRequest deleteRequest = new PscDeleteRequest(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID, X_REQUEST_ID, KIND, DELTA_AT);
+        PscDeleteRequest deleteRequest = new PscDeleteRequest(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID, X_REQUEST_ID, KIND,
+                DELTA_AT);
 
         doThrow(ServiceUnavailableException.class)
                 .when(companyPscService).deletePsc(deleteRequest);
@@ -446,7 +463,8 @@ class CompanyPscControllerTest {
     @DisplayName(
             "GET request returns a 200 response when Individual PSC found")
     void getIndividualPSCFound() throws Exception {
-        when(companyPscService.getIndividualPsc(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID, MOCK_REGISTER_VIEW_FALSE)).thenReturn(new Individual());
+        when(companyPscService.getIndividualPsc(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID, MOCK_REGISTER_VIEW_FALSE)).thenReturn(
+                new Individual());
 
         mockMvc.perform(get(GET_Individual_URL)
                         .header("ERIC-Identity", ERIC_IDENTITY)
@@ -465,7 +483,8 @@ class CompanyPscControllerTest {
     @DisplayName(
             "GET request returns a 503 response when service is unavailable")
     void getIndividualPSCDocumentWhenServiceIsDown() throws Exception {
-        when(companyPscService.getIndividualPsc(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID, MOCK_REGISTER_VIEW_TRUE)).thenThrow(ServiceUnavailableException.class);
+        when(companyPscService.getIndividualPsc(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID, MOCK_REGISTER_VIEW_TRUE)).thenThrow(
+                ServiceUnavailableException.class);
 
         mockMvc.perform(get(GET_Individual_URL)
                         .header("ERIC-Identity", ERIC_IDENTITY)
@@ -485,7 +504,8 @@ class CompanyPscControllerTest {
     @DisplayName(
             "GET request returns a 404 response when Resource is not found")
     void getIndividualPSCDocumentWhenResourceNotFound() throws Exception {
-        when(companyPscService.getIndividualPsc(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID, MOCK_REGISTER_VIEW_TRUE)).thenThrow(ResourceNotFoundException.class);
+        when(companyPscService.getIndividualPsc(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID, MOCK_REGISTER_VIEW_TRUE)).thenThrow(
+                ResourceNotFoundException.class);
 
         mockMvc.perform(get(GET_Individual_URL)
                         .header("ERIC-Identity", ERIC_IDENTITY)
@@ -530,7 +550,8 @@ class CompanyPscControllerTest {
                         .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH))
                 .andExpect(status().isOk());
 
-        verify(companyPscService).getIndividualBeneficialOwnerPsc(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID, MOCK_REGISTER_VIEW_TRUE);
+        verify(companyPscService).getIndividualBeneficialOwnerPsc(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID,
+                MOCK_REGISTER_VIEW_TRUE);
 
     }
 
@@ -551,7 +572,8 @@ class CompanyPscControllerTest {
                         .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH))
                 .andExpect(status().isServiceUnavailable());
 
-        verify(companyPscService).getIndividualBeneficialOwnerPsc(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID, MOCK_REGISTER_VIEW_FALSE);
+        verify(companyPscService).getIndividualBeneficialOwnerPsc(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID,
+                MOCK_REGISTER_VIEW_FALSE);
 
     }
 
@@ -572,7 +594,8 @@ class CompanyPscControllerTest {
                         .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH))
                 .andExpect(status().isNotFound());
 
-        verify(companyPscService).getIndividualBeneficialOwnerPsc(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID, MOCK_REGISTER_VIEW_FALSE);
+        verify(companyPscService).getIndividualBeneficialOwnerPsc(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID,
+                MOCK_REGISTER_VIEW_FALSE);
 
     }
 
@@ -789,7 +812,7 @@ class CompanyPscControllerTest {
                 .thenReturn(new PscList());
 
         mockMvc.perform(MockMvcRequestBuilders
-                        .get(GET_List_Summary_URL+"/")
+                        .get(GET_List_Summary_URL + "/")
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("ERIC-Identity", ERIC_IDENTITY)
                         .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
@@ -844,11 +867,11 @@ class CompanyPscControllerTest {
                         .options(GET_List_Summary_URL)
                         .header("Origin", "")
                         .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isNoContent())
-            .andExpect(header().exists(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN))
-            .andExpect(header().exists(HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS))
-            .andExpect(header().exists(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS))
-            .andExpect(header().exists(HttpHeaders.ACCESS_CONTROL_MAX_AGE));
+                .andExpect(status().isNoContent())
+                .andExpect(header().exists(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN))
+                .andExpect(header().exists(HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS))
+                .andExpect(header().exists(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS))
+                .andExpect(header().exists(HttpHeaders.ACCESS_CONTROL_MAX_AGE));
     }
 
     @Test
@@ -869,9 +892,9 @@ class CompanyPscControllerTest {
                         .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH)
                         .header("items_per_page", 5)
                         .header("start_index", 2))
-            .andExpect(status().isOk())
-            .andExpect(header().exists(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS))
-            .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, containsString("GET")));
+                .andExpect(status().isOk())
+                .andExpect(header().exists(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS))
+                .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, containsString("GET")));
     }
 
     @Test
@@ -890,10 +913,10 @@ class CompanyPscControllerTest {
                         .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH)
                         .header("items_per_page", 5)
                         .header("start_index", 2))
-            .andExpect(status().isForbidden())
-            .andExpect(header().exists(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS))
-            .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, containsString("GET")))
-            .andExpect(content().string(""));
+                .andExpect(status().isForbidden())
+                .andExpect(header().exists(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS))
+                .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, containsString("GET")))
+                .andExpect(content().string(""));
     }
 
     @Test
@@ -908,10 +931,10 @@ class CompanyPscControllerTest {
                         .header("x-request-id", X_REQUEST_ID)
                         .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
                         .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH))
-            .andExpect(status().isForbidden())
-            .andExpect(header().exists(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS))
-            .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, containsString("GET")))
-            .andExpect(content().string(""));
+                .andExpect(status().isForbidden())
+                .andExpect(header().exists(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS))
+                .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, containsString("GET")))
+                .andExpect(content().string(""));
     }
 
 }
