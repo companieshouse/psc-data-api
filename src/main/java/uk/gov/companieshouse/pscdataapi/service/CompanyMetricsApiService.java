@@ -40,11 +40,14 @@ public class CompanyMetricsApiService {
             LOGGER.info("Company Metrics API call failed with status code [%s]".formatted(statusCode),
                     DataMapHolder.getLogMap());
             if (statusCode != 404) {
-                throw new BadGatewayException("Error calling Company Metrics API endpoint", ex);
+                final String msg = "Error calling Company Metrics API endpoint";
+                LOGGER.error(msg, DataMapHolder.getLogMap());
+                throw new BadGatewayException(msg, ex);
             }
         } catch (URIValidationException ex) {
-            LOGGER.info("URI validation error when calling Company Metrics API", DataMapHolder.getLogMap());
-            throw new BadGatewayException("URI validation error when calling Company Metrics API", ex);
+            final String msg = "URI validation error when calling Company Metrics API";
+            LOGGER.info(msg, DataMapHolder.getLogMap());
+            throw new BadGatewayException(msg, ex);
         }
 
         return Optional.ofNullable(response)

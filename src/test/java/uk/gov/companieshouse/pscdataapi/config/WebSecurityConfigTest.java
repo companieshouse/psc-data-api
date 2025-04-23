@@ -16,7 +16,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.companieshouse.api.util.security.EricConstants;
 import uk.gov.companieshouse.api.util.security.SecurityConstants;
-import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.controller.CompanyPscFullRecordGetController;
 import uk.gov.companieshouse.pscdataapi.controller.CompanyPscWithVerificationStateGetController;
 import uk.gov.companieshouse.pscdataapi.service.CompanyPscService;
@@ -38,8 +37,6 @@ class WebSecurityConfigTest {
             "/company/%s/persons-with-significant-control/individual/%s/verification-state", MOCK_COMPANY_NUMBER,
             MOCK_NOTIFICATION_ID);
 
-    @MockitoBean
-    private Logger logger;
     @MockitoBean
     private CompanyPscService companyPscService;
 

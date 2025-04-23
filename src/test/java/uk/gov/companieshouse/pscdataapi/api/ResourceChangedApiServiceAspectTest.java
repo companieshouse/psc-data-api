@@ -12,7 +12,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.config.FeatureFlags;
 
 
@@ -26,8 +25,6 @@ class ResourceChangedApiServiceAspectTest {
     @Mock
     private Object object;
     @Mock
-    private Logger logger;
-    @Mock
     private FeatureFlags featureFlags;
 
     @Test
@@ -40,7 +37,6 @@ class ResourceChangedApiServiceAspectTest {
         // then
         assertNull(actual);
         verifyNoInteractions(proceedingJoinPoint);
-        verify(logger).debug("Stream hook disabled; not publishing change to chs-kafka-api");
     }
 
     @Test
@@ -52,6 +48,5 @@ class ResourceChangedApiServiceAspectTest {
         //then
         assertSame(object, actual);
         verify(proceedingJoinPoint).proceed();
-        verify(logger).debug("Stream hook enabled; publishing change to chs-kafka-api");
     }
 }

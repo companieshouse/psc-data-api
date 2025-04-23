@@ -1,11 +1,12 @@
 package uk.gov.companieshouse.pscdataapi.config;
 
+import static uk.gov.companieshouse.pscdataapi.PscDataApiApplication.APPLICATION_NAME_SPACE;
+
 import com.mongodb.MongoException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadGatewayException;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
 import uk.gov.companieshouse.pscdataapi.exceptions.ConflictException;
@@ -26,13 +28,7 @@ import uk.gov.companieshouse.pscdataapi.exceptions.ServiceUnavailableException;
 @ControllerAdvice
 public class ExceptionHandlerConfig {
 
-    private final Logger logger;
-
-    @Autowired
-    public ExceptionHandlerConfig(Logger logger) {
-        this.logger = logger;
-    }
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(APPLICATION_NAME_SPACE);
     private static final String TIMESTAMP = "timestamp";
     private static final String MESSAGE = "message";
     private static final String EXCEPTION_ATTRIBUTE = "javax.servlet.error.exception";
@@ -46,8 +42,7 @@ public class ExceptionHandlerConfig {
      */
     @ExceptionHandler(value = {Exception.class, SerDesException.class})
     public ResponseEntity<Object> handleException(Exception ex, WebRequest request) {
-        logger.error(String.format("Unexpected exception, response code: %s",
-                HttpStatus.INTERNAL_SERVER_ERROR), ex);
+        LOGGER.error("Unexpected exception, response code: %s".formatted(HttpStatus.INTERNAL_SERVER_ERROR), ex);
 
         Map<String, Object> responseBody = new LinkedHashMap<>();
         responseBody.put(TIMESTAMP, LocalDateTime.now());
@@ -65,8 +60,7 @@ public class ExceptionHandlerConfig {
      */
     @ExceptionHandler(value = {IllegalArgumentException.class, NoHandlerFoundException.class})
     public ResponseEntity<Object> handleNotFoundException(Exception ex, WebRequest request) {
-        logger.error(String.format("Resource not found, response code: %s",
-                HttpStatus.NOT_FOUND), ex);
+        LOGGER.error("Resource not found, response code: %s".formatted(HttpStatus.NOT_FOUND), ex);
 
         Map<String, Object> responseBody = new LinkedHashMap<>();
         responseBody.put(TIMESTAMP, LocalDateTime.now());
@@ -84,10 +78,8 @@ public class ExceptionHandlerConfig {
      */
     @ExceptionHandler(value = {MethodNotAllowedException.class,
             HttpRequestMethodNotSupportedException.class})
-    public ResponseEntity<Object> handleMethodNotAllowedException(
-            Exception ex, WebRequest request) {
-        logger.error(String.format("Unable to process the request, response code: %s",
-                HttpStatus.METHOD_NOT_ALLOWED), ex);
+    public ResponseEntity<Object> handleMethodNotAllowedException(Exception ex, WebRequest request) {
+        LOGGER.error("Method not allowed, response code: %s".formatted(HttpStatus.METHOD_NOT_ALLOWED), ex);
 
         Map<String, Object> responseBody = new LinkedHashMap<>();
         responseBody.put(TIMESTAMP, LocalDateTime.now());
@@ -107,8 +99,7 @@ public class ExceptionHandlerConfig {
             DataAccessException.class, MongoException.class})
     public ResponseEntity<Object> handleServiceUnavailableException(Exception ex,
             WebRequest request) {
-        logger.error(String.format("Service unavailable, response code: %s",
-                HttpStatus.SERVICE_UNAVAILABLE), ex);
+        LOGGER.error("Service unavailable, response code: %s".formatted(HttpStatus.SERVICE_UNAVAILABLE), ex);
 
         Map<String, Object> responseBody = new LinkedHashMap<>();
         responseBody.put(TIMESTAMP, LocalDateTime.now());
@@ -127,7 +118,7 @@ public class ExceptionHandlerConfig {
     @ExceptionHandler(value = {BadRequestException.class, DateTimeParseException.class,
             HttpMessageNotReadableException.class})
     public ResponseEntity<Object> handleBadRequestException(Exception ex, WebRequest request) {
-        logger.error(String.format("Bad request, response code: %s", HttpStatus.BAD_REQUEST), ex);
+        LOGGER.error("Bad request, response code: %s".formatted(HttpStatus.BAD_REQUEST), ex);
 
         Map<String, Object> responseBody = new LinkedHashMap<>();
         responseBody.put(TIMESTAMP, LocalDateTime.now());
@@ -146,7 +137,7 @@ public class ExceptionHandlerConfig {
      */
     @ExceptionHandler(value = {ConflictException.class})
     public ResponseEntity<Object> handleConflictException(Exception ex, WebRequest request) {
-        logger.error(String.format("Conflict, response code: %s", HttpStatus.CONFLICT), ex);
+        LOGGER.error("Conflict, response code: %s".formatted(HttpStatus.CONFLICT), ex);
 
         Map<String, Object> responseBody = new LinkedHashMap<>();
         responseBody.put(TIMESTAMP, LocalDateTime.now());
@@ -157,7 +148,7 @@ public class ExceptionHandlerConfig {
 
     @ExceptionHandler(value = {BadGatewayException.class})
     public ResponseEntity<Object> handleBadGatewayException(Exception ex, WebRequest request) {
-        logger.error(String.format("Bad Gateway, response code: %s", HttpStatus.BAD_GATEWAY), ex);
+        LOGGER.error("Bad Gateway, response code: %s".formatted(HttpStatus.BAD_GATEWAY), ex);
 
         Map<String, Object> responseBody = new LinkedHashMap<>();
         responseBody.put(TIMESTAMP, LocalDateTime.now());

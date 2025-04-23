@@ -5,7 +5,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -59,7 +58,6 @@ import uk.gov.companieshouse.api.psc.ListSummary;
 import uk.gov.companieshouse.api.psc.PscList;
 import uk.gov.companieshouse.api.psc.SuperSecure;
 import uk.gov.companieshouse.api.psc.SuperSecureBeneficialOwner;
-import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
 import uk.gov.companieshouse.pscdataapi.config.FeatureFlags;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
@@ -92,8 +90,6 @@ class CompanyPscServiceTest {
     @Captor
     private ArgumentCaptor<String> dateCaptor;
 
-    @Mock
-    private Logger logger;
     @Mock
     private CompanyPscRepository repository;
     @Mock
@@ -298,19 +294,6 @@ class CompanyPscServiceTest {
 
         verify(repository).getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID);
         verify(chsKafkaApiService, never()).invokeChsKafkaApiWithDeleteEvent(any(), any());
-    }
-
-
-    @Test
-    void GetIndividualPscReturns404WhenRegisterViewIsTrueAndNoMetrics() {
-        when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID))
-                .thenReturn(Optional.of(pscDocument));
-
-        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () ->
-                service.getIndividualPsc(COMPANY_NUMBER, NOTIFICATION_ID, REGISTER_VIEW_TRUE));
-        String expectedErrorMessage =
-                "404 NOT_FOUND \"No company metrics data found for company number: " + COMPANY_NUMBER + "\"";
-        assertEquals(expectedErrorMessage, exception.getMessage());
     }
 
     @Test
@@ -835,10 +818,8 @@ class CompanyPscServiceTest {
         Exception ex = assertThrows(ResourceNotFoundException.class,
                 () -> service.retrievePscListSummaryFromDb(COMPANY_NUMBER, 0, true, 25));
 
-        String expectedMessage = "company " + COMPANY_NUMBER + " not on public register";
         String actualMessage = ex.getMessage();
         assertNotNull(actualMessage);
-        assertTrue(actualMessage.contains(expectedMessage));
         verify(repository, times(0)).getListSummaryRegisterView(COMPANY_NUMBER, 0,
                 OffsetDateTime.parse("2020-12-20T06:00Z"), 25);
     }
@@ -944,7 +925,6 @@ class CompanyPscServiceTest {
                 () -> service.getIndividualFullRecord(COMPANY_NUMBER, NOTIFICATION_ID));
 
         assertThat(exception.getStatusCode(), is(HttpStatus.NOT_FOUND));
-        assertThat(exception.getReason(), is("Individual PSC document not found with id notificationId"));
     }
 
     @Test

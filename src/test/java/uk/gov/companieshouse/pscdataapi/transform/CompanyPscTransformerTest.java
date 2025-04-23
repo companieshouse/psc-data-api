@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.api.psc.CorporateEntity;
 import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
@@ -19,7 +18,6 @@ import uk.gov.companieshouse.api.psc.LegalPersonBeneficialOwner;
 import uk.gov.companieshouse.api.psc.ListSummary;
 import uk.gov.companieshouse.api.psc.SuperSecure;
 import uk.gov.companieshouse.api.psc.SuperSecureBeneficialOwner;
-import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.exceptions.FailedToTransformException;
 import uk.gov.companieshouse.pscdataapi.models.PscData;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
@@ -28,9 +26,6 @@ import uk.gov.companieshouse.pscdataapi.util.TestHelper;
 
 @ExtendWith(MockitoExtension.class)
 class CompanyPscTransformerTest {
-
-    @Mock
-    private Logger logger;
 
     private static final String NOTIFICATION_ID = "notificationId";
     private static final boolean SHOW_FULL_DOB_TRUE = true;
