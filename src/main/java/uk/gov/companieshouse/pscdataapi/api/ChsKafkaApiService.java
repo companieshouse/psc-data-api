@@ -21,6 +21,7 @@ import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.companieshouse.pscdataapi.exceptions.SerDesException;
 import uk.gov.companieshouse.pscdataapi.exceptions.ServiceUnavailableException;
+import uk.gov.companieshouse.pscdataapi.logging.DataMapHolder;
 import uk.gov.companieshouse.pscdataapi.models.PscDeleteRequest;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 import uk.gov.companieshouse.pscdataapi.transform.CompanyPscTransformer;
@@ -50,13 +51,12 @@ public class ChsKafkaApiService {
     }
 
     @StreamEvents
-    public ApiResponse<Void> invokeChsKafkaApi(String contextId, String companyNumber,
-            String notificationId, String kind) {
+    public ApiResponse<Void> invokeChsKafkaApi(String companyNumber, String notificationId, String kind) {
         PrivateChangedResourcePost changedResourcePost =
                 kafkaApiClientSupplier.get()
                         .privateChangedResourceHandler()
                         .postChangedResource(RESOURCE_CHANGED_URI,
-                                mapChangedResource(contextId, companyNumber, notificationId, kind,
+                                mapChangedResource(companyNumber, notificationId, kind,
                                         false, null));
         return handleApiCall(changedResourcePost);
     }
@@ -67,12 +67,12 @@ public class ChsKafkaApiService {
                 kafkaApiClientSupplier.get()
                         .privateChangedResourceHandler()
                         .postChangedResource(RESOURCE_CHANGED_URI,
-                                mapChangedResource(deleteRequest.contextId(), deleteRequest.companyNumber(),
+                                mapChangedResource(deleteRequest.companyNumber(),
                                         deleteRequest.notificationId(), deleteRequest.kind(), true, pscDocument));
         return handleApiCall(changedResourcePost);
     }
 
-    private ChangedResource mapChangedResource(String contextId, String companyNumber, String notificationId,
+    private ChangedResource mapChangedResource(String companyNumber, String notificationId,
             String kind, boolean isDelete, PscDocument pscDocument) {
         ChangedResourceEvent event = new ChangedResourceEvent();
         ChangedResource changedResource = new ChangedResource();
@@ -113,7 +113,7 @@ public class ChsKafkaApiService {
                 mapKind(kind), notificationId));
         changedResource.event(event);
         changedResource.setResourceKind(PscTransformationHelper.mapResourceKind(kind));
-        changedResource.setContextId(contextId);
+        changedResource.setContextId(DataMapHolder.getRequestId());
         return changedResource;
     }
 

@@ -11,8 +11,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.api.exemptions.CompanyExemptions;
 import uk.gov.companieshouse.api.metrics.MetricsApi;
 import uk.gov.companieshouse.api.metrics.RegisterApi;
@@ -34,10 +33,8 @@ import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
 import uk.gov.companieshouse.pscdataapi.config.FeatureFlags;
-import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
 import uk.gov.companieshouse.pscdataapi.exceptions.ConflictException;
-import uk.gov.companieshouse.pscdataapi.exceptions.ResourceNotFoundException;
-import uk.gov.companieshouse.pscdataapi.exceptions.ServiceUnavailableException;
+import uk.gov.companieshouse.pscdataapi.exceptions.NotFoundException;
 import uk.gov.companieshouse.pscdataapi.logging.DataMapHolder;
 import uk.gov.companieshouse.pscdataapi.models.Created;
 import uk.gov.companieshouse.pscdataapi.models.Links;
@@ -48,17 +45,23 @@ import uk.gov.companieshouse.pscdataapi.repository.CompanyPscRepository;
 import uk.gov.companieshouse.pscdataapi.transform.CompanyPscTransformer;
 import uk.gov.companieshouse.pscdataapi.transform.VerificationStateMapper;
 
-@Service
+@Component
 public class CompanyPscService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(APPLICATION_NAME_SPACE);
-    private static final String NOT_ON_PUBLIC_REGISTER = "not-on-public-register";
-    private static final String UNEXPECTED_ERROR_OCCURRED_WHILE_FETCHING_PSC_DOCUMENT =
-            "Unexpected error occurred while fetching PSC document";
     private static final String NOT_FOUND_MSG = "PSC document not found";
+    private static final String INDIVIDUAL_PERSON_WITH_SIGNIFICANT_CONTROL = "individual-person-with-significant-control";
+    private static final String INDIVIDUAL_BENEFICIAL_OWNER = "individual-beneficial-owner";
+    private static final String PUBLIC_REGISTER = "public-register";
+    private static final String CORPORATE_ENTITY_PERSON_WITH_SIGNIFICANT_CONTROL = "corporate-entity-person-with-significant-control";
+    private static final String CORPORATE_ENTITY_BENEFICIAL_OWNER = "corporate-entity-beneficial-owner";
+    private static final String LEGAL_PERSON_PERSON_WITH_SIGNIFICANT_CONTROL = "legal-person-person-with-significant-control";
+    private static final String LEGAL_PERSON_BENEFICIAL_OWNER = "legal-person-beneficial-owner";
+    private static final String SUPER_SECURE_PERSON_WITH_SIGNIFICANT_CONTROL = "super-secure-person-with-significant-control";
+    private static final String SUPER_SECURE_BENEFICIAL_OWNER = "super-secure-beneficial-owner";
 
-    private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSSSSS");
     private final FeatureFlags featureFlags;
+    private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSSSSS");
     private final CompanyPscTransformer transformer;
     private final CompanyPscRepository repository;
     private final ChsKafkaApiService chsKafkaApiService;
@@ -67,13 +70,9 @@ public class CompanyPscService {
     private final OracleQueryApiService oracleQueryApiService;
     private final VerificationStateMapper verificationStateMapper;
 
-    public CompanyPscService(FeatureFlags featureFlags,
-            CompanyPscTransformer transformer,
-            CompanyPscRepository repository,
-            ChsKafkaApiService chsKafkaApiService,
-            CompanyExemptionsApiService companyExemptionsApiService,
-            CompanyMetricsApiService companyMetricsApiService,
-            OracleQueryApiService oracleQueryApiService,
+    public CompanyPscService(FeatureFlags featureFlags, CompanyPscTransformer transformer, CompanyPscRepository repository,
+            ChsKafkaApiService chsKafkaApiService, CompanyExemptionsApiService companyExemptionsApiService,
+            CompanyMetricsApiService companyMetricsApiService, OracleQueryApiService oracleQueryApiService,
             VerificationStateMapper verificationStateMapper) {
         this.featureFlags = featureFlags;
         this.transformer = transformer;
@@ -85,8 +84,7 @@ public class CompanyPscService {
         this.verificationStateMapper = verificationStateMapper;
     }
 
-    public void insertPscRecord(String contextId, FullRecordCompanyPSCApi requestBody)
-            throws ServiceUnavailableException, BadRequestException {
+    public void insertPscRecord(FullRecordCompanyPSCApi requestBody) {
         final String notificationId = requestBody.getExternalData().getNotificationId();
         boolean isLatestRecord = isLatestRecord(notificationId, requestBody.getInternalData().getDeltaAt());
         if (!isLatestRecord) {
@@ -97,47 +95,11 @@ public class CompanyPscService {
 
         PscDocument document = transformer.transformPscOnInsert(notificationId, requestBody);
         save(notificationId, document);
-        chsKafkaApiService.invokeChsKafkaApi(contextId,
-                requestBody.getExternalData().getCompanyNumber(),
-                notificationId, requestBody.getExternalData().getData().getKind());
+        chsKafkaApiService.invokeChsKafkaApi(requestBody.getExternalData().getCompanyNumber(), notificationId,
+                requestBody.getExternalData().getData().getKind());
     }
 
-    private boolean isLatestRecord(String notificationId, OffsetDateTime deltaAt) {
-        String formattedDate = deltaAt.format(dateTimeFormatter);
-        List<PscDocument> pscDocuments = repository
-                .findUpdatedPsc(notificationId, formattedDate);
-        return pscDocuments.isEmpty();
-    }
-
-    private void save(String notificationId, PscDocument document) {
-        Created created = getCreatedFromCurrentRecord(notificationId);
-        if (created == null) {
-            document.setCreated(new Created().setAt(LocalDateTime.now()));
-        } else {
-            document.setCreated(created);
-        }
-
-        try {
-            repository.save(document);
-        } catch (IllegalArgumentException ex) {
-            final String msg = "Invalid data provided";
-            LOGGER.error(msg, ex, DataMapHolder.getLogMap());
-            throw new BadRequestException(msg);
-        }
-    }
-
-    private Created getCreatedFromCurrentRecord(String notificationId) {
-        try {
-            return repository.findById(notificationId).map(PscDocument::getCreated).orElse(null);
-        } catch (Exception ex) {
-            final String msg = "Error occurred while fetching created date";
-            LOGGER.error(msg, ex, DataMapHolder.getLogMap());
-            return null;
-        }
-    }
-
-    public void deletePsc(PscDeleteRequest deleteRequest)
-            throws ResourceNotFoundException, ServiceUnavailableException {
+    public void deletePsc(PscDeleteRequest deleteRequest) {
         Optional<PscDocument> pscDocument = repository.getPscByCompanyNumberAndId(deleteRequest.companyNumber(),
                 deleteRequest.notificationId());
         PscDocument document = null;
@@ -154,415 +116,265 @@ public class CompanyPscService {
     }
 
     public PscIndividualFullRecordApi getIndividualFullRecord(final String companyNumber, final String notificationId) {
-        try {
-            final Optional<PscDocument> pscDocument = repository.getPscByCompanyNumberAndId(companyNumber,
-                            notificationId)
-                    .filter(document -> document.getData().getKind()
-                            .equals("individual-person-with-significant-control"));
+        PscIndividualFullRecordApi individualFullRecordApi = repository.getPscByCompanyNumberAndId(companyNumber, notificationId)
+                .filter(document -> INDIVIDUAL_PERSON_WITH_SIGNIFICANT_CONTROL.equals(document.getData().getKind()))
+                .map(transformer::transformPscDocToIndividualFullRecord)
+                .orElseThrow(() -> {
+                    LOGGER.error(NOT_FOUND_MSG, DataMapHolder.getLogMap());
+                    return new NotFoundException(NOT_FOUND_MSG);
+                });
 
-            if (pscDocument.isPresent()) {
-                final PscIndividualFullRecordApi individualFullRecord = transformer.transformPscDocToIndividualFullRecord(
-                        pscDocument.get());
-
-                if (individualFullRecord == null) {
-                    throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
-                            "Failed to transform PSCDocument to Individual Full Record");
-                }
-
-                if (featureFlags.isIndividualPscFullRecordAddVerificationStateEnabled()) {
-                    if (individualFullRecord.getInternalId() != null) {
-                        oracleQueryApiService.getPscVerificationState(individualFullRecord.getInternalId())
-                                .map(verificationStateMapper::mapToVerificationState)
-                                .ifPresent(individualFullRecord::setVerificationState);
-                    } else {
-                        LOGGER.error("Internal ID not found in PSC document.", DataMapHolder.getLogMap());
-                    }
-                }
-                return individualFullRecord;
-
-            } else {
-                final String msg = "Individual PSC document not found";
-                LOGGER.error(msg, DataMapHolder.getLogMap());
-                throw new ResourceNotFoundException(HttpStatus.NOT_FOUND, msg);
-            }
-        } catch (ResourceNotFoundException ex) {
-            LOGGER.error("Resource not found", ex, DataMapHolder.getLogMap());
-            throw ex;
-        } catch (Exception ex) {
-            LOGGER.error(UNEXPECTED_ERROR_OCCURRED_WHILE_FETCHING_PSC_DOCUMENT, ex, DataMapHolder.getLogMap());
-            throw new ResourceNotFoundException(HttpStatus.NOT_FOUND, UNEXPECTED_ERROR_OCCURRED_WHILE_FETCHING_PSC_DOCUMENT);
+        if (featureFlags.isIndividualPscFullRecordAddVerificationStateEnabled()) {
+            oracleQueryApiService.getPscVerificationState(individualFullRecordApi.getInternalId())
+                    .map(verificationStateMapper::mapToVerificationState)
+                    .ifPresent(individualFullRecordApi::setVerificationState);
         }
+
+        return individualFullRecordApi;
     }
 
-    public Individual getIndividualPsc(
-            String companyNumber, String notificationId, Boolean registerView) {
-        try {
-            Optional<PscDocument> pscDocument =
-                    repository.getPscByCompanyNumberAndId(companyNumber, notificationId)
-                            .filter(document -> document.getData().getKind()
-                                    .equals("individual-person-with-significant-control"));
-            if (pscDocument.isPresent()) {
-                boolean showFullDateOfBirth = determineShowFullDob(
-                        companyNumber, registerView, pscDocument.get());
-
-                Individual individual = transformer
-                        .transformPscDocToIndividual(pscDocument.get(), showFullDateOfBirth);
-
-                if (individual == null) {
-                    final String msg = "Failed to transform PSC Document to Individual";
-                    LOGGER.error(msg, DataMapHolder.getLogMap());
-                    throw new ResourceNotFoundException(HttpStatus.NOT_FOUND, msg);
-                }
-                return individual;
-            } else {
-                final String msg = "Individual PSC document not found";
-                LOGGER.error(msg, DataMapHolder.getLogMap());
-                throw new ResourceNotFoundException(HttpStatus.NOT_FOUND, msg);
-            }
-        } catch (ResourceNotFoundException ex) {
-            LOGGER.error("Resource not found", ex, DataMapHolder.getLogMap());
-            throw ex;
-        } catch (Exception ex) {
-            LOGGER.error(UNEXPECTED_ERROR_OCCURRED_WHILE_FETCHING_PSC_DOCUMENT, ex, DataMapHolder.getLogMap());
-            throw new ResourceNotFoundException(HttpStatus.NOT_FOUND, UNEXPECTED_ERROR_OCCURRED_WHILE_FETCHING_PSC_DOCUMENT);
-        }
+    public Individual getIndividualPsc(final String companyNumber, final String notificationId, final boolean registerView) {
+        return repository.getPscByCompanyNumberAndId(companyNumber, notificationId)
+                .filter(document -> INDIVIDUAL_PERSON_WITH_SIGNIFICANT_CONTROL.equals(document.getData().getKind()))
+                .map(document -> {
+                    boolean showFullDateOfBirth = determineShowFullDob(companyNumber, registerView, document);
+                    return transformer.transformPscDocToIndividual(document, showFullDateOfBirth);
+                })
+                .orElseThrow(() -> {
+                    LOGGER.error(NOT_FOUND_MSG, DataMapHolder.getLogMap());
+                    return new NotFoundException(NOT_FOUND_MSG);
+                });
     }
 
-    public PscIndividualWithVerificationStateApi getIndividualWithVerificationState(String companyNumber, String notificationId) {
-        try {
-            Optional<PscDocument> pscDocument = repository.getPscByCompanyNumberAndId(companyNumber, notificationId)
-                    .filter(document -> document.getData().getKind()
-                            .equals("individual-person-with-significant-control"));
-            if (pscDocument.isPresent()) {
-                Long internalId = pscDocument.get().getSensitiveData().getInternalId();
+    public PscIndividualWithVerificationStateApi getIndividualWithVerificationState(final String companyNumber,
+            final String notificationId) {
+        return repository.getPscByCompanyNumberAndId(companyNumber, notificationId)
+                .filter(document -> INDIVIDUAL_PERSON_WITH_SIGNIFICANT_CONTROL.equals(document.getData().getKind()))
+                .map(document -> {
+                    PscIndividualWithVerificationStateApi individualWithVerificationState =
+                            transformer.transformPscDocToIndividualWithVerificationState(document);
 
-                PscIndividualWithVerificationStateApi individualWithVerificationState = transformer
-                        .transformPscDocToIndividualWithVerificationState(pscDocument.get());
+                    oracleQueryApiService.getPscVerificationState(document.getSensitiveData().getInternalId())
+                            .map(verificationStateMapper::mapToVerificationState)
+                            .ifPresent(individualWithVerificationState::setVerificationState);
 
-                if (individualWithVerificationState == null) {
-                    final String msg = "Failed to transform PSCDocument to Psc Individual With Verification State";
-                    LOGGER.error(msg, DataMapHolder.getLogMap());
-                    throw new ResourceNotFoundException(HttpStatus.NOT_FOUND, msg);
-                }
-                oracleQueryApiService.getPscVerificationState(internalId)
-                        .map(verificationStateMapper::mapToVerificationState)
-                        .ifPresent(individualWithVerificationState::setVerificationState);
-
-                return individualWithVerificationState;
-            } else {
-                final String msg = NOT_FOUND_MSG;
-                LOGGER.error(msg, DataMapHolder.getLogMap());
-                throw new ResourceNotFoundException(HttpStatus.NOT_FOUND, msg);
-            }
-        } catch (ResourceNotFoundException ex) {
-            LOGGER.error("Resource not found", ex, DataMapHolder.getLogMap());
-            throw ex;
-        } catch (Exception ex) {
-            LOGGER.error(UNEXPECTED_ERROR_OCCURRED_WHILE_FETCHING_PSC_DOCUMENT, ex, DataMapHolder.getLogMap());
-            throw new ResourceNotFoundException(HttpStatus.NOT_FOUND, UNEXPECTED_ERROR_OCCURRED_WHILE_FETCHING_PSC_DOCUMENT);
-        }
+                    return individualWithVerificationState;
+                })
+                .orElseThrow(() -> {
+                    LOGGER.error(NOT_FOUND_MSG, DataMapHolder.getLogMap());
+                    return new NotFoundException(NOT_FOUND_MSG);
+                });
     }
 
-    public IndividualBeneficialOwner getIndividualBeneficialOwnerPsc(
-            String companyNumber, String notificationId, Boolean registerView) {
-        try {
-            Optional<PscDocument> pscDocument = repository.findById(notificationId)
-                    .filter(document -> document.getData().getKind()
-                            .equals("individual-beneficial-owner")
-                            && document.getCompanyNumber().equals(companyNumber));
-            if (pscDocument.isPresent()) {
-                boolean showFullDateOfBirth = determineShowFullDob(
-                        companyNumber, registerView, pscDocument.get());
-
-                IndividualBeneficialOwner individualBeneficialOwner = transformer
-                        .transformPscDocToIndividualBeneficialOwner(pscDocument.get(),
-                                showFullDateOfBirth);
-
-                if (individualBeneficialOwner == null) {
-                    final String msg = "Failed to transform PSC Document to Individual Beneficial Owner";
-                    LOGGER.error(msg, DataMapHolder.getLogMap());
-                    throw new ResourceNotFoundException(HttpStatus.NOT_FOUND, msg);
-                }
-                return individualBeneficialOwner;
-            } else {
-                final String msg = "Individual Beneficial Owner PSC document not found";
-                LOGGER.error(msg, DataMapHolder.getLogMap());
-                throw new ResourceNotFoundException(HttpStatus.NOT_FOUND, msg);
-            }
-        } catch (ResourceNotFoundException ex) {
-            LOGGER.error("Resource not found", ex, DataMapHolder.getLogMap());
-            throw ex;
-        } catch (Exception ex) {
-            LOGGER.error(UNEXPECTED_ERROR_OCCURRED_WHILE_FETCHING_PSC_DOCUMENT, ex, DataMapHolder.getLogMap());
-            throw new ResourceNotFoundException(HttpStatus.NOT_FOUND, UNEXPECTED_ERROR_OCCURRED_WHILE_FETCHING_PSC_DOCUMENT);
-        }
+    public IndividualBeneficialOwner getIndividualBeneficialOwnerPsc(final String companyNumber, final String notificationId,
+            final boolean registerView) {
+        return repository.findById(notificationId)
+                .filter(document -> INDIVIDUAL_BENEFICIAL_OWNER.equals(document.getData().getKind())
+                        && companyNumber.equals(document.getCompanyNumber()))
+                .map(document -> {
+                    boolean showFullDateOfBirth = determineShowFullDob(companyNumber, registerView, document);
+                    return transformer.transformPscDocToIndividualBeneficialOwner(document, showFullDateOfBirth);
+                })
+                .orElseThrow(() -> {
+                    LOGGER.error(NOT_FOUND_MSG, DataMapHolder.getLogMap());
+                    return new NotFoundException(NOT_FOUND_MSG);
+                });
     }
 
-    private boolean determineShowFullDob(String companyNumber, boolean registerView,
-            PscDocument pscDocument) throws ResourceNotFoundException {
-        if (!registerView) {
-            return false;
-        } else {
-            Optional<MetricsApi> companyMetrics = companyMetricsApiService.getCompanyMetrics(companyNumber);
-
-            if (companyMetrics.isPresent()) {
-                try {
-                    String registerMovedTo = companyMetrics.get().getRegisters()
-                            .getPersonsWithSignificantControl().getRegisterMovedTo();
-                    if (registerMovedTo.equals("public-register")) {
-                        Boolean isCeased = pscDocument.getData().getCeased();
-                        boolean ceased = isCeased != null && isCeased;
-                        LocalDate ceasedOn = pscDocument.getData().getCeasedOn();
-                        LocalDate movedToPublicRegister = companyMetrics.get().getRegisters()
-                                .getPersonsWithSignificantControl().getMovedOn().toLocalDate();
-
-                        if (!ceased || movedToPublicRegister.isBefore(ceasedOn)) {
-                            return true;
-                        } else {
-                            throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
-                                    NOT_ON_PUBLIC_REGISTER);
-                        }
-                    } else {
-                        throw new ResourceNotFoundException(HttpStatus.NOT_FOUND,
-                                NOT_ON_PUBLIC_REGISTER);
-                    }
-                } catch (ResourceNotFoundException ex) {
-                    LOGGER.error("Resource not found", ex, DataMapHolder.getLogMap());
-                    throw ex;
-                } catch (Exception ex) {
-                    LOGGER.error(NOT_ON_PUBLIC_REGISTER, ex, DataMapHolder.getLogMap());
-                    throw new ResourceNotFoundException(HttpStatus.NOT_FOUND, NOT_ON_PUBLIC_REGISTER);
-                }
-            } else {
-                final String msg = "No company metrics data found";
-                LOGGER.error(msg, DataMapHolder.getLogMap());
-                throw new ResourceNotFoundException(HttpStatus.NOT_FOUND, msg);
-            }
-        }
+    public CorporateEntity getCorporateEntityPsc(final String companyNumber, final String notificationId) {
+        return repository.getPscByCompanyNumberAndId(companyNumber, notificationId)
+                .filter(document -> CORPORATE_ENTITY_PERSON_WITH_SIGNIFICANT_CONTROL.equals(document.getData().getKind())
+                        && companyNumber.equals(document.getCompanyNumber()))
+                .map(transformer::transformPscDocToCorporateEntity)
+                .orElseThrow(() -> {
+                    LOGGER.error(NOT_FOUND_MSG, DataMapHolder.getLogMap());
+                    return new NotFoundException(NOT_FOUND_MSG);
+                });
     }
 
-    public CorporateEntity getCorporateEntityPsc(String companyNumber, String notificationId) {
-        try {
-            Optional<PscDocument> pscDocument =
-                    repository.getPscByCompanyNumberAndId(companyNumber, notificationId)
-                            .filter(document -> document.getData().getKind()
-                                    .equals("corporate-entity-person-with-significant-control")
-                                    && document.getCompanyNumber().equals(companyNumber));
-            if (pscDocument.isPresent()) {
-                CorporateEntity corporateEntity =
-                        transformer.transformPscDocToCorporateEntity(pscDocument.get());
-                if (corporateEntity == null) {
-                    final String msg = "Failed to transform PSC document to corporate entity";
-                    LOGGER.error(msg, DataMapHolder.getLogMap());
-                    throw new ResourceNotFoundException(HttpStatus.NOT_FOUND, msg);
-                }
-                return corporateEntity;
-            } else {
-                final String msg = "Corporate Entity PSC document not found";
-                LOGGER.error(msg, DataMapHolder.getLogMap());
-                throw new ResourceNotFoundException(HttpStatus.NOT_FOUND, msg);
-            }
-        } catch (Exception ex) {
-            LOGGER.error(UNEXPECTED_ERROR_OCCURRED_WHILE_FETCHING_PSC_DOCUMENT, ex, DataMapHolder.getLogMap());
-            throw new ResourceNotFoundException(HttpStatus.NOT_FOUND, UNEXPECTED_ERROR_OCCURRED_WHILE_FETCHING_PSC_DOCUMENT);
-        }
+    public CorporateEntityBeneficialOwner getCorporateEntityBeneficialOwnerPsc(final String companyNumber,
+            final String notificationId) {
+        return repository.findById(notificationId)
+                .filter(document -> CORPORATE_ENTITY_BENEFICIAL_OWNER.equals(document.getData().getKind())
+                        && companyNumber.equals(document.getCompanyNumber()))
+                .map(transformer::transformPscDocToCorporateEntityBeneficialOwner)
+                .orElseThrow(() -> {
+                    LOGGER.error(NOT_FOUND_MSG, DataMapHolder.getLogMap());
+                    return new NotFoundException(NOT_FOUND_MSG);
+                });
     }
 
-    public CorporateEntityBeneficialOwner getCorporateEntityBeneficialOwnerPsc(
-            String companyNumber, String notificationId) {
-        try {
-            Optional<PscDocument> pscDocument = repository.findById(notificationId)
-                    .filter(document -> document.getData().getKind()
-                            .equals("corporate-entity-beneficial-owner")
-                            && document.getCompanyNumber().equals(companyNumber));
-            if (pscDocument.isPresent()) {
-                CorporateEntityBeneficialOwner corporateEntityBeneficialOwner =
-                        transformer.transformPscDocToCorporateEntityBeneficialOwner(
-                                pscDocument.get());
-                if (corporateEntityBeneficialOwner == null) {
-                    final String msg = "Failed to transform PSC document to Corporate Entity Beneficial Owner";
-                    LOGGER.error(msg, DataMapHolder.getLogMap());
-                    throw new ResourceNotFoundException(HttpStatus.NOT_FOUND, msg);
-                }
-                return corporateEntityBeneficialOwner;
-            } else {
-                final String msg = NOT_FOUND_MSG;
-                LOGGER.error(msg, DataMapHolder.getLogMap());
-                throw new ResourceNotFoundException(HttpStatus.NOT_FOUND, msg);
-            }
-        } catch (Exception ex) {
-            LOGGER.error(UNEXPECTED_ERROR_OCCURRED_WHILE_FETCHING_PSC_DOCUMENT, ex, DataMapHolder.getLogMap());
-            throw new ResourceNotFoundException(HttpStatus.NOT_FOUND, UNEXPECTED_ERROR_OCCURRED_WHILE_FETCHING_PSC_DOCUMENT);
-        }
+    public LegalPerson getLegalPersonPsc(final String companyNumber, final String notificationId) {
+        return repository.findById(notificationId)
+                .filter(document -> LEGAL_PERSON_PERSON_WITH_SIGNIFICANT_CONTROL.equals(document.getData().getKind())
+                        && companyNumber.equals(document.getCompanyNumber()))
+                .map(transformer::transformPscDocToLegalPerson)
+                .orElseThrow(() -> {
+                    LOGGER.error(NOT_FOUND_MSG, DataMapHolder.getLogMap());
+                    return new NotFoundException(NOT_FOUND_MSG);
+                });
     }
 
-    public LegalPerson getLegalPersonPsc(String companyNumber, String notificationId) {
-        try {
-            Optional<PscDocument> pscDocument = repository.findById(notificationId)
-                    .filter(document -> document.getData().getKind()
-                            .equals("legal-person-person-with-significant-control")
-                            && document.getCompanyNumber().equals(companyNumber));
-            if (pscDocument.isPresent()) {
-                LegalPerson legalPerson =
-                        transformer.transformPscDocToLegalPerson(pscDocument.get());
-                if (legalPerson == null) {
-                    final String msg = "Failed to transform PSC document to Legal Person";
-                    LOGGER.error(msg, DataMapHolder.getLogMap());
-                    throw new ResourceNotFoundException(HttpStatus.NOT_FOUND, msg);
-                }
-                return legalPerson;
-            } else {
-                final String msg = NOT_FOUND_MSG;
-                LOGGER.error(msg, DataMapHolder.getLogMap());
-                throw new ResourceNotFoundException(HttpStatus.NOT_FOUND, msg);
-            }
-        } catch (Exception ex) {
-            LOGGER.error(UNEXPECTED_ERROR_OCCURRED_WHILE_FETCHING_PSC_DOCUMENT, ex, DataMapHolder.getLogMap());
-            throw new ResourceNotFoundException(HttpStatus.NOT_FOUND, UNEXPECTED_ERROR_OCCURRED_WHILE_FETCHING_PSC_DOCUMENT);
-        }
+    public LegalPersonBeneficialOwner getLegalPersonBeneficialOwnerPsc(final String companyNumber, final String notificationId) {
+        return repository.findById(notificationId)
+                .filter(document -> LEGAL_PERSON_BENEFICIAL_OWNER.equals(document.getData().getKind())
+                        && companyNumber.equals(document.getCompanyNumber()))
+                .map(transformer::transformPscDocToLegalPersonBeneficialOwner)
+                .orElseThrow(() -> {
+                    LOGGER.error(NOT_FOUND_MSG, DataMapHolder.getLogMap());
+                    return new NotFoundException(NOT_FOUND_MSG);
+                });
     }
 
-    public LegalPersonBeneficialOwner getLegalPersonBeneficialOwnerPsc(
-            String companyNumber, String notificationId) {
-        try {
-            Optional<PscDocument> pscDocument = repository.findById(notificationId)
-                    .filter(document -> document.getData().getKind()
-                            .equals("legal-person-beneficial-owner")
-                            && document.getCompanyNumber().equals(companyNumber));
-            if (pscDocument.isPresent()) {
-                LegalPersonBeneficialOwner legalPersonBeneficialOwner =
-                        transformer.transformPscDocToLegalPersonBeneficialOwner(pscDocument.get());
-                if (legalPersonBeneficialOwner == null) {
-                    final String msg = "Failed to transform PSC document to Legal Person Beneficial Owner";
-                    LOGGER.error(msg, DataMapHolder.getLogMap());
-                    throw new ResourceNotFoundException(HttpStatus.NOT_FOUND, msg);
-                }
-                return legalPersonBeneficialOwner;
-            } else {
-                final String msg = NOT_FOUND_MSG;
-                LOGGER.error(msg, DataMapHolder.getLogMap());
-                throw new ResourceNotFoundException(HttpStatus.NOT_FOUND, msg);
-            }
-        } catch (Exception ex) {
-            LOGGER.error(UNEXPECTED_ERROR_OCCURRED_WHILE_FETCHING_PSC_DOCUMENT, ex, DataMapHolder.getLogMap());
-            throw new ResourceNotFoundException(HttpStatus.NOT_FOUND, UNEXPECTED_ERROR_OCCURRED_WHILE_FETCHING_PSC_DOCUMENT);
-        }
+    public SuperSecure getSuperSecurePsc(final String companyNumber, final String notificationId) {
+        return repository.getPscByCompanyNumberAndId(companyNumber, notificationId)
+                .filter(document -> SUPER_SECURE_PERSON_WITH_SIGNIFICANT_CONTROL.equals(document.getData().getKind()))
+                .map(transformer::transformPscDocToSuperSecure)
+                .orElseThrow(() -> {
+                    LOGGER.error(NOT_FOUND_MSG, DataMapHolder.getLogMap());
+                    return new NotFoundException(NOT_FOUND_MSG);
+                });
     }
 
-    public SuperSecure getSuperSecurePsc(String companyNumber, String notificationId) {
-        try {
-            Optional<PscDocument> pscDocument =
-                    repository.getPscByCompanyNumberAndId(companyNumber, notificationId)
-                            .filter(document -> document.getData().getKind()
-                                    .equals("super-secure-person-with-significant-control"));
-            if (pscDocument.isPresent()) {
-                SuperSecure superSecure = transformer
-                        .transformPscDocToSuperSecure(pscDocument.get());
-                if (superSecure == null) {
-                    final String msg = "Failed to transform PSC document to Super Secure";
-                    LOGGER.error(msg, DataMapHolder.getLogMap());
-                    throw new ResourceNotFoundException(HttpStatus.NOT_FOUND, msg);
-                }
-                return superSecure;
-            } else {
-                final String msg = NOT_FOUND_MSG;
-                LOGGER.error(msg, DataMapHolder.getLogMap());
-                throw new ResourceNotFoundException(HttpStatus.NOT_FOUND, msg);
-            }
-        } catch (Exception ex) {
-            LOGGER.error(UNEXPECTED_ERROR_OCCURRED_WHILE_FETCHING_PSC_DOCUMENT, ex, DataMapHolder.getLogMap());
-            throw new ResourceNotFoundException(HttpStatus.NOT_FOUND, UNEXPECTED_ERROR_OCCURRED_WHILE_FETCHING_PSC_DOCUMENT);
-        }
+    public SuperSecureBeneficialOwner getSuperSecureBeneficialOwnerPsc(final String companyNumber, final String notificationId) {
+        return repository.getPscByCompanyNumberAndId(companyNumber, notificationId)
+                .filter(document -> SUPER_SECURE_BENEFICIAL_OWNER.equals(document.getData().getKind()))
+                .map(transformer::transformPscDocToSuperSecureBeneficialOwner)
+                .orElseThrow(() -> {
+                    LOGGER.error(NOT_FOUND_MSG, DataMapHolder.getLogMap());
+                    return new NotFoundException(NOT_FOUND_MSG);
+                });
     }
 
-    public SuperSecureBeneficialOwner getSuperSecureBeneficialOwnerPsc(
-            String companyNumber, String notificationId) {
-        try {
-            Optional<PscDocument> pscDocument =
-                    repository.getPscByCompanyNumberAndId(companyNumber, notificationId)
-                            .filter(document -> document.getData().getKind()
-                                    .equals("super-secure-beneficial-owner"));
-            if (pscDocument.isPresent()) {
-                SuperSecureBeneficialOwner superSecureBeneficialOwner =
-                        transformer.transformPscDocToSuperSecureBeneficialOwner(pscDocument.get());
-                if (superSecureBeneficialOwner == null) {
-                    final String msg = "Failed to transform PSC document to Super Secure Beneficial Owner";
-                    LOGGER.error(msg, DataMapHolder.getLogMap());
-                    throw new ResourceNotFoundException(HttpStatus.NOT_FOUND, msg);
-                }
-                return superSecureBeneficialOwner;
-            } else {
-                final String msg = NOT_FOUND_MSG;
-                LOGGER.error(msg, DataMapHolder.getLogMap());
-                throw new ResourceNotFoundException(HttpStatus.NOT_FOUND, msg);
-            }
-        } catch (Exception ex) {
-            LOGGER.error(UNEXPECTED_ERROR_OCCURRED_WHILE_FETCHING_PSC_DOCUMENT, ex, DataMapHolder.getLogMap());
-            throw new ResourceNotFoundException(HttpStatus.NOT_FOUND, UNEXPECTED_ERROR_OCCURRED_WHILE_FETCHING_PSC_DOCUMENT);
-        }
-    }
+    public PscList retrievePscListSummaryFromDb(final String companyNumber, final int startIndex, final boolean registerView,
+            final int itemsPerPage) {
+        MetricsApi companyMetrics = companyMetricsApiService.getCompanyMetrics(companyNumber).orElseGet(() -> {
+            LOGGER.info("No company metrics data found", DataMapHolder.getLogMap());
+            return null;
+        });
 
-    public PscList retrievePscListSummaryFromDb(String companyNumber, Integer startIndex,
-            Boolean registerView, Integer itemsPerPage) {
-        Optional<MetricsApi> companyMetrics = companyMetricsApiService.getCompanyMetrics(companyNumber);
-
-        if (Boolean.TRUE.equals(registerView)) {
-            return retrievePscDocumentListFromDbRegisterView(companyMetrics,
-                    companyNumber, startIndex, itemsPerPage);
+        if (registerView) {
+            return retrievePscDocumentListFromDbRegisterView(companyMetrics, companyNumber, startIndex, itemsPerPage);
         }
 
         List<PscDocument> pscDocuments = repository.getPscDocumentList(companyNumber, startIndex, itemsPerPage);
 
-        return createPscDocumentList(pscDocuments,
-                startIndex, itemsPerPage, companyNumber, false, companyMetrics);
+        return createPscDocumentList(pscDocuments, startIndex, itemsPerPage, companyNumber, false, companyMetrics);
     }
 
-    private PscList retrievePscDocumentListFromDbRegisterView(Optional<MetricsApi> companyMetrics,
-            String companyNumber, Integer startIndex, Integer itemsPerPage) {
-        MetricsApi metricsData;
-        if (companyMetrics.isPresent()) {
-            metricsData = companyMetrics.get();
-            String registerMovedTo = String.valueOf(Optional.of(metricsData)
-                    .map(MetricsApi::getRegisters)
-                    .map(RegistersApi::getPersonsWithSignificantControl)
-                    .map(RegisterApi::getRegisterMovedTo)
-                    .orElseThrow(() -> {
-                        final String msg = "Company not on public register";
+    private boolean determineShowFullDob(final String companyNumber, final boolean registerView, PscDocument pscDocument) {
+        if (!registerView) {
+            return false;
+        }
+
+        MetricsApi metrics = companyMetricsApiService.getCompanyMetrics(companyNumber)
+                .map(data -> {
+                    if (data.getRegisters() == null) {
+                        final String msg = "No company metrics registers data found";
                         LOGGER.error(msg, DataMapHolder.getLogMap());
-                        return new ResourceNotFoundException(HttpStatus.NOT_FOUND, msg);
-                    }));
+                        throw new NotFoundException(msg);
+                    }
+                    return data;
+                })
+                .orElseThrow(() -> {
+                    final String msg = "No company metrics data found";
+                    LOGGER.error(msg, DataMapHolder.getLogMap());
+                    return new NotFoundException(msg);
+                });
 
-            if (registerMovedTo.equals("public-register")) {
-                List<PscDocument> pscStatementDocuments = repository.getListSummaryRegisterView(companyNumber,
-                        startIndex, metricsData.getRegisters().getPersonsWithSignificantControl().getMovedOn(),
-                        itemsPerPage);
+        RegisterApi pscRegister = metrics.getRegisters().getPersonsWithSignificantControl();
+        if (!PUBLIC_REGISTER.equals(pscRegister.getRegisterMovedTo())) {
+            LOGGER.info("Not on public register", DataMapHolder.getLogMap());
+            return false;
+        }
 
-                return createPscDocumentList(pscStatementDocuments,
-                        startIndex, itemsPerPage, companyNumber, true, companyMetrics);
-            } else {
-                final String msg = "Company not on public register";
-                LOGGER.error(msg, DataMapHolder.getLogMap());
-                throw new ResourceNotFoundException(HttpStatus.NOT_FOUND, msg);
-            }
-        } else {
-            return createPscDocumentList(Collections.emptyList(),
+        final boolean isCeased = Optional.ofNullable(pscDocument.getData().getCeased())
+                .orElseThrow(() -> {
+                    final String msg = "No ceased status";
+                    LOGGER.error(msg, DataMapHolder.getLogMap());
+                    return new NotFoundException(msg);
+                });
+
+        LocalDate movedToPublicRegister = Optional.ofNullable(pscRegister.getMovedOn())
+                .map(OffsetDateTime::toLocalDate)
+                .orElseThrow(() -> {
+                    final String msg = "No moved on date";
+                    LOGGER.error(msg, DataMapHolder.getLogMap());
+                    return new NotFoundException(msg);
+                });
+
+        LocalDate ceasedOn = Optional.ofNullable(pscDocument.getData().getCeasedOn())
+                .orElseThrow(() -> {
+                    final String msg = "No ceased on date";
+                    LOGGER.error(msg, DataMapHolder.getLogMap());
+                    return new NotFoundException(msg);
+                });
+
+        return !isCeased || movedToPublicRegister.isBefore(ceasedOn);
+    }
+
+    private boolean isLatestRecord(final String notificationId, OffsetDateTime deltaAt) {
+        String formattedDate = deltaAt.format(dateTimeFormatter);
+        List<PscDocument> pscDocuments = repository
+                .findUpdatedPsc(notificationId, formattedDate);
+        return pscDocuments.isEmpty();
+    }
+
+    private void save(final String notificationId, PscDocument document) {
+        Optional.ofNullable(getCreatedFromCurrentRecord(notificationId))
+                .ifPresentOrElse(document::setCreated, () -> document.setCreated(new Created().setAt(LocalDateTime.now())));
+
+        repository.save(document);
+    }
+
+    private Created getCreatedFromCurrentRecord(final String notificationId) {
+        return repository.findById(notificationId)
+                .map(PscDocument::getCreated)
+                .orElse(null);
+    }
+
+
+    private PscList retrievePscDocumentListFromDbRegisterView(MetricsApi companyMetrics,
+            String companyNumber, Integer startIndex, Integer itemsPerPage) {
+        if (companyMetrics == null) {
+            return createPscDocumentList(Collections.emptyList(), startIndex, itemsPerPage, companyNumber, true, null);
+        }
+
+        final String registerMovedTo = String.valueOf(Optional.of(companyMetrics)
+                .map(MetricsApi::getRegisters)
+                .map(RegistersApi::getPersonsWithSignificantControl)
+                .map(RegisterApi::getRegisterMovedTo)
+                .orElseThrow(() -> {
+                    final String msg = "Company not on public register";
+                    LOGGER.error(msg, DataMapHolder.getLogMap());
+                    return new NotFoundException(msg);
+                }));
+
+        if (PUBLIC_REGISTER.equals(registerMovedTo)) {
+            List<PscDocument> pscStatementDocuments = repository.getListSummaryRegisterView(companyNumber,
+                    startIndex, companyMetrics.getRegisters().getPersonsWithSignificantControl().getMovedOn(),
+                    itemsPerPage);
+
+            return createPscDocumentList(pscStatementDocuments,
                     startIndex, itemsPerPage, companyNumber, true, companyMetrics);
+        } else {
+            final String msg = "Company not on public register";
+            LOGGER.error(msg, DataMapHolder.getLogMap());
+            throw new NotFoundException(msg);
         }
     }
 
-    private PscList createPscDocumentList(List<PscDocument> pscDocuments,
-            Integer startIndex, Integer itemsPerPage,
-            String companyNumber, boolean registerView,
-            Optional<MetricsApi> companyMetrics) {
+    private PscList createPscDocumentList(List<PscDocument> pscDocuments, final int startIndex, final int itemsPerPage,
+            final String companyNumber, final boolean registerView, MetricsApi companyMetrics) {
         PscList pscList = new PscList();
 
         List<PscData> pscData = pscDocuments.stream()
-                .map(PscDocument::getData).toList();
+                .map(PscDocument::getData)
+                .toList();
         List<ListSummary> documents = new ArrayList<>();
 
         for (PscDocument pscDocument : pscDocuments) {
-            ListSummary listSummary = this.transformer
-                    .transformPscDocToListSummary(pscDocument, registerView);
+            ListSummary listSummary = transformer.transformPscDocToListSummary(pscDocument, registerView);
             documents.add(listSummary);
         }
 
@@ -583,31 +395,29 @@ public class CompanyPscService {
             links.setExemptions(String.format("/company/%s/exemptions", companyNumber));
         }
 
-        companyMetrics.ifPresentOrElse(metricsApi -> {
-            try {
-                if (registerView) {
-                    long withdrawnCount = pscData.stream()
-                            .filter(document -> document.getCeasedOn() != null).count();
+        if (companyMetrics == null) {
+            LOGGER.info("No company metrics counts data found", DataMapHolder.getLogMap());
+        } else {
+            if (registerView) {
+                final int withdrawnCount = (int) pscData.stream()
+                        .filter(document -> document.getCeasedOn() != null)
+                        .count();
 
-                    pscList.setCeasedCount((int) withdrawnCount);
-                    pscList.setTotalResults(metricsApi.getCounts()
-                            .getPersonsWithSignificantControl().getActivePscsCount()
-                            + pscList.getCeasedCount());
-                    pscList.setActiveCount(metricsApi.getCounts()
-                            .getPersonsWithSignificantControl().getActivePscsCount());
-                } else {
-                    pscList.setActiveCount(metricsApi.getCounts()
-                            .getPersonsWithSignificantControl().getActivePscsCount());
-                    pscList.setCeasedCount(metricsApi.getCounts()
-                            .getPersonsWithSignificantControl().getCeasedPscsCount());
-                    pscList.setTotalResults(metricsApi.getCounts()
-                            .getPersonsWithSignificantControl().getPscsCount());
-                }
-            } catch (NullPointerException ex) {
-                final String msg = "No PSC data in metrics";
-                LOGGER.error(msg, ex, DataMapHolder.getLogMap());
+                pscList.setCeasedCount(withdrawnCount);
+                pscList.setTotalResults(companyMetrics.getCounts()
+                        .getPersonsWithSignificantControl().getActivePscsCount()
+                        + pscList.getCeasedCount());
+                pscList.setActiveCount(companyMetrics.getCounts()
+                        .getPersonsWithSignificantControl().getActivePscsCount());
+            } else {
+                pscList.setActiveCount(companyMetrics.getCounts()
+                        .getPersonsWithSignificantControl().getActivePscsCount());
+                pscList.setCeasedCount(companyMetrics.getCounts()
+                        .getPersonsWithSignificantControl().getCeasedPscsCount());
+                pscList.setTotalResults(companyMetrics.getCounts()
+                        .getPersonsWithSignificantControl().getPscsCount());
             }
-        }, () -> LOGGER.info("No company metrics counts data found", DataMapHolder.getLogMap()));
+        }
 
         return pscList;
     }
@@ -640,3 +450,4 @@ public class CompanyPscService {
         }
     }
 }
+

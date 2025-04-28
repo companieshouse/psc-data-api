@@ -140,7 +140,7 @@ public class PscDataSteps {
 
     @Then("the CHS Kafka API is not invoked")
     public void chs_kafka_api_not_invoked() {
-        verify(chsKafkaApiService, times(0)).invokeChsKafkaApi(any(), any(), any(), any());
+        verify(chsKafkaApiService, times(0)).invokeChsKafkaApi(any(), any(), any());
     }
 
     @Then("the CHS Kafka API is not invoked with a DELETE event")
@@ -304,7 +304,7 @@ public class PscDataSteps {
 
     @When("the chs kafka api is not available")
     public void theChsKafkaApiIsNotAvailable() {
-        doThrow(ServiceUnavailableException.class).when(chsKafkaApiService).invokeChsKafkaApi(any(), any(), any(), any());
+        doThrow(ServiceUnavailableException.class).when(chsKafkaApiService).invokeChsKafkaApi(any(), any(), any());
         doThrow(ServiceUnavailableException.class).when(chsKafkaApiService).invokeChsKafkaApiWithDeleteEvent(any(), any());
     }
 

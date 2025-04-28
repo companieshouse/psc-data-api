@@ -15,7 +15,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.HttpStatus;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.companieshouse.api.model.common.Address;
@@ -25,7 +24,7 @@ import uk.gov.companieshouse.api.model.psc.PscIndividualFullRecordApi;
 import uk.gov.companieshouse.api.model.psc.PscLinks;
 import uk.gov.companieshouse.api.model.psc.VerificationState;
 import uk.gov.companieshouse.api.model.psc.VerificationStatus;
-import uk.gov.companieshouse.pscdataapi.exceptions.ResourceNotFoundException;
+import uk.gov.companieshouse.pscdataapi.exceptions.NotFoundException;
 import uk.gov.companieshouse.pscdataapi.service.CompanyPscService;
 
 @SpringBootTest(properties = {"feature.identity_verification=true"})
@@ -177,9 +176,7 @@ class CompanyPscFullRecordGetControllerTest {
     @DisplayName("Should return 404 when Individual PSC not found")
     void shouldReturn404WhenIndividualPscNotFound() throws Exception {
         when(companyPscService.getIndividualFullRecord(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID)).thenThrow(
-                new ResourceNotFoundException(
-                        HttpStatus.NOT_FOUND,
-                        "Individual PSC document not found in Mongo with id " + MOCK_NOTIFICATION_ID));
+                new NotFoundException("Individual PSC document not found in Mongo with id " + MOCK_NOTIFICATION_ID));
 
         mockMvc.perform(get(GET_INDIVIDUAL_FULL_RECORD_URL).header("ERIC-Identity", ERIC_IDENTITY)
                         .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE_API_KEY)

@@ -93,8 +93,7 @@ class ChsKafkaApiServiceTest {
         when(privateChangedResourceHandler.postChangedResource(any(), any())).thenReturn(privateChangedResourcePost);
         when(privateChangedResourcePost.execute()).thenReturn(response);
 
-        ApiResponse<?> apiResponse = chsKafkaApiService.invokeChsKafkaApi(
-                TestHelper.X_REQUEST_ID, TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID,
+        ApiResponse<?> apiResponse = chsKafkaApiService.invokeChsKafkaApi(TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID,
                 TestHelper.INDIVIDUAL_KIND);
         assertThat(apiResponse).isNotNull();
 
@@ -383,8 +382,8 @@ class ChsKafkaApiServiceTest {
         when(privateChangedResourceHandler.postChangedResource(any(), any())).thenReturn(privateChangedResourcePost);
         when(privateChangedResourcePost.execute()).thenThrow(exception);
 
-        Executable executable = () -> chsKafkaApiService.invokeChsKafkaApi(
-                TestHelper.X_REQUEST_ID, TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID, "kind");
+        Executable executable = () -> chsKafkaApiService.invokeChsKafkaApi(TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID,
+                "kind");
 
         assertThrows(ServiceUnavailableException.class, executable);
         verify(client, times(1)).privateChangedResourceHandler();
@@ -423,8 +422,8 @@ class ChsKafkaApiServiceTest {
         when(privateChangedResourceHandler.postChangedResource(any(), any())).thenReturn(privateChangedResourcePost);
         when(privateChangedResourcePost.execute()).thenThrow(exception);
 
-        Executable executable = () -> chsKafkaApiService.invokeChsKafkaApi(
-                TestHelper.X_REQUEST_ID, TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID, "kind");
+        Executable executable = () -> chsKafkaApiService.invokeChsKafkaApi(TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID,
+                "kind");
 
         assertThrows(RuntimeException.class, executable);
         verify(client, times(1)).privateChangedResourceHandler();

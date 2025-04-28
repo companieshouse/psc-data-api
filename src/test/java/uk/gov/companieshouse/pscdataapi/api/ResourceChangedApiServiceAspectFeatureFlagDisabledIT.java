@@ -66,8 +66,8 @@ class ResourceChangedApiServiceAspectFeatureFlagDisabledIT {
                 changedResourcePost);
         when(changedResourcePost.execute()).thenReturn(response);
 
-        ApiResponse<?> apiResponse = chsKafkaApiService.invokeChsKafkaApi(TestHelper.X_REQUEST_ID, TestHelper.COMPANY_NUMBER,
-                TestHelper.NOTIFICATION_ID, "individual-person-with-significant-control");
+        ApiResponse<?> apiResponse = chsKafkaApiService.invokeChsKafkaApi(TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID,
+                "individual-person-with-significant-control");
 
         Assertions.assertThat(apiResponse).isNotNull();
 
