@@ -21,7 +21,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.companieshouse.api.psc.PscList;
-import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.service.CompanyPscService;
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
@@ -38,8 +37,6 @@ class DataMapHolderIT {
 
     @MockitoBean
     private CompanyPscService companyPscService;
-    @MockitoBean
-    private Logger logger;
 
     @Test
     void shouldSuccessfullyInitialiseRequestId(CapturedOutput capture) throws Exception {

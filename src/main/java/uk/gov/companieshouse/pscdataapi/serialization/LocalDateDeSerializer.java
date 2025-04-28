@@ -1,5 +1,7 @@
 package uk.gov.companieshouse.pscdataapi.serialization;
 
+import static uk.gov.companieshouse.pscdataapi.PscDataApiApplication.APPLICATION_NAME_SPACE;
+
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
@@ -10,19 +12,18 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
-import uk.gov.companieshouse.pscdataapi.PscDataApiApplication;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
+import uk.gov.companieshouse.pscdataapi.logging.DataMapHolder;
 
 public class LocalDateDeSerializer extends JsonDeserializer<LocalDate> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(
-            PscDataApiApplication.APPLICATION_NAME_SPACE);
+    private static final Logger LOGGER = LoggerFactory.getLogger(APPLICATION_NAME_SPACE);
 
     @Override
     public LocalDate deserialize(JsonParser jsonParser, DeserializationContext
             deserializationContext) {
         try {
-            LOGGER.info("Deserialising dates");
+            LOGGER.info("Deserialising dates", DataMapHolder.getLogMap());
             DateTimeFormatter dateTimeFormatter = DateTimeFormatter
                     .ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'");
             JsonNode jsonNode = jsonParser.readValueAsTree();
@@ -40,9 +41,10 @@ public class LocalDateDeSerializer extends JsonDeserializer<LocalDate> {
                     ? LocalDate.parse(dateNode.textValue(), dateTimeFormatter)
                     : LocalDate.ofInstant(Instant.ofEpochMilli(dateNode.get("$numberLong")
                             .asLong()), ZoneOffset.UTC);
-        } catch (Exception exception) {
-            LOGGER.error("Deserialization failed.", exception);
-            throw new BadRequestException(exception.getMessage());
+        } catch (Exception ex) {
+            final String msg = "Deserialization failed";
+            LOGGER.error(msg, ex, DataMapHolder.getLogMap());
+            throw new BadRequestException(msg);
         }
     }
 }

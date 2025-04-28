@@ -44,11 +44,14 @@ public class OracleQueryApiService {
             LOGGER.info("PSC Verification State API POST failed with status code [%s]".formatted(statusCode),
                     DataMapHolder.getLogMap());
             if (statusCode != 404) {
-                throw new BadGatewayException("PSC Verification State API POST API endpoint", ex);
+                final String msg = "Error calling PSC Verification State API POST endpoint";
+                LOGGER.error(msg, DataMapHolder.getLogMap());
+                throw new BadGatewayException(msg, ex);
             }
         } catch (URIValidationException ex) {
-            LOGGER.info("URI validation error when calling PSC Verification State API POST API", DataMapHolder.getLogMap());
-            throw new BadGatewayException("URI validation error when calling PSC Verification State API POST API", ex);
+            final String msg = "URI validation error when calling PSC Verification State API POST API";
+            LOGGER.error(msg, DataMapHolder.getLogMap());
+            throw new BadGatewayException(msg, ex);
         }
 
         return Optional.ofNullable(response).map(ApiResponse::getData);

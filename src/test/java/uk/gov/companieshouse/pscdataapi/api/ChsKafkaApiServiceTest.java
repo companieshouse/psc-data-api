@@ -42,7 +42,6 @@ import uk.gov.companieshouse.api.psc.LegalPerson;
 import uk.gov.companieshouse.api.psc.LegalPersonBeneficialOwner;
 import uk.gov.companieshouse.api.psc.SuperSecure;
 import uk.gov.companieshouse.api.psc.SuperSecureBeneficialOwner;
-import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscdataapi.exceptions.ServiceUnavailableException;
 import uk.gov.companieshouse.pscdataapi.models.PscData;
 import uk.gov.companieshouse.pscdataapi.models.PscDeleteRequest;
@@ -64,8 +63,6 @@ class ChsKafkaApiServiceTest {
     @InjectMocks
     private ChsKafkaApiService chsKafkaApiService;
 
-    @Mock
-    private Logger logger;
     @Mock
     private Supplier<InternalApiClient> kafkaApiClientSupplier;
     @Mock

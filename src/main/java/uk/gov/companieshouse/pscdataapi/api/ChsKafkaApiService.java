@@ -1,6 +1,7 @@
 package uk.gov.companieshouse.pscdataapi.api;
 
 import static java.time.ZoneOffset.UTC;
+import static uk.gov.companieshouse.pscdataapi.PscDataApiApplication.APPLICATION_NAME_SPACE;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -17,6 +18,7 @@ import uk.gov.companieshouse.api.error.ApiErrorResponseException;
 import uk.gov.companieshouse.api.handler.chskafka.request.PrivateChangedResourcePost;
 import uk.gov.companieshouse.api.model.ApiResponse;
 import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.companieshouse.pscdataapi.exceptions.SerDesException;
 import uk.gov.companieshouse.pscdataapi.exceptions.ServiceUnavailableException;
 import uk.gov.companieshouse.pscdataapi.models.PscDeleteRequest;
@@ -27,6 +29,8 @@ import uk.gov.companieshouse.pscdataapi.util.PscTransformationHelper;
 @Service
 public class ChsKafkaApiService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(APPLICATION_NAME_SPACE);
+
     private static final String RESOURCE_CHANGED_URI = "/private/resource-changed";
     private static final String PSC_URI = "/company/%s/persons-with-significant-control/%s/%s";
     private static final String CHANGED_EVENT_TYPE = "changed";
@@ -36,15 +40,12 @@ public class ChsKafkaApiService {
 
     private final CompanyPscTransformer companyPscTransformer;
     private final Supplier<InternalApiClient> kafkaApiClientSupplier;
-    private final Logger logger;
     private final ObjectMapper objectMapper;
 
     public ChsKafkaApiService(CompanyPscTransformer companyPscTransformer,
-            @Qualifier("kafkaApiClientSupplier") Supplier<InternalApiClient> kafkaApiClientSupplier, Logger logger,
-            ObjectMapper objectMapper) {
+            @Qualifier("kafkaApiClientSupplier") Supplier<InternalApiClient> kafkaApiClientSupplier, ObjectMapper objectMapper) {
         this.companyPscTransformer = companyPscTransformer;
         this.kafkaApiClientSupplier = kafkaApiClientSupplier;
-        this.logger = logger;
         this.objectMapper = objectMapper;
     }
 
@@ -133,12 +134,13 @@ public class ChsKafkaApiService {
     private ApiResponse<Void> handleApiCall(PrivateChangedResourcePost changedResourcePost) {
         try {
             return changedResourcePost.execute();
-        } catch (ApiErrorResponseException exception) {
-            logger.error("Unsuccessful call to /resource-changed endpoint", exception);
-            throw new ServiceUnavailableException(exception.getMessage());
-        } catch (RuntimeException exception) {
-            logger.error("Error occurred while calling /resource-changed endpoint", exception);
-            throw exception;
+        } catch (ApiErrorResponseException ex) {
+            final String msg = "Unsuccessful call to resource-changed endpoint";
+            LOGGER.error(msg, ex);
+            throw new ServiceUnavailableException(msg);
+        } catch (RuntimeException ex) {
+            LOGGER.error("Error occurred while calling resource-changed endpoint", ex);
+            throw ex;
         }
     }
 

@@ -6,7 +6,6 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.IsNot.not;
 
 import java.util.Map;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -14,22 +13,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.context.request.WebRequest;
-import uk.gov.companieshouse.logging.Logger;
 
 @ExtendWith(MockitoExtension.class)
 class ExceptionHandlerConfigTest {
 
-    private ExceptionHandlerConfig exceptionHandlerConfigConfig;
+    private final ExceptionHandlerConfig exceptionHandlerConfigConfig = new ExceptionHandlerConfig();
 
     @Mock
-    Logger logger;
-    @Mock
-    WebRequest request;
-
-    @BeforeEach
-    void setUp() {
-        exceptionHandlerConfigConfig = new ExceptionHandlerConfig(logger);
-    }
+    private WebRequest request;
 
     @Test
     void handleException() {

@@ -1,5 +1,7 @@
 package uk.gov.companieshouse.pscdataapi.transform;
 
+import static uk.gov.companieshouse.pscdataapi.PscDataApiApplication.APPLICATION_NAME_SPACE;
+
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import org.springframework.stereotype.Component;
@@ -24,6 +26,7 @@ import uk.gov.companieshouse.api.psc.SensitiveData;
 import uk.gov.companieshouse.api.psc.SuperSecure;
 import uk.gov.companieshouse.api.psc.SuperSecureBeneficialOwner;
 import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.companieshouse.pscdataapi.data.IndividualPscRoles;
 import uk.gov.companieshouse.pscdataapi.data.SecurePscRoles;
 import uk.gov.companieshouse.pscdataapi.logging.DataMapHolder;
@@ -41,27 +44,15 @@ import uk.gov.companieshouse.pscdataapi.util.PscTransformationHelper;
 @Component
 public class CompanyPscTransformer {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(APPLICATION_NAME_SPACE);
     private static final String CORPORATE = "corporate";
     private static final String LEGAL = "legal";
 
-    private final Logger logger;
-    private final DateTimeFormatter dateTimeFormatter =
-            DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSSSSS");
+    private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSSSSS");
 
-    public CompanyPscTransformer(Logger logger) {
-        this.logger = logger;
-    }
+    public Individual transformPscDocToIndividual(PscDocument pscDocument, boolean showFullDateOfBirth) {
+        LOGGER.info("Attempting to transform pscDocument to Individual", DataMapHolder.getLogMap());
 
-    /**
-     * Transform Individual PSC.
-     *
-     * @param pscDocument PSC.
-     * @return PSC mongo Document.
-     */
-    public Individual transformPscDocToIndividual(
-            PscDocument pscDocument, boolean showFullDateOfBirth) {
-        logger.info("Attempting to transform pscDocument to Individual",
-                DataMapHolder.getLogMap());
         Individual individual = new Individual();
         individual.setKind(Individual.KindEnum.INDIVIDUAL_PERSON_WITH_SIGNIFICANT_CONTROL);
         if (pscDocument.getData() != null) {
@@ -91,8 +82,8 @@ public class CompanyPscTransformer {
      * @return PSC mongo Document.
      */
     public PscIndividualWithVerificationStateApi transformPscDocToIndividualWithVerificationState(PscDocument pscDocument) {
-        logger.info("Attempting to transform pscDocument to IndividualWithVerificationState",
-                DataMapHolder.getLogMap());
+        LOGGER.info("Attempting to transform pscDocument to Individual With Verification State", DataMapHolder.getLogMap());
+
         PscIndividualWithVerificationStateApi individualWithVerificationState = new PscIndividualWithVerificationStateApi();
         individualWithVerificationState
                 .setKind(PscIndividualWithVerificationStateApi.KindEnum.INDIVIDUAL_PERSON_WITH_SIGNIFICANT_CONTROL);
@@ -123,10 +114,9 @@ public class CompanyPscTransformer {
      * @return PSC mongo Document.
      */
     public PscIndividualFullRecordApi transformPscDocToIndividualFullRecord(final PscDocument pscDocument) {
-        logger.info("Attempting to transform pscDocument to Individual Full Record",
-                DataMapHolder.getLogMap());
-        final PscIndividualFullRecordApi pscIndividualFullRecordApi = new PscIndividualFullRecordApi();
+        LOGGER.info("Attempting to transform pscDocument to Individual Full Record", DataMapHolder.getLogMap());
 
+        final PscIndividualFullRecordApi pscIndividualFullRecordApi = new PscIndividualFullRecordApi();
         final PscData pscData = pscDocument.getData();
         pscIndividualFullRecordApi.setName(pscData.getName());
         pscIndividualFullRecordApi.setNameElements(mapNameElementsApi(pscData.getNameElements()));
@@ -158,8 +148,8 @@ public class CompanyPscTransformer {
      */
     public IndividualBeneficialOwner transformPscDocToIndividualBeneficialOwner(
             PscDocument pscDocument, boolean showFullDateOfBirth) {
-        logger.info("Attempting to transform pscDocument to IndividualBeneficialOwner",
-                DataMapHolder.getLogMap());
+        LOGGER.info("Attempting to transform PSC document to Individual Beneficial Owner", DataMapHolder.getLogMap());
+
         IndividualBeneficialOwner individualBo = new IndividualBeneficialOwner();
         individualBo.setKind(IndividualBeneficialOwner.KindEnum.INDIVIDUAL_BENEFICIAL_OWNER);
         if (pscDocument.getData() != null) {
@@ -189,8 +179,8 @@ public class CompanyPscTransformer {
      * @return PSC mongo Document.
      */
     public CorporateEntity transformPscDocToCorporateEntity(PscDocument pscDocument) {
-        logger.info("Attempting to transform pscDocument to CorporateEntity",
-                DataMapHolder.getLogMap());
+        LOGGER.info("Attempting to transform PSC document to Corporate Entity", DataMapHolder.getLogMap());
+
         CorporateEntity corporateEntity = new CorporateEntity();
         corporateEntity.setKind(CorporateEntity
                 .KindEnum.CORPORATE_ENTITY_PERSON_WITH_SIGNIFICANT_CONTROL);
@@ -217,8 +207,8 @@ public class CompanyPscTransformer {
      */
     public CorporateEntityBeneficialOwner transformPscDocToCorporateEntityBeneficialOwner(
             PscDocument pscDocument) {
-        logger.info("Attempting to transform pscDocument to CorporateEntityBeneficialOwner",
-                DataMapHolder.getLogMap());
+        LOGGER.info("Attempting to transform PSC document to Corporate Entity Beneficial Owner", DataMapHolder.getLogMap());
+
         CorporateEntityBeneficialOwner corporateEntityBo = new CorporateEntityBeneficialOwner();
         corporateEntityBo.setKind(CorporateEntityBeneficialOwner
                 .KindEnum.CORPORATE_ENTITY_BENEFICIAL_OWNER);
@@ -247,8 +237,8 @@ public class CompanyPscTransformer {
      * @return PSC mongo Document.
      */
     public LegalPerson transformPscDocToLegalPerson(PscDocument pscDocument) {
-        logger.info("Attempting to transform pscDocument to LegalPerson",
-                DataMapHolder.getLogMap());
+        LOGGER.info("Attempting to transform PSC document to Legal Person", DataMapHolder.getLogMap());
+
         LegalPerson legalPerson = new LegalPerson();
         legalPerson.setKind(LegalPerson
                 .KindEnum.LEGAL_PERSON_PERSON_WITH_SIGNIFICANT_CONTROL);
@@ -273,10 +263,9 @@ public class CompanyPscTransformer {
      * @param pscDocument PSC.
      * @return PSC mongo Document.
      */
-    public LegalPersonBeneficialOwner transformPscDocToLegalPersonBeneficialOwner(
-            PscDocument pscDocument) {
-        logger.info("Attempting to transform pscDocument to LegalPersonBeneficialOwner",
-                DataMapHolder.getLogMap());
+    public LegalPersonBeneficialOwner transformPscDocToLegalPersonBeneficialOwner(PscDocument pscDocument) {
+        LOGGER.info("Attempting to transform PSC document to Legal Person Beneficial Owner", DataMapHolder.getLogMap());
+
         LegalPersonBeneficialOwner legalPersonBo = new LegalPersonBeneficialOwner();
         legalPersonBo.setKind(LegalPersonBeneficialOwner
                 .KindEnum.LEGAL_PERSON_BENEFICIAL_OWNER);
@@ -305,8 +294,8 @@ public class CompanyPscTransformer {
      * @return PSC mongo Document.
      */
     public SuperSecure transformPscDocToSuperSecure(PscDocument pscDocument) {
-        logger.info("Attempting to transform pscDocument to SuperSecure",
-                DataMapHolder.getLogMap());
+        LOGGER.info("Attempting to transform PSC document to Super Secure", DataMapHolder.getLogMap());
+
         SuperSecure superSecure = new SuperSecure();
         superSecure.setKind(SuperSecure.KindEnum.SUPER_SECURE_PERSON_WITH_SIGNIFICANT_CONTROL);
         superSecure.setDescription(
@@ -330,10 +319,9 @@ public class CompanyPscTransformer {
      * @param pscDocument PSC.
      * @return PSC mongo Document.
      */
-    public SuperSecureBeneficialOwner transformPscDocToSuperSecureBeneficialOwner(
-            PscDocument pscDocument) {
-        logger.info("Attempting to transform pscDocument to SuperSecureBeneficialOwner",
-                DataMapHolder.getLogMap());
+    public SuperSecureBeneficialOwner transformPscDocToSuperSecureBeneficialOwner(PscDocument pscDocument) {
+        LOGGER.info("Attempting to transform PSC document to Super Secure Beneficial Owner", DataMapHolder.getLogMap());
+
         SuperSecureBeneficialOwner superSecureBo = new SuperSecureBeneficialOwner();
         superSecureBo.setKind(SuperSecureBeneficialOwner.KindEnum.SUPER_SECURE_BENEFICIAL_OWNER);
         superSecureBo.setDescription(
@@ -415,7 +403,7 @@ public class CompanyPscTransformer {
             pscStatementId = externalData.getPscStatementId();
         }
         final PscDocument pscDocument = new PscDocument();
-        logger.info("Transforming incoming payload", DataMapHolder.getLogMap());
+        LOGGER.info("Transforming incoming payload", DataMapHolder.getLogMap());
 
         pscDocument.setId(notificationId);
         pscDocument.setNotificationId(notificationId);
