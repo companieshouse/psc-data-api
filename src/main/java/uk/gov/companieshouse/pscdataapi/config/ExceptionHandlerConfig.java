@@ -2,158 +2,99 @@ package uk.gov.companieshouse.pscdataapi.config;
 
 import static uk.gov.companieshouse.pscdataapi.PscDataApiApplication.APPLICATION_NAME_SPACE;
 
-import com.mongodb.MongoException;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.TransientDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadGatewayException;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
 import uk.gov.companieshouse.pscdataapi.exceptions.ConflictException;
-import uk.gov.companieshouse.pscdataapi.exceptions.MethodNotAllowedException;
+import uk.gov.companieshouse.pscdataapi.exceptions.NotFoundException;
 import uk.gov.companieshouse.pscdataapi.exceptions.SerDesException;
 import uk.gov.companieshouse.pscdataapi.exceptions.ServiceUnavailableException;
+import uk.gov.companieshouse.pscdataapi.logging.DataMapHolder;
 
 @ControllerAdvice
 public class ExceptionHandlerConfig {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(APPLICATION_NAME_SPACE);
-    private static final String TIMESTAMP = "timestamp";
-    private static final String MESSAGE = "message";
-    private static final String EXCEPTION_ATTRIBUTE = "javax.servlet.error.exception";
 
-    /**
-     * Runtime exception handler. Acts as the catch-all scenario.
-     *
-     * @param ex      exception to handle.
-     * @param request request.
-     * @return error response to return.
-     */
-    @ExceptionHandler(value = {Exception.class, SerDesException.class})
-    public ResponseEntity<Object> handleException(Exception ex, WebRequest request) {
-        LOGGER.error("Unexpected exception, response code: %s".formatted(HttpStatus.INTERNAL_SERVER_ERROR), ex);
-
-        Map<String, Object> responseBody = new LinkedHashMap<>();
-        responseBody.put(TIMESTAMP, LocalDateTime.now());
-        responseBody.put(MESSAGE, "Unable to process the request.");
-        request.setAttribute(EXCEPTION_ATTRIBUTE, ex, 0);
-        return new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);
+    @ExceptionHandler(value = {NotFoundException.class, NoHandlerFoundException.class})
+    public ResponseEntity<Object> handleNotFoundException(Exception ex) {
+        LOGGER.error("Not found exception", ex, DataMapHolder.getLogMap());
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .build();
     }
 
-    /**
-     * IllegalArgumentException exception handler.
-     *
-     * @param ex      exception to handle.
-     * @param request request.
-     * @return error response to return.
-     */
-    @ExceptionHandler(value = {IllegalArgumentException.class, NoHandlerFoundException.class})
-    public ResponseEntity<Object> handleNotFoundException(Exception ex, WebRequest request) {
-        LOGGER.error("Resource not found, response code: %s".formatted(HttpStatus.NOT_FOUND), ex);
-
-        Map<String, Object> responseBody = new LinkedHashMap<>();
-        responseBody.put(TIMESTAMP, LocalDateTime.now());
-        responseBody.put(MESSAGE, "Resource not found.");
-        request.setAttribute(EXCEPTION_ATTRIBUTE, ex, 0);
-        return new ResponseEntity<>(responseBody, HttpStatus.NOT_FOUND);
+    @ExceptionHandler(value = {ServiceUnavailableException.class})
+    public ResponseEntity<Object> handleServiceUnavailableException(Exception ex) {
+        LOGGER.error("Service unavailable", ex, DataMapHolder.getLogMap());
+        return ResponseEntity
+                .status(HttpStatus.SERVICE_UNAVAILABLE)
+                .build();
     }
 
-    /**
-     * MethodNotAllowedException exception handler.
-     *
-     * @param ex      exception to handle.
-     * @param request request.
-     * @return error response to return.
-     */
-    @ExceptionHandler(value = {MethodNotAllowedException.class,
-            HttpRequestMethodNotSupportedException.class})
-    public ResponseEntity<Object> handleMethodNotAllowedException(Exception ex, WebRequest request) {
-        LOGGER.error("Method not allowed, response code: %s".formatted(HttpStatus.METHOD_NOT_ALLOWED), ex);
-
-        Map<String, Object> responseBody = new LinkedHashMap<>();
-        responseBody.put(TIMESTAMP, LocalDateTime.now());
-        responseBody.put(MESSAGE, "Unable to process the request.");
-        request.setAttribute(EXCEPTION_ATTRIBUTE, ex, 0);
-        return new ResponseEntity<>(responseBody, HttpStatus.METHOD_NOT_ALLOWED);
+    @ExceptionHandler(value = {BadRequestException.class, DateTimeParseException.class, HttpMessageNotReadableException.class})
+    public ResponseEntity<Object> handleBadRequestException(Exception ex) {
+        LOGGER.error("Bad request", ex, DataMapHolder.getLogMap());
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .build();
     }
 
-    /**
-     * ServiceUnavailableException exception handler. To be thrown when there are connection issues.
-     *
-     * @param ex      exception to handle.
-     * @param request request.
-     * @return error response to return.
-     */
-    @ExceptionHandler(value = {ServiceUnavailableException.class,
-            DataAccessException.class, MongoException.class})
-    public ResponseEntity<Object> handleServiceUnavailableException(Exception ex,
-            WebRequest request) {
-        LOGGER.error("Service unavailable, response code: %s".formatted(HttpStatus.SERVICE_UNAVAILABLE), ex);
-
-        Map<String, Object> responseBody = new LinkedHashMap<>();
-        responseBody.put(TIMESTAMP, LocalDateTime.now());
-        responseBody.put(MESSAGE, "Service unavailable.");
-        request.setAttribute(EXCEPTION_ATTRIBUTE, ex, 0);
-        return new ResponseEntity<>(responseBody, HttpStatus.SERVICE_UNAVAILABLE);
-    }
-
-    /**
-     * BadRequestException exception handler. Thrown when data is given in the wrong format.
-     *
-     * @param ex      exception to handle.
-     * @param request request.
-     * @return error response to return.
-     */
-    @ExceptionHandler(value = {BadRequestException.class, DateTimeParseException.class,
-            HttpMessageNotReadableException.class})
-    public ResponseEntity<Object> handleBadRequestException(Exception ex, WebRequest request) {
-        LOGGER.error("Bad request, response code: %s".formatted(HttpStatus.BAD_REQUEST), ex);
-
-        Map<String, Object> responseBody = new LinkedHashMap<>();
-        responseBody.put(TIMESTAMP, LocalDateTime.now());
-        responseBody.put(MESSAGE, "Bad request.");
-        request.setAttribute(EXCEPTION_ATTRIBUTE, ex, 0);
-        return new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
-    }
-
-
-    /**
-     * Conflict exception handler. Thrown when data is given in the wrong format.
-     *
-     * @param ex      exception to handle.
-     * @param request request.
-     * @return error response to return.
-     */
     @ExceptionHandler(value = {ConflictException.class})
-    public ResponseEntity<Object> handleConflictException(Exception ex, WebRequest request) {
-        LOGGER.error("Conflict, response code: %s".formatted(HttpStatus.CONFLICT), ex);
-
-        Map<String, Object> responseBody = new LinkedHashMap<>();
-        responseBody.put(TIMESTAMP, LocalDateTime.now());
-        responseBody.put(MESSAGE, "Conflict.");
-        request.setAttribute(EXCEPTION_ATTRIBUTE, ex, 0);
-        return new ResponseEntity<>(responseBody, HttpStatus.CONFLICT);
+    public ResponseEntity<Object> handleConflictException(Exception ex) {
+        LOGGER.error("Conflict", ex, DataMapHolder.getLogMap());
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .build();
     }
 
     @ExceptionHandler(value = {BadGatewayException.class})
-    public ResponseEntity<Object> handleBadGatewayException(Exception ex, WebRequest request) {
-        LOGGER.error("Bad Gateway, response code: %s".formatted(HttpStatus.BAD_GATEWAY), ex);
+    public ResponseEntity<Object> handleBadGatewayException(Exception ex) {
+        LOGGER.error("Bad gateway", ex, DataMapHolder.getLogMap());
+        return ResponseEntity
+                .status(HttpStatus.BAD_GATEWAY)
+                .build();
+    }
 
-        Map<String, Object> responseBody = new LinkedHashMap<>();
-        responseBody.put(TIMESTAMP, LocalDateTime.now());
-        responseBody.put(MESSAGE, "Bad Gateway.");
-        request.setAttribute(EXCEPTION_ATTRIBUTE, ex, 0);
-        return new ResponseEntity<>(responseBody, HttpStatus.BAD_GATEWAY);
+    @ExceptionHandler(value = {TransientDataAccessException.class})
+    public ResponseEntity<Object> handleTransientDataAccessException(Exception ex) {
+        LOGGER.info("Recoverable MongoDB exception; Cause: [%s]".formatted(ex.getMessage()), DataMapHolder.getLogMap());
+        return ResponseEntity
+                .status(HttpStatus.BAD_GATEWAY)
+                .build();
+    }
+
+    @ExceptionHandler(value = {DataAccessException.class})
+    public ResponseEntity<Object> handleDataAccessException(Exception ex) {
+        LOGGER.error("Non-recoverable MongoDB exception", ex, DataMapHolder.getLogMap());
+        return ResponseEntity
+                .status(HttpStatus.BAD_GATEWAY)
+                .build();
+    }
+
+    @ExceptionHandler(value = {SerDesException.class})
+    public ResponseEntity<Object> handleSerDesException(Exception ex) {
+        LOGGER.error("Serialisation/deserialisation exception occurred", ex, DataMapHolder.getLogMap());
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .build();
+    }
+
+    @ExceptionHandler(value = {Exception.class})
+    public ResponseEntity<Object> handleException(Exception ex) {
+        LOGGER.error("Unexpected exception occurred", ex, DataMapHolder.getLogMap());
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .build();
     }
 }

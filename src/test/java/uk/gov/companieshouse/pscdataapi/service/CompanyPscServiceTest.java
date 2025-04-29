@@ -1,7 +1,5 @@
 package uk.gov.companieshouse.pscdataapi.service;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -35,8 +33,6 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.dao.NonTransientDataAccessException;
-import org.springframework.http.HttpStatus;
 import uk.gov.companieshouse.api.exemptions.CompanyExemptions;
 import uk.gov.companieshouse.api.exemptions.Exemptions;
 import uk.gov.companieshouse.api.exemptions.PscExemptAsTradingOnUkRegulatedMarketItem;
@@ -62,7 +58,7 @@ import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
 import uk.gov.companieshouse.pscdataapi.config.FeatureFlags;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
 import uk.gov.companieshouse.pscdataapi.exceptions.ConflictException;
-import uk.gov.companieshouse.pscdataapi.exceptions.ResourceNotFoundException;
+import uk.gov.companieshouse.pscdataapi.exceptions.NotFoundException;
 import uk.gov.companieshouse.pscdataapi.exceptions.ServiceUnavailableException;
 import uk.gov.companieshouse.pscdataapi.models.Created;
 import uk.gov.companieshouse.pscdataapi.models.Links;
@@ -134,10 +130,10 @@ class CompanyPscServiceTest {
         when(repository.findById(NOTIFICATION_ID)).thenReturn(Optional.empty());
         when(transformer.transformPscOnInsert(NOTIFICATION_ID, request)).thenReturn(pscDocument);
 
-        service.insertPscRecord("", request);
+        service.insertPscRecord(request);
 
         verify(repository).save(pscDocument);
-        verify(chsKafkaApiService).invokeChsKafkaApi(any(), any(), any(), any());
+        verify(chsKafkaApiService).invokeChsKafkaApi(any(), any(), any());
         assertEquals(dateString, dateCaptor.getValue());
         assertNotNull(pscDocument.getCreated().getAt());
     }
@@ -151,10 +147,10 @@ class CompanyPscServiceTest {
         when(repository.findById(NOTIFICATION_ID)).thenReturn(Optional.of(oldRecord));
         when(transformer.transformPscOnInsert(NOTIFICATION_ID, request)).thenReturn(pscDocument);
 
-        service.insertPscRecord("", request);
+        service.insertPscRecord(request);
 
         verify(repository).save(pscDocument);
-        verify(chsKafkaApiService).invokeChsKafkaApi(any(), any(), any(), any());
+        verify(chsKafkaApiService).invokeChsKafkaApi(any(), any(), any());
         assertEquals(dateString, dateCaptor.getValue());
         assertNotNull(pscDocument.getCreated().getAt());
         assertEquals(localDateTime, pscDocument.getCreated().getAt());
@@ -171,10 +167,10 @@ class CompanyPscServiceTest {
         when(repository.findById(NOTIFICATION_ID)).thenReturn(Optional.of(oldRecord));
         when(transformer.transformPscOnInsert(NOTIFICATION_ID, request)).thenReturn(pscDocument);
 
-        service.insertPscRecord("", request);
+        service.insertPscRecord(request);
 
         verify(repository).save(pscDocument);
-        verify(chsKafkaApiService).invokeChsKafkaApi(any(), any(), any(), any());
+        verify(chsKafkaApiService).invokeChsKafkaApi(any(), any(), any());
         assertEquals(dateString, dateCaptor.getValue());
         assertNotNull(pscDocument.getCreated().getAt());
         assertEquals(localDateTime, pscDocument.getCreated().getAt());
@@ -186,35 +182,12 @@ class CompanyPscServiceTest {
         when(repository.findUpdatedPsc(eq(NOTIFICATION_ID), dateCaptor.capture())).thenReturn(
                 List.of(new PscDocument()));
 
-        Executable actual = () -> service.insertPscRecord("", request);
+        Executable actual = () -> service.insertPscRecord(request);
 
         assertThrows(ConflictException.class, actual);
         verify(repository, never()).save(pscDocument);
-        verify(chsKafkaApiService, never()).invokeChsKafkaApi(any(), any(), any(), any());
+        verify(chsKafkaApiService, never()).invokeChsKafkaApi(any(), any(), any());
         assertEquals(dateString, dateCaptor.getValue());
-    }
-
-    @Test
-    void throwsBadRequestExceptionWhenNotGivenDocument() {
-        when(repository.findUpdatedPsc(eq(NOTIFICATION_ID), any())).thenReturn(new ArrayList<>());
-        when(repository.findById(NOTIFICATION_ID)).thenReturn(Optional.empty());
-        when(transformer.transformPscOnInsert(NOTIFICATION_ID, request)).thenReturn(pscDocument);
-        when(repository.save(pscDocument)).thenThrow(new IllegalArgumentException());
-
-        assertThrows(BadRequestException.class, () -> service.insertPscRecord("", request));
-    }
-
-    @Test
-    void insertNewCreatedWhenCreatedCallToMongoFails() {
-        when(repository.findUpdatedPsc(eq(NOTIFICATION_ID), any())).thenReturn(new ArrayList<>());
-        when(repository.findById(NOTIFICATION_ID)).thenThrow(new RuntimeException());
-        when(transformer.transformPscOnInsert(NOTIFICATION_ID, request)).thenReturn(pscDocument);
-
-        service.insertPscRecord("", request);
-
-        verify(repository).save(pscDocument);
-        verify(chsKafkaApiService).invokeChsKafkaApi(any(), any(), any(), any());
-        assertNotNull(pscDocument.getCreated().getAt());
     }
 
     @Test
@@ -297,19 +270,17 @@ class CompanyPscServiceTest {
     }
 
     @Test
-    void GetIndividualPscReturns404WhenRegisterViewIsTrueAndEmptyMetrics() {
+    void getIndividualPscReturns404WhenRegisterViewIsTrueAndEmptyMetrics() {
         when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID))
                 .thenReturn(Optional.of(pscDocument));
         when(companyMetricsApiService.getCompanyMetrics(COMPANY_NUMBER)).thenReturn(Optional.of(new MetricsApi()));
 
-        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () ->
-                service.getIndividualPsc(COMPANY_NUMBER, NOTIFICATION_ID, REGISTER_VIEW_TRUE));
-        String expectedErrorMessage = "404 NOT_FOUND \"not-on-public-register\"";
-        assertEquals(expectedErrorMessage, exception.getMessage());
+        assertThrows(NotFoundException.class,
+                () -> service.getIndividualPsc(COMPANY_NUMBER, NOTIFICATION_ID, REGISTER_VIEW_TRUE));
     }
 
     @Test
-    void GetIndividualPscReturns404WhenRegisterViewIsTrueAndWrongRegisterMovedTo() {
+    void getIndividualPscReturns404WhenRegisterViewIsTrueAndWrongRegisterMovedTo() {
         when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID))
                 .thenReturn(Optional.of(pscDocument));
         MetricsApi metrics = new MetricsApi();
@@ -318,14 +289,12 @@ class CompanyPscServiceTest {
         metrics.setRegisters(registers);
         when(companyMetricsApiService.getCompanyMetrics(COMPANY_NUMBER)).thenReturn(Optional.of(metrics));
 
-        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () ->
-                service.getIndividualPsc(COMPANY_NUMBER, NOTIFICATION_ID, REGISTER_VIEW_TRUE));
-        String expectedErrorMessage = "404 NOT_FOUND \"not-on-public-register\"";
-        assertEquals(expectedErrorMessage, exception.getMessage());
+        assertThrows(NotFoundException.class,
+                () -> service.getIndividualPsc(COMPANY_NUMBER, NOTIFICATION_ID, REGISTER_VIEW_TRUE));
     }
 
     @Test
-    void GetIndividualPscReturns404WhenRegisterViewIsTrueAndOnPublicRegisterAndNoMovedToDate() {
+    void getIndividualPscReturns404WhenRegisterViewIsTrueAndOnPublicRegisterAndNoMovedToDate() {
         when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID))
                 .thenReturn(Optional.of(pscDocument));
         MetricsApi metrics = new MetricsApi();
@@ -334,14 +303,12 @@ class CompanyPscServiceTest {
         metrics.setRegisters(registers);
         when(companyMetricsApiService.getCompanyMetrics(COMPANY_NUMBER)).thenReturn(Optional.of(metrics));
 
-        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () ->
-                service.getIndividualPsc(COMPANY_NUMBER, NOTIFICATION_ID, REGISTER_VIEW_TRUE));
-        String expectedErrorMessage = "404 NOT_FOUND \"not-on-public-register\"";
-        assertEquals(expectedErrorMessage, exception.getMessage());
+        assertThrows(NotFoundException.class,
+                () -> service.getIndividualPsc(COMPANY_NUMBER, NOTIFICATION_ID, REGISTER_VIEW_TRUE));
     }
 
     @Test
-    void GetIndividualPscReturns404WhenRegisterViewIsTrueAndOnPublicRegisterAndMovedToDateAndNoCeasedOn() {
+    void getIndividualPscReturns404WhenRegisterViewIsTrueAndOnPublicRegisterAndMovedToDateAndNoCeasedOn() {
         PscData pscData = pscDocument.getData();
         pscData.setCeased(true);
         pscDocument.setData(pscData);
@@ -357,14 +324,12 @@ class CompanyPscServiceTest {
         metrics.setRegisters(registers);
         when(companyMetricsApiService.getCompanyMetrics(COMPANY_NUMBER)).thenReturn(Optional.of(metrics));
 
-        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () ->
-                service.getIndividualPsc(COMPANY_NUMBER, NOTIFICATION_ID, REGISTER_VIEW_TRUE));
-        String expectedErrorMessage = "404 NOT_FOUND \"not-on-public-register\"";
-        assertEquals(expectedErrorMessage, exception.getMessage());
+        assertThrows(NotFoundException.class,
+                () -> service.getIndividualPsc(COMPANY_NUMBER, NOTIFICATION_ID, REGISTER_VIEW_TRUE));
     }
 
     @Test
-    void GetIndividualPscReturns404WhenRegisterViewIsTrueAndOnPublicRegisterAndMovedToDateEqualsCeasedOn() {
+    void getIndividualPscReturns404WhenRegisterViewIsTrueAndOnPublicRegisterAndMovedToDateEqualsCeasedOn() {
         PscData pscData = pscDocument.getData();
         pscData.setCeased(true);
         pscData.setCeasedOn(date.toLocalDate());
@@ -381,14 +346,12 @@ class CompanyPscServiceTest {
         metrics.setRegisters(registers);
         when(companyMetricsApiService.getCompanyMetrics(COMPANY_NUMBER)).thenReturn(Optional.of(metrics));
 
-        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () ->
-                service.getIndividualPsc(COMPANY_NUMBER, NOTIFICATION_ID, REGISTER_VIEW_TRUE));
-        String expectedErrorMessage = "404 NOT_FOUND \"not-on-public-register\"";
-        assertEquals(expectedErrorMessage, exception.getMessage());
+        assertThrows(NotFoundException.class,
+                () -> service.getIndividualPsc(COMPANY_NUMBER, NOTIFICATION_ID, REGISTER_VIEW_TRUE));
     }
 
     @Test
-    void GetIndividualPscReturns404WhenRegisterViewIsTrueAndOnPublicRegisterAndMovedToDateAfterCeasedOn() {
+    void getIndividualPscReturns404WhenRegisterViewIsTrueAndOnPublicRegisterAndMovedToDateAfterCeasedOn() {
         PscData pscData = pscDocument.getData();
         pscData.setCeased(true);
         pscData.setCeasedOn(date.toLocalDate());
@@ -405,14 +368,12 @@ class CompanyPscServiceTest {
         metrics.setRegisters(registers);
         when(companyMetricsApiService.getCompanyMetrics(COMPANY_NUMBER)).thenReturn(Optional.of(metrics));
 
-        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () ->
-                service.getIndividualPsc(COMPANY_NUMBER, NOTIFICATION_ID, REGISTER_VIEW_TRUE));
-        String expectedErrorMessage = "404 NOT_FOUND \"not-on-public-register\"";
-        assertEquals(expectedErrorMessage, exception.getMessage());
+        assertThrows(NotFoundException.class,
+                () -> service.getIndividualPsc(COMPANY_NUMBER, NOTIFICATION_ID, REGISTER_VIEW_TRUE));
     }
 
     @Test
-    void GetIndividualPscReturns200WhenRegisterViewIsTrueAndOnPublicRegisterAndMovedToDateBeforeCeasedOn() {
+    void getIndividualPscReturns200WhenRegisterViewIsTrueAndOnPublicRegisterAndMovedToDateBeforeCeasedOn() {
         PscData pscData = pscDocument.getData();
         pscData.setCeased(true);
         pscData.setCeasedOn(laterDate.toLocalDate());
@@ -437,7 +398,7 @@ class CompanyPscServiceTest {
     }
 
     @Test
-    void GetIndividualPscReturn200WhenRegisterViewIsFalse() {
+    void getIndividualPscReturn200WhenRegisterViewIsFalse() {
         when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID))
                 .thenReturn(Optional.of(pscDocument));
 
@@ -449,16 +410,16 @@ class CompanyPscServiceTest {
     }
 
     @Test
-    void GetIndividualPscReturn404() {
+    void getIndividualPscReturn404() {
         when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID))
                 .thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class,
+        assertThrows(NotFoundException.class,
                 () -> service.getIndividualPsc(COMPANY_NUMBER, NOTIFICATION_ID, REGISTER_VIEW_FALSE));
     }
 
     @Test
-    void GetIndividualBeneficialOwnerPscReturns400WhenRegisterViewIsTrueAndOnPublicRegisterAndMovedToDateEqualsCeasedOn() {
+    void getIndividualBeneficialOwnerPscReturns400WhenRegisterViewIsTrueAndOnPublicRegisterAndMovedToDateEqualsCeasedOn() {
         PscData pscData = pscDocument.getData();
         pscData.setCeased(true);
         pscData.setCeasedOn(date.toLocalDate());
@@ -476,14 +437,12 @@ class CompanyPscServiceTest {
         metrics.setRegisters(registers);
         when(companyMetricsApiService.getCompanyMetrics(COMPANY_NUMBER)).thenReturn(Optional.of(metrics));
 
-        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () ->
+        assertThrows(NotFoundException.class, () ->
                 service.getIndividualBeneficialOwnerPsc(COMPANY_NUMBER, NOTIFICATION_ID, REGISTER_VIEW_TRUE));
-        String expectedErrorMessage = "404 NOT_FOUND \"not-on-public-register\"";
-        assertEquals(expectedErrorMessage, exception.getMessage());
     }
 
     @Test
-    void GetIndividualBeneficialOwnerPscReturns200WhenRegisterViewIsTrueAndOnPublicRegisterAndMovedToDateBeforeCeasedOn() {
+    void getIndividualBeneficialOwnerPscReturns200WhenRegisterViewIsTrueAndOnPublicRegisterAndMovedToDateBeforeCeasedOn() {
         PscData pscData = pscDocument.getData();
         pscData.setCeased(true);
         pscData.setCeasedOn(laterDate.toLocalDate());
@@ -511,7 +470,7 @@ class CompanyPscServiceTest {
     }
 
     @Test
-    void GetIndividualBeneficialOwnerPscReturn200WhenRegisterViewIsFalse() {
+    void getIndividualBeneficialOwnerPscReturn200WhenRegisterViewIsFalse() {
         pscDocument.getData().setKind(TestHelper.INDIVIDUAL_BO_KIND);
         IndividualBeneficialOwner individualBeneficialOwner = new IndividualBeneficialOwner();
         when(repository.findById(NOTIFICATION_ID)).thenReturn(Optional.of(pscDocument));
@@ -525,26 +484,26 @@ class CompanyPscServiceTest {
     }
 
     @Test
-    void GetIndividualBeneficialOwnerPscReturn404() {
+    void getIndividualBeneficialOwnerPscReturn404() {
         when(repository.findById(NOTIFICATION_ID)).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class,
+        assertThrows(NotFoundException.class,
                 () -> service.getIndividualBeneficialOwnerPsc(COMPANY_NUMBER, NOTIFICATION_ID, REGISTER_VIEW_FALSE));
     }
 
     @Test
-    void GetWrongTypeIndividualBeneficialOwnerPscReturn404() {
+    void getWrongTypeIndividualBeneficialOwnerPscReturn404() {
         when(repository.findById(NOTIFICATION_ID)
                 .filter(document -> document.getData().getKind()
                         .equals("WRONG KIND")))
                 .thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class,
+        assertThrows(NotFoundException.class,
                 () -> service.getIndividualBeneficialOwnerPsc(COMPANY_NUMBER, NOTIFICATION_ID, REGISTER_VIEW_FALSE));
     }
 
     @Test
-    void GetCorporateEntityBeneficialOwnerPscReturn200() {
+    void getCorporateEntityBeneficialOwnerPscReturn200() {
         pscDocument.getData().setKind("corporate-entity-beneficial-owner");
         CorporateEntityBeneficialOwner corporateEntityBeneficialOwner =
                 new CorporateEntityBeneficialOwner();
@@ -559,26 +518,26 @@ class CompanyPscServiceTest {
     }
 
     @Test
-    void GetCorporateEntityBeneficialOwnerPscReturn404() {
+    void getCorporateEntityBeneficialOwnerPscReturn404() {
         when(repository.findById(NOTIFICATION_ID)).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class,
+        assertThrows(NotFoundException.class,
                 () -> service.getCorporateEntityBeneficialOwnerPsc(COMPANY_NUMBER, NOTIFICATION_ID));
     }
 
     @Test
-    void GetWrongTypeCorporateBeneficialOwnerPscReturn404() {
+    void getWrongTypeCorporateBeneficialOwnerPscReturn404() {
         when(repository.findById(NOTIFICATION_ID)
                 .filter(document -> document.getData().getKind()
                         .equals("WRONG KIND")))
                 .thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class,
+        assertThrows(NotFoundException.class,
                 () -> service.getCorporateEntityBeneficialOwnerPsc(COMPANY_NUMBER, NOTIFICATION_ID));
     }
 
     @Test
-    void GetLegalPersonPscReturn200() {
+    void getLegalPersonPscReturn200() {
         pscDocument.getData().setKind("legal-person-person-with-significant-control");
         LegalPerson legalPerson =
                 new LegalPerson();
@@ -593,13 +552,13 @@ class CompanyPscServiceTest {
     }
 
     @Test
-    void GetLegalPersonPscReturn404() {
+    void getLegalPersonPscReturn404() {
         when(repository.findById(NOTIFICATION_ID)).thenReturn(Optional.empty());
-        assertThrows(ResourceNotFoundException.class, () -> service.getLegalPersonPsc(COMPANY_NUMBER, NOTIFICATION_ID));
+        assertThrows(NotFoundException.class, () -> service.getLegalPersonPsc(COMPANY_NUMBER, NOTIFICATION_ID));
     }
 
     @Test
-    void GetSuperSecurePscReturn200() {
+    void getSuperSecurePscReturn200() {
         pscDocument.getData().setKind("super-secure-person-with-significant-control");
         SuperSecure superSecure = new SuperSecure();
         when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID)).thenReturn(
@@ -614,24 +573,24 @@ class CompanyPscServiceTest {
     }
 
     @Test
-    void GetSuperSecurePscReturn404() {
+    void getSuperSecurePscReturn404() {
         when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID)).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> service.getSuperSecurePsc(COMPANY_NUMBER, NOTIFICATION_ID));
+        assertThrows(NotFoundException.class, () -> service.getSuperSecurePsc(COMPANY_NUMBER, NOTIFICATION_ID));
     }
 
     @Test
-    void GetWrongTypeSuperSecurePscReturn404() {
+    void getWrongTypeSuperSecurePscReturn404() {
         when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID)
                 .filter(document -> document.getData().getKind()
                         .equals("WRONG KIND")))
                 .thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> service.getSuperSecurePsc(COMPANY_NUMBER, NOTIFICATION_ID));
+        assertThrows(NotFoundException.class, () -> service.getSuperSecurePsc(COMPANY_NUMBER, NOTIFICATION_ID));
     }
 
     @Test
-    void GetSuperSecureBeneficialOwnerPscReturn200() {
+    void getSuperSecureBeneficialOwnerPscReturn200() {
         pscDocument.getData().setKind("super-secure-beneficial-owner");
         SuperSecureBeneficialOwner superSecureBeneficialOwner = new SuperSecureBeneficialOwner();
         when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID)).thenReturn(
@@ -646,26 +605,26 @@ class CompanyPscServiceTest {
     }
 
     @Test
-    void GetSuperSecureBeneficialOwnerPscReturn404() {
+    void getSuperSecureBeneficialOwnerPscReturn404() {
         when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID)).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class,
+        assertThrows(NotFoundException.class,
                 () -> service.getSuperSecureBeneficialOwnerPsc(COMPANY_NUMBER, NOTIFICATION_ID));
     }
 
     @Test
-    void GetWrongTypeSuperSecureBeneficialOwnerPscReturn404() {
+    void getWrongTypeSuperSecureBeneficialOwnerPscReturn404() {
         when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID)
                 .filter(document -> document.getData().getKind()
                         .equals("WRONG KIND")))
                 .thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class,
+        assertThrows(NotFoundException.class,
                 () -> service.getSuperSecureBeneficialOwnerPsc(COMPANY_NUMBER, NOTIFICATION_ID));
     }
 
     @Test
-    void GetCorporateEntityPscReturn200() {
+    void getCorporateEntityPscReturn200() {
         pscDocument.getData().setKind("corporate-entity-person-with-significant-control");
         CorporateEntity corporateEntity = new CorporateEntity();
         when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID)).thenReturn(
@@ -679,26 +638,26 @@ class CompanyPscServiceTest {
     }
 
     @Test
-    void GetCorporateEntityPscReturn404() {
+    void getCorporateEntityPscReturn404() {
         when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID))
                 .thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class,
+        assertThrows(NotFoundException.class,
                 () -> service.getCorporateEntityPsc(COMPANY_NUMBER, NOTIFICATION_ID));
     }
 
     @Test
-    void GetWrongTypeLegalPersonPscReturn404() {
+    void getWrongTypeLegalPersonPscReturn404() {
         when(repository.findById(NOTIFICATION_ID)
                 .filter(document -> document.getData().getKind()
                         .equals("WRONG KIND")))
                 .thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> service.getLegalPersonPsc(COMPANY_NUMBER, NOTIFICATION_ID));
+        assertThrows(NotFoundException.class, () -> service.getLegalPersonPsc(COMPANY_NUMBER, NOTIFICATION_ID));
     }
 
     @Test
-    void GetLegalPersonBeneficialOwnerPscReturn200() {
+    void getLegalPersonBeneficialOwnerPscReturn200() {
         pscDocument.getData().setKind("legal-person-beneficial-owner");
         LegalPersonBeneficialOwner legalPersonBeneficialOwner =
                 new LegalPersonBeneficialOwner();
@@ -713,25 +672,25 @@ class CompanyPscServiceTest {
     }
 
     @Test
-    void GetLegalPersonBeneficialOwnerPscReturn404() {
+    void getLegalPersonBeneficialOwnerPscReturn404() {
         when(repository.findById(NOTIFICATION_ID)).thenReturn(Optional.empty());
-        assertThrows(ResourceNotFoundException.class,
+        assertThrows(NotFoundException.class,
                 () -> service.getLegalPersonBeneficialOwnerPsc(COMPANY_NUMBER, NOTIFICATION_ID));
     }
 
     @Test
-    void GetWrongTypeLegalPersonBeneficialOwnerPscReturn404() {
+    void getWrongTypeLegalPersonBeneficialOwnerPscReturn404() {
         when(repository.findById(NOTIFICATION_ID)
                 .filter(document -> document.getData().getKind()
                         .equals("WRONG KIND")))
                 .thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class,
+        assertThrows(NotFoundException.class,
                 () -> service.getLegalPersonBeneficialOwnerPsc(COMPANY_NUMBER, NOTIFICATION_ID));
     }
 
     @Test
-    void pscListReturnedByCompanyNumberFromRepository() throws ResourceNotFoundException {
+    void pscListReturnedByCompanyNumberFromRepository() throws NotFoundException {
         PscList expectedPscList = TestHelper.createPscList();
         PscData pscData = new PscData();
         pscDocument.setData(pscData);
@@ -758,7 +717,7 @@ class CompanyPscServiceTest {
     }
 
     @Test
-    void pscListWithNoMetricsReturnedByCompanyNumberFromRepository() throws ResourceNotFoundException {
+    void pscListWithNoMetricsReturnedByCompanyNumberFromRepository() throws NotFoundException {
         PscList expectedPscList = TestHelper.createPscListWithNoMetrics();
         PscData pscData = new PscData();
         pscDocument.setData(pscData);
@@ -786,7 +745,7 @@ class CompanyPscServiceTest {
     }
 
     @Test
-    void whenNoMetricsDataFoundForCompanyInRegisterViewShouldReturnEmptyList() throws ResourceNotFoundException {
+    void whenNoMetricsDataFoundForCompanyInRegisterViewShouldReturnEmptyList() throws NotFoundException {
         when(companyMetricsApiService.getCompanyMetrics(COMPANY_NUMBER))
                 .thenReturn(Optional.empty());
 
@@ -807,7 +766,7 @@ class CompanyPscServiceTest {
     }
 
     @Test
-    void whenCompanyNotInPublicRegisterGetPSCListShouldThrowNotFound() throws ResourceNotFoundException {
+    void whenCompanyNotInPublicRegisterGetPSCListShouldThrowNotFound() throws NotFoundException {
         MetricsApi metricsApi = TestHelper.createMetrics();
         RegistersApi registersApi = new RegistersApi();
         metricsApi.setRegisters(registersApi);
@@ -815,7 +774,7 @@ class CompanyPscServiceTest {
         when(companyMetricsApiService.getCompanyMetrics(COMPANY_NUMBER))
                 .thenReturn(Optional.of(metricsApi));
 
-        Exception ex = assertThrows(ResourceNotFoundException.class,
+        Exception ex = assertThrows(NotFoundException.class,
                 () -> service.retrievePscListSummaryFromDb(COMPANY_NUMBER, 0, true, 25));
 
         String actualMessage = ex.getMessage();
@@ -825,7 +784,7 @@ class CompanyPscServiceTest {
     }
 
     @Test
-    void pscListReturnedByCompanyNumberFromRepositoryWithExemptions() throws ResourceNotFoundException {
+    void pscListReturnedByCompanyNumberFromRepositoryWithExemptions() throws NotFoundException {
         PscList expectedPscList = TestHelper.createPscListWithExemptions();
         PscData pscData = new PscData();
         pscDocument.setData(pscData);
@@ -915,53 +874,5 @@ class CompanyPscServiceTest {
 
         verify(repository).getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID);
         verify(transformer).transformPscDocToIndividualFullRecord(pscDocument);
-    }
-
-    @Test
-    void getIndividualFullRecordShouldThrowWhenNotFound() {
-        when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID)).thenReturn(Optional.empty());
-
-        final var exception = assertThrows(ResourceNotFoundException.class,
-                () -> service.getIndividualFullRecord(COMPANY_NUMBER, NOTIFICATION_ID));
-
-        assertThat(exception.getStatusCode(), is(HttpStatus.NOT_FOUND));
-    }
-
-    @Test
-    void getIndividualFullRecordShouldThrowWhenRepositoryThrowsRFNE() {
-        when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID)).thenThrow(
-                new ResourceNotFoundException(HttpStatus.NOT_FOUND, "ResourceNotFoundException"));
-
-        final var exception = assertThrows(ResourceNotFoundException.class,
-                () -> service.getIndividualFullRecord(COMPANY_NUMBER, NOTIFICATION_ID));
-
-        assertThat(exception.getStatusCode(), is(HttpStatus.NOT_FOUND));
-        assertThat(exception.getReason(), is("ResourceNotFoundException"));
-    }
-
-    @Test
-    void getIndividualFullRecordShouldThrowWhenRepositoryThrowsException() {
-        when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID)).thenThrow(
-                new NonTransientDataAccessException("NonTransientDataAccessException") {
-                });
-
-        final var exception = assertThrows(ResourceNotFoundException.class,
-                () -> service.getIndividualFullRecord(COMPANY_NUMBER, NOTIFICATION_ID));
-
-        assertThat(exception.getStatusCode(), is(HttpStatus.NOT_FOUND));
-        assertThat(exception.getReason(), is("Unexpected error occurred while fetching PSC document"));
-    }
-
-    @Test
-    void getIndividualFullRecordShouldThrowWhenTransformFails() {
-        when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID)).thenReturn(
-                Optional.of(pscDocument));
-        when(transformer.transformPscDocToIndividualFullRecord(pscDocument)).thenReturn(null);
-
-        final var exception = assertThrows(ResourceNotFoundException.class,
-                () -> service.getIndividualFullRecord(COMPANY_NUMBER, NOTIFICATION_ID));
-
-        assertThat(exception.getStatusCode(), is(HttpStatus.NOT_FOUND));
-        assertThat(exception.getReason(), is("Failed to transform PSCDocument to Individual Full Record"));
     }
 }
