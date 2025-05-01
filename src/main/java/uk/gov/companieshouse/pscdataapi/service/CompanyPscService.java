@@ -14,6 +14,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.api.exemptions.CompanyExemptions;
 import uk.gov.companieshouse.api.metrics.MetricsApi;
+import uk.gov.companieshouse.api.metrics.PscApi;
 import uk.gov.companieshouse.api.metrics.RegisterApi;
 import uk.gov.companieshouse.api.metrics.RegistersApi;
 import uk.gov.companieshouse.api.model.psc.PscIndividualFullRecordApi;
@@ -395,27 +396,24 @@ public class CompanyPscService {
             links.setExemptions(String.format("/company/%s/exemptions", companyNumber));
         }
 
-        if (companyMetrics == null) {
-            LOGGER.info("No company metrics counts data found", DataMapHolder.getLogMap());
+        if (companyMetrics == null
+                || companyMetrics.getCounts() == null // NOSONAR
+                || companyMetrics.getCounts().getPersonsWithSignificantControl() == null) {
+            LOGGER.info("No company metrics for PSC data found", DataMapHolder.getLogMap());
         } else {
+            PscApi pscCounts = companyMetrics.getCounts().getPersonsWithSignificantControl();
             if (registerView) {
                 final int withdrawnCount = (int) pscData.stream()
                         .filter(document -> document.getCeasedOn() != null)
                         .count();
 
                 pscList.setCeasedCount(withdrawnCount);
-                pscList.setTotalResults(companyMetrics.getCounts()
-                        .getPersonsWithSignificantControl().getActivePscsCount()
-                        + pscList.getCeasedCount());
-                pscList.setActiveCount(companyMetrics.getCounts()
-                        .getPersonsWithSignificantControl().getActivePscsCount());
+                pscList.setTotalResults(pscCounts.getActivePscsCount() + pscList.getCeasedCount());
+                pscList.setActiveCount(pscCounts.getActivePscsCount());
             } else {
-                pscList.setActiveCount(companyMetrics.getCounts()
-                        .getPersonsWithSignificantControl().getActivePscsCount());
-                pscList.setCeasedCount(companyMetrics.getCounts()
-                        .getPersonsWithSignificantControl().getCeasedPscsCount());
-                pscList.setTotalResults(companyMetrics.getCounts()
-                        .getPersonsWithSignificantControl().getPscsCount());
+                pscList.setActiveCount(pscCounts.getActivePscsCount());
+                pscList.setCeasedCount(pscCounts.getCeasedPscsCount());
+                pscList.setTotalResults(pscCounts.getPscsCount());
             }
         }
 
