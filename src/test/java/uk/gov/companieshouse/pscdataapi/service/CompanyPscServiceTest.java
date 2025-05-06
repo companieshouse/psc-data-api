@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -23,11 +24,16 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Named;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.function.Executable;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
@@ -36,7 +42,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.api.exemptions.CompanyExemptions;
 import uk.gov.companieshouse.api.exemptions.Exemptions;
 import uk.gov.companieshouse.api.exemptions.PscExemptAsTradingOnUkRegulatedMarketItem;
+import uk.gov.companieshouse.api.metrics.CountsApi;
 import uk.gov.companieshouse.api.metrics.MetricsApi;
+import uk.gov.companieshouse.api.metrics.PscApi;
 import uk.gov.companieshouse.api.metrics.RegisterApi;
 import uk.gov.companieshouse.api.metrics.RegistersApi;
 import uk.gov.companieshouse.api.model.psc.PscIndividualFullRecordApi;
@@ -874,5 +882,76 @@ class CompanyPscServiceTest {
 
         verify(repository).getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID);
         verify(transformer).transformPscDocToIndividualFullRecord(pscDocument);
+    }
+
+    @Test
+    void shouldSetFieldsWhenRegisterViewIsTrue() {
+        // given
+        MetricsApi metricsApi = new MetricsApi().counts(
+                new CountsApi().personsWithSignificantControl(
+                        new PscApi().activePscsCount(1))).registers(
+                new RegistersApi().personsWithSignificantControl(
+                        new RegisterApi().registerMovedTo("public-register")));
+
+        Links links = new Links();
+        links.setSelf("/company/%s/persons-with-significant-control".formatted(COMPANY_NUMBER));
+
+        final PscList expected = new PscList()
+                .itemsPerPage(25)
+                .links(links)
+                .startIndex(0)
+                .items(List.of(new ListSummary()))
+                .ceasedCount(0)
+                .totalResults(1)
+                .activeCount(1);
+
+        when(companyMetricsApiService.getCompanyMetrics(anyString())).thenReturn(Optional.of(metricsApi));
+        when(repository.getListSummaryRegisterView(any(), any(), any(), any())).thenReturn(
+                Collections.singletonList(pscDocument));
+        when(transformer.transformPscDocToListSummary(any(), anyBoolean())).thenReturn(new ListSummary());
+
+        // when
+        final PscList actual = service.retrievePscListSummaryFromDb(COMPANY_NUMBER, 0, true, 25);
+
+        // then
+        assertEquals(expected, actual);
+    }
+
+    @ParameterizedTest
+    @MethodSource("nullCompanyMetricsPscDataArgs")
+    void shouldTestIfCompanyMetricsPscDataIsNull(MetricsApi metricsApi) {
+        // given
+        Links links = new Links();
+        links.setSelf("/company/%s/persons-with-significant-control".formatted(COMPANY_NUMBER));
+
+        final PscList expected = new PscList()
+                .itemsPerPage(25)
+                .links(links)
+                .startIndex(0)
+                .items(List.of(new ListSummary()));
+
+        when(companyMetricsApiService.getCompanyMetrics(anyString())).thenReturn(Optional.of(metricsApi));
+        when(repository.getListSummaryRegisterView(any(), any(), any(), any())).thenReturn(
+                Collections.singletonList(pscDocument));
+        when(transformer.transformPscDocToListSummary(any(), anyBoolean())).thenReturn(new ListSummary());
+
+        // when
+        final PscList actual = service.retrievePscListSummaryFromDb(COMPANY_NUMBER, 0, true, 25);
+
+        // then
+        assertEquals(expected, actual);
+    }
+
+    private static Stream<Arguments> nullCompanyMetricsPscDataArgs() {
+        return Stream.of(
+                Arguments.of(Named.of("Metrics with counts but no psc data",
+                        new MetricsApi().counts(new CountsApi()).registers(
+                                new RegistersApi().personsWithSignificantControl(
+                                        new RegisterApi().registerMovedTo("public-register"))))),
+                Arguments.of(Named.of("Metrics without counts",
+                        new MetricsApi().registers(
+                                new RegistersApi().personsWithSignificantControl(
+                                        new RegisterApi().registerMovedTo("public-register")))))
+        );
     }
 }
