@@ -6,7 +6,6 @@ import static org.mockito.Mockito.when;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -44,16 +43,6 @@ class AuthenticationHelperImplTest {
     @Test
     void isApiKeyIdentityTypeWhenItIsNot() {
         assertThat(testHelper.isApiKeyIdentityType("KEY"), is(false));
-    }
-
-    @Test
-    void isOauth2IdentityTypeWhenItIs() {
-        assertThat(testHelper.isOauth2IdentityType("oauth2"), is(true));
-    }
-
-    @Test
-    void isOauth2IdentityTypeWhenItIsNot() {
-        assertThat(testHelper.isOauth2IdentityType("Oauth2"), is(false));
     }
 
     @Test
@@ -115,49 +104,4 @@ class AuthenticationHelperImplTest {
 
         assertThat(testHelper.isKeyElevatedPrivilegesAuthorised(request), is(false));
     }
-
-    @Test
-    void getTokenPrivileges() {
-        String tokenValue = "company_pscs=readprotected";
-        when(request.getHeader("ERIC-Authorised-Token-Permissions")).thenReturn(tokenValue);
-
-        Map<String, List<String>> result = testHelper.getTokenPermissions(request);
-
-        assertThat(result.containsKey("company_pscs"), is(true));
-        assertThat(result.get("company_pscs").getFirst(), is("readprotected"));
-    }
-
-    @Test
-    void getNoTokenPrivileges() {
-        when(request.getHeader("ERIC-Authorised-Token-Permissions")).thenReturn(null);
-
-        Map<String, List<String>> result = testHelper.getTokenPermissions(request);
-
-        assertThat(result.size(), is(0));
-    }
-
-    @Test
-    void isTokenProtectedIsTrue() {
-        String tokenValue = "company_pscs=readprotected";
-        when(request.getHeader("ERIC-Authorised-Token-Permissions")).thenReturn(tokenValue);
-
-        assertThat(testHelper.isTokenProtected(request), is(true));
-    }
-
-    @Test
-    void isTokenProtectedIsTrueButWrongValue() {
-        String tokenValue = "company_officers=readprotected";
-        when(request.getHeader("ERIC-Authorised-Token-Permissions")).thenReturn(tokenValue);
-
-        assertThat(testHelper.isTokenProtected(request), is(false));
-    }
-
-    @Test
-    void isTokenProtectedFalseWhenNotProtected() {
-        String tokenValue = "company_pscs=read";
-        when(request.getHeader("ERIC-Authorised-Token-Permissions")).thenReturn(tokenValue);
-
-        assertThat(testHelper.isTokenProtected(request), is(false));
-    }
-
 }

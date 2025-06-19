@@ -94,30 +94,6 @@ class FullRecordAuthenticationInterceptorTest {
         checkAuthorised(actual);
     }
 
-    @Test
-    void preHandleReturnsTrueIfOAuth2TokenWithCorrectAuthorisation() {
-
-        when(authHelper.getAuthorisedIdentityType(request)).thenReturn(AuthenticationHelperImpl.OAUTH2_IDENTITY_TYPE);
-        when(authHelper.isOauth2IdentityType(AuthenticationHelperImpl.OAUTH2_IDENTITY_TYPE)).thenReturn(true);
-        when(authHelper.isTokenProtected(any())).thenReturn(true);
-
-        boolean actual = authenticationInterceptor.preHandle(request, response, handler);
-
-        checkAuthorised(actual);
-    }
-
-    @Test
-    void preHandleReturnsFalseIfOAuth2TokenWithIncorrectAuthorisation() {
-
-        when(authHelper.getAuthorisedIdentityType(request)).thenReturn(AuthenticationHelperImpl.OAUTH2_IDENTITY_TYPE);
-        when(authHelper.isOauth2IdentityType(AuthenticationHelperImpl.OAUTH2_IDENTITY_TYPE)).thenReturn(true);
-        when(authHelper.isTokenProtected(any())).thenReturn(false);
-
-        boolean actual = authenticationInterceptor.preHandle(request, response, handler);
-
-        checkUnauthorised(actual);
-    }
-
     private void checkUnauthorised(final boolean actual) {
         assertThat(actual, is(false));
         verify(response).setStatus(HttpStatus.SC_UNAUTHORIZED);
