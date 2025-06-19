@@ -28,6 +28,9 @@
         <jacoco-maven-plugin.version>0.8.13</jacoco-maven-plugin.version>
         <commons.io.version>2.19.0</commons.io.version>
         <org.mapstruct.version>1.6.3</org.mapstruct.version>
+        <tomcat-embed-core.version>11.0.8</tomcat-embed-core.version>
+        <spring-web.version>6.2.8</spring-web.version>
+        <spring-security-core.version>6.5.1</spring-security-core.version>
 
         <!-- Internal -->
         <structured-logging.version>3.0.20</structured-logging.version>
@@ -187,6 +190,25 @@
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct</artifactId>
             <version>${org.mapstruct.version}</version>
+        </dependency>
+
+        <!-- Set to 11.0.8 to avoid CVE-2025-49125(6.3), CVE-2025-48988(8.7) as s sub dependency of velocity-engine-core 2.4.1 -->
+        <dependency>
+            <groupId>org.apache.tomcat.embed</groupId>
+            <artifactId>tomcat-embed-core</artifactId>
+            <version>${tomcat-embed-core.version}</version>
+        </dependency>
+        <!-- Set to 6.2.8 to avoid CVE-2025-41234(7.4) as s sub dependency of spring-boot-starter-web 3.4.5 -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+            <version>${spring-web.version}</version>
+        </dependency>
+        <!-- Set to 6.5.1 to avoid CVE-2025-41232(9.3) as s sub dependency of spring-boot-starter-security 3.4.5 -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-core</artifactId>
+            <version>${spring-security-core.version}</version>
         </dependency>
     </dependencies>
 
