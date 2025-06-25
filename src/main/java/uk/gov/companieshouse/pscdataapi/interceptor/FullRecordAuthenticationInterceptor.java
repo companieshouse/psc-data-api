@@ -31,17 +31,6 @@ public class FullRecordAuthenticationInterceptor implements HandlerInterceptor {
         final String identityType = authHelper.getAuthorisedIdentityType(request);
         Map<String, Object> logMap = DataMapHolder.getLogMap();
 
-        if (authHelper.isOauth2IdentityType(identityType)) {
-
-            if (authHelper.isTokenProtected(request)) {
-                return true;
-            } else {
-                LOGGER.errorRequest(request, "User not authorised. Token has insufficient permissions.", logMap);
-                response.setStatus(HttpStatus.SC_UNAUTHORIZED);
-                return false;
-            }
-        }
-
         if (!authHelper.isApiKeyIdentityType(identityType)) {
             logMap.put("identityType", identityType);
             LOGGER.errorRequest(request, "User not authorised. Identity type not correct", logMap);

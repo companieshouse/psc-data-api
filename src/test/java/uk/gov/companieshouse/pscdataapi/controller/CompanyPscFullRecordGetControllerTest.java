@@ -36,10 +36,8 @@ class CompanyPscFullRecordGetControllerTest {
     private static final String MOCK_NOTIFICATION_ID = "123456789";
     private static final String ERIC_IDENTITY = "Test-Identity";
     private static final String ERIC_IDENTITY_TYPE_API_KEY = "key";
-    private static final String ERIC_IDENTITY_TYPE_OAUTH2 = "oauth2";
     private static final String ERIC_PRIVILEGES = "*";
     private static final String ERIC_AUTH_SENSITIVE = "sensitive-data";
-    private static final String ERIC_AUTHORISED_TOKEN_PERMISSIONS_HEADER = "company_pscs=readprotected user_profile=read";
 
     private static final String GET_INDIVIDUAL_FULL_RECORD_URL = String.format(
             "/company/%s/persons-with-significant-control/individual/%s/full_record", MOCK_COMPANY_NUMBER,
@@ -113,64 +111,6 @@ class CompanyPscFullRecordGetControllerTest {
                 .andDo(print())
                 .andExpect(content().json(expectedData, true));
     }
-
-    @Test
-    @DisplayName("Should return 200 status with full record data when eric_identity_type=oauth2")
-    void getIndividualPSCWithOauth2() throws Exception {
-        when(companyPscService.getIndividualFullRecord(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID)).thenReturn(
-                createFullRecord());
-
-        final String expectedData = """
-                {
-                  "kind": "individual-person-with-significant-control",
-                  "date_of_birth": {
-                    "day": 1,
-                    "month": 2,
-                    "year": 2000
-                  },
-                  "name": "Andy Bob Smith",
-                  "name_elements": {
-                    "surname": "Smith",
-                    "forename": "Andy",
-                    "middle_name": "Bob"
-                  },
-                  "links": {
-                      "self": "/company/123/persons-with-significant-control/456"
-                    },
-                  "nationality": "British",
-                  "service_address": {
-                    "address_line_1": "addressLine1",
-                    "postal_code": "CF12 3AB",
-                    "premises": "1"
-                  },
-                  "natures_of_control": [
-                    "nature of my control"
-                  ],
-                  "usual_residential_address": {
-                    "address_line_1": "Home street",
-                    "postal_code": "AB12 3CD",
-                    "premises": "Cottage"
-                  },
-                  "residential_address_same_as_service_address": false,
-                  "verification_state": {
-                    "verification_status": "VERIFIED",
-                    "verification_start_date": "2025-01-10",
-                    "verification_statement_due_date": "2025-02-05"
-                  }
-                }
-                """;
-
-        mockMvc.perform(get(GET_INDIVIDUAL_FULL_RECORD_URL).header("ERIC-Identity", ERIC_IDENTITY)
-                        .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE_OAUTH2)
-                        .contentType(APPLICATION_JSON)
-                        .header("x-request-id", X_REQUEST_ID)
-                        .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
-                        .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH_SENSITIVE)
-                        .header("ERIC-Authorised-Token-Permissions", ERIC_AUTHORISED_TOKEN_PERMISSIONS_HEADER)).andExpect(status().isOk())
-                .andDo(print())
-                .andExpect(content().json(expectedData, true));
-    }
-
 
     @Test
     @DisplayName("Should return 404 when Individual PSC not found")
