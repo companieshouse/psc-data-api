@@ -31,6 +31,8 @@
         <tomcat-embed-core.version>11.0.9</tomcat-embed-core.version>
         <spring-web.version>6.2.9</spring-web.version>
         <spring-security-core.version>6.5.2</spring-security-core.version>
+        <commons-lang3.version>3.18.0</commons-lang3.version>
+        <grpc-context.version>1.73.0</grpc-context.version>
         <opentelemetry-instrumentation-bom.version>2.16.0</opentelemetry-instrumentation-bom.version>
 
         <!-- Internal -->
@@ -132,6 +134,16 @@
             <groupId>uk.gov.companieshouse</groupId>
             <artifactId>api-sdk-java</artifactId>
             <version>${api-sdk-java.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>${commons-lang3.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-context</artifactId>
+            <version>${grpc-context.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
