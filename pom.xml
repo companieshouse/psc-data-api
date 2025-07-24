@@ -15,36 +15,37 @@
     <properties>
         <java.version>21</java.version>
         <start-class>uk.gov.companieshouse.pscdataapi.PscDataApiApplication</start-class>
-        <spring-boot-dependencies.version>3.4.5</spring-boot-dependencies.version>
-        <spring-boot-maven-plugin.version>3.4.5</spring-boot-maven-plugin.version>
+        <spring-boot-dependencies.version>3.5.3</spring-boot-dependencies.version>
+        <spring-boot-maven-plugin.version>3.5.3</spring-boot-maven-plugin.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
         <maven-surefire-plugin.version>3.5.3</maven-surefire-plugin.version>
         <maven-failsafe-plugin.version>3.5.3</maven-failsafe-plugin.version>
         <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
-        <maven-build-helper-plugin.version>3.6.0</maven-build-helper-plugin.version>
-        <jib-maven-plugin.version>3.4.4</jib-maven-plugin.version>
+        <maven-build-helper-plugin.version>3.6.1</maven-build-helper-plugin.version>
+        <jib-maven-plugin.version>3.4.6</jib-maven-plugin.version>
         <jacoco-maven-plugin.version>0.8.13</jacoco-maven-plugin.version>
-        <commons.io.version>2.19.0</commons.io.version>
+        <commons.io.version>2.20.0</commons.io.version>
         <org.mapstruct.version>1.6.3</org.mapstruct.version>
-        <tomcat-embed-core.version>11.0.8</tomcat-embed-core.version>
-        <spring-web.version>6.2.8</spring-web.version>
-        <spring-security-core.version>6.5.1</spring-security-core.version>
+        <tomcat-embed-core.version>11.0.9</tomcat-embed-core.version>
+        <spring-web.version>6.2.9</spring-web.version>
+        <spring-security-core.version>6.5.2</spring-security-core.version>
+        <opentelemetry-instrumentation-bom.version>2.16.0</opentelemetry-instrumentation-bom.version>
 
         <!-- Internal -->
-        <structured-logging.version>3.0.20</structured-logging.version>
-        <private-api-sdk-java.version>4.0.269</private-api-sdk-java.version>
-        <api-sdk-java.version>6.0.36</api-sdk-java.version>
-        <api-security-java.version>2.0.8</api-security-java.version>
+        <structured-logging.version>3.0.37</structured-logging.version>
+        <private-api-sdk-java.version>4.0.329</private-api-sdk-java.version>
+        <api-sdk-java.version>6.3.5</api-sdk-java.version>
+        <api-security-java.version>2.0.10</api-security-java.version>
 
         <!-- tests -->
-        <io-cucumber.version>7.22.0</io-cucumber.version>
+        <io-cucumber.version>7.26.0</io-cucumber.version>
         <skip.integration.tests>false</skip.integration.tests>
         <skip.unit.tests>false</skip.unit.tests>
 
         <!--sonar configuration-->
-        <sonar-maven-plugin.version>4.0.0.4121</sonar-maven-plugin.version>
+        <sonar-maven-plugin.version>5.1.0.4751</sonar-maven-plugin.version>
         <sonar.java.binaries>${project.basedir}/target,${project.basedir}/target/*</sonar.java.binaries>
         <sonar.token>${CODE_ANALYSIS_TOKEN}</sonar.token>
         <sonar.login></sonar.login>
@@ -54,6 +55,13 @@
     </properties>
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>io.opentelemetry.instrumentation</groupId>
+                <artifactId>opentelemetry-instrumentation-bom</artifactId>
+                <version>${opentelemetry-instrumentation-bom.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
@@ -94,6 +102,10 @@
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-logging</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-mongodb</artifactId>
             <exclusions>
                 <exclusion>
@@ -101,6 +113,10 @@
                     <artifactId>log4j-to-slf4j</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry.instrumentation</groupId>
+            <artifactId>opentelemetry-spring-boot-starter</artifactId>
         </dependency>
         <dependency>
             <groupId>uk.gov.companieshouse</groupId>
