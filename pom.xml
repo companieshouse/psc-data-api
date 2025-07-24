@@ -40,7 +40,7 @@
         <api-security-java.version>2.0.10</api-security-java.version>
 
         <!-- tests -->
-        <io-cucumber.version>7.26.0</io-cucumber.version>
+        <io-cucumber.version>7.23.0</io-cucumber.version>
         <skip.integration.tests>false</skip.integration.tests>
         <skip.unit.tests>false</skip.unit.tests>
 
