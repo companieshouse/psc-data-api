@@ -62,7 +62,6 @@ variable "eric_memory" {
   description = "The required memory for eric"
   default = 512
 }
-
 variable "use_fargate" {
   type        = bool
   description = "If true, sets the required capabilities for all containers in the task definition to use FARGATE, false uses EC2"
@@ -123,7 +122,6 @@ variable "ssm_version_prefix" {
   description = "String to use as a prefix to the names of the variables containing variables and secrets version."
   default     = "SSM_VERSION_"
 }
-
 variable "use_set_environment_files" {
   type        = bool
   default     = false
@@ -138,7 +136,6 @@ variable "psc_data_api_version" {
   type        = string
   description = "The version of the psc-data-api container to run."
 }
-
 variable "eric_version" {
   type        = string
   description = "The version of the eric container to run."

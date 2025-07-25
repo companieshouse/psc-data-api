@@ -2,4 +2,4 @@
 
 PORT=8080
 
-exec java -jar -Dserver.port="${PORT}" "psc-data-api.jar"
+exec java -jar -Dserver.port="${PORT}" -XX:MaxRAMPercentage=80 "psc-data-api.jar"
