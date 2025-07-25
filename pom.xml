@@ -20,12 +20,13 @@
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
-        <maven-surefire-plugin.version>3.5.3</maven-surefire-plugin.version>
-        <maven-failsafe-plugin.version>3.5.3</maven-failsafe-plugin.version>
+        <maven-surefire-plugin.version>3.5.2</maven-surefire-plugin.version>
+        <maven-failsafe-plugin.version>3.5.2</maven-failsafe-plugin.version>
         <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
         <maven-build-helper-plugin.version>3.6.1</maven-build-helper-plugin.version>
         <jib-maven-plugin.version>3.4.6</jib-maven-plugin.version>
         <jacoco-maven-plugin.version>0.8.13</jacoco-maven-plugin.version>
+        <sonar.jacoco.reports>target/jacoco</sonar.jacoco.reports>
         <commons.io.version>2.20.0</commons.io.version>
         <org.mapstruct.version>1.6.3</org.mapstruct.version>
         <commons-lang3.version>3.18.0</commons-lang3.version>
@@ -42,6 +43,7 @@
         <io-cucumber.version>7.23.0</io-cucumber.version>
         <skip.integration.tests>false</skip.integration.tests>
         <skip.unit.tests>false</skip.unit.tests>
+        <test-excludes>io.opentelemetry.instrumentation:*</test-excludes>
 
         <!--sonar configuration-->
         <sonar-maven-plugin.version>5.1.0.4751</sonar-maven-plugin.version>
@@ -361,6 +363,9 @@
                     </execution>
                 </executions>
                 <configuration>
+                    <classpathDependencyExcludes>
+                        <classpathDependencyExclude>${test-excludes}</classpathDependencyExclude>
+                    </classpathDependencyExcludes>
                     <properties>
                         <property>
                             <name>listener</name>
