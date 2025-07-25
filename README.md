@@ -11,7 +11,6 @@ Handles CRUD functions for PSCs
 make docker-image
 ```
 
-
 ## Terraform ECS
 
 ### What does this code do?
