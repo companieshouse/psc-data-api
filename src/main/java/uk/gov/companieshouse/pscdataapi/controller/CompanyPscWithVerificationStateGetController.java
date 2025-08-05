@@ -25,7 +25,7 @@ public class CompanyPscWithVerificationStateGetController {
         this.pscService = pscService;
     }
 
-    @GetMapping("/company/{company_number}/persons-with-significant-control/individual/{notification_id}/verification-state")
+    @GetMapping("/company/{company_number}/persons-with-significant-control/individual/{notification_id}/identity-verification-details")
     public ResponseEntity<PscIndividualWithVerificationStateApi> getIndividualPscDataWithVerificationState(
             @PathVariable("company_number") String companyNumber,
             @PathVariable("notification_id") String notificationId) {

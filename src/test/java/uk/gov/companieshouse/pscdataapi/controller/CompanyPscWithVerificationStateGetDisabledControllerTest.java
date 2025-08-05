@@ -35,7 +35,7 @@ class CompanyPscWithVerificationStateGetDisabledControllerTest {
     private static final String ERIC_AUTH = "internal-app";
 
     private static final String GET_INDIVIDUAL_WITH_VERIFICATION_STATE_URL = String.format(
-            "/private/company/%s/persons-with-significant-control/individual/%s/verification-state", MOCK_COMPANY_NUMBER,
+            "/private/company/%s/persons-with-significant-control/individual/%s/identity-verification-details", MOCK_COMPANY_NUMBER,
             MOCK_NOTIFICATION_ID);
 
     @Autowired

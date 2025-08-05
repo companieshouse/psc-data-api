@@ -40,7 +40,7 @@ class CompanyPscWithVerificationStateGetControllerTest {
     private static final String ERIC_AUTH_INTERNAL = "internal-app";
 
     private static final String GET_INDIVIDUAL_WITH_VERIFICATION_STATE_URL = String.format(
-            "/company/%s/persons-with-significant-control/individual/%s/verification-state", MOCK_COMPANY_NUMBER,
+            "/company/%s/persons-with-significant-control/individual/%s/identity-verification-details", MOCK_COMPANY_NUMBER,
             MOCK_NOTIFICATION_ID);
 
     @MockitoBean

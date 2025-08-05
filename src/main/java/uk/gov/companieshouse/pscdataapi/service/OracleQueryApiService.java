@@ -36,7 +36,7 @@ public class OracleQueryApiService {
             response = oracleQueryApiClientSupplier.get()
                     .privatePscResourceHandler()
                     .getPscVerificationState(
-                            "/corporate-body-appointments/persons-of-significant-control/verification-state",
+                            "/corporate-body-appointments/persons-of-significant-control/identity-verification-details",
                             new VerificationStateCriteriaApi(applicationId))
                     .execute();
         } catch (ApiErrorResponseException ex) {

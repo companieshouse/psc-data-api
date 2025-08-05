@@ -31,7 +31,7 @@ public class WebSecurityConfig implements WebMvcConfigurer {
     public static final String PATTERN_FULL_RECORD =
             "/company/{company_number}/persons-with-significant-control/individual/{notification_id}/full_record";
     public static final String PATTERN_VERIFICATION_STATE =
-            "/company/{company_number}/persons-with-significant-control/individual/{notification_id}/verification-state";
+            "/company/{company_number}/persons-with-significant-control/individual/{notification_id}/identity-verification-details";
 
     List<String> otherAllowedAuthMethods = Arrays.asList("oauth2");
 

@@ -33,7 +33,7 @@ import uk.gov.companieshouse.pscdataapi.exceptions.BadGatewayException;
 @ExtendWith(MockitoExtension.class)
 class OracleQueryApiServiceTest {
 
-    private static final String URL = "/corporate-body-appointments/persons-of-significant-control/verification-state";
+    private static final String URL = "/corporate-body-appointments/persons-of-significant-control/identity-verification-details";
     private static final PscVerificationStateApi pscVerificationStateApi = new PscVerificationStateApi(
             VerificationStatusTypeApi.VERIFIED,
             LocalDate.of(2025, 1, 10),
