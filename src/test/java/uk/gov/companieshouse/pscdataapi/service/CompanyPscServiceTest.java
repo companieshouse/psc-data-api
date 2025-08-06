@@ -48,8 +48,7 @@ import uk.gov.companieshouse.api.metrics.PscApi;
 import uk.gov.companieshouse.api.metrics.RegisterApi;
 import uk.gov.companieshouse.api.metrics.RegistersApi;
 import uk.gov.companieshouse.api.model.psc.PscIndividualFullRecordApi;
-import uk.gov.companieshouse.api.model.psc.PscVerificationStateApi;
-import uk.gov.companieshouse.api.model.psc.VerificationStatusTypeApi;
+import uk.gov.companieshouse.api.model.psc.IdentityVerificationDetailsApi;
 import uk.gov.companieshouse.api.psc.CorporateEntity;
 import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
 import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
@@ -75,7 +74,7 @@ import uk.gov.companieshouse.pscdataapi.models.PscDeleteRequest;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 import uk.gov.companieshouse.pscdataapi.repository.CompanyPscRepository;
 import uk.gov.companieshouse.pscdataapi.transform.CompanyPscTransformer;
-import uk.gov.companieshouse.pscdataapi.transform.VerificationStateMapper;
+import uk.gov.companieshouse.pscdataapi.transform.IdentityVerificationDetailsMapper;
 import uk.gov.companieshouse.pscdataapi.util.TestHelper;
 
 @ExtendWith(MockitoExtension.class)
@@ -87,6 +86,10 @@ class CompanyPscServiceTest {
     private static final Boolean REGISTER_VIEW_FALSE = false;
     private static final boolean SHOW_FULL_DOB_TRUE = true;
     private static final boolean SHOW_FULL_DOB_FALSE = false;
+    private static final LocalDate START_ON = LocalDate.parse("2025-06-12");
+    private static final LocalDate END_ON = LocalDate.parse("9999-12-31");
+    private static final LocalDate STATEMENT_DATE = LocalDate.parse("2025-06-01");
+    private static final LocalDate STATEMENT_DUE_DATE = LocalDate.parse("2025-06-15");
 
     @InjectMocks
     private CompanyPscService service;
@@ -109,7 +112,7 @@ class CompanyPscServiceTest {
     @Mock
     private OracleQueryApiService oracleQueryApiService;
     @Mock
-    private VerificationStateMapper verificationStateMapper;
+    private IdentityVerificationDetailsMapper identityVerificationDetailsMapper;
 
     private FullRecordCompanyPSCApi request;
     private PscDocument pscDocument;
@@ -270,8 +273,10 @@ class CompanyPscServiceTest {
         document.setDeltaAt(DELTA_AT);
         when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID)).thenReturn(Optional.of(document));
 
-        assertThrows(ConflictException.class, () -> service.deletePsc(
-                new PscDeleteRequest(COMPANY_NUMBER, NOTIFICATION_ID, "", INDIVIDUAL_KIND, STALE_DELTA_AT)));
+        final var deleteRequest = new PscDeleteRequest(COMPANY_NUMBER, NOTIFICATION_ID, "", INDIVIDUAL_KIND,
+            STALE_DELTA_AT);
+
+        assertThrows(ConflictException.class, () -> service.deletePsc(deleteRequest));
 
         verify(repository).getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID);
         verify(chsKafkaApiService, never()).invokeChsKafkaApiWithDeleteEvent(any(), any());
@@ -854,27 +859,25 @@ class CompanyPscServiceTest {
     }
 
     @Test
-    void getIndividualFullRecordShouldReturnFullRecordWhenFound_FlagVerifyStateFalse() {
+    void getIndividualFullRecordShouldReturnFullRecordWhenFound_FlagVerificationDetailsFalse() {
         when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID)).thenReturn(
                 Optional.of(pscDocument));
-        when(featureFlags.isIndividualPscFullRecordAddVerificationStateEnabled()).thenReturn(false);
+        when(featureFlags.isIndividualPscFullRecordAddidentityVerificationDetailsEnabled()).thenReturn(false);
         when(transformer.transformPscDocToIndividualFullRecord(pscDocument)).thenReturn(new PscIndividualFullRecordApi());
 
         service.getIndividualFullRecord(COMPANY_NUMBER, NOTIFICATION_ID);
 
-        // TODO: assert response data matches? need TestHelper to create expected data
         verify(repository).getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID);
         verify(transformer).transformPscDocToIndividualFullRecord(pscDocument);
     }
 
     @Test
-    void getIndividualFullRecordShouldReturnFullRecordWhenFound_FlagVerifyStateTrue() {
+    void getIndividualFullRecordShouldReturnFullRecordWhenFound_FlagVerificationDetailsTrue() {
         when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID)).thenReturn(
                 Optional.of(pscDocument));
-        when(featureFlags.isIndividualPscFullRecordAddVerificationStateEnabled()).thenReturn(true);
-        when(oracleQueryApiService.getPscVerificationState(123L))
-                .thenReturn(Optional.of(new PscVerificationStateApi(VerificationStatusTypeApi.VERIFIED, LocalDate.of(2025, 1, 10),
-                        LocalDate.of(2025, 2, 5))));
+        when(featureFlags.isIndividualPscFullRecordAddidentityVerificationDetailsEnabled()).thenReturn(true);
+        when(oracleQueryApiService.getIdentityVerificationDetails(123L))
+                .thenReturn(Optional.of(new IdentityVerificationDetailsApi(START_ON, END_ON, STATEMENT_DATE, STATEMENT_DUE_DATE)));
         when(transformer.transformPscDocToIndividualFullRecord(pscDocument)).thenReturn(
                 new PscIndividualFullRecordApi().internalId(123L));
 

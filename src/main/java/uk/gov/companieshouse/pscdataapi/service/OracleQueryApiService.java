@@ -10,8 +10,8 @@ import uk.gov.companieshouse.api.InternalApiClient;
 import uk.gov.companieshouse.api.error.ApiErrorResponseException;
 import uk.gov.companieshouse.api.handler.exception.URIValidationException;
 import uk.gov.companieshouse.api.model.ApiResponse;
-import uk.gov.companieshouse.api.model.psc.PscVerificationStateApi;
-import uk.gov.companieshouse.api.model.psc.VerificationStateCriteriaApi;
+import uk.gov.companieshouse.api.model.psc.IdentityVerificationDetailsApi;
+import uk.gov.companieshouse.api.model.psc.IdentityVerificationDetailsCriteriaApi;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadGatewayException;
@@ -29,27 +29,27 @@ public class OracleQueryApiService {
         this.oracleQueryApiClientSupplier = oracleQueryApiClientSupplier;
     }
 
-    public Optional<PscVerificationStateApi> getPscVerificationState(final Long applicationId) {
-        ApiResponse<PscVerificationStateApi> response = null;
+    public Optional<IdentityVerificationDetailsApi> getIdentityVerificationDetails(final Long applicationId) {
+        ApiResponse<IdentityVerificationDetailsApi> response = null;
 
         try {
             response = oracleQueryApiClientSupplier.get()
                     .privatePscResourceHandler()
-                    .getPscVerificationState(
+                    .getIdentityVerificationDetails(
                             "/corporate-body-appointments/persons-of-significant-control/identity-verification-details",
-                            new VerificationStateCriteriaApi(applicationId))
+                            new IdentityVerificationDetailsCriteriaApi(applicationId))
                     .execute();
         } catch (ApiErrorResponseException ex) {
             final int statusCode = ex.getStatusCode();
-            LOGGER.info("PSC Verification State API POST failed with status code [%s]".formatted(statusCode),
+            LOGGER.info("PSC Identity Verification Details API POST failed with status code [%s]".formatted(statusCode),
                     DataMapHolder.getLogMap());
             if (statusCode != 404) {
-                final String msg = "Error calling PSC Verification State API POST endpoint";
+                final String msg = "Error calling PSC Identity Verification Details API POST endpoint";
                 LOGGER.error(msg, DataMapHolder.getLogMap());
                 throw new BadGatewayException(msg, ex);
             }
         } catch (URIValidationException ex) {
-            final String msg = "URI validation error when calling PSC Verification State API POST API";
+            final String msg = "URI validation error when calling PSC Identity Verification Details API POST API";
             LOGGER.error(msg, DataMapHolder.getLogMap());
             throw new BadGatewayException(msg, ex);
         }

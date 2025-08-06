@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.api.model.common.Date3Tuple;
 import uk.gov.companieshouse.api.model.psc.NameElementsApi;
 import uk.gov.companieshouse.api.model.psc.PscIndividualFullRecordApi;
-import uk.gov.companieshouse.api.model.psc.PscIndividualWithVerificationStateApi;
+import uk.gov.companieshouse.api.model.psc.PscIndividualWithIdentityVerificationDetailsApi;
 import uk.gov.companieshouse.api.model.psc.PscLinks;
 import uk.gov.companieshouse.api.psc.CorporateEntity;
 import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
@@ -76,35 +76,37 @@ public class CompanyPscTransformer {
     }
 
     /**
-     * Transform Individual with Verification State PSC.
+     * Transforms a PSC document into an Individual with Identity Verification Details.
      *
-     * @param pscDocument PSC.
-     * @return PSC mongo Document.
+     * @param pscDocument the PSC document to transform
+     * @return the transformed Individual with Identity Verification Details
      */
-    public PscIndividualWithVerificationStateApi transformPscDocToIndividualWithVerificationState(PscDocument pscDocument) {
-        LOGGER.info("Attempting to transform pscDocument to Individual With Verification State", DataMapHolder.getLogMap());
+    public PscIndividualWithIdentityVerificationDetailsApi transformPscDocToIndividualWithIdentityVerificationDetails(
+        PscDocument pscDocument) {
+        LOGGER.info("Attempting to transform pscDocument to Individual With Identity Verification Details", DataMapHolder.getLogMap());
 
-        PscIndividualWithVerificationStateApi individualWithVerificationState = new PscIndividualWithVerificationStateApi();
-        individualWithVerificationState
-                .setKind(PscIndividualWithVerificationStateApi.KindEnum.INDIVIDUAL_PERSON_WITH_SIGNIFICANT_CONTROL);
+        final var detailsApi = new PscIndividualWithIdentityVerificationDetailsApi();
+        detailsApi.setKind(
+            PscIndividualWithIdentityVerificationDetailsApi.KindEnum.INDIVIDUAL_PERSON_WITH_SIGNIFICANT_CONTROL);
         if (pscDocument.getData() != null) {
-            PscData pscData = pscDocument.getData();
-            individualWithVerificationState.setEtag(pscData.getEtag());
-            individualWithVerificationState.setCountryOfResidence(pscData.getCountryOfResidence());
-            individualWithVerificationState.setName(pscData.getName());
-            individualWithVerificationState.setNameElements(mapNameElementsApi(pscData.getNameElements()));
-            individualWithVerificationState.setAddress(mapCommonAddress(pscData.getAddress()));
-            individualWithVerificationState.setNaturesOfControl(pscData.getNaturesOfControl());
-            individualWithVerificationState.setNationality(pscData.getNationality());
-            individualWithVerificationState.setLinks(mapLinksToPscLinks(pscData.getLinks()));
-            individualWithVerificationState.setNotifiedOn(pscData.getNotifiedOn());
-            individualWithVerificationState.setCeasedOn(pscData.getCeasedOn());
+            final var pscData = pscDocument.getData();
+
+            detailsApi.setEtag(pscData.getEtag());
+            detailsApi.setCountryOfResidence(pscData.getCountryOfResidence());
+            detailsApi.setName(pscData.getName());
+            detailsApi.setNameElements(mapNameElementsApi(pscData.getNameElements()));
+            detailsApi.setAddress(mapCommonAddress(pscData.getAddress()));
+            detailsApi.setNaturesOfControl(pscData.getNaturesOfControl());
+            detailsApi.setNationality(pscData.getNationality());
+            detailsApi.setLinks(mapLinksToPscLinks(pscData.getLinks()));
+            detailsApi.setNotifiedOn(pscData.getNotifiedOn());
+            detailsApi.setCeasedOn(pscData.getCeasedOn());
         }
         if (pscDocument.getSensitiveData() != null) {
-            individualWithVerificationState.setDateOfBirth(
+            detailsApi.setDateOfBirth(
                     mapDate3Tuple(pscDocument.getSensitiveData().getDateOfBirth(), false));
         }
-        return individualWithVerificationState;
+        return detailsApi;
     }
 
     /**

@@ -16,14 +16,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.json.JsonCompareMode;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.companieshouse.api.model.common.Address;
 import uk.gov.companieshouse.api.model.common.Date3Tuple;
 import uk.gov.companieshouse.api.model.psc.NameElementsApi;
 import uk.gov.companieshouse.api.model.psc.PscIndividualFullRecordApi;
 import uk.gov.companieshouse.api.model.psc.PscLinks;
-import uk.gov.companieshouse.api.model.psc.VerificationState;
-import uk.gov.companieshouse.api.model.psc.VerificationStatus;
+import uk.gov.companieshouse.api.model.psc.IdentityVerificationDetails;
 import uk.gov.companieshouse.pscdataapi.exceptions.NotFoundException;
 import uk.gov.companieshouse.pscdataapi.service.CompanyPscService;
 
@@ -38,6 +38,10 @@ class CompanyPscFullRecordGetControllerTest {
     private static final String ERIC_IDENTITY_TYPE_API_KEY = "key";
     private static final String ERIC_PRIVILEGES = "*";
     private static final String ERIC_AUTH_SENSITIVE = "sensitive-data";
+    private static final LocalDate START_ON = LocalDate.parse("2025-06-12");
+    private static final LocalDate END_ON = LocalDate.parse("9999-12-31");
+    private static final LocalDate STATEMENT_DATE = LocalDate.parse("2025-06-01");
+    private static final LocalDate STATEMENT_DUE_DATE = LocalDate.parse("2025-06-15");
 
     private static final String GET_INDIVIDUAL_FULL_RECORD_URL = String.format(
             "/company/%s/persons-with-significant-control/individual/%s/full_record", MOCK_COMPANY_NUMBER,
@@ -94,13 +98,14 @@ class CompanyPscFullRecordGetControllerTest {
                   },
                   "residential_address_same_as_service_address": false,
                   "internal_id" : 123456789,
-                  "verification_state": {
-                    "verification_status": "VERIFIED",
-                    "verification_start_date": "2025-01-10",
-                    "verification_statement_due_date": "2025-02-05"
+                  "identity_verification_details": {
+                    "appointment_verification_start_on": "%s",
+                    "appointment_verification_end_on": "%s",
+                    "appointment_verification_statement_date": "%s",
+                    "appointment_verification_statement_due_on": "%s"
                   }
                 }
-                """;
+                """.formatted(START_ON, END_ON, STATEMENT_DATE, STATEMENT_DUE_DATE);
 
         mockMvc.perform(get(GET_INDIVIDUAL_FULL_RECORD_URL).header("ERIC-Identity", ERIC_IDENTITY)
                         .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE_API_KEY)
@@ -109,7 +114,7 @@ class CompanyPscFullRecordGetControllerTest {
                         .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
                         .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH_SENSITIVE)).andExpect(status().isOk())
                 .andDo(print())
-                .andExpect(content().json(expectedData, true));
+                .andExpect(content().json(expectedData, JsonCompareMode.STRICT));
     }
 
     @Test
@@ -159,8 +164,8 @@ class CompanyPscFullRecordGetControllerTest {
                 .dateOfBirth(new Date3Tuple(1, 2, 2000))
                 .internalId(123456789L)
                 .links(pscLinks)
-                .verificationState(
-                        new VerificationState(VerificationStatus.VERIFIED, LocalDate.of(2025, 1, 10), LocalDate.of(2025, 2, 5)));
+                .identityVerificationDetails(
+                        new IdentityVerificationDetails(START_ON, END_ON, STATEMENT_DATE, STATEMENT_DUE_DATE));
     }
 
 }

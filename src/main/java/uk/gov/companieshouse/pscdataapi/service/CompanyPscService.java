@@ -18,7 +18,7 @@ import uk.gov.companieshouse.api.metrics.PscApi;
 import uk.gov.companieshouse.api.metrics.RegisterApi;
 import uk.gov.companieshouse.api.metrics.RegistersApi;
 import uk.gov.companieshouse.api.model.psc.PscIndividualFullRecordApi;
-import uk.gov.companieshouse.api.model.psc.PscIndividualWithVerificationStateApi;
+import uk.gov.companieshouse.api.model.psc.PscIndividualWithIdentityVerificationDetailsApi;
 import uk.gov.companieshouse.api.psc.CorporateEntity;
 import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
 import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
@@ -44,7 +44,7 @@ import uk.gov.companieshouse.pscdataapi.models.PscDeleteRequest;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 import uk.gov.companieshouse.pscdataapi.repository.CompanyPscRepository;
 import uk.gov.companieshouse.pscdataapi.transform.CompanyPscTransformer;
-import uk.gov.companieshouse.pscdataapi.transform.VerificationStateMapper;
+import uk.gov.companieshouse.pscdataapi.transform.IdentityVerificationDetailsMapper;
 
 @Component
 public class CompanyPscService {
@@ -69,12 +69,12 @@ public class CompanyPscService {
     private final CompanyExemptionsApiService companyExemptionsApiService;
     private final CompanyMetricsApiService companyMetricsApiService;
     private final OracleQueryApiService oracleQueryApiService;
-    private final VerificationStateMapper verificationStateMapper;
+    private final IdentityVerificationDetailsMapper identityVerificationDetailsMapper;
 
-    public CompanyPscService(FeatureFlags featureFlags, CompanyPscTransformer transformer, CompanyPscRepository repository,
-            ChsKafkaApiService chsKafkaApiService, CompanyExemptionsApiService companyExemptionsApiService,
-            CompanyMetricsApiService companyMetricsApiService, OracleQueryApiService oracleQueryApiService,
-            VerificationStateMapper verificationStateMapper) {
+    public CompanyPscService(final FeatureFlags featureFlags, final CompanyPscTransformer transformer, final CompanyPscRepository repository,
+            final ChsKafkaApiService chsKafkaApiService, final CompanyExemptionsApiService companyExemptionsApiService,
+            final CompanyMetricsApiService companyMetricsApiService, final OracleQueryApiService oracleQueryApiService,
+            final IdentityVerificationDetailsMapper identityVerificationDetailsMapper) {
         this.featureFlags = featureFlags;
         this.transformer = transformer;
         this.repository = repository;
@@ -82,7 +82,7 @@ public class CompanyPscService {
         this.companyExemptionsApiService = companyExemptionsApiService;
         this.companyMetricsApiService = companyMetricsApiService;
         this.oracleQueryApiService = oracleQueryApiService;
-        this.verificationStateMapper = verificationStateMapper;
+        this.identityVerificationDetailsMapper = identityVerificationDetailsMapper;
     }
 
     public void insertPscRecord(FullRecordCompanyPSCApi requestBody) {
@@ -125,10 +125,10 @@ public class CompanyPscService {
                     return new NotFoundException(NOT_FOUND_MSG);
                 });
 
-        if (featureFlags.isIndividualPscFullRecordAddVerificationStateEnabled()) {
-            oracleQueryApiService.getPscVerificationState(individualFullRecordApi.getInternalId())
-                    .map(verificationStateMapper::mapToVerificationState)
-                    .ifPresent(individualFullRecordApi::setVerificationState);
+        if (featureFlags.isIndividualPscFullRecordAddidentityVerificationDetailsEnabled()) {
+            oracleQueryApiService.getIdentityVerificationDetails(individualFullRecordApi.getInternalId())
+                    .map(identityVerificationDetailsMapper::mapToIdentityVerificationDetails)
+                    .ifPresent(individualFullRecordApi::setIdentityVerificationDetails);
         }
 
         return individualFullRecordApi;
@@ -147,19 +147,19 @@ public class CompanyPscService {
                 });
     }
 
-    public PscIndividualWithVerificationStateApi getIndividualWithVerificationState(final String companyNumber,
+    public PscIndividualWithIdentityVerificationDetailsApi getIndividualWithIdentityVerificationDetails(final String companyNumber,
             final String notificationId) {
         return repository.getPscByCompanyNumberAndId(companyNumber, notificationId)
                 .filter(document -> INDIVIDUAL_PERSON_WITH_SIGNIFICANT_CONTROL.equals(document.getData().getKind()))
                 .map(document -> {
-                    PscIndividualWithVerificationStateApi individualWithVerificationState =
-                            transformer.transformPscDocToIndividualWithVerificationState(document);
+                    final PscIndividualWithIdentityVerificationDetailsApi individualWithIdentityVerificationDetails =
+                            transformer.transformPscDocToIndividualWithIdentityVerificationDetails(document);
 
-                    oracleQueryApiService.getPscVerificationState(document.getSensitiveData().getInternalId())
-                            .map(verificationStateMapper::mapToVerificationState)
-                            .ifPresent(individualWithVerificationState::setVerificationState);
+                    oracleQueryApiService.getIdentityVerificationDetails(document.getSensitiveData().getInternalId())
+                            .map(identityVerificationDetailsMapper::mapToIdentityVerificationDetails)
+                            .ifPresent(individualWithIdentityVerificationDetails::setIdentityVerificationDetails);
 
-                    return individualWithVerificationState;
+                    return individualWithIdentityVerificationDetails;
                 })
                 .orElseThrow(() -> {
                     LOGGER.error(NOT_FOUND_MSG, DataMapHolder.getLogMap());
