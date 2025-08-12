@@ -35,6 +35,7 @@ import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
 import uk.gov.companieshouse.pscdataapi.config.FeatureFlags;
 import uk.gov.companieshouse.pscdataapi.exceptions.ConflictException;
+import uk.gov.companieshouse.pscdataapi.exceptions.InternalDataException;
 import uk.gov.companieshouse.pscdataapi.exceptions.NotFoundException;
 import uk.gov.companieshouse.pscdataapi.logging.DataMapHolder;
 import uk.gov.companieshouse.pscdataapi.models.Created;
@@ -42,6 +43,7 @@ import uk.gov.companieshouse.pscdataapi.models.Links;
 import uk.gov.companieshouse.pscdataapi.models.PscData;
 import uk.gov.companieshouse.pscdataapi.models.PscDeleteRequest;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
+import uk.gov.companieshouse.pscdataapi.models.PscSensitiveData;
 import uk.gov.companieshouse.pscdataapi.repository.CompanyPscRepository;
 import uk.gov.companieshouse.pscdataapi.transform.CompanyPscTransformer;
 import uk.gov.companieshouse.pscdataapi.transform.IdentityVerificationDetailsMapper;
@@ -60,6 +62,7 @@ public class CompanyPscService {
     private static final String LEGAL_PERSON_BENEFICIAL_OWNER = "legal-person-beneficial-owner";
     private static final String SUPER_SECURE_PERSON_WITH_SIGNIFICANT_CONTROL = "super-secure-person-with-significant-control";
     private static final String SUPER_SECURE_BENEFICIAL_OWNER = "super-secure-beneficial-owner";
+    private static final String NO_INTERNAL_ID_MSG = "Sensitive data or internalId is null for notificationId: %s";
 
     private final FeatureFlags featureFlags;
     private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSSSSS");
@@ -155,9 +158,15 @@ public class CompanyPscService {
                     final PscIndividualWithIdentityVerificationDetailsApi individualWithIdentityVerificationDetails =
                             transformer.transformPscDocToIndividualWithIdentityVerificationDetails(document);
 
-                    oracleQueryApiService.getIdentityVerificationDetails(document.getSensitiveData().getInternalId())
-                            .map(identityVerificationDetailsMapper::mapToIdentityVerificationDetails)
-                            .ifPresent(individualWithIdentityVerificationDetails::setIdentityVerificationDetails);
+                    final Long internalId = Optional.ofNullable(document.getSensitiveData()).map(
+                        PscSensitiveData::getInternalId).orElseThrow(() -> {
+                        LOGGER.error(NO_INTERNAL_ID_MSG.formatted(notificationId), DataMapHolder.getLogMap());
+                        return new InternalDataException(NO_INTERNAL_ID_MSG.formatted(notificationId));
+                    });
+
+                    oracleQueryApiService.getIdentityVerificationDetails(internalId).map(
+                        identityVerificationDetailsMapper::mapToIdentityVerificationDetails).ifPresent(
+                        individualWithIdentityVerificationDetails::setIdentityVerificationDetails);
 
                     return individualWithIdentityVerificationDetails;
                 })
