@@ -24,6 +24,7 @@ import uk.gov.companieshouse.api.model.psc.NameElementsApi;
 import uk.gov.companieshouse.api.model.psc.PscIndividualFullRecordApi;
 import uk.gov.companieshouse.api.model.psc.PscLinks;
 import uk.gov.companieshouse.api.model.psc.IdentityVerificationDetails;
+import uk.gov.companieshouse.pscdataapi.exceptions.InternalDataException;
 import uk.gov.companieshouse.pscdataapi.exceptions.NotFoundException;
 import uk.gov.companieshouse.pscdataapi.service.CompanyPscService;
 
@@ -131,6 +132,22 @@ class CompanyPscFullRecordGetControllerTest {
                         .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH_SENSITIVE))
                 .andDo(print())
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("Should return 500 when Individual PSC has no internal ID")
+    void shouldReturn500WhenIndividualPscRecordHasNoInternalId() throws Exception {
+        when(companyPscService.getIndividualFullRecord(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID)).thenThrow(
+                new InternalDataException("Individual PSC document found with no internal_id " + MOCK_NOTIFICATION_ID));
+
+        mockMvc.perform(get(GET_INDIVIDUAL_FULL_RECORD_URL).header("ERIC-Identity", ERIC_IDENTITY)
+                        .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE_API_KEY)
+                        .contentType(APPLICATION_JSON)
+                        .header("x-request-id", X_REQUEST_ID)
+                        .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
+                        .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH_SENSITIVE))
+                .andDo(print())
+                .andExpect(status().isInternalServerError());
     }
 
     private static PscIndividualFullRecordApi createFullRecord() {

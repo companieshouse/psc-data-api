@@ -62,7 +62,7 @@ public class CompanyPscService {
     private static final String LEGAL_PERSON_BENEFICIAL_OWNER = "legal-person-beneficial-owner";
     private static final String SUPER_SECURE_PERSON_WITH_SIGNIFICANT_CONTROL = "super-secure-person-with-significant-control";
     private static final String SUPER_SECURE_BENEFICIAL_OWNER = "super-secure-beneficial-owner";
-    private static final String NO_INTERNAL_ID_MSG = "Sensitive data or internalId is null for notificationId: %s";
+    private static final String NO_INTERNAL_ID_MSG = "sensitive_data.internal_id is null";
 
     private final FeatureFlags featureFlags;
     private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSSSSS");
@@ -120,21 +120,31 @@ public class CompanyPscService {
     }
 
     public PscIndividualFullRecordApi getIndividualFullRecord(final String companyNumber, final String notificationId) {
-        PscIndividualFullRecordApi individualFullRecordApi = repository.getPscByCompanyNumberAndId(companyNumber, notificationId)
+        return repository.getPscByCompanyNumberAndId(companyNumber, notificationId)
                 .filter(document -> INDIVIDUAL_PERSON_WITH_SIGNIFICANT_CONTROL.equals(document.getData().getKind()))
-                .map(transformer::transformPscDocToIndividualFullRecord)
+                .map(document -> {
+                    final var fullRecordApi = transformer.transformPscDocToIndividualFullRecord(document);
+
+                    if (featureFlags.isIndividualPscFullRecordAddidentityVerificationDetailsEnabled()) {
+                        DataMapHolder.get().companyNumber(companyNumber).itemId(notificationId);
+
+                        final Long internalId = Optional.ofNullable(fullRecordApi.getInternalId())
+                            .orElseThrow(() -> {
+                                LOGGER.error(NO_INTERNAL_ID_MSG, DataMapHolder.getLogMap());
+                                return new InternalDataException(NO_INTERNAL_ID_MSG);
+                            });
+
+                            oracleQueryApiService.getIdentityVerificationDetails(internalId)
+                                .map(identityVerificationDetailsMapper::mapToIdentityVerificationDetails)
+                                .ifPresent(fullRecordApi::setIdentityVerificationDetails);
+                    }
+
+                    return fullRecordApi;
+                })
                 .orElseThrow(() -> {
                     LOGGER.error(NOT_FOUND_MSG, DataMapHolder.getLogMap());
                     return new NotFoundException(NOT_FOUND_MSG);
                 });
-
-        if (featureFlags.isIndividualPscFullRecordAddidentityVerificationDetailsEnabled()) {
-            oracleQueryApiService.getIdentityVerificationDetails(individualFullRecordApi.getInternalId())
-                    .map(identityVerificationDetailsMapper::mapToIdentityVerificationDetails)
-                    .ifPresent(individualFullRecordApi::setIdentityVerificationDetails);
-        }
-
-        return individualFullRecordApi;
     }
 
     public Individual getIndividualPsc(final String companyNumber, final String notificationId, final boolean registerView) {
@@ -155,13 +165,14 @@ public class CompanyPscService {
         return repository.getPscByCompanyNumberAndId(companyNumber, notificationId)
                 .filter(document -> INDIVIDUAL_PERSON_WITH_SIGNIFICANT_CONTROL.equals(document.getData().getKind()))
                 .map(document -> {
-                    final PscIndividualWithIdentityVerificationDetailsApi individualWithIdentityVerificationDetails =
-                            transformer.transformPscDocToIndividualWithIdentityVerificationDetails(document);
+                    DataMapHolder.get().companyNumber(companyNumber).itemId(notificationId);
 
+                    final var individualWithIdentityVerificationDetails =
+                            transformer.transformPscDocToIndividualWithIdentityVerificationDetails(document);
                     final Long internalId = Optional.ofNullable(document.getSensitiveData()).map(
                         PscSensitiveData::getInternalId).orElseThrow(() -> {
-                        LOGGER.error(NO_INTERNAL_ID_MSG.formatted(notificationId), DataMapHolder.getLogMap());
-                        return new InternalDataException(NO_INTERNAL_ID_MSG.formatted(notificationId));
+                        LOGGER.error(NO_INTERNAL_ID_MSG, DataMapHolder.getLogMap());
+                        return new InternalDataException(NO_INTERNAL_ID_MSG);
                     });
 
                     oracleQueryApiService.getIdentityVerificationDetails(internalId).map(
