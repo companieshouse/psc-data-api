@@ -23,7 +23,7 @@ import uk.gov.companieshouse.pscdataapi.service.CompanyPscService;
 
 @SpringBootTest(properties = {"feature.identity_verification=false"}, webEnvironment = WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
-class CompanyPscWithVerificationStateGetDisabledControllerTest {
+class CompanyPscWithIdentityVerificationDetailsGetDisabledControllerTest {
 
     private static final String X_REQUEST_ID = "123456";
     private static final String MOCK_COMPANY_NUMBER = "1234567";
@@ -52,7 +52,7 @@ class CompanyPscWithVerificationStateGetDisabledControllerTest {
 
         @Test
         @DisplayName("should not create Controller bean")
-        void shouldNotCreateWithVerificationStateGetControllerBean() {
+        void shouldNotCreateWithIdentityVerificationDetailsGetControllerBean() {
             final var exception = assertThrows(NoSuchBeanDefinitionException.class,
                     () -> context.getBean(CompanyPscWithIdentityVerificationDetailsGetController.class));
 
