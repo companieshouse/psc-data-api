@@ -18,7 +18,7 @@ import uk.gov.companieshouse.api.metrics.PscApi;
 import uk.gov.companieshouse.api.metrics.RegisterApi;
 import uk.gov.companieshouse.api.metrics.RegistersApi;
 import uk.gov.companieshouse.api.model.psc.PscIndividualFullRecordApi;
-import uk.gov.companieshouse.api.model.psc.PscIndividualWithVerificationStateApi;
+import uk.gov.companieshouse.api.model.psc.PscIndividualWithIdentityVerificationDetailsApi;
 import uk.gov.companieshouse.api.psc.CorporateEntity;
 import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
 import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
@@ -35,6 +35,7 @@ import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
 import uk.gov.companieshouse.pscdataapi.config.FeatureFlags;
 import uk.gov.companieshouse.pscdataapi.exceptions.ConflictException;
+import uk.gov.companieshouse.pscdataapi.exceptions.InternalDataException;
 import uk.gov.companieshouse.pscdataapi.exceptions.NotFoundException;
 import uk.gov.companieshouse.pscdataapi.logging.DataMapHolder;
 import uk.gov.companieshouse.pscdataapi.models.Created;
@@ -42,9 +43,10 @@ import uk.gov.companieshouse.pscdataapi.models.Links;
 import uk.gov.companieshouse.pscdataapi.models.PscData;
 import uk.gov.companieshouse.pscdataapi.models.PscDeleteRequest;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
+import uk.gov.companieshouse.pscdataapi.models.PscSensitiveData;
 import uk.gov.companieshouse.pscdataapi.repository.CompanyPscRepository;
 import uk.gov.companieshouse.pscdataapi.transform.CompanyPscTransformer;
-import uk.gov.companieshouse.pscdataapi.transform.VerificationStateMapper;
+import uk.gov.companieshouse.pscdataapi.transform.IdentityVerificationDetailsMapper;
 
 @Component
 public class CompanyPscService {
@@ -60,6 +62,7 @@ public class CompanyPscService {
     private static final String LEGAL_PERSON_BENEFICIAL_OWNER = "legal-person-beneficial-owner";
     private static final String SUPER_SECURE_PERSON_WITH_SIGNIFICANT_CONTROL = "super-secure-person-with-significant-control";
     private static final String SUPER_SECURE_BENEFICIAL_OWNER = "super-secure-beneficial-owner";
+    private static final String NO_INTERNAL_ID_MSG = "sensitive_data.internal_id is null";
 
     private final FeatureFlags featureFlags;
     private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSSSSS");
@@ -69,12 +72,12 @@ public class CompanyPscService {
     private final CompanyExemptionsApiService companyExemptionsApiService;
     private final CompanyMetricsApiService companyMetricsApiService;
     private final OracleQueryApiService oracleQueryApiService;
-    private final VerificationStateMapper verificationStateMapper;
+    private final IdentityVerificationDetailsMapper identityVerificationDetailsMapper;
 
-    public CompanyPscService(FeatureFlags featureFlags, CompanyPscTransformer transformer, CompanyPscRepository repository,
-            ChsKafkaApiService chsKafkaApiService, CompanyExemptionsApiService companyExemptionsApiService,
-            CompanyMetricsApiService companyMetricsApiService, OracleQueryApiService oracleQueryApiService,
-            VerificationStateMapper verificationStateMapper) {
+    public CompanyPscService(final FeatureFlags featureFlags, final CompanyPscTransformer transformer, final CompanyPscRepository repository,
+            final ChsKafkaApiService chsKafkaApiService, final CompanyExemptionsApiService companyExemptionsApiService,
+            final CompanyMetricsApiService companyMetricsApiService, final OracleQueryApiService oracleQueryApiService,
+            final IdentityVerificationDetailsMapper identityVerificationDetailsMapper) {
         this.featureFlags = featureFlags;
         this.transformer = transformer;
         this.repository = repository;
@@ -82,7 +85,7 @@ public class CompanyPscService {
         this.companyExemptionsApiService = companyExemptionsApiService;
         this.companyMetricsApiService = companyMetricsApiService;
         this.oracleQueryApiService = oracleQueryApiService;
-        this.verificationStateMapper = verificationStateMapper;
+        this.identityVerificationDetailsMapper = identityVerificationDetailsMapper;
     }
 
     public void insertPscRecord(FullRecordCompanyPSCApi requestBody) {
@@ -117,21 +120,31 @@ public class CompanyPscService {
     }
 
     public PscIndividualFullRecordApi getIndividualFullRecord(final String companyNumber, final String notificationId) {
-        PscIndividualFullRecordApi individualFullRecordApi = repository.getPscByCompanyNumberAndId(companyNumber, notificationId)
+        return repository.getPscByCompanyNumberAndId(companyNumber, notificationId)
                 .filter(document -> INDIVIDUAL_PERSON_WITH_SIGNIFICANT_CONTROL.equals(document.getData().getKind()))
-                .map(transformer::transformPscDocToIndividualFullRecord)
+                .map(document -> {
+                    final var fullRecordApi = transformer.transformPscDocToIndividualFullRecord(document);
+
+                    if (featureFlags.isIndividualPscFullRecordAddidentityVerificationDetailsEnabled()) {
+                        DataMapHolder.get().companyNumber(companyNumber).itemId(notificationId);
+
+                        final Long internalId = Optional.ofNullable(fullRecordApi.getInternalId())
+                            .orElseThrow(() -> {
+                                LOGGER.error(NO_INTERNAL_ID_MSG, DataMapHolder.getLogMap());
+                                return new InternalDataException(NO_INTERNAL_ID_MSG);
+                            });
+
+                            oracleQueryApiService.getIdentityVerificationDetails(internalId)
+                                .map(identityVerificationDetailsMapper::mapToIdentityVerificationDetails)
+                                .ifPresent(fullRecordApi::setIdentityVerificationDetails);
+                    }
+
+                    return fullRecordApi;
+                })
                 .orElseThrow(() -> {
                     LOGGER.error(NOT_FOUND_MSG, DataMapHolder.getLogMap());
                     return new NotFoundException(NOT_FOUND_MSG);
                 });
-
-        if (featureFlags.isIndividualPscFullRecordAddVerificationStateEnabled()) {
-            oracleQueryApiService.getPscVerificationState(individualFullRecordApi.getInternalId())
-                    .map(verificationStateMapper::mapToVerificationState)
-                    .ifPresent(individualFullRecordApi::setVerificationState);
-        }
-
-        return individualFullRecordApi;
     }
 
     public Individual getIndividualPsc(final String companyNumber, final String notificationId, final boolean registerView) {
@@ -147,19 +160,26 @@ public class CompanyPscService {
                 });
     }
 
-    public PscIndividualWithVerificationStateApi getIndividualWithVerificationState(final String companyNumber,
+    public PscIndividualWithIdentityVerificationDetailsApi getIndividualWithIdentityVerificationDetails(final String companyNumber,
             final String notificationId) {
         return repository.getPscByCompanyNumberAndId(companyNumber, notificationId)
                 .filter(document -> INDIVIDUAL_PERSON_WITH_SIGNIFICANT_CONTROL.equals(document.getData().getKind()))
                 .map(document -> {
-                    PscIndividualWithVerificationStateApi individualWithVerificationState =
-                            transformer.transformPscDocToIndividualWithVerificationState(document);
+                    DataMapHolder.get().companyNumber(companyNumber).itemId(notificationId);
 
-                    oracleQueryApiService.getPscVerificationState(document.getSensitiveData().getInternalId())
-                            .map(verificationStateMapper::mapToVerificationState)
-                            .ifPresent(individualWithVerificationState::setVerificationState);
+                    final var individualWithIdentityVerificationDetails =
+                            transformer.transformPscDocToIndividualWithIdentityVerificationDetails(document);
+                    final Long internalId = Optional.ofNullable(document.getSensitiveData()).map(
+                        PscSensitiveData::getInternalId).orElseThrow(() -> {
+                        LOGGER.error(NO_INTERNAL_ID_MSG, DataMapHolder.getLogMap());
+                        return new InternalDataException(NO_INTERNAL_ID_MSG);
+                    });
 
-                    return individualWithVerificationState;
+                    oracleQueryApiService.getIdentityVerificationDetails(internalId).map(
+                        identityVerificationDetailsMapper::mapToIdentityVerificationDetails).ifPresent(
+                        individualWithIdentityVerificationDetails::setIdentityVerificationDetails);
+
+                    return individualWithIdentityVerificationDetails;
                 })
                 .orElseThrow(() -> {
                     LOGGER.error(NOT_FOUND_MSG, DataMapHolder.getLogMap());
