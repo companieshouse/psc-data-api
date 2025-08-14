@@ -26,9 +26,9 @@
         <maven-build-helper-plugin.version>3.6.0</maven-build-helper-plugin.version>
         <jib-maven-plugin.version>3.4.4</jib-maven-plugin.version>
         <jacoco-maven-plugin.version>0.8.13</jacoco-maven-plugin.version>
-        <commons.io.version>2.19.0</commons.io.version>
+        <commons.io.version>2.20.0</commons.io.version>
         <org.mapstruct.version>1.6.3</org.mapstruct.version>
-        <tomcat-embed-core.version>11.0.8</tomcat-embed-core.version>
+        <tomcat-embed-core.version>11.0.10</tomcat-embed-core.version>
         <spring-web.version>6.2.8</spring-web.version>
         <spring-security-core.version>6.5.1</spring-security-core.version>
 
@@ -209,6 +209,12 @@
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-core</artifactId>
             <version>${spring-security-core.version}</version>
+        </dependency>
+        <!--  set to version 3.18 to CVE-2025-48924(5.3) in 3.17 that is transitive in several CH dependencies -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.18.0</version>
         </dependency>
     </dependencies>
 
