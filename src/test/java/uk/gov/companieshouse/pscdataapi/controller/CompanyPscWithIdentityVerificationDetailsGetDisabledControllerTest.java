@@ -23,7 +23,7 @@ import uk.gov.companieshouse.pscdataapi.service.CompanyPscService;
 
 @SpringBootTest(properties = {"feature.identity_verification=false"}, webEnvironment = WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
-class CompanyPscWithVerificationStateGetDisabledControllerTest {
+class CompanyPscWithIdentityVerificationDetailsGetDisabledControllerTest {
 
     private static final String X_REQUEST_ID = "123456";
     private static final String MOCK_COMPANY_NUMBER = "1234567";
@@ -34,8 +34,8 @@ class CompanyPscWithVerificationStateGetDisabledControllerTest {
     private static final String ERIC_PRIVILEGES = "*";
     private static final String ERIC_AUTH = "internal-app";
 
-    private static final String GET_INDIVIDUAL_WITH_VERIFICATION_STATE_URL = String.format(
-            "/private/company/%s/persons-with-significant-control/individual/%s/verification-state", MOCK_COMPANY_NUMBER,
+    private static final String GET_INDIVIDUAL_WITH_IDENTITY_VERIFICATION_DETAILS_URL = String.format(
+            "/private/company/%s/persons-with-significant-control/individual/%s/identity-verification-details", MOCK_COMPANY_NUMBER,
             MOCK_NOTIFICATION_ID);
 
     @Autowired
@@ -52,11 +52,11 @@ class CompanyPscWithVerificationStateGetDisabledControllerTest {
 
         @Test
         @DisplayName("should not create Controller bean")
-        void shouldNotCreateWithVerificationStateGetControllerBean() {
+        void shouldNotCreateWithIdentityVerificationDetailsGetControllerBean() {
             final var exception = assertThrows(NoSuchBeanDefinitionException.class,
-                    () -> context.getBean(CompanyPscWithVerificationStateGetController.class));
+                    () -> context.getBean(CompanyPscWithIdentityVerificationDetailsGetController.class));
 
-            assertThat(exception.getBeanType()).isEqualTo(CompanyPscWithVerificationStateGetController.class);
+            assertThat(exception.getBeanType()).isEqualTo(CompanyPscWithIdentityVerificationDetailsGetController.class);
         }
 
         @Test
@@ -65,7 +65,7 @@ class CompanyPscWithVerificationStateGetDisabledControllerTest {
             when(companyPscService.getIndividualPsc(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID,
                     MOCK_REGISTER_VIEW_FALSE)).thenReturn(new Individual());
 
-            mockMvc.perform(get(GET_INDIVIDUAL_WITH_VERIFICATION_STATE_URL).header("ERIC-Identity", ERIC_IDENTITY)
+            mockMvc.perform(get(GET_INDIVIDUAL_WITH_IDENTITY_VERIFICATION_DETAILS_URL).header("ERIC-Identity", ERIC_IDENTITY)
                     .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
                     .contentType(APPLICATION_JSON)
                     .header("x-request-id", X_REQUEST_ID)

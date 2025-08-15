@@ -16,6 +16,7 @@ import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadGatewayException;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
 import uk.gov.companieshouse.pscdataapi.exceptions.ConflictException;
+import uk.gov.companieshouse.pscdataapi.exceptions.InternalDataException;
 import uk.gov.companieshouse.pscdataapi.exceptions.NotFoundException;
 import uk.gov.companieshouse.pscdataapi.exceptions.SerDesException;
 import uk.gov.companieshouse.pscdataapi.exceptions.ServiceUnavailableException;
@@ -55,6 +56,14 @@ public class ExceptionHandlerConfig {
         LOGGER.error("Conflict", ex, DataMapHolder.getLogMap());
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
+                .build();
+    }
+
+    @ExceptionHandler(value = {InternalDataException.class})
+    public ResponseEntity<Object> handleInternalDataException(Exception ex) {
+        LOGGER.error("Internal Data Exception", ex, DataMapHolder.getLogMap());
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .build();
     }
 

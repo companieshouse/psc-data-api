@@ -30,8 +30,8 @@ public class WebSecurityConfig implements WebMvcConfigurer {
 
     public static final String PATTERN_FULL_RECORD =
             "/company/{company_number}/persons-with-significant-control/individual/{notification_id}/full_record";
-    public static final String PATTERN_VERIFICATION_STATE =
-            "/company/{company_number}/persons-with-significant-control/individual/{notification_id}/verification-state";
+    public static final String PATTERN_IDENTITY_VERIFICATION_DETAILS =
+            "/company/{company_number}/persons-with-significant-control/individual/{notification_id}/identity-verification-details";
 
     List<String> otherAllowedAuthMethods = Arrays.asList("oauth2");
 
@@ -40,7 +40,7 @@ public class WebSecurityConfig implements WebMvcConfigurer {
         registry.addInterceptor(userAuthenticationInterceptor());
         if (Boolean.TRUE.equals(identityVerificationEnabled)) {
             registry.addInterceptor(internalUserInterceptor())
-                    .addPathPatterns(PATTERN_VERIFICATION_STATE);
+                    .addPathPatterns(PATTERN_IDENTITY_VERIFICATION_DETAILS);
             registry.addInterceptor(fullRecordAuthenticationInterceptor())
                     .addPathPatterns(PATTERN_FULL_RECORD);
         }
