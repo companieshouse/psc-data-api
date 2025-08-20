@@ -46,6 +46,7 @@
         <!--sonar configuration-->
         <sonar-maven-plugin.version>4.0.0.4121</sonar-maven-plugin.version>
         <sonar.java.binaries>${project.basedir}/target,${project.basedir}/target/*</sonar.java.binaries>
+        <sonar.jacoco.reports>${project.basedir}/target/site</sonar.jacoco.reports>
         <sonar.token>${CODE_ANALYSIS_TOKEN}</sonar.token>
         <sonar.login></sonar.login>
         <sonar.password></sonar.password>
@@ -278,17 +279,6 @@
                 </configuration>
                 <executions>
                     <execution>
-                        <id>pre-unit-test</id>
-                        <goals>
-                            <goal>prepare-agent</goal>
-                        </goals>
-                        <configuration>
-                            <!-- Sets the path to the file which contains the execution model. -->
-                            <destFile>${sonar.jacoco.reports}/jacoco.exec</destFile>
-                            <propertyName>surefireArgLine</propertyName>
-                        </configuration>
-                    </execution>
-                    <execution>
                         <id>post-unit-test</id>
                         <phase>test</phase>
                         <goals>
@@ -307,7 +297,7 @@
                         </goals>
                         <configuration>
                             <!-- Sets the path to the file which contains the execution model. -->
-                            <destFile>${sonar.jacoco.reports}/jacoco-it.exec</destFile>
+                            <destFile>${project.basedir}/target/jacoco-it.exec</destFile>
                             <propertyName>failsafeArgLine</propertyName>
                         </configuration>
                     </execution>
@@ -318,7 +308,7 @@
                             <goal>report</goal>
                         </goals>
                         <configuration>
-                            <dataFile>${sonar.jacoco.reports}/jacoco-it.exec</dataFile>
+                            <dataFile>${project.basedir}/target/jacoco-it.exec</dataFile>
                             <outputDirectory>${sonar.jacoco.reports}/jacoco-it</outputDirectory>
                         </configuration>
                     </execution>
