@@ -10,35 +10,16 @@ import uk.gov.companieshouse.api.model.psc.NameElementsApi;
 import uk.gov.companieshouse.api.model.psc.PscIndividualFullRecordApi;
 import uk.gov.companieshouse.api.model.psc.PscIndividualWithIdentityVerificationDetailsApi;
 import uk.gov.companieshouse.api.model.psc.PscLinks;
-import uk.gov.companieshouse.api.psc.CorporateEntity;
-import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
-import uk.gov.companieshouse.api.psc.Data;
-import uk.gov.companieshouse.api.psc.ExternalData;
-import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
-import uk.gov.companieshouse.api.psc.Identification;
-import uk.gov.companieshouse.api.psc.Individual;
-import uk.gov.companieshouse.api.psc.IndividualBeneficialOwner;
-import uk.gov.companieshouse.api.psc.InternalData;
-import uk.gov.companieshouse.api.psc.LegalPerson;
-import uk.gov.companieshouse.api.psc.LegalPersonBeneficialOwner;
-import uk.gov.companieshouse.api.psc.ListSummary;
-import uk.gov.companieshouse.api.psc.SensitiveData;
-import uk.gov.companieshouse.api.psc.SuperSecure;
-import uk.gov.companieshouse.api.psc.SuperSecureBeneficialOwner;
+import uk.gov.companieshouse.api.psc.*;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.companieshouse.pscdataapi.data.IndividualPscRoles;
 import uk.gov.companieshouse.pscdataapi.data.SecurePscRoles;
 import uk.gov.companieshouse.pscdataapi.logging.DataMapHolder;
+import uk.gov.companieshouse.pscdataapi.models.*;
 import uk.gov.companieshouse.pscdataapi.models.Address;
 import uk.gov.companieshouse.pscdataapi.models.DateOfBirth;
-import uk.gov.companieshouse.pscdataapi.models.Links;
 import uk.gov.companieshouse.pscdataapi.models.NameElements;
-import uk.gov.companieshouse.pscdataapi.models.PscData;
-import uk.gov.companieshouse.pscdataapi.models.PscDocument;
-import uk.gov.companieshouse.pscdataapi.models.PscIdentification;
-import uk.gov.companieshouse.pscdataapi.models.PscSensitiveData;
-import uk.gov.companieshouse.pscdataapi.models.Updated;
 import uk.gov.companieshouse.pscdataapi.util.PscTransformationHelper;
 
 @Component
@@ -482,6 +463,11 @@ public class CompanyPscTransformer {
                 (pscData.getKind().contains(CORPORATE) || pscData.getKind().contains(LEGAL))) {
             PscIdentification identification = new PscIdentification(data.getIdentification());
             pscData.setIdentification(identification);
+        }
+        if (data.getIdentityVerificationDetails() != null) {
+            PscIdentityVerificationDetails ivd = new PscIdentityVerificationDetails(
+                    data.getIdentityVerificationDetails());
+            pscData.setIdentityVerificationDetails(ivd);
         }
         return pscData;
     }
