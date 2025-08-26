@@ -14,6 +14,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
+import org.jetbrains.annotations.NotNull;
 import org.springframework.util.FileCopyUtils;
 import uk.gov.companieshouse.api.exemptions.CompanyExemptions;
 import uk.gov.companieshouse.api.exemptions.ExemptionItem;
@@ -23,24 +25,7 @@ import uk.gov.companieshouse.api.exemptions.PscExemptAsTradingOnUkRegulatedMarke
 import uk.gov.companieshouse.api.metrics.CountsApi;
 import uk.gov.companieshouse.api.metrics.MetricsApi;
 import uk.gov.companieshouse.api.metrics.PscApi;
-import uk.gov.companieshouse.api.psc.CorporateEntity;
-import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
-import uk.gov.companieshouse.api.psc.Data;
-import uk.gov.companieshouse.api.psc.ExternalData;
-import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
-import uk.gov.companieshouse.api.psc.Identification;
-import uk.gov.companieshouse.api.psc.Individual;
-import uk.gov.companieshouse.api.psc.IndividualBeneficialOwner;
-import uk.gov.companieshouse.api.psc.InternalData;
-import uk.gov.companieshouse.api.psc.ItemLinkTypes;
-import uk.gov.companieshouse.api.psc.LegalPerson;
-import uk.gov.companieshouse.api.psc.LegalPersonBeneficialOwner;
-import uk.gov.companieshouse.api.psc.ListSummary;
-import uk.gov.companieshouse.api.psc.PscList;
-import uk.gov.companieshouse.api.psc.SensitiveData;
-import uk.gov.companieshouse.api.psc.SuperSecure;
-import uk.gov.companieshouse.api.psc.SuperSecureBeneficialOwner;
-import uk.gov.companieshouse.api.psc.UsualResidentialAddress;
+import uk.gov.companieshouse.api.psc.*;
 import uk.gov.companieshouse.pscdataapi.models.Address;
 import uk.gov.companieshouse.pscdataapi.models.DateOfBirth;
 import uk.gov.companieshouse.pscdataapi.models.Links;
@@ -48,6 +33,7 @@ import uk.gov.companieshouse.pscdataapi.models.NameElements;
 import uk.gov.companieshouse.pscdataapi.models.PscData;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 import uk.gov.companieshouse.pscdataapi.models.PscIdentification;
+import uk.gov.companieshouse.pscdataapi.models.PscIdentityVerificationDetails;
 import uk.gov.companieshouse.pscdataapi.models.PscSensitiveData;
 import uk.gov.companieshouse.pscdataapi.models.Updated;
 
@@ -182,6 +168,17 @@ public class TestHelper {
 
             data.setNationality("British");
             data.setCountryOfResidence("England");
+
+            IdentityVerificationDetails ivd = new IdentityVerificationDetails();
+            ivd.setAntiMoneyLaunderingSupervisoryBodies(List.of("Supervisory Body"));
+            ivd.setAppointmentVerificationEndOn(LocalDate.of(2024, 12, 12));
+            ivd.setAppointmentVerificationStatementDate(LocalDate.of(2024, 12, 13));
+            ivd.setAppointmentVerificationStatementDueOn(LocalDate.of(2024, 12, 14));
+            ivd.setAppointmentVerificationStartOn(LocalDate.of(2024, 12, 15));
+            ivd.setAuthorisedCorporateServiceProviderName("Service Provider");
+            ivd.setIdentityVerifiedOn(LocalDate.of(2024, 12, 16));
+            ivd.setPreferredName("Preferred Name");
+            data.setIdentityVerificationDetails(ivd);
         } else if (kind.contains("corporate")) {
             Identification identification = new Identification();
             identification.setLegalForm("Form");
@@ -310,6 +307,9 @@ public class TestHelper {
 
             pscData.setNationality("British");
             pscData.setCountryOfResidence("England");
+
+            PscIdentityVerificationDetails ivd = getPscIdentityVerificationDetails();
+            pscData.setIdentityVerificationDetails(ivd);
         } else if (kind.contains("corporate")) {
             Identification identification = new Identification();
             identification.setLegalForm("Form");
@@ -331,6 +331,19 @@ public class TestHelper {
 
         output.setData(pscData);
         return output;
+    }
+
+    private static @NotNull PscIdentityVerificationDetails getPscIdentityVerificationDetails() {
+        PscIdentityVerificationDetails ivd = new PscIdentityVerificationDetails();
+        ivd.setAntiMoneyLaunderingSupervisoryBodies(List.of("Supervisory Body"));
+        ivd.setAppointmentVerificationEndOn(LocalDate.of(2024, 12, 12));
+        ivd.setAppointmentVerificationStatementDate(LocalDate.of(2024, 12, 13));
+        ivd.setAppointmentVerificationStatementDueOn(LocalDate.of(2024, 12, 14));
+        ivd.setAppointmentVerificationStartOn(LocalDate.of(2024, 12, 15));
+        ivd.setAuthorisedCorporateServiceProviderName("Service Provider");
+        ivd.setIdentityVerifiedOn(LocalDate.of(2024, 12, 16));
+        ivd.setPreferredName("Preferred Name");
+        return ivd;
     }
 
     public static PscDocument buildBasicDocument() {
