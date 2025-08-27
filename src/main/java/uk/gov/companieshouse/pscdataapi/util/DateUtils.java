@@ -4,7 +4,7 @@ import static java.time.ZoneOffset.UTC;
 
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang.StringUtils;
 
 public final class DateUtils {
 
