@@ -29,7 +29,7 @@
         <commons.io.version>2.19.0</commons.io.version>
         <org.mapstruct.version>1.6.3</org.mapstruct.version>
         <spring-web.version>6.2.8</spring-web.version>
-        <spring-security-core.version>6.5.1</spring-security-core.version>
+        <spring-security-core.version>6.5.3</spring-security-core.version>
         <commons-lang3.version>3.18.0</commons-lang3.version>
         <spring-core.version>6.2.10</spring-core.version>
         <tomcat-embed-dependencies.version>10.1.44</tomcat-embed-dependencies.version>
@@ -237,6 +237,26 @@
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-core</artifactId>
             <version>${spring-security-core.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-context</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-expression</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>${spring-core.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-expression</artifactId>
+            <version>${spring-core.version}</version>
         </dependency>
     </dependencies>
 
