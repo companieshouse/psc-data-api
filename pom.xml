@@ -30,7 +30,6 @@
         <org.mapstruct.version>1.6.3</org.mapstruct.version>
         <spring-web.version>6.2.8</spring-web.version>
         <spring-security-core.version>6.5.3</spring-security-core.version>
-        <commons-lang3.version>3.18.0</commons-lang3.version>
         <spring-core.version>6.2.10</spring-core.version>
         <tomcat-embed-dependencies.version>10.1.44</tomcat-embed-dependencies.version>
         <gson.version>2.13.1</gson.version>
