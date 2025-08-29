@@ -63,6 +63,9 @@ public class PscData {
     @JsonProperty("identification")
     private PscIdentification identification;
 
+    @JsonProperty("identity_verification_details")
+    private PscIdentityVerificationDetails identityVerificationDetails;
+
     public Address getPrincipalOfficeAddress() {
         return principalOfficeAddress;
     }
@@ -201,6 +204,14 @@ public class PscData {
         this.ceased = ceased;
     }
 
+    public PscIdentityVerificationDetails getIdentityVerificationDetails() {
+        return identityVerificationDetails;
+    }
+
+    public void setIdentityVerificationDetails(PscIdentityVerificationDetails identityVerificationDetails) {
+        this.identityVerificationDetails = identityVerificationDetails;
+    }
+
     @Override
     public String toString() {
         return "PscData{"
@@ -242,6 +253,8 @@ public class PscData {
                 + links
                 + ", identification="
                 + identification
+                + ", identityVerificationDetails="
+                + identityVerificationDetails
                 + '}';
     }
 
@@ -270,7 +283,8 @@ public class PscData {
                 && Objects.equals(naturesOfControl, pscData.naturesOfControl)
                 && Objects.equals(nameElements, pscData.nameElements)
                 && Objects.equals(links, pscData.links)
-                && Objects.equals(identification, pscData.identification);
+                && Objects.equals(identification, pscData.identification)
+                && Objects.equals(identityVerificationDetails, pscData.identityVerificationDetails);
     }
 
     @Override
@@ -278,6 +292,6 @@ public class PscData {
         return Objects.hash(ceasedOn, etag, address, name, nationality, countryOfResidence,
                 kind, notifiedOn, description, serviceAddressIsSameAsRegisteredOfficeAddress,
                 isSanctioned, ceased, naturesOfControl,
-                nameElements, links, identification);
+                nameElements, links, identification, identityVerificationDetails);
     }
 }
