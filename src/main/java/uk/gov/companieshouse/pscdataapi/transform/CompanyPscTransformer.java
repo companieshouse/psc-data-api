@@ -498,7 +498,7 @@ public class CompanyPscTransformer {
 
     private Date3Tuple mapDate3Tuple(DateOfBirth inputDateOfBirth) {
         if (inputDateOfBirth != null) {
-            Integer day = null;
+            int day = 0;
             int month = inputDateOfBirth.getMonth();
             int year = inputDateOfBirth.getYear();
 
