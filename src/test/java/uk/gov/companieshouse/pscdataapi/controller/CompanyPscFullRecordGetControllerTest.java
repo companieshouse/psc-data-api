@@ -70,7 +70,6 @@ class CompanyPscFullRecordGetControllerTest {
                 {
                   "kind": "individual-person-with-significant-control",
                   "date_of_birth": {
-                    "day": 1,
                     "month": 2,
                     "year": 2000
                   },
@@ -178,7 +177,7 @@ class CompanyPscFullRecordGetControllerTest {
                 .usualResidentialAddress(residentialAddress)
                 .nationality("British")
                 .naturesOfControl(Arrays.asList("nature of my control"))
-                .dateOfBirth(new Date3Tuple(1, 2, 2000))
+                .dateOfBirth(new Date3Tuple(0 ,2, 2000))
                 .internalId(123456789L)
                 .links(pscLinks)
                 .identityVerificationDetails(

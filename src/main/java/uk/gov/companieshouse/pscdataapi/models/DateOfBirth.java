@@ -5,8 +5,6 @@ import org.springframework.data.mongodb.core.mapping.Field;
 
 public class DateOfBirth {
 
-    @Field("day")
-    private Integer day;
     @Field("month")
     private Integer month;
     @Field("year")
@@ -21,17 +19,8 @@ public class DateOfBirth {
      * @param dob API DoB object.
      */
     public DateOfBirth(uk.gov.companieshouse.api.psc.DateOfBirth dob) {
-        this.day = dob.getDay();
         this.month = dob.getMonth();
         this.year = dob.getYear();
-    }
-
-    public Integer getDay() {
-        return day;
-    }
-
-    public void setDay(Integer day) {
-        this.day = day;
     }
 
     public Integer getMonth() {
@@ -53,9 +42,7 @@ public class DateOfBirth {
     @Override
     public String toString() {
         return "DateOfBirth{"
-                + "day="
-                + day
-                + ", month="
+                + "month="
                 + month
                 + ", year="
                 + year
@@ -71,13 +58,12 @@ public class DateOfBirth {
             return false;
         }
         DateOfBirth that = (DateOfBirth) object;
-        return Objects.equals(day, that.day)
-                && Objects.equals(month, that.month)
+        return Objects.equals(month, that.month)
                 && Objects.equals(year, that.year);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(day, month, year);
+        return Objects.hash(month, year);
     }
 }

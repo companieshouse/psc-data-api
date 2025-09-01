@@ -58,10 +58,10 @@ public class TestHelper {
     private static final LocalDate EXEMPTION_DATE = LocalDate.of(2022, 11, 3);
 
     public static FullRecordCompanyPSCApi buildFullRecordPsc(String kind) {
-        return buildFullRecordPsc(kind, false, true);
+        return buildFullRecordPsc(kind, true);
     }
 
-    public static FullRecordCompanyPSCApi buildFullRecordPsc(String kind, boolean showFullDateOfBirth,
+    public static FullRecordCompanyPSCApi buildFullRecordPsc(String kind,
             boolean pscStatementsExists) {
         FullRecordCompanyPSCApi output = new FullRecordCompanyPSCApi();
         ExternalData externalData = new ExternalData();
@@ -136,11 +136,6 @@ public class TestHelper {
         if (kind.contains("individual")) {
             SensitiveData sensitiveData = new SensitiveData();
             uk.gov.companieshouse.api.psc.DateOfBirth dateOfBirth = new uk.gov.companieshouse.api.psc.DateOfBirth();
-            if (showFullDateOfBirth) {
-                dateOfBirth.setDay(21);
-            } else {
-                dateOfBirth.setDay(null);
-            }
             dateOfBirth.setMonth(12);
             dateOfBirth.setYear(1943);
             sensitiveData.setDateOfBirth(dateOfBirth);
@@ -217,10 +212,10 @@ public class TestHelper {
     }
 
     public static PscDocument buildPscDocument(String kind) {
-        return buildPscDocument(kind, false, true);
+        return buildPscDocument(kind, true);
     }
 
-    public static PscDocument buildPscDocument(String kind, boolean showFullDateOfBirth, boolean pscStatementsExists) {
+    public static PscDocument buildPscDocument(String kind, boolean pscStatementsExists) {
         PscDocument output = new PscDocument();
         PscData pscData = new PscData();
 
@@ -286,11 +281,6 @@ public class TestHelper {
         if (kind.contains("individual")) {
             PscSensitiveData sensitiveData = new PscSensitiveData();
             DateOfBirth dateOfBirth = new DateOfBirth();
-            if (showFullDateOfBirth) {
-                dateOfBirth.setDay(21);
-            } else {
-                dateOfBirth.setDay(null);
-            }
             dateOfBirth.setMonth(12);
             dateOfBirth.setYear(1943);
             sensitiveData.setDateOfBirth(dateOfBirth);

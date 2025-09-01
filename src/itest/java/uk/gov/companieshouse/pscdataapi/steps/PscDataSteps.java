@@ -643,7 +643,6 @@ public class PscDataSteps {
         nameElements.setSurname("JONES");
         pscData.setNameElements(nameElements);
         DateOfBirth dateOfBirth = new DateOfBirth();
-        dateOfBirth.setDay(2);
         dateOfBirth.setMonth(3);
         dateOfBirth.setYear(1994);
         pscSensitiveData.setDateOfBirth(dateOfBirth);
@@ -698,7 +697,6 @@ public class PscDataSteps {
         nameElements.setSurname("JONES");
         pscData.setNameElements(nameElements);
         DateOfBirth dateOfBirth = new DateOfBirth();
-        dateOfBirth.setDay(2);
         dateOfBirth.setMonth(3);
         dateOfBirth.setYear(1994);
         pscSensitiveData.setDateOfBirth(dateOfBirth);
@@ -888,7 +886,6 @@ public class PscDataSteps {
         pscData.setSanctioned(true);
         pscData.setKind("individual-beneficial-owner");
         DateOfBirth dateOfBirth = new DateOfBirth();
-        dateOfBirth.setDay(2);
         dateOfBirth.setMonth(3);
         dateOfBirth.setYear(1994);
         pscSensitiveData.setDateOfBirth(dateOfBirth);
