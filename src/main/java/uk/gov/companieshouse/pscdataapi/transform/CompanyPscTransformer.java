@@ -85,7 +85,7 @@ public class CompanyPscTransformer {
         }
         if (pscDocument.getSensitiveData() != null) {
             detailsApi.setDateOfBirth(
-                    mapDate3Tuple(pscDocument.getSensitiveData().getDateOfBirth(), false));
+                    mapDate3Tuple(pscDocument.getSensitiveData().getDateOfBirth()));
         }
         return detailsApi;
     }
@@ -116,7 +116,7 @@ public class CompanyPscTransformer {
         final PscSensitiveData sensitivePscData = pscDocument.getSensitiveData();
         pscIndividualFullRecordApi.setResidentialAddressSameAsServiceAddress(
                 sensitivePscData.getResidentialAddressIsSameAsServiceAddress());
-        pscIndividualFullRecordApi.setDateOfBirth(mapDate3Tuple(sensitivePscData.getDateOfBirth(), true));
+        pscIndividualFullRecordApi.setDateOfBirth(mapDate3Tuple(sensitivePscData.getDateOfBirth()));
         pscIndividualFullRecordApi.setUsualResidentialAddress(mapCommonAddress(sensitivePscData.getUsualResidentialAddress()));
         pscIndividualFullRecordApi.setInternalId(sensitivePscData.getInternalId());
 
@@ -487,11 +487,7 @@ public class CompanyPscTransformer {
         if (inputDateOfBirth != null) {
             uk.gov.companieshouse.api.psc.DateOfBirth dateOfBirth =
                     new uk.gov.companieshouse.api.psc.DateOfBirth();
-            if (showFullDateOfBirth) {
-                dateOfBirth.setDay(inputDateOfBirth.getDay());
-            } else {
-                dateOfBirth.setDay(null);
-            }
+        
             dateOfBirth.setMonth(inputDateOfBirth.getMonth());
             dateOfBirth.setYear(inputDateOfBirth.getYear());
             return dateOfBirth;
@@ -500,9 +496,9 @@ public class CompanyPscTransformer {
         }
     }
 
-    private Date3Tuple mapDate3Tuple(DateOfBirth inputDateOfBirth, boolean showFullDateOfBirth) {
+    private Date3Tuple mapDate3Tuple(DateOfBirth inputDateOfBirth) {
         if (inputDateOfBirth != null) {
-            int day = showFullDateOfBirth ? inputDateOfBirth.getDay() : 0;
+            Integer day = null;
             int month = inputDateOfBirth.getMonth();
             int year = inputDateOfBirth.getYear();
 

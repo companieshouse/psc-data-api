@@ -70,7 +70,6 @@ class CompanyPscFullRecordGetControllerTest {
                 {
                   "kind": "individual-person-with-significant-control",
                   "date_of_birth": {
-                    "day": 1,
                     "month": 2,
                     "year": 2000
                   },
