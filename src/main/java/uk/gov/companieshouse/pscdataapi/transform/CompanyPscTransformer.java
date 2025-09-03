@@ -63,12 +63,12 @@ public class CompanyPscTransformer {
      * @return the transformed Individual with Identity Verification Details
      */
     public PscIndividualWithIdentityVerificationDetailsApi transformPscDocToIndividualWithIdentityVerificationDetails(
-        PscDocument pscDocument) {
+            PscDocument pscDocument) {
         LOGGER.info("Attempting to transform pscDocument to Individual With Identity Verification Details", DataMapHolder.getLogMap());
 
         final var detailsApi = new PscIndividualWithIdentityVerificationDetailsApi();
         detailsApi.setKind(
-            PscIndividualWithIdentityVerificationDetailsApi.KindEnum.INDIVIDUAL_PERSON_WITH_SIGNIFICANT_CONTROL);
+                PscIndividualWithIdentityVerificationDetailsApi.KindEnum.INDIVIDUAL_PERSON_WITH_SIGNIFICANT_CONTROL);
         if (pscDocument.getData() != null) {
             final var pscData = pscDocument.getData();
 
@@ -85,7 +85,7 @@ public class CompanyPscTransformer {
         }
         if (pscDocument.getSensitiveData() != null) {
             detailsApi.setDateOfBirth(
-                    mapDate3Tuple(pscDocument.getSensitiveData().getDateOfBirth()));
+                    mapDate3Tuple(pscDocument.getSensitiveData().getDateOfBirth(), false));
         }
         return detailsApi;
     }
@@ -116,7 +116,7 @@ public class CompanyPscTransformer {
         final PscSensitiveData sensitivePscData = pscDocument.getSensitiveData();
         pscIndividualFullRecordApi.setResidentialAddressSameAsServiceAddress(
                 sensitivePscData.getResidentialAddressIsSameAsServiceAddress());
-        pscIndividualFullRecordApi.setDateOfBirth(mapDate3Tuple(sensitivePscData.getDateOfBirth()));
+        pscIndividualFullRecordApi.setDateOfBirth(mapDate3Tuple(sensitivePscData.getDateOfBirth(), true));
         pscIndividualFullRecordApi.setUsualResidentialAddress(mapCommonAddress(sensitivePscData.getUsualResidentialAddress()));
         pscIndividualFullRecordApi.setInternalId(sensitivePscData.getInternalId());
 
@@ -330,7 +330,8 @@ public class CompanyPscTransformer {
      */
     public ListSummary transformPscDocToListSummary(PscDocument pscDocument, Boolean registerView) {
         ListSummary listSummary = new ListSummary();
-
+        // if the register_view query param is true, don't show full DOB(only mm/yyyy)
+        boolean showFullDateOfBirth = !registerView;
         if (pscDocument.getData() != null) {
             PscData pscData = pscDocument.getData();
 
@@ -366,7 +367,7 @@ public class CompanyPscTransformer {
         }
         if (pscDocument.getSensitiveData() != null) {
             listSummary.setDateOfBirth(mapDateOfBirth(pscDocument.getSensitiveData()
-                    .getDateOfBirth(), registerView));
+                    .getDateOfBirth(), showFullDateOfBirth));
         }
         return listSummary;
     }
@@ -487,7 +488,11 @@ public class CompanyPscTransformer {
         if (inputDateOfBirth != null) {
             uk.gov.companieshouse.api.psc.DateOfBirth dateOfBirth =
                     new uk.gov.companieshouse.api.psc.DateOfBirth();
-        
+            if (showFullDateOfBirth) {
+                dateOfBirth.setDay(inputDateOfBirth.getDay());
+            } else {
+                dateOfBirth.setDay(null);
+            }
             dateOfBirth.setMonth(inputDateOfBirth.getMonth());
             dateOfBirth.setYear(inputDateOfBirth.getYear());
             return dateOfBirth;
@@ -496,9 +501,10 @@ public class CompanyPscTransformer {
         }
     }
 
-    private Date3Tuple mapDate3Tuple(DateOfBirth inputDateOfBirth) {
+
+    private Date3Tuple mapDate3Tuple(DateOfBirth inputDateOfBirth, boolean showFullDateOfBirth) {
         if (inputDateOfBirth != null) {
-            int day = 0;
+            int day = showFullDateOfBirth ? inputDateOfBirth.getDay() : 0;
             int month = inputDateOfBirth.getMonth();
             int year = inputDateOfBirth.getYear();
 

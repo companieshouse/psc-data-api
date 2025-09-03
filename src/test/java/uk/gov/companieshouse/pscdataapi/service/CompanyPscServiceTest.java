@@ -730,6 +730,83 @@ class CompanyPscServiceTest {
     }
 
     @Test
+    void pscListSummaryShouldNotShowDayWhenRegisterViewTrue() {
+        MetricsApi metrics = new MetricsApi();
+        RegistersApi registers = new RegistersApi();
+        RegisterApi pscRegister = new RegisterApi();
+        pscRegister.registerMovedTo("public-register");
+        registers.setPersonsWithSignificantControl(pscRegister);
+        metrics.setRegisters(registers);
+        metrics.setCounts(new CountsApi().personsWithSignificantControl(new PscApi().activePscsCount(1)));
+        PscData pscData = new PscData();
+        PscDocument pscDocument = new PscDocument();
+        pscDocument.setData(pscData);
+
+        ListSummary listSummary = new ListSummary();
+        uk.gov.companieshouse.api.psc.DateOfBirth dob = new uk.gov.companieshouse.api.psc.DateOfBirth();
+        dob.setDay(null);
+        dob.setMonth(5);
+        dob.setYear(1980);
+        listSummary.setDateOfBirth(dob);
+
+        when(companyMetricsApiService.getCompanyMetrics(COMPANY_NUMBER)).thenReturn(Optional.of(metrics));
+        when(repository.getListSummaryRegisterView(any(), any(), any(), any())).thenReturn(
+                Collections.singletonList(pscDocument));
+        when(transformer.transformPscDocToListSummary(pscDocument, true)).thenReturn(listSummary);
+
+
+        // when service method has registerView = true param set
+        PscList result = service.retrievePscListSummaryFromDb(COMPANY_NUMBER, 0, true, 25);
+
+        uk.gov.companieshouse.api.psc.DateOfBirth expectedDob = new uk.gov.companieshouse.api.psc.DateOfBirth();
+        expectedDob.setDay(null);
+        expectedDob.setMonth(5);
+        expectedDob.setYear(1980);
+
+        // then the DOB should have no day value in the response
+        ListSummary returnedSummary = result.getItems().getFirst();
+        assertEquals(expectedDob, returnedSummary.getDateOfBirth());
+    }
+
+    @Test
+    void pscListSummaryShouldShowDayWhenRegisterViewFalse() {
+        PscData pscData = new PscData();
+        pscDocument.setData(pscData);
+        ListSummary listSummary = new ListSummary();
+        Identification identification = new Identification();
+        identification.setPlaceRegistered("x");
+        identification.setCountryRegistered("x");
+        identification.setRegistrationNumber("x");
+        identification.setLegalAuthority("x");
+        identification.setLegalForm("x");
+        listSummary.setIdentification(identification);
+        uk.gov.companieshouse.api.psc.DateOfBirth dob = new uk.gov.companieshouse.api.psc.DateOfBirth();
+        dob.setDay(12);
+        dob.setMonth(5);
+        dob.setYear(1980);
+        listSummary.setDateOfBirth(dob);
+
+        when(companyMetricsApiService.getCompanyMetrics(COMPANY_NUMBER))
+                .thenReturn(Optional.of(TestHelper.createMetrics()));
+        when(repository.getPscDocumentList(anyString(), anyInt(), anyInt())).thenReturn(
+                Collections.singletonList(pscDocument));
+        when(transformer.transformPscDocToListSummary(pscDocument, false))
+                .thenReturn(listSummary);
+
+        // when service method has registerView = false param set
+        PscList result = service.retrievePscListSummaryFromDb(COMPANY_NUMBER, 0, false, 25);
+
+        uk.gov.companieshouse.api.psc.DateOfBirth expectedDob = new uk.gov.companieshouse.api.psc.DateOfBirth();
+        expectedDob.setDay(12);
+        expectedDob.setMonth(5);
+        expectedDob.setYear(1980);
+
+        // then the DOB should include a day value in the response
+        ListSummary returnedSummary = result.getItems().get(0);
+        assertEquals(expectedDob, returnedSummary.getDateOfBirth());
+    }
+
+    @Test
     void pscListWithNoMetricsReturnedByCompanyNumberFromRepository() throws NotFoundException {
         PscList expectedPscList = TestHelper.createPscListWithNoMetrics();
         PscData pscData = new PscData();
