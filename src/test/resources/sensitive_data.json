@@ -10,6 +10,7 @@
     "po_box": "ura_po"
   },
   "date_of_birth": {
+    "day": 1,
     "month": 1,
     "year": 1990
   },

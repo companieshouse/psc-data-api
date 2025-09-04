@@ -45,8 +45,8 @@ class CompanyPscTransformerTest {
     @Test
     void testInsertIndividualPscWithDateOfBirthIsTransformedSuccessfully() throws FailedToTransformException {
         // given
-        fullRecordCompanyPSCApi = TestHelper.buildFullRecordPsc(TestHelper.INDIVIDUAL_KIND, true);
-        PscDocument expectedDocument = TestHelper.buildPscDocument(TestHelper.INDIVIDUAL_KIND, true);
+        fullRecordCompanyPSCApi = TestHelper.buildFullRecordPsc(TestHelper.INDIVIDUAL_KIND, SHOW_FULL_DOB_TRUE, true);
+        PscDocument expectedDocument = TestHelper.buildPscDocument(TestHelper.INDIVIDUAL_KIND, SHOW_FULL_DOB_TRUE, true);
         // when
         PscDocument result = pscTransformer.transformPscOnInsert(NOTIFICATION_ID, fullRecordCompanyPSCApi);
         // then
@@ -67,8 +67,8 @@ class CompanyPscTransformerTest {
     @Test
     void testInsertIndividualPscNoDateOfBirthIsTransformedSuccessfully() throws FailedToTransformException {
         // given
-        fullRecordCompanyPSCApi = TestHelper.buildFullRecordPsc(TestHelper.INDIVIDUAL_KIND, true);
-        PscDocument expectedDocument = TestHelper.buildPscDocument(TestHelper.INDIVIDUAL_KIND, true);
+        fullRecordCompanyPSCApi = TestHelper.buildFullRecordPsc(TestHelper.INDIVIDUAL_KIND, SHOW_FULL_DOB_FALSE, true);
+        PscDocument expectedDocument = TestHelper.buildPscDocument(TestHelper.INDIVIDUAL_KIND, SHOW_FULL_DOB_FALSE, true);
         // when
         PscDocument result = pscTransformer.transformPscOnInsert(NOTIFICATION_ID, fullRecordCompanyPSCApi);
         // then
@@ -142,8 +142,8 @@ class CompanyPscTransformerTest {
     @Test
     void testInsertIndividualBeneficialOwnerPscIsTransformedSuccessfully() throws FailedToTransformException {
         // given
-        fullRecordCompanyPSCApi = TestHelper.buildFullRecordPsc(TestHelper.INDIVIDUAL_BO_KIND, true);
-        PscDocument expectedDocument = TestHelper.buildPscDocument(TestHelper.INDIVIDUAL_BO_KIND, true);
+        fullRecordCompanyPSCApi = TestHelper.buildFullRecordPsc(TestHelper.INDIVIDUAL_BO_KIND, SHOW_FULL_DOB_TRUE, true);
+        PscDocument expectedDocument = TestHelper.buildPscDocument(TestHelper.INDIVIDUAL_BO_KIND, SHOW_FULL_DOB_TRUE, true);
         // when
         PscDocument result = pscTransformer.transformPscOnInsert(NOTIFICATION_ID, fullRecordCompanyPSCApi);
         // then
@@ -166,8 +166,8 @@ class CompanyPscTransformerTest {
     @Test
     void testInsertIndividualBeneficialOwnerPscIsTransformedSuccessfullyNoPscStatements() throws FailedToTransformException {
         // given
-        fullRecordCompanyPSCApi = TestHelper.buildFullRecordPsc(TestHelper.INDIVIDUAL_BO_KIND, false);
-        PscDocument expectedDocument = TestHelper.buildPscDocument(TestHelper.INDIVIDUAL_BO_KIND, false);
+        fullRecordCompanyPSCApi = TestHelper.buildFullRecordPsc(TestHelper.INDIVIDUAL_BO_KIND, SHOW_FULL_DOB_TRUE, false);
+        PscDocument expectedDocument = TestHelper.buildPscDocument(TestHelper.INDIVIDUAL_BO_KIND, SHOW_FULL_DOB_TRUE, false);
         // when
         PscDocument result = pscTransformer.transformPscOnInsert(NOTIFICATION_ID, fullRecordCompanyPSCApi);
         // then
@@ -332,7 +332,7 @@ class CompanyPscTransformerTest {
     @Test
     void testEmptyListSummaryTransform() {
         ListSummary listSummary = pscTransformer
-                .transformPscDocToListSummary(new PscDocument(), false);
+                .transformPscDocToListSummary(new PscDocument());
         Assertions.assertNotNull(listSummary);
     }
 
@@ -346,7 +346,7 @@ class CompanyPscTransformerTest {
         pscDocument.setSensitiveData(new PscSensitiveData());
 
         ListSummary listSummary = pscTransformer
-                .transformPscDocToListSummary(pscDocument, true);
+                .transformPscDocToListSummary(pscDocument);
         Assertions.assertNotNull(listSummary);
     }
 
@@ -355,7 +355,7 @@ class CompanyPscTransformerTest {
         PscDocument pscDocument = TestHelper.buildPscDocument(TestHelper.CORPORATE_BO_KIND);
 
         ListSummary listSummary = pscTransformer
-                .transformPscDocToListSummary(pscDocument, true);
+                .transformPscDocToListSummary(pscDocument);
         Assertions.assertNotNull(listSummary);
         Assertions.assertEquals(pscDocument.getData().getAddress().getAddressLine1(),
                 listSummary.getAddress().getAddressLine1());
