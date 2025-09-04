@@ -328,10 +328,8 @@ public class CompanyPscTransformer {
      * @param pscDocument PSC.
      * @return ListSummary mongo Document.
      */
-    public ListSummary transformPscDocToListSummary(PscDocument pscDocument, Boolean registerView) {
+    public ListSummary transformPscDocToListSummary(PscDocument pscDocument) {
         ListSummary listSummary = new ListSummary();
-        // if the register_view query param is true, don't show full DOB(only mm/yyyy)
-        boolean showFullDateOfBirth = !registerView;
         if (pscDocument.getData() != null) {
             PscData pscData = pscDocument.getData();
 
@@ -367,7 +365,7 @@ public class CompanyPscTransformer {
         }
         if (pscDocument.getSensitiveData() != null) {
             listSummary.setDateOfBirth(mapDateOfBirth(pscDocument.getSensitiveData()
-                    .getDateOfBirth(), showFullDateOfBirth));
+                    .getDateOfBirth(), false));
         }
         return listSummary;
     }

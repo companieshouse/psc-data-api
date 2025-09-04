@@ -332,7 +332,7 @@ class CompanyPscTransformerTest {
     @Test
     void testEmptyListSummaryTransform() {
         ListSummary listSummary = pscTransformer
-                .transformPscDocToListSummary(new PscDocument(), false);
+                .transformPscDocToListSummary(new PscDocument());
         Assertions.assertNotNull(listSummary);
     }
 
@@ -346,7 +346,7 @@ class CompanyPscTransformerTest {
         pscDocument.setSensitiveData(new PscSensitiveData());
 
         ListSummary listSummary = pscTransformer
-                .transformPscDocToListSummary(pscDocument, true);
+                .transformPscDocToListSummary(pscDocument);
         Assertions.assertNotNull(listSummary);
     }
 
@@ -355,7 +355,7 @@ class CompanyPscTransformerTest {
         PscDocument pscDocument = TestHelper.buildPscDocument(TestHelper.CORPORATE_BO_KIND);
 
         ListSummary listSummary = pscTransformer
-                .transformPscDocToListSummary(pscDocument, true);
+                .transformPscDocToListSummary(pscDocument);
         Assertions.assertNotNull(listSummary);
         Assertions.assertEquals(pscDocument.getData().getAddress().getAddressLine1(),
                 listSummary.getAddress().getAddressLine1());

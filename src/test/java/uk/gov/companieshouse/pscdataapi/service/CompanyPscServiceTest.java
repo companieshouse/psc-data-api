@@ -720,7 +720,7 @@ class CompanyPscServiceTest {
                 .thenReturn(Optional.of(TestHelper.createMetrics()));
         when(repository.getPscDocumentList(anyString(), anyInt(), anyInt())).thenReturn(
                 Collections.singletonList(pscDocument));
-        when(transformer.transformPscDocToListSummary(pscDocument, false))
+        when(transformer.transformPscDocToListSummary(pscDocument))
                 .thenReturn(listSummary);
 
         PscList pscDocumentList = service.retrievePscListSummaryFromDb(COMPANY_NUMBER, 0, false, 25);
@@ -730,7 +730,7 @@ class CompanyPscServiceTest {
     }
 
     @Test
-    void pscListSummaryShouldNotShowDayWhenRegisterViewTrue() {
+    void pscListSummaryShouldNotShowDay() {
         MetricsApi metrics = new MetricsApi();
         RegistersApi registers = new RegistersApi();
         RegisterApi pscRegister = new RegisterApi();
@@ -752,7 +752,7 @@ class CompanyPscServiceTest {
         when(companyMetricsApiService.getCompanyMetrics(COMPANY_NUMBER)).thenReturn(Optional.of(metrics));
         when(repository.getListSummaryRegisterView(any(), any(), any(), any())).thenReturn(
                 Collections.singletonList(pscDocument));
-        when(transformer.transformPscDocToListSummary(pscDocument, true)).thenReturn(listSummary);
+        when(transformer.transformPscDocToListSummary(pscDocument)).thenReturn(listSummary);
 
 
         // when service method has registerView = true param set
@@ -768,43 +768,6 @@ class CompanyPscServiceTest {
         assertEquals(expectedDob, returnedSummary.getDateOfBirth());
     }
 
-    @Test
-    void pscListSummaryShouldShowDayWhenRegisterViewFalse() {
-        PscData pscData = new PscData();
-        pscDocument.setData(pscData);
-        ListSummary listSummary = new ListSummary();
-        Identification identification = new Identification();
-        identification.setPlaceRegistered("x");
-        identification.setCountryRegistered("x");
-        identification.setRegistrationNumber("x");
-        identification.setLegalAuthority("x");
-        identification.setLegalForm("x");
-        listSummary.setIdentification(identification);
-        uk.gov.companieshouse.api.psc.DateOfBirth dob = new uk.gov.companieshouse.api.psc.DateOfBirth();
-        dob.setDay(12);
-        dob.setMonth(5);
-        dob.setYear(1980);
-        listSummary.setDateOfBirth(dob);
-
-        when(companyMetricsApiService.getCompanyMetrics(COMPANY_NUMBER))
-                .thenReturn(Optional.of(TestHelper.createMetrics()));
-        when(repository.getPscDocumentList(anyString(), anyInt(), anyInt())).thenReturn(
-                Collections.singletonList(pscDocument));
-        when(transformer.transformPscDocToListSummary(pscDocument, false))
-                .thenReturn(listSummary);
-
-        // when service method has registerView = false param set
-        PscList result = service.retrievePscListSummaryFromDb(COMPANY_NUMBER, 0, false, 25);
-
-        uk.gov.companieshouse.api.psc.DateOfBirth expectedDob = new uk.gov.companieshouse.api.psc.DateOfBirth();
-        expectedDob.setDay(12);
-        expectedDob.setMonth(5);
-        expectedDob.setYear(1980);
-
-        // then the DOB should include a day value in the response
-        ListSummary returnedSummary = result.getItems().get(0);
-        assertEquals(expectedDob, returnedSummary.getDateOfBirth());
-    }
 
     @Test
     void pscListWithNoMetricsReturnedByCompanyNumberFromRepository() throws NotFoundException {
@@ -825,7 +788,7 @@ class CompanyPscServiceTest {
         when(repository.getPscDocumentList(anyString(), anyInt(), anyInt())).thenReturn(
                 Collections.singletonList(pscDocument));
 
-        when(transformer.transformPscDocToListSummary(pscDocument, false))
+        when(transformer.transformPscDocToListSummary(pscDocument))
                 .thenReturn(listSummary);
 
         PscList pscDocumentList = service.retrievePscListSummaryFromDb(COMPANY_NUMBER, 0, false, 25);
@@ -891,7 +854,7 @@ class CompanyPscServiceTest {
                 .thenReturn(Optional.of(TestHelper.createMetrics()));
         when(repository.getPscDocumentList(anyString(), anyInt(), anyInt())).thenReturn(
                 Collections.singletonList(pscDocument));
-        when(transformer.transformPscDocToListSummary(pscDocument, false))
+        when(transformer.transformPscDocToListSummary(pscDocument))
                 .thenReturn(listSummary);
         when(companyExemptionsApiService.getCompanyExemptions(any())).thenReturn(
                 Optional.ofNullable(testHelper.createExemptions()));
@@ -916,7 +879,7 @@ class CompanyPscServiceTest {
         listSummary.setIdentification(identification);
         when(repository.getPscDocumentList(anyString(), anyInt(), anyInt())).thenReturn(
                 Collections.singletonList(pscDocument));
-        when(transformer.transformPscDocToListSummary(pscDocument, false))
+        when(transformer.transformPscDocToListSummary(pscDocument))
                 .thenReturn(listSummary);
 
         CompanyExemptions companyExemptions = new CompanyExemptions();
@@ -988,7 +951,7 @@ class CompanyPscServiceTest {
         when(companyMetricsApiService.getCompanyMetrics(anyString())).thenReturn(Optional.of(metricsApi));
         when(repository.getListSummaryRegisterView(any(), any(), any(), any())).thenReturn(
                 Collections.singletonList(pscDocument));
-        when(transformer.transformPscDocToListSummary(any(), anyBoolean())).thenReturn(new ListSummary());
+        when(transformer.transformPscDocToListSummary(any())).thenReturn(new ListSummary());
 
         // when
         final PscList actual = service.retrievePscListSummaryFromDb(COMPANY_NUMBER, 0, true, 25);
@@ -1013,7 +976,7 @@ class CompanyPscServiceTest {
         when(companyMetricsApiService.getCompanyMetrics(anyString())).thenReturn(Optional.of(metricsApi));
         when(repository.getListSummaryRegisterView(any(), any(), any(), any())).thenReturn(
                 Collections.singletonList(pscDocument));
-        when(transformer.transformPscDocToListSummary(any(), anyBoolean())).thenReturn(new ListSummary());
+        when(transformer.transformPscDocToListSummary(any())).thenReturn(new ListSummary());
 
         // when
         final PscList actual = service.retrievePscListSummaryFromDb(COMPANY_NUMBER, 0, true, 25);
