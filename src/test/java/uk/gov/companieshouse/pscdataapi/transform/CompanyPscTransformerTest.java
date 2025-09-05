@@ -11,6 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.api.psc.CorporateEntity;
 import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
 import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
+import uk.gov.companieshouse.api.psc.IdentityVerificationDetails;
 import uk.gov.companieshouse.api.psc.Individual;
 import uk.gov.companieshouse.api.psc.IndividualBeneficialOwner;
 import uk.gov.companieshouse.api.psc.LegalPerson;
@@ -278,6 +279,19 @@ class CompanyPscTransformerTest {
         Individual individual = pscTransformer
                 .transformPscDocToIndividual(new PscDocument(), SHOW_FULL_DOB_TRUE);
         Assertions.assertNotNull(individual);
+    }
+
+    @Test
+    void testPscDocumentWithIdentityVerificationDetailsIndividualTransform() {
+        // Given
+        PscDocument pscDocument = TestHelper.buildPscDocument("individual");
+        // When
+        Individual individual = pscTransformer
+                .transformPscDocToIndividual(pscDocument, SHOW_FULL_DOB_TRUE);
+        // Then
+        Assertions.assertNotNull(individual);
+        Assertions.assertNotNull(individual.getIdentityVerificationDetails());
+        Assertions.assertInstanceOf(IdentityVerificationDetails.class, individual.getIdentityVerificationDetails());
     }
 
     @Test

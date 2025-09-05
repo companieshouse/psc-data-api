@@ -48,6 +48,8 @@ public class CompanyPscTransformer {
             individual.setLinks(pscData.getLinks());
             individual.setNotifiedOn(pscData.getNotifiedOn());
             individual.setCeasedOn(pscData.getCeasedOn());
+            individual.setIdentityVerificationDetails(
+                    mapIdentityVerificationDetails(pscData.getIdentityVerificationDetails()));
         }
         if (pscDocument.getSensitiveData() != null) {
             individual.setDateOfBirth(mapDateOfBirth(
@@ -644,5 +646,22 @@ public class CompanyPscTransformer {
         pscLinks.setExemptions(links.getExemptions());
 
         return pscLinks;
+    }
+
+    private IdentityVerificationDetails mapIdentityVerificationDetails(final PscIdentityVerificationDetails details) {
+        if (details != null) {
+            IdentityVerificationDetails ivd = new IdentityVerificationDetails();
+            ivd.setAntiMoneyLaunderingSupervisoryBodies(details.getAntiMoneyLaunderingSupervisoryBodies());
+            ivd.setAppointmentVerificationEndOn(details.getAppointmentVerificationEndOn());
+            ivd.setAppointmentVerificationStatementDate(details.getAppointmentVerificationStatementDate());
+            ivd.setAppointmentVerificationStatementDueOn(details.getAppointmentVerificationStatementDueOn());
+            ivd.setAppointmentVerificationStartOn(details.getAppointmentVerificationStartOn());
+            ivd.setAuthorisedCorporateServiceProviderName(details.getAuthorisedCorporateServiceProviderName());
+            ivd.setIdentityVerifiedOn(details.getIdentityVerifiedOn());
+            ivd.setPreferredName(details.getPreferredName());
+            return ivd;
+        } else {
+            return null;
+        }
     }
 }
