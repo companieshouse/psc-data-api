@@ -281,6 +281,18 @@ class CompanyPscTransformerTest {
     }
 
     @Test
+    void testPscDocumentWithIdentityVerificationDetailsIndividualTransform() {
+        // Given
+        PscDocument pscDocument = TestHelper.buildPscDocument("individual");
+        // When
+        Individual individual = pscTransformer
+                .transformPscDocToIndividual(pscDocument, SHOW_FULL_DOB_TRUE);
+        // Then
+        Assertions.assertNotNull(individual);
+        Assertions.assertNotNull(individual.getIdentityVerificationDetails());
+    }
+
+    @Test
     void testEmptyPscIndividualBeneficialOwnerTransform() {
         IndividualBeneficialOwner individualBeneficialOwner = pscTransformer
                 .transformPscDocToIndividualBeneficialOwner(new PscDocument(), SHOW_FULL_DOB_TRUE);
