@@ -8,14 +8,12 @@ public class FeatureFlags {
 
     private final boolean streamHookDisabled;
     private final boolean identityVerificationEnabled;
-    private final boolean individualPscFullRecordAddidentityVerificationDetailsEnabled;
 
     public FeatureFlags(@Value("${feature.seeding_collection_enabled}") final boolean streamHookDisabled,
             @Value("${feature.identity_verification}") final boolean identityVerificationEnabled,
         @Value("${feature.psc_individual_full_record_add_identity_verification_details}") final boolean individualPscFullRecordAddidentityVerificationDetailsEnabled) {
         this.streamHookDisabled = streamHookDisabled;
         this.identityVerificationEnabled = identityVerificationEnabled;
-        this.individualPscFullRecordAddidentityVerificationDetailsEnabled = individualPscFullRecordAddidentityVerificationDetailsEnabled;
     }
 
     public boolean isStreamHookDisabled() {
@@ -26,7 +24,4 @@ public class FeatureFlags {
         return identityVerificationEnabled;
     }
 
-    public boolean isIndividualPscFullRecordAddidentityVerificationDetailsEnabled() {
-        return individualPscFullRecordAddidentityVerificationDetailsEnabled;
-    }
 }
