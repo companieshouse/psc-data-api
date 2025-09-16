@@ -18,12 +18,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.json.JsonCompareMode;
 import org.springframework.test.web.servlet.MockMvc;
-import uk.gov.companieshouse.api.model.common.Address;
 import uk.gov.companieshouse.api.model.common.Date3Tuple;
 import uk.gov.companieshouse.api.model.psc.NameElementsApi;
-import uk.gov.companieshouse.api.model.psc.PscIndividualFullRecordApi;
 import uk.gov.companieshouse.api.model.psc.PscLinks;
-import uk.gov.companieshouse.api.model.psc.IdentityVerificationDetails;
+import uk.gov.companieshouse.api.psc.Address;
+import uk.gov.companieshouse.api.psc.IdentityVerificationDetails;
+import uk.gov.companieshouse.api.psc.IndividualFullRecord;
 import uk.gov.companieshouse.pscdataapi.exceptions.InternalDataException;
 import uk.gov.companieshouse.pscdataapi.exceptions.NotFoundException;
 import uk.gov.companieshouse.pscdataapi.service.CompanyPscService;
@@ -150,7 +150,7 @@ class CompanyPscFullRecordGetControllerTest {
                 .andExpect(status().isInternalServerError());
     }
 
-    private static PscIndividualFullRecordApi createFullRecord() {
+    private static IndividualFullRecord createFullRecord() {
         final Address serviceAddress = new Address();
         serviceAddress.setAddressLine1("addressLine1");
         serviceAddress.setPostalCode("CF12 3AB");
@@ -169,8 +169,14 @@ class CompanyPscFullRecordGetControllerTest {
         final PscLinks pscLinks = new PscLinks();
         pscLinks.setSelf("/company/123/persons-with-significant-control/456");
 
-        return new PscIndividualFullRecordApi()
-                .kind(PscIndividualFullRecordApi.KindEnum.INDIVIDUAL_PERSON_WITH_SIGNIFICANT_CONTROL)
+        final IdentityVerificationDetails identityVerificationDetails = new IdentityVerificationDetails();
+        identityVerificationDetails.setAppointmentVerificationStartOn(START_ON);
+        identityVerificationDetails.setAppointmentVerificationEndOn(END_ON);
+        identityVerificationDetails.setAppointmentVerificationStatementDate(STATEMENT_DATE);
+        identityVerificationDetails.setAppointmentVerificationStatementDueOn(STATEMENT_DUE_DATE);
+
+        return new IndividualFullRecord()
+                .kind(IndividualFullRecord.KindEnum.INDIVIDUAL_PERSON_WITH_SIGNIFICANT_CONTROL)
                 .name("Andy Bob Smith")
                 .nameElements(nameElementsApi)
                 .serviceAddress(serviceAddress)
@@ -181,8 +187,7 @@ class CompanyPscFullRecordGetControllerTest {
                 .dateOfBirth(new Date3Tuple(1, 2, 2000))
                 .internalId(123456789L)
                 .links(pscLinks)
-                .identityVerificationDetails(
-                        new IdentityVerificationDetails(START_ON, END_ON, STATEMENT_DATE, STATEMENT_DUE_DATE));
+                .identityVerificationDetails(identityVerificationDetails);
     }
 
 }

@@ -17,13 +17,13 @@ import uk.gov.companieshouse.api.metrics.MetricsApi;
 import uk.gov.companieshouse.api.metrics.PscApi;
 import uk.gov.companieshouse.api.metrics.RegisterApi;
 import uk.gov.companieshouse.api.metrics.RegistersApi;
-import uk.gov.companieshouse.api.model.psc.PscIndividualFullRecordApi;
 import uk.gov.companieshouse.api.model.psc.PscIndividualWithIdentityVerificationDetailsApi;
 import uk.gov.companieshouse.api.psc.CorporateEntity;
 import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
 import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
 import uk.gov.companieshouse.api.psc.Individual;
 import uk.gov.companieshouse.api.psc.IndividualBeneficialOwner;
+import uk.gov.companieshouse.api.psc.IndividualFullRecord;
 import uk.gov.companieshouse.api.psc.LegalPerson;
 import uk.gov.companieshouse.api.psc.LegalPersonBeneficialOwner;
 import uk.gov.companieshouse.api.psc.ListSummary;
@@ -119,28 +119,10 @@ public class CompanyPscService {
         }
     }
 
-    public PscIndividualFullRecordApi getIndividualFullRecord(final String companyNumber, final String notificationId) {
+    public IndividualFullRecord getIndividualFullRecord(final String companyNumber, final String notificationId) {
         return repository.getPscByCompanyNumberAndId(companyNumber, notificationId)
                 .filter(document -> INDIVIDUAL_PERSON_WITH_SIGNIFICANT_CONTROL.equals(document.getData().getKind()))
-                .map(document -> {
-                    final var fullRecordApi = transformer.transformPscDocToIndividualFullRecord(document);
-
-                    if (featureFlags.isIndividualPscFullRecordAddidentityVerificationDetailsEnabled()) {
-                        DataMapHolder.get().companyNumber(companyNumber).itemId(notificationId);
-
-                        final Long internalId = Optional.ofNullable(fullRecordApi.getInternalId())
-                            .orElseThrow(() -> {
-                                LOGGER.error(NO_INTERNAL_ID_MSG, DataMapHolder.getLogMap());
-                                return new InternalDataException(NO_INTERNAL_ID_MSG);
-                            });
-
-                            oracleQueryApiService.getIdentityVerificationDetails(internalId)
-                                .map(identityVerificationDetailsMapper::mapToIdentityVerificationDetails)
-                                .ifPresent(fullRecordApi::setIdentityVerificationDetails);
-                    }
-
-                    return fullRecordApi;
-                })
+                .map(transformer::transformPscDocToIndividualFullRecord)
                 .orElseThrow(() -> {
                     LOGGER.error(NOT_FOUND_MSG, DataMapHolder.getLogMap());
                     return new NotFoundException(NOT_FOUND_MSG);

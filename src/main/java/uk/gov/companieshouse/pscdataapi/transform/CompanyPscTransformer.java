@@ -7,7 +7,6 @@ import java.time.format.DateTimeFormatter;
 import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.api.model.common.Date3Tuple;
 import uk.gov.companieshouse.api.model.psc.NameElementsApi;
-import uk.gov.companieshouse.api.model.psc.PscIndividualFullRecordApi;
 import uk.gov.companieshouse.api.model.psc.PscIndividualWithIdentityVerificationDetailsApi;
 import uk.gov.companieshouse.api.model.psc.PscLinks;
 import uk.gov.companieshouse.api.psc.*;
@@ -98,31 +97,47 @@ public class CompanyPscTransformer {
      * @param pscDocument PSC.
      * @return PSC mongo Document.
      */
-    public PscIndividualFullRecordApi transformPscDocToIndividualFullRecord(final PscDocument pscDocument) {
+    public IndividualFullRecord transformPscDocToIndividualFullRecord(final PscDocument pscDocument) {
         LOGGER.info("Attempting to transform pscDocument to Individual Full Record", DataMapHolder.getLogMap());
 
-        final PscIndividualFullRecordApi pscIndividualFullRecordApi = new PscIndividualFullRecordApi();
+        final IndividualFullRecord individualFullRecord = new IndividualFullRecord();
         final PscData pscData = pscDocument.getData();
-        pscIndividualFullRecordApi.setName(pscData.getName());
-        pscIndividualFullRecordApi.setNameElements(mapNameElementsApi(pscData.getNameElements()));
-        pscIndividualFullRecordApi.setCountryOfResidence(pscData.getCountryOfResidence());
-        pscIndividualFullRecordApi.setNotifiedOn(pscData.getNotifiedOn());
-        pscIndividualFullRecordApi.setCeasedOn(pscData.getCeasedOn());
-        pscIndividualFullRecordApi.setNaturesOfControl(pscData.getNaturesOfControl());
-        pscIndividualFullRecordApi.setNationality(pscData.getNationality());
-        pscIndividualFullRecordApi.setKind(PscIndividualFullRecordApi.KindEnum.INDIVIDUAL_PERSON_WITH_SIGNIFICANT_CONTROL);
-        pscIndividualFullRecordApi.setLinks(mapLinksToPscLinks(pscData.getLinks()));
-        pscIndividualFullRecordApi.serviceAddress(mapCommonAddress(pscData.getAddress()));
-        pscIndividualFullRecordApi.setEtag(pscData.getEtag());
+        individualFullRecord.setName(pscData.getName());
+        individualFullRecord.setNameElements(mapNameElementsApi(pscData.getNameElements()));
+        individualFullRecord.setCountryOfResidence(pscData.getCountryOfResidence());
+        individualFullRecord.setNotifiedOn(pscData.getNotifiedOn());
+        individualFullRecord.setCeasedOn(pscData.getCeasedOn());
+        individualFullRecord.setNaturesOfControl(pscData.getNaturesOfControl());
+        individualFullRecord.setNationality(pscData.getNationality());
+        individualFullRecord.setKind(IndividualFullRecord.KindEnum.INDIVIDUAL_PERSON_WITH_SIGNIFICANT_CONTROL);
+        individualFullRecord.setLinks(mapLinksToPscLinks(pscData.getLinks()));
+        individualFullRecord.serviceAddress(mapAddress(pscData.getAddress()));
+        individualFullRecord.setEtag(pscData.getEtag());
+        individualFullRecord.setIdentityVerificationDetails(getIdentityVerificationDetails(pscData));
 
         final PscSensitiveData sensitivePscData = pscDocument.getSensitiveData();
-        pscIndividualFullRecordApi.setResidentialAddressSameAsServiceAddress(
+        individualFullRecord.setResidentialAddressSameAsServiceAddress(
                 sensitivePscData.getResidentialAddressIsSameAsServiceAddress());
-        pscIndividualFullRecordApi.setDateOfBirth(mapDate3Tuple(sensitivePscData.getDateOfBirth(), true));
-        pscIndividualFullRecordApi.setUsualResidentialAddress(mapCommonAddress(sensitivePscData.getUsualResidentialAddress()));
-        pscIndividualFullRecordApi.setInternalId(sensitivePscData.getInternalId());
+        individualFullRecord.setDateOfBirth(mapDate3Tuple(sensitivePscData.getDateOfBirth(), true));
+        individualFullRecord.setUsualResidentialAddress(mapAddress(sensitivePscData.getUsualResidentialAddress()));
+        individualFullRecord.setInternalId(sensitivePscData.getInternalId());
 
-        return pscIndividualFullRecordApi;
+        return individualFullRecord;
+    }
+
+    /**
+     * Extracts identity verification details from the provided {@link PscData} object.
+     *
+     * @param pscData the PSC data containing identity verification details
+     * @return an {@link IdentityVerificationDetails} object populated with relevant fields.
+     */
+    private static IdentityVerificationDetails getIdentityVerificationDetails(final PscData pscData) {
+        final IdentityVerificationDetails identityVerificationDetails = new IdentityVerificationDetails();
+        identityVerificationDetails.setAppointmentVerificationStartOn(pscData.getIdentityVerificationDetails().getAppointmentVerificationStartOn());
+        identityVerificationDetails.setAppointmentVerificationEndOn(pscData.getIdentityVerificationDetails().getAppointmentVerificationEndOn());
+        identityVerificationDetails.setAppointmentVerificationStatementDate(pscData.getIdentityVerificationDetails().getAppointmentVerificationStatementDate());
+        identityVerificationDetails.setAppointmentVerificationStatementDueOn(pscData.getIdentityVerificationDetails().getAppointmentVerificationStatementDueOn());
+        return identityVerificationDetails;
     }
 
     /**

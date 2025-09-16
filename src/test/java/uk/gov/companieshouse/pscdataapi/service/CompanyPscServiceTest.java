@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -47,14 +46,13 @@ import uk.gov.companieshouse.api.metrics.MetricsApi;
 import uk.gov.companieshouse.api.metrics.PscApi;
 import uk.gov.companieshouse.api.metrics.RegisterApi;
 import uk.gov.companieshouse.api.metrics.RegistersApi;
-import uk.gov.companieshouse.api.model.psc.PscIndividualFullRecordApi;
-import uk.gov.companieshouse.api.model.psc.IdentityVerificationDetailsApi;
 import uk.gov.companieshouse.api.psc.CorporateEntity;
 import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
 import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
 import uk.gov.companieshouse.api.psc.Identification;
 import uk.gov.companieshouse.api.psc.Individual;
 import uk.gov.companieshouse.api.psc.IndividualBeneficialOwner;
+import uk.gov.companieshouse.api.psc.IndividualFullRecord;
 import uk.gov.companieshouse.api.psc.LegalPerson;
 import uk.gov.companieshouse.api.psc.LegalPersonBeneficialOwner;
 import uk.gov.companieshouse.api.psc.ListSummary;
@@ -902,8 +900,7 @@ class CompanyPscServiceTest {
     void getIndividualFullRecordShouldReturnFullRecordWhenFound_FlagVerificationDetailsFalse() {
         when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID)).thenReturn(
                 Optional.of(pscDocument));
-        when(featureFlags.isIndividualPscFullRecordAddidentityVerificationDetailsEnabled()).thenReturn(false);
-        when(transformer.transformPscDocToIndividualFullRecord(pscDocument)).thenReturn(new PscIndividualFullRecordApi());
+        when(transformer.transformPscDocToIndividualFullRecord(pscDocument)).thenReturn(new IndividualFullRecord());
 
         service.getIndividualFullRecord(COMPANY_NUMBER, NOTIFICATION_ID);
 
@@ -915,11 +912,8 @@ class CompanyPscServiceTest {
     void getIndividualFullRecordShouldReturnFullRecordWhenFound_FlagVerificationDetailsTrue() {
         when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID)).thenReturn(
                 Optional.of(pscDocument));
-        when(featureFlags.isIndividualPscFullRecordAddidentityVerificationDetailsEnabled()).thenReturn(true);
-        when(oracleQueryApiService.getIdentityVerificationDetails(123L))
-                .thenReturn(Optional.of(new IdentityVerificationDetailsApi(START_ON, END_ON, STATEMENT_DATE, STATEMENT_DUE_DATE)));
         when(transformer.transformPscDocToIndividualFullRecord(pscDocument)).thenReturn(
-                new PscIndividualFullRecordApi().internalId(123L));
+                new IndividualFullRecord().internalId(123L));
 
         service.getIndividualFullRecord(COMPANY_NUMBER, NOTIFICATION_ID);
 
