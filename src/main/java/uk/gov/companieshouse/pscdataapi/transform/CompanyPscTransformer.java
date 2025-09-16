@@ -113,7 +113,7 @@ public class CompanyPscTransformer {
         individualFullRecord.setLinks(mapLinksToPscLinks(pscData.getLinks()));
         individualFullRecord.serviceAddress(mapAddress(pscData.getAddress()));
         individualFullRecord.setEtag(pscData.getEtag());
-        individualFullRecord.setIdentityVerificationDetails(getIdentityVerificationDetails(pscData));
+        individualFullRecord.setIdentityVerificationDetails(mapIdentityVerificationDetails(pscData.getIdentityVerificationDetails()));
 
         final PscSensitiveData sensitivePscData = pscDocument.getSensitiveData();
         individualFullRecord.setResidentialAddressSameAsServiceAddress(
@@ -123,21 +123,6 @@ public class CompanyPscTransformer {
         individualFullRecord.setInternalId(sensitivePscData.getInternalId());
 
         return individualFullRecord;
-    }
-
-    /**
-     * Extracts identity verification details from the provided {@link PscData} object.
-     *
-     * @param pscData the PSC data containing identity verification details
-     * @return an {@link IdentityVerificationDetails} object populated with relevant fields.
-     */
-    private static IdentityVerificationDetails getIdentityVerificationDetails(final PscData pscData) {
-        final IdentityVerificationDetails identityVerificationDetails = new IdentityVerificationDetails();
-        identityVerificationDetails.setAppointmentVerificationStartOn(pscData.getIdentityVerificationDetails().getAppointmentVerificationStartOn());
-        identityVerificationDetails.setAppointmentVerificationEndOn(pscData.getIdentityVerificationDetails().getAppointmentVerificationEndOn());
-        identityVerificationDetails.setAppointmentVerificationStatementDate(pscData.getIdentityVerificationDetails().getAppointmentVerificationStatementDate());
-        identityVerificationDetails.setAppointmentVerificationStatementDueOn(pscData.getIdentityVerificationDetails().getAppointmentVerificationStatementDueOn());
-        return identityVerificationDetails;
     }
 
     /**
