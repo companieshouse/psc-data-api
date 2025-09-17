@@ -35,7 +35,7 @@
         <commons-lang3.version>3.18.0</commons-lang3.version>
         <!-- Internal -->
         <structured-logging.version>3.0.40</structured-logging.version>
-        <private-api-sdk-java.version>4.0.353</private-api-sdk-java.version>
+        <private-api-sdk-java.version>4.0.366</private-api-sdk-java.version>
         <api-sdk-java.version>6.4.4</api-sdk-java.version>
         <api-security-java.version>2.0.13</api-security-java.version>
 
