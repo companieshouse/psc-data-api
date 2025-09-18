@@ -364,6 +364,7 @@ public class CompanyPscTransformer {
             listSummary.setCeased(pscData.getCeasedOn() != null);
             listSummary.setIdentification(mapIdentification(
                     pscData.getIdentification(), "list summary"));
+            listSummary.setIdentityVerificationDetails(mapIdentityVerificationDetails(pscData.getIdentityVerificationDetails()));
         }
         if (pscDocument.getSensitiveData() != null) {
             listSummary.setDateOfBirth(mapDateOfBirth(pscDocument.getSensitiveData()
