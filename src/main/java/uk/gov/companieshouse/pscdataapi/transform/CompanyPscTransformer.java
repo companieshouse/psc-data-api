@@ -4,6 +4,8 @@ import static uk.gov.companieshouse.pscdataapi.PscDataApiApplication.APPLICATION
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.function.Consumer;
+
 import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.api.model.common.Date3Tuple;
 import uk.gov.companieshouse.api.model.psc.NameElementsApi;
@@ -650,19 +652,26 @@ public class CompanyPscTransformer {
     }
 
     private IdentityVerificationDetails mapIdentityVerificationDetails(final PscIdentityVerificationDetails details) {
-        if (details != null) {
-            IdentityVerificationDetails ivd = new IdentityVerificationDetails();
-            ivd.setAntiMoneyLaunderingSupervisoryBodies(details.getAntiMoneyLaunderingSupervisoryBodies());
-            ivd.setAppointmentVerificationEndOn(details.getAppointmentVerificationEndOn());
-            ivd.setAppointmentVerificationStatementDate(details.getAppointmentVerificationStatementDate());
-            ivd.setAppointmentVerificationStatementDueOn(details.getAppointmentVerificationStatementDueOn());
-            ivd.setAppointmentVerificationStartOn(details.getAppointmentVerificationStartOn());
-            ivd.setAuthorisedCorporateServiceProviderName(details.getAuthorisedCorporateServiceProviderName());
-            ivd.setIdentityVerifiedOn(details.getIdentityVerifiedOn());
-            ivd.setPreferredName(details.getPreferredName());
-            return ivd;
-        } else {
-            return null;
+        if (details == null) return null;
+
+        IdentityVerificationDetails ivd = new IdentityVerificationDetails();
+
+        setIfNotNull(ivd::setAntiMoneyLaunderingSupervisoryBodies, details.getAntiMoneyLaunderingSupervisoryBodies());
+        setIfNotNull(ivd::setAppointmentVerificationEndOn, details.getAppointmentVerificationEndOn());
+        setIfNotNull(ivd::setAppointmentVerificationStatementDate, details.getAppointmentVerificationStatementDate());
+        setIfNotNull(ivd::setAppointmentVerificationStatementDueOn, details.getAppointmentVerificationStatementDueOn());
+        setIfNotNull(ivd::setAppointmentVerificationStartOn, details.getAppointmentVerificationStartOn());
+        setIfNotNull(ivd::setAuthorisedCorporateServiceProviderName, details.getAuthorisedCorporateServiceProviderName());
+        setIfNotNull(ivd::setIdentityVerifiedOn, details.getIdentityVerifiedOn());
+        setIfNotNull(ivd::setPreferredName, details.getPreferredName());
+
+        return ivd;
+    }
+
+    private <T> void setIfNotNull(Consumer<T> setter, T value) {
+        if (value != null) {
+            setter.accept(value);
         }
     }
+
 }
