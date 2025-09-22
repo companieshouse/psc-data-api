@@ -50,6 +50,7 @@ import uk.gov.companieshouse.api.psc.CorporateEntity;
 import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
 import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
 import uk.gov.companieshouse.api.psc.Identification;
+import uk.gov.companieshouse.api.psc.IdentityVerificationDetails;
 import uk.gov.companieshouse.api.psc.Individual;
 import uk.gov.companieshouse.api.psc.IndividualBeneficialOwner;
 import uk.gov.companieshouse.api.psc.IndividualFullRecord;
@@ -783,6 +784,17 @@ class CompanyPscServiceTest {
         identification.setLegalForm("x");
         listSummary.setIdentification(identification);
 
+        IdentityVerificationDetails identityVerificationDetails = new IdentityVerificationDetails();
+        identityVerificationDetails.setAntiMoneyLaunderingSupervisoryBodies(Collections.singletonList("x"));
+        identityVerificationDetails.setAppointmentVerificationEndOn(LocalDate.parse("2020-12-12"));
+        identityVerificationDetails.setAppointmentVerificationStatementDate(LocalDate.parse("2020-10-10"));
+        identityVerificationDetails.setAppointmentVerificationStatementDueOn(LocalDate.parse("2020-11-11"));
+        identityVerificationDetails.setAppointmentVerificationStartOn(LocalDate.parse("2020-09-09"));
+        identityVerificationDetails.setAuthorisedCorporateServiceProviderName("x");
+        identityVerificationDetails.setIdentityVerifiedOn(LocalDate.parse("2020-11-11"));
+        identityVerificationDetails.setPreferredName("x");
+        listSummary.setIdentityVerificationDetails(identityVerificationDetails);
+
         when(repository.getPscDocumentList(anyString(), anyInt(), anyInt())).thenReturn(
                 Collections.singletonList(pscDocument));
 
@@ -790,6 +802,18 @@ class CompanyPscServiceTest {
                 .thenReturn(listSummary);
 
         PscList pscDocumentList = service.retrievePscListSummaryFromDb(COMPANY_NUMBER, 0, false, 25);
+
+        IdentityVerificationDetails expectedIdentityVerificationDetails = new IdentityVerificationDetails();
+        expectedIdentityVerificationDetails.setAntiMoneyLaunderingSupervisoryBodies(Collections.singletonList("x"));
+        expectedIdentityVerificationDetails.setAppointmentVerificationEndOn(LocalDate.parse("2020-12-12"));
+        expectedIdentityVerificationDetails.setAppointmentVerificationStatementDate(LocalDate.parse("2020-10-10"));
+        expectedIdentityVerificationDetails.setAppointmentVerificationStatementDueOn(LocalDate.parse("2020-11-11"));
+        expectedIdentityVerificationDetails.setAppointmentVerificationStartOn(LocalDate.parse("2020-09-09"));
+        expectedIdentityVerificationDetails.setAuthorisedCorporateServiceProviderName("x");
+        expectedIdentityVerificationDetails.setIdentityVerifiedOn(LocalDate.parse("2020-11-11"));
+        expectedIdentityVerificationDetails.setPreferredName("x");
+
+        expectedPscList.getItems().get(0).setIdentityVerificationDetails(expectedIdentityVerificationDetails);
 
         assertEquals(expectedPscList, pscDocumentList);
         verify(repository, times(1)).getPscDocumentList(COMPANY_NUMBER, 0, 25);
