@@ -4,23 +4,45 @@ import static uk.gov.companieshouse.pscdataapi.PscDataApiApplication.APPLICATION
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 import java.util.function.Consumer;
-
 import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.api.model.common.Date3Tuple;
 import uk.gov.companieshouse.api.model.psc.NameElementsApi;
 import uk.gov.companieshouse.api.model.psc.PscIndividualWithIdentityVerificationDetailsApi;
 import uk.gov.companieshouse.api.model.psc.PscLinks;
-import uk.gov.companieshouse.api.psc.*;
+import uk.gov.companieshouse.api.psc.CorporateEntity;
+import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
+import uk.gov.companieshouse.api.psc.Data;
+import uk.gov.companieshouse.api.psc.ExternalData;
+import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
+import uk.gov.companieshouse.api.psc.Identification;
+import uk.gov.companieshouse.api.psc.IdentityVerificationDetails;
+import uk.gov.companieshouse.api.psc.Individual;
+import uk.gov.companieshouse.api.psc.IndividualBeneficialOwner;
+import uk.gov.companieshouse.api.psc.IndividualFullRecord;
+import uk.gov.companieshouse.api.psc.InternalData;
+import uk.gov.companieshouse.api.psc.LegalPerson;
+import uk.gov.companieshouse.api.psc.LegalPersonBeneficialOwner;
+import uk.gov.companieshouse.api.psc.ListSummary;
+import uk.gov.companieshouse.api.psc.SensitiveData;
+import uk.gov.companieshouse.api.psc.SuperSecure;
+import uk.gov.companieshouse.api.psc.SuperSecureBeneficialOwner;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.companieshouse.pscdataapi.data.IndividualPscRoles;
 import uk.gov.companieshouse.pscdataapi.data.SecurePscRoles;
 import uk.gov.companieshouse.pscdataapi.logging.DataMapHolder;
-import uk.gov.companieshouse.pscdataapi.models.*;
 import uk.gov.companieshouse.pscdataapi.models.Address;
 import uk.gov.companieshouse.pscdataapi.models.DateOfBirth;
+import uk.gov.companieshouse.pscdataapi.models.Links;
 import uk.gov.companieshouse.pscdataapi.models.NameElements;
+import uk.gov.companieshouse.pscdataapi.models.PscData;
+import uk.gov.companieshouse.pscdataapi.models.PscDocument;
+import uk.gov.companieshouse.pscdataapi.models.PscIdentification;
+import uk.gov.companieshouse.pscdataapi.models.PscIdentityVerificationDetails;
+import uk.gov.companieshouse.pscdataapi.models.PscSensitiveData;
+import uk.gov.companieshouse.pscdataapi.models.Updated;
 import uk.gov.companieshouse.pscdataapi.util.PscTransformationHelper;
 
 @Component
@@ -656,14 +678,21 @@ public class CompanyPscTransformer {
 
         IdentityVerificationDetails ivd = new IdentityVerificationDetails();
 
-        setIfNotNull(ivd::setAntiMoneyLaunderingSupervisoryBodies, details.getAntiMoneyLaunderingSupervisoryBodies());
-        setIfNotNull(ivd::setAppointmentVerificationEndOn, details.getAppointmentVerificationEndOn());
-        setIfNotNull(ivd::setAppointmentVerificationStatementDate, details.getAppointmentVerificationStatementDate());
-        setIfNotNull(ivd::setAppointmentVerificationStatementDueOn, details.getAppointmentVerificationStatementDueOn());
-        setIfNotNull(ivd::setAppointmentVerificationStartOn, details.getAppointmentVerificationStartOn());
-        setIfNotNull(ivd::setAuthorisedCorporateServiceProviderName, details.getAuthorisedCorporateServiceProviderName());
-        setIfNotNull(ivd::setIdentityVerifiedOn, details.getIdentityVerifiedOn());
-        setIfNotNull(ivd::setPreferredName, details.getPreferredName());
+        Optional<LocalDate> appointmentVerificationEndOn = Optional.ofNullable(details.getAppointmentVerificationEndOn());
+        Optional<LocalDate> appointmentVerificationStatementDate = Optional.ofNullable(details.getAppointmentVerificationStatementDate());
+        Optional<LocalDate> appointmentVerificationStatementDueOn = Optional.ofNullable(details.getAppointmentVerificationStatementDueOn());
+        Optional<LocalDate> appointmentVerificationStartOn = Optional.ofNullable(details.getAppointmentVerificationStartOn());
+        Optional<LocalDate> identityVerifiedOn = Optional.ofNullable(details.getIdentityVerifiedOn());
+
+        appointmentVerificationEndOn.ifPresent(ivd::setAppointmentVerificationEndOn);
+        appointmentVerificationStatementDate.ifPresent(ivd::setAppointmentVerificationStatementDate);
+        appointmentVerificationStatementDueOn.ifPresent(ivd::setAppointmentVerificationStatementDueOn);
+        appointmentVerificationStartOn.ifPresent(ivd::setAppointmentVerificationStartOn);
+        identityVerifiedOn.ifPresent(ivd::setIdentityVerifiedOn);
+
+        ivd.setAuthorisedCorporateServiceProviderName(details.getAuthorisedCorporateServiceProviderName());
+        ivd.setAntiMoneyLaunderingSupervisoryBodies(details.getAntiMoneyLaunderingSupervisoryBodies());
+        ivd.setPreferredName(details.getPreferredName());
 
         return ivd;
     }
