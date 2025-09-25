@@ -696,11 +696,4 @@ public class CompanyPscTransformer {
 
         return ivd;
     }
-
-    private <T> void setIfNotNull(Consumer<T> setter, T value) {
-        if (value != null) {
-            setter.accept(value);
-        }
-    }
-
 }
