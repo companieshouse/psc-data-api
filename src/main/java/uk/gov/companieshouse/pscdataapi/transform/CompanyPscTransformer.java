@@ -5,7 +5,6 @@ import static uk.gov.companieshouse.pscdataapi.PscDataApiApplication.APPLICATION
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
-import java.util.function.Consumer;
 import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.api.model.common.Date3Tuple;
 import uk.gov.companieshouse.api.model.psc.NameElementsApi;
