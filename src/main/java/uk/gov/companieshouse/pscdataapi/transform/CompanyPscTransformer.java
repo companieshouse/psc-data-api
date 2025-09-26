@@ -8,7 +8,6 @@ import java.util.Optional;
 import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.api.model.common.Date3Tuple;
 import uk.gov.companieshouse.api.model.psc.NameElementsApi;
-import uk.gov.companieshouse.api.model.psc.PscIndividualWithIdentityVerificationDetailsApi;
 import uk.gov.companieshouse.api.model.psc.PscLinks;
 import uk.gov.companieshouse.api.psc.CorporateEntity;
 import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
@@ -78,40 +77,6 @@ public class CompanyPscTransformer {
                     pscDocument.getSensitiveData().getDateOfBirth(), showFullDateOfBirth));
         }
         return individual;
-    }
-
-    /**
-     * Transforms a PSC document into an Individual with Identity Verification Details.
-     *
-     * @param pscDocument the PSC document to transform
-     * @return the transformed Individual with Identity Verification Details
-     */
-    public PscIndividualWithIdentityVerificationDetailsApi transformPscDocToIndividualWithIdentityVerificationDetails(
-            PscDocument pscDocument) {
-        LOGGER.info("Attempting to transform pscDocument to Individual With Identity Verification Details", DataMapHolder.getLogMap());
-
-        final var detailsApi = new PscIndividualWithIdentityVerificationDetailsApi();
-        detailsApi.setKind(
-                PscIndividualWithIdentityVerificationDetailsApi.KindEnum.INDIVIDUAL_PERSON_WITH_SIGNIFICANT_CONTROL);
-        if (pscDocument.getData() != null) {
-            final var pscData = pscDocument.getData();
-
-            detailsApi.setEtag(pscData.getEtag());
-            detailsApi.setCountryOfResidence(pscData.getCountryOfResidence());
-            detailsApi.setName(pscData.getName());
-            detailsApi.setNameElements(mapNameElementsApi(pscData.getNameElements()));
-            detailsApi.setAddress(mapCommonAddress(pscData.getAddress()));
-            detailsApi.setNaturesOfControl(pscData.getNaturesOfControl());
-            detailsApi.setNationality(pscData.getNationality());
-            detailsApi.setLinks(mapLinksToPscLinks(pscData.getLinks()));
-            detailsApi.setNotifiedOn(pscData.getNotifiedOn());
-            detailsApi.setCeasedOn(pscData.getCeasedOn());
-        }
-        if (pscDocument.getSensitiveData() != null) {
-            detailsApi.setDateOfBirth(
-                    mapDate3Tuple(pscDocument.getSensitiveData().getDateOfBirth(), false));
-        }
-        return detailsApi;
     }
 
     /**
