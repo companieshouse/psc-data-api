@@ -17,13 +17,11 @@ import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.companieshouse.api.util.security.EricConstants;
 import uk.gov.companieshouse.api.util.security.SecurityConstants;
 import uk.gov.companieshouse.pscdataapi.controller.CompanyPscFullRecordGetController;
-import uk.gov.companieshouse.pscdataapi.controller.CompanyPscWithIdentityVerificationDetailsGetController;
 import uk.gov.companieshouse.pscdataapi.service.CompanyPscService;
 
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(controllers = {
-        CompanyPscFullRecordGetController.class,
-        CompanyPscWithIdentityVerificationDetailsGetController.class,
+        CompanyPscFullRecordGetController.class
 }, properties = {"feature.identity_verification=true"})
 class WebSecurityConfigTest {
 
@@ -32,9 +30,6 @@ class WebSecurityConfigTest {
     private static final String ERIC_IDENTITY = "Test-Identity";
     private static final String GET_INDIVIDUAL_FULL_RECORD_URL = String.format(
             "/company/%s/persons-with-significant-control/individual/%s/full_record", MOCK_COMPANY_NUMBER,
-            MOCK_NOTIFICATION_ID);
-    private static final String GET_INDIVIDUAL_WITH_IDENTITY_VERIFICATION_DETAILS_URL = String.format(
-            "/company/%s/persons-with-significant-control/individual/%s/identity-verification-details", MOCK_COMPANY_NUMBER,
             MOCK_NOTIFICATION_ID);
 
     @MockitoBean
@@ -52,10 +47,6 @@ class WebSecurityConfigTest {
                         .headers(headers)
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isForbidden());
-        mockMvc.perform(get(GET_INDIVIDUAL_WITH_IDENTITY_VERIFICATION_DETAILS_URL)
-                        .headers(headers)
-                        .contentType(APPLICATION_JSON))
-                .andExpect(status().isForbidden());
 
     }
 
@@ -65,10 +56,6 @@ class WebSecurityConfigTest {
         final var headers = createHttpHeaders(true);
 
         mockMvc.perform(get(GET_INDIVIDUAL_FULL_RECORD_URL)
-                        .headers(headers)
-                        .contentType(APPLICATION_JSON))
-                .andExpect(status().isOk());
-        mockMvc.perform(get(GET_INDIVIDUAL_WITH_IDENTITY_VERIFICATION_DETAILS_URL)
                         .headers(headers)
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk());
