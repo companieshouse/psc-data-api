@@ -17,7 +17,6 @@ import uk.gov.companieshouse.api.metrics.MetricsApi;
 import uk.gov.companieshouse.api.metrics.PscApi;
 import uk.gov.companieshouse.api.metrics.RegisterApi;
 import uk.gov.companieshouse.api.metrics.RegistersApi;
-import uk.gov.companieshouse.api.model.psc.PscIndividualWithIdentityVerificationDetailsApi;
 import uk.gov.companieshouse.api.psc.CorporateEntity;
 import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
 import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
@@ -33,9 +32,7 @@ import uk.gov.companieshouse.api.psc.SuperSecureBeneficialOwner;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
-import uk.gov.companieshouse.pscdataapi.config.FeatureFlags;
 import uk.gov.companieshouse.pscdataapi.exceptions.ConflictException;
-import uk.gov.companieshouse.pscdataapi.exceptions.InternalDataException;
 import uk.gov.companieshouse.pscdataapi.exceptions.NotFoundException;
 import uk.gov.companieshouse.pscdataapi.logging.DataMapHolder;
 import uk.gov.companieshouse.pscdataapi.models.Created;
@@ -43,10 +40,8 @@ import uk.gov.companieshouse.pscdataapi.models.Links;
 import uk.gov.companieshouse.pscdataapi.models.PscData;
 import uk.gov.companieshouse.pscdataapi.models.PscDeleteRequest;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
-import uk.gov.companieshouse.pscdataapi.models.PscSensitiveData;
 import uk.gov.companieshouse.pscdataapi.repository.CompanyPscRepository;
 import uk.gov.companieshouse.pscdataapi.transform.CompanyPscTransformer;
-import uk.gov.companieshouse.pscdataapi.transform.IdentityVerificationDetailsMapper;
 
 @Component
 public class CompanyPscService {
@@ -62,30 +57,22 @@ public class CompanyPscService {
     private static final String LEGAL_PERSON_BENEFICIAL_OWNER = "legal-person-beneficial-owner";
     private static final String SUPER_SECURE_PERSON_WITH_SIGNIFICANT_CONTROL = "super-secure-person-with-significant-control";
     private static final String SUPER_SECURE_BENEFICIAL_OWNER = "super-secure-beneficial-owner";
-    private static final String NO_INTERNAL_ID_MSG = "sensitive_data.internal_id is null";
 
-    private final FeatureFlags featureFlags;
     private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSSSSS");
     private final CompanyPscTransformer transformer;
     private final CompanyPscRepository repository;
     private final ChsKafkaApiService chsKafkaApiService;
     private final CompanyExemptionsApiService companyExemptionsApiService;
     private final CompanyMetricsApiService companyMetricsApiService;
-    private final OracleQueryApiService oracleQueryApiService;
-    private final IdentityVerificationDetailsMapper identityVerificationDetailsMapper;
 
-    public CompanyPscService(final FeatureFlags featureFlags, final CompanyPscTransformer transformer, final CompanyPscRepository repository,
+    public CompanyPscService(final CompanyPscTransformer transformer, final CompanyPscRepository repository,
             final ChsKafkaApiService chsKafkaApiService, final CompanyExemptionsApiService companyExemptionsApiService,
-            final CompanyMetricsApiService companyMetricsApiService, final OracleQueryApiService oracleQueryApiService,
-            final IdentityVerificationDetailsMapper identityVerificationDetailsMapper) {
-        this.featureFlags = featureFlags;
+            final CompanyMetricsApiService companyMetricsApiService) {
         this.transformer = transformer;
         this.repository = repository;
         this.chsKafkaApiService = chsKafkaApiService;
         this.companyExemptionsApiService = companyExemptionsApiService;
         this.companyMetricsApiService = companyMetricsApiService;
-        this.oracleQueryApiService = oracleQueryApiService;
-        this.identityVerificationDetailsMapper = identityVerificationDetailsMapper;
     }
 
     public void insertPscRecord(FullRecordCompanyPSCApi requestBody) {
@@ -135,33 +122,6 @@ public class CompanyPscService {
                 .map(document -> {
                     boolean showFullDateOfBirth = determineShowFullDob(companyNumber, registerView, document);
                     return transformer.transformPscDocToIndividual(document, showFullDateOfBirth);
-                })
-                .orElseThrow(() -> {
-                    LOGGER.error(NOT_FOUND_MSG, DataMapHolder.getLogMap());
-                    return new NotFoundException(NOT_FOUND_MSG);
-                });
-    }
-
-    public PscIndividualWithIdentityVerificationDetailsApi getIndividualWithIdentityVerificationDetails(final String companyNumber,
-            final String notificationId) {
-        return repository.getPscByCompanyNumberAndId(companyNumber, notificationId)
-                .filter(document -> INDIVIDUAL_PERSON_WITH_SIGNIFICANT_CONTROL.equals(document.getData().getKind()))
-                .map(document -> {
-                    DataMapHolder.get().companyNumber(companyNumber).itemId(notificationId);
-
-                    final var individualWithIdentityVerificationDetails =
-                            transformer.transformPscDocToIndividualWithIdentityVerificationDetails(document);
-                    final Long internalId = Optional.ofNullable(document.getSensitiveData()).map(
-                        PscSensitiveData::getInternalId).orElseThrow(() -> {
-                        LOGGER.error(NO_INTERNAL_ID_MSG, DataMapHolder.getLogMap());
-                        return new InternalDataException(NO_INTERNAL_ID_MSG);
-                    });
-
-                    oracleQueryApiService.getIdentityVerificationDetails(internalId).map(
-                        identityVerificationDetailsMapper::mapToIdentityVerificationDetails).ifPresent(
-                        individualWithIdentityVerificationDetails::setIdentityVerificationDetails);
-
-                    return individualWithIdentityVerificationDetails;
                 })
                 .orElseThrow(() -> {
                     LOGGER.error(NOT_FOUND_MSG, DataMapHolder.getLogMap());
