@@ -28,6 +28,7 @@ import uk.gov.companieshouse.api.psc.SuperSecure;
 import uk.gov.companieshouse.api.psc.SuperSecureBeneficialOwner;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
+import uk.gov.companieshouse.pscdataapi.config.FeatureFlags;
 import uk.gov.companieshouse.pscdataapi.data.IndividualPscRoles;
 import uk.gov.companieshouse.pscdataapi.data.SecurePscRoles;
 import uk.gov.companieshouse.pscdataapi.logging.DataMapHolder;
@@ -51,6 +52,14 @@ public class CompanyPscTransformer {
     private static final String LEGAL = "legal";
 
     private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSSSSS");
+    private final FeatureFlags featureFlags;
+
+
+    //this is not right - all constructors would need to pass in featureflags.
+    // might need to update in a lot of other places.
+    public CompanyPscTransformer(final FeatureFlags featureFlags) {
+        this.featureFlags = featureFlags;
+    }
 
     public Individual transformPscDocToIndividual(PscDocument pscDocument, boolean showFullDateOfBirth) {
         LOGGER.info("Attempting to transform pscDocument to Individual", DataMapHolder.getLogMap());
@@ -638,7 +647,7 @@ public class CompanyPscTransformer {
     }
 
     private IdentityVerificationDetails mapIdentityVerificationDetails(final PscIdentityVerificationDetails details) {
-        if (details == null) return null;
+        if (details == null && featureFlags.isPscOfficerIvdDeltaUpdatesEnabled()) return null;
 
         IdentityVerificationDetails ivd = new IdentityVerificationDetails();
 
