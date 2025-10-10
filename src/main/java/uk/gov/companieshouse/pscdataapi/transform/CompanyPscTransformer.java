@@ -48,8 +48,10 @@ public class CompanyPscTransformer {
             individual.setLinks(pscData.getLinks());
             individual.setNotifiedOn(pscData.getNotifiedOn());
             individual.setCeasedOn(pscData.getCeasedOn());
-            individual.setIdentityVerificationDetails(
-                    mapIdentityVerificationDetails(pscData.getIdentityVerificationDetails()));
+            if (pscData.getIdentityVerificationDetails() != null) {
+                individual.setIdentityVerificationDetails(
+                        mapIdentityVerificationDetails(pscData.getIdentityVerificationDetails()));
+            }
         }
         if (pscDocument.getSensitiveData() != null) {
             individual.setDateOfBirth(mapDateOfBirth(
