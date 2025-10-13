@@ -556,6 +556,30 @@ class CompanyPscControllerTest {
 
     @Test
     @DisplayName(
+            "GET request returns a 200 response when individual PSC with no IDV found")
+    void getIndividualBeneficialOwnerPSCIDVExcludedWhenNull() throws Exception {
+        when(companyPscService
+                .getIndividualPsc(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID, MOCK_REGISTER_VIEW_FALSE))
+                .thenReturn(new Individual().name("Test").identityVerificationDetails(null));
+
+        mockMvc.perform(get(GET_INDIVIDUAL_URL)
+                        .header("ERIC-Identity", ERIC_IDENTITY)
+                        .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
+                        .param("register_view", "true")
+                        .contentType(APPLICATION_JSON)
+                        .header("x-request-id", X_REQUEST_ID)
+                        .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
+                        .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        verify(companyPscService).getIndividualPsc(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID,
+                MOCK_REGISTER_VIEW_TRUE);
+
+    }
+
+    @Test
+    @DisplayName(
             "GET request returns a 503 response when service is unavailable")
     void getIndividualBeneficialOwnerPSCDocumentWhenServiceIsDown() throws Exception {
         when(companyPscService

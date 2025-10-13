@@ -48,9 +48,18 @@ public class CompanyPscTransformer {
             individual.setLinks(pscData.getLinks());
             individual.setNotifiedOn(pscData.getNotifiedOn());
             individual.setCeasedOn(pscData.getCeasedOn());
-            if (pscData.getIdentityVerificationDetails() != null) {
-                individual.setIdentityVerificationDetails(
-                        mapIdentityVerificationDetails(pscData.getIdentityVerificationDetails()));
+            if (pscData.getIdentityVerificationDetails() == null ||
+                    (pscData.getIdentityVerificationDetails().getIdentityVerifiedOn() == null &&
+                    pscData.getIdentityVerificationDetails().getAppointmentVerificationEndOn() == null &&
+                    pscData.getIdentityVerificationDetails().getAppointmentVerificationStartOn() == null &&
+                    pscData.getIdentityVerificationDetails().getAppointmentVerificationStatementDate() == null &&
+                    pscData.getIdentityVerificationDetails().getAntiMoneyLaunderingSupervisoryBodies() == null &&
+                    pscData.getIdentityVerificationDetails().getAppointmentVerificationStatementDueOn() == null &&
+                    pscData.getIdentityVerificationDetails().getAuthorisedCorporateServiceProviderName() == null &&
+                    pscData.getIdentityVerificationDetails().getPreferredName() == null)) {
+                individual.setIdentityVerificationDetails(null);
+            } else {
+                individual.setIdentityVerificationDetails(mapIdentityVerificationDetails(pscData.getIdentityVerificationDetails()));
             }
         }
         if (pscDocument.getSensitiveData() != null) {
