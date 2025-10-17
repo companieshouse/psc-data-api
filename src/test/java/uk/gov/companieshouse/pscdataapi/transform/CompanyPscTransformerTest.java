@@ -3,6 +3,7 @@ package uk.gov.companieshouse.pscdataapi.transform;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
+import java.time.LocalDate;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,6 +23,7 @@ import uk.gov.companieshouse.api.psc.SuperSecureBeneficialOwner;
 import uk.gov.companieshouse.pscdataapi.exceptions.FailedToTransformException;
 import uk.gov.companieshouse.pscdataapi.models.PscData;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
+import uk.gov.companieshouse.pscdataapi.models.PscIdentityVerificationDetails;
 import uk.gov.companieshouse.pscdataapi.models.PscSensitiveData;
 import uk.gov.companieshouse.pscdataapi.util.TestHelper;
 
@@ -292,6 +294,35 @@ class CompanyPscTransformerTest {
         Assertions.assertNotNull(individual);
         Assertions.assertNotNull(individual.getIdentityVerificationDetails());
         Assertions.assertInstanceOf(IdentityVerificationDetails.class, individual.getIdentityVerificationDetails());
+    }
+
+    @Test
+    void testPscDocumentShouldNotSetIdentityVerificationDetailsWhenEmpty() {
+        // Arrange
+        PscDocument pscDocument = TestHelper.buildPscDocument("individual");
+        PscData pscData = new PscData();
+        PscIdentityVerificationDetails emptyIdv = new PscIdentityVerificationDetails();
+        pscData.setIdentityVerificationDetails(emptyIdv);
+        pscDocument.setData(pscData);
+        // Act
+        Individual result = pscTransformer.transformPscDocToIndividual(pscDocument, false);
+        // Assert
+        Assertions.assertNull(result.getIdentityVerificationDetails());
+    }
+
+    @Test
+    void testPscDocumentShouldSetIdentityVerificationDetailsWhenPopulated() {
+        // Arrange
+        PscDocument pscDocument = TestHelper.buildPscDocument("individual");
+        PscData pscData = new PscData();
+        PscIdentityVerificationDetails idv = new PscIdentityVerificationDetails();
+        idv.setIdentityVerifiedOn(LocalDate.now());
+        pscData.setIdentityVerificationDetails(idv);
+        pscDocument.setData(pscData);
+        // Act
+        Individual result = pscTransformer.transformPscDocToIndividual(pscDocument, false);
+        // Assert
+        Assertions.assertNotNull(result.getIdentityVerificationDetails());
     }
 
     @Test

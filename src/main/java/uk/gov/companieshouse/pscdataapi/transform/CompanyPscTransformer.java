@@ -4,6 +4,7 @@ import static uk.gov.companieshouse.pscdataapi.PscDataApiApplication.APPLICATION
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 import java.util.Optional;
 import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.api.model.common.Date3Tuple;
@@ -69,8 +70,11 @@ public class CompanyPscTransformer {
             individual.setLinks(pscData.getLinks());
             individual.setNotifiedOn(pscData.getNotifiedOn());
             individual.setCeasedOn(pscData.getCeasedOn());
-            individual.setIdentityVerificationDetails(
-                    mapIdentityVerificationDetails(pscData.getIdentityVerificationDetails()));
+            if (Objects.equals(pscData.getIdentityVerificationDetails(), new PscIdentityVerificationDetails(null))) {
+                individual.setIdentityVerificationDetails(null);
+            } else {
+                individual.setIdentityVerificationDetails(mapIdentityVerificationDetails(pscData.getIdentityVerificationDetails()));
+            }
         }
         if (pscDocument.getSensitiveData() != null) {
             individual.setDateOfBirth(mapDateOfBirth(
