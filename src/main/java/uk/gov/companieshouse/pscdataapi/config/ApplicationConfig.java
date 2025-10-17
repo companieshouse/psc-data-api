@@ -35,18 +35,15 @@ public class ApplicationConfig {
     private final String kafkaApiUrl;
     private final String metricsApiUrl;
     private final String exemptionsApiUrl;
-    private final String oracleQueryApiUrl;
 
     public ApplicationConfig(@Value("${api.key}") String apiKey,
             @Value("${kafka.api.url}") String kafkaApiUrl,
             @Value("${metrics.api.url}") String metricsApiUrl,
-            @Value("${exemptions.api.url}") String exemptionsApiUrl,
-            @Value("${oracle.query.api.url}") final String oracleQueryApiUrl) {
+            @Value("${exemptions.api.url}") String exemptionsApiUrl) {
         this.apiKey = apiKey;
         this.kafkaApiUrl = kafkaApiUrl;
         this.metricsApiUrl = metricsApiUrl;
         this.exemptionsApiUrl = exemptionsApiUrl;
-        this.oracleQueryApiUrl = oracleQueryApiUrl;
     }
 
     /*
@@ -77,15 +74,6 @@ public class ApplicationConfig {
     @Bean
     public Supplier<InternalApiClient> exemptionsApiClientSupplier() {
         return () -> buildClient(exemptionsApiUrl);
-    }
-
-    @Bean
-    public Supplier<InternalApiClient> oracleQueryApiClientSupplier() {
-        return () -> {
-            final var internalApiClient = buildClient(oracleQueryApiUrl);
-            internalApiClient.setInternalBasePath(oracleQueryApiUrl);
-            return internalApiClient;
-        };
     }
 
     @Bean

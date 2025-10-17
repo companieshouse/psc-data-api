@@ -5,22 +5,43 @@ import static uk.gov.companieshouse.pscdataapi.PscDataApiApplication.APPLICATION
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
+import java.util.Optional;
 import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.api.model.common.Date3Tuple;
 import uk.gov.companieshouse.api.model.psc.NameElementsApi;
-import uk.gov.companieshouse.api.model.psc.PscIndividualFullRecordApi;
-import uk.gov.companieshouse.api.model.psc.PscIndividualWithIdentityVerificationDetailsApi;
 import uk.gov.companieshouse.api.model.psc.PscLinks;
-import uk.gov.companieshouse.api.psc.*;
+import uk.gov.companieshouse.api.psc.CorporateEntity;
+import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
+import uk.gov.companieshouse.api.psc.Data;
+import uk.gov.companieshouse.api.psc.ExternalData;
+import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
+import uk.gov.companieshouse.api.psc.Identification;
+import uk.gov.companieshouse.api.psc.IdentityVerificationDetails;
+import uk.gov.companieshouse.api.psc.Individual;
+import uk.gov.companieshouse.api.psc.IndividualBeneficialOwner;
+import uk.gov.companieshouse.api.psc.IndividualFullRecord;
+import uk.gov.companieshouse.api.psc.InternalData;
+import uk.gov.companieshouse.api.psc.LegalPerson;
+import uk.gov.companieshouse.api.psc.LegalPersonBeneficialOwner;
+import uk.gov.companieshouse.api.psc.ListSummary;
+import uk.gov.companieshouse.api.psc.SensitiveData;
+import uk.gov.companieshouse.api.psc.SuperSecure;
+import uk.gov.companieshouse.api.psc.SuperSecureBeneficialOwner;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.companieshouse.pscdataapi.data.IndividualPscRoles;
 import uk.gov.companieshouse.pscdataapi.data.SecurePscRoles;
 import uk.gov.companieshouse.pscdataapi.logging.DataMapHolder;
-import uk.gov.companieshouse.pscdataapi.models.*;
 import uk.gov.companieshouse.pscdataapi.models.Address;
 import uk.gov.companieshouse.pscdataapi.models.DateOfBirth;
+import uk.gov.companieshouse.pscdataapi.models.Links;
 import uk.gov.companieshouse.pscdataapi.models.NameElements;
+import uk.gov.companieshouse.pscdataapi.models.PscData;
+import uk.gov.companieshouse.pscdataapi.models.PscDocument;
+import uk.gov.companieshouse.pscdataapi.models.PscIdentification;
+import uk.gov.companieshouse.pscdataapi.models.PscIdentityVerificationDetails;
+import uk.gov.companieshouse.pscdataapi.models.PscSensitiveData;
+import uk.gov.companieshouse.pscdataapi.models.Updated;
 import uk.gov.companieshouse.pscdataapi.util.PscTransformationHelper;
 
 @Component
@@ -63,70 +84,37 @@ public class CompanyPscTransformer {
     }
 
     /**
-     * Transforms a PSC document into an Individual with Identity Verification Details.
-     *
-     * @param pscDocument the PSC document to transform
-     * @return the transformed Individual with Identity Verification Details
-     */
-    public PscIndividualWithIdentityVerificationDetailsApi transformPscDocToIndividualWithIdentityVerificationDetails(
-            PscDocument pscDocument) {
-        LOGGER.info("Attempting to transform pscDocument to Individual With Identity Verification Details", DataMapHolder.getLogMap());
-
-        final var detailsApi = new PscIndividualWithIdentityVerificationDetailsApi();
-        detailsApi.setKind(
-                PscIndividualWithIdentityVerificationDetailsApi.KindEnum.INDIVIDUAL_PERSON_WITH_SIGNIFICANT_CONTROL);
-        if (pscDocument.getData() != null) {
-            final var pscData = pscDocument.getData();
-
-            detailsApi.setEtag(pscData.getEtag());
-            detailsApi.setCountryOfResidence(pscData.getCountryOfResidence());
-            detailsApi.setName(pscData.getName());
-            detailsApi.setNameElements(mapNameElementsApi(pscData.getNameElements()));
-            detailsApi.setAddress(mapCommonAddress(pscData.getAddress()));
-            detailsApi.setNaturesOfControl(pscData.getNaturesOfControl());
-            detailsApi.setNationality(pscData.getNationality());
-            detailsApi.setLinks(mapLinksToPscLinks(pscData.getLinks()));
-            detailsApi.setNotifiedOn(pscData.getNotifiedOn());
-            detailsApi.setCeasedOn(pscData.getCeasedOn());
-        }
-        if (pscDocument.getSensitiveData() != null) {
-            detailsApi.setDateOfBirth(
-                    mapDate3Tuple(pscDocument.getSensitiveData().getDateOfBirth(), false));
-        }
-        return detailsApi;
-    }
-
-    /**
      * Transform Individual PSC full record.
      *
      * @param pscDocument PSC.
      * @return PSC mongo Document.
      */
-    public PscIndividualFullRecordApi transformPscDocToIndividualFullRecord(final PscDocument pscDocument) {
+    public IndividualFullRecord transformPscDocToIndividualFullRecord(final PscDocument pscDocument) {
         LOGGER.info("Attempting to transform pscDocument to Individual Full Record", DataMapHolder.getLogMap());
 
-        final PscIndividualFullRecordApi pscIndividualFullRecordApi = new PscIndividualFullRecordApi();
+        final IndividualFullRecord individualFullRecord = new IndividualFullRecord();
         final PscData pscData = pscDocument.getData();
-        pscIndividualFullRecordApi.setName(pscData.getName());
-        pscIndividualFullRecordApi.setNameElements(mapNameElementsApi(pscData.getNameElements()));
-        pscIndividualFullRecordApi.setCountryOfResidence(pscData.getCountryOfResidence());
-        pscIndividualFullRecordApi.setNotifiedOn(pscData.getNotifiedOn());
-        pscIndividualFullRecordApi.setCeasedOn(pscData.getCeasedOn());
-        pscIndividualFullRecordApi.setNaturesOfControl(pscData.getNaturesOfControl());
-        pscIndividualFullRecordApi.setNationality(pscData.getNationality());
-        pscIndividualFullRecordApi.setKind(PscIndividualFullRecordApi.KindEnum.INDIVIDUAL_PERSON_WITH_SIGNIFICANT_CONTROL);
-        pscIndividualFullRecordApi.setLinks(mapLinksToPscLinks(pscData.getLinks()));
-        pscIndividualFullRecordApi.serviceAddress(mapCommonAddress(pscData.getAddress()));
-        pscIndividualFullRecordApi.setEtag(pscData.getEtag());
+        individualFullRecord.setName(pscData.getName());
+        individualFullRecord.setNameElements(mapNameElementsApi(pscData.getNameElements()));
+        individualFullRecord.setCountryOfResidence(pscData.getCountryOfResidence());
+        individualFullRecord.setNotifiedOn(pscData.getNotifiedOn());
+        individualFullRecord.setCeasedOn(pscData.getCeasedOn());
+        individualFullRecord.setNaturesOfControl(pscData.getNaturesOfControl());
+        individualFullRecord.setNationality(pscData.getNationality());
+        individualFullRecord.setKind(IndividualFullRecord.KindEnum.INDIVIDUAL_PERSON_WITH_SIGNIFICANT_CONTROL);
+        individualFullRecord.setLinks(mapLinksToPscLinks(pscData.getLinks()));
+        individualFullRecord.serviceAddress(mapAddress(pscData.getAddress()));
+        individualFullRecord.setEtag(pscData.getEtag());
+        individualFullRecord.setIdentityVerificationDetails(mapIdentityVerificationDetails(pscData.getIdentityVerificationDetails()));
 
         final PscSensitiveData sensitivePscData = pscDocument.getSensitiveData();
-        pscIndividualFullRecordApi.setResidentialAddressSameAsServiceAddress(
+        individualFullRecord.setResidentialAddressSameAsServiceAddress(
                 sensitivePscData.getResidentialAddressIsSameAsServiceAddress());
-        pscIndividualFullRecordApi.setDateOfBirth(mapDate3Tuple(sensitivePscData.getDateOfBirth(), true));
-        pscIndividualFullRecordApi.setUsualResidentialAddress(mapCommonAddress(sensitivePscData.getUsualResidentialAddress()));
-        pscIndividualFullRecordApi.setInternalId(sensitivePscData.getInternalId());
+        individualFullRecord.setDateOfBirth(mapDate3Tuple(sensitivePscData.getDateOfBirth(), true));
+        individualFullRecord.setUsualResidentialAddress(mapAddress(sensitivePscData.getUsualResidentialAddress()));
+        individualFullRecord.setInternalId(sensitivePscData.getInternalId());
 
-        return pscIndividualFullRecordApi;
+        return individualFullRecord;
     }
 
     /**
@@ -368,6 +356,7 @@ public class CompanyPscTransformer {
             listSummary.setCeased(pscData.getCeasedOn() != null);
             listSummary.setIdentification(mapIdentification(
                     pscData.getIdentification(), "list summary"));
+            listSummary.setIdentityVerificationDetails(mapIdentityVerificationDetails(pscData.getIdentityVerificationDetails()));
         }
         if (pscDocument.getSensitiveData() != null) {
             listSummary.setDateOfBirth(mapDateOfBirth(pscDocument.getSensitiveData()
@@ -653,19 +642,26 @@ public class CompanyPscTransformer {
     }
 
     private IdentityVerificationDetails mapIdentityVerificationDetails(final PscIdentityVerificationDetails details) {
-        if (details != null) {
-            IdentityVerificationDetails ivd = new IdentityVerificationDetails();
-            ivd.setAntiMoneyLaunderingSupervisoryBodies(details.getAntiMoneyLaunderingSupervisoryBodies());
-            ivd.setAppointmentVerificationEndOn(details.getAppointmentVerificationEndOn());
-            ivd.setAppointmentVerificationStatementDate(details.getAppointmentVerificationStatementDate());
-            ivd.setAppointmentVerificationStatementDueOn(details.getAppointmentVerificationStatementDueOn());
-            ivd.setAppointmentVerificationStartOn(details.getAppointmentVerificationStartOn());
-            ivd.setAuthorisedCorporateServiceProviderName(details.getAuthorisedCorporateServiceProviderName());
-            ivd.setIdentityVerifiedOn(details.getIdentityVerifiedOn());
-            ivd.setPreferredName(details.getPreferredName());
-            return ivd;
-        } else {
-            return null;
-        }
+        if (details == null) return null;
+
+        IdentityVerificationDetails ivd = new IdentityVerificationDetails();
+
+        Optional<LocalDate> appointmentVerificationEndOn = Optional.ofNullable(details.getAppointmentVerificationEndOn());
+        Optional<LocalDate> appointmentVerificationStatementDate = Optional.ofNullable(details.getAppointmentVerificationStatementDate());
+        Optional<LocalDate> appointmentVerificationStatementDueOn = Optional.ofNullable(details.getAppointmentVerificationStatementDueOn());
+        Optional<LocalDate> appointmentVerificationStartOn = Optional.ofNullable(details.getAppointmentVerificationStartOn());
+        Optional<LocalDate> identityVerifiedOn = Optional.ofNullable(details.getIdentityVerifiedOn());
+
+        appointmentVerificationEndOn.ifPresent(ivd::setAppointmentVerificationEndOn);
+        appointmentVerificationStatementDate.ifPresent(ivd::setAppointmentVerificationStatementDate);
+        appointmentVerificationStatementDueOn.ifPresent(ivd::setAppointmentVerificationStatementDueOn);
+        appointmentVerificationStartOn.ifPresent(ivd::setAppointmentVerificationStartOn);
+        identityVerifiedOn.ifPresent(ivd::setIdentityVerifiedOn);
+
+        ivd.setAuthorisedCorporateServiceProviderName(details.getAuthorisedCorporateServiceProviderName());
+        ivd.setAntiMoneyLaunderingSupervisoryBodies(details.getAntiMoneyLaunderingSupervisoryBodies());
+        ivd.setPreferredName(details.getPreferredName());
+
+        return ivd;
     }
 }

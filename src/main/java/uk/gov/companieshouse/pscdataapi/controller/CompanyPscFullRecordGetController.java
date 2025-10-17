@@ -8,7 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.companieshouse.api.model.psc.PscIndividualFullRecordApi;
+import uk.gov.companieshouse.api.psc.IndividualFullRecord;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.companieshouse.pscdataapi.logging.DataMapHolder;
@@ -27,7 +27,7 @@ public class CompanyPscFullRecordGetController {
     }
 
     @GetMapping("/company/{company_number}/persons-with-significant-control/individual/{notification_id}/full_record")
-    public ResponseEntity<PscIndividualFullRecordApi> getIndividualFullRecordPscData(
+    public ResponseEntity<IndividualFullRecord> getIndividualFullRecordPscData(
             @PathVariable("company_number") final String companyNumber,
             @PathVariable("notification_id") final String notificationId,
             final HttpServletRequest request) {
@@ -36,7 +36,7 @@ public class CompanyPscFullRecordGetController {
                 .companyNumber(companyNumber)
                 .itemId(notificationId);
         LOGGER.info("Getting full PSC record", DataMapHolder.getLogMap());
-        final PscIndividualFullRecordApi individualFullRecord = pscService.getIndividualFullRecord(companyNumber,
+        final IndividualFullRecord individualFullRecord = pscService.getIndividualFullRecord(companyNumber,
                 notificationId);
 
         LOGGER.info("Successfully retrieved full PSC record", DataMapHolder.getLogMap());

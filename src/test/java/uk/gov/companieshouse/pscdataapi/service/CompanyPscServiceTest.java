@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -47,14 +46,14 @@ import uk.gov.companieshouse.api.metrics.MetricsApi;
 import uk.gov.companieshouse.api.metrics.PscApi;
 import uk.gov.companieshouse.api.metrics.RegisterApi;
 import uk.gov.companieshouse.api.metrics.RegistersApi;
-import uk.gov.companieshouse.api.model.psc.PscIndividualFullRecordApi;
-import uk.gov.companieshouse.api.model.psc.IdentityVerificationDetailsApi;
 import uk.gov.companieshouse.api.psc.CorporateEntity;
 import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
 import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
 import uk.gov.companieshouse.api.psc.Identification;
+import uk.gov.companieshouse.api.psc.IdentityVerificationDetails;
 import uk.gov.companieshouse.api.psc.Individual;
 import uk.gov.companieshouse.api.psc.IndividualBeneficialOwner;
+import uk.gov.companieshouse.api.psc.IndividualFullRecord;
 import uk.gov.companieshouse.api.psc.LegalPerson;
 import uk.gov.companieshouse.api.psc.LegalPersonBeneficialOwner;
 import uk.gov.companieshouse.api.psc.ListSummary;
@@ -74,7 +73,6 @@ import uk.gov.companieshouse.pscdataapi.models.PscDeleteRequest;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 import uk.gov.companieshouse.pscdataapi.repository.CompanyPscRepository;
 import uk.gov.companieshouse.pscdataapi.transform.CompanyPscTransformer;
-import uk.gov.companieshouse.pscdataapi.transform.IdentityVerificationDetailsMapper;
 import uk.gov.companieshouse.pscdataapi.util.TestHelper;
 
 @ExtendWith(MockitoExtension.class)
@@ -86,10 +84,6 @@ class CompanyPscServiceTest {
     private static final Boolean REGISTER_VIEW_FALSE = false;
     private static final boolean SHOW_FULL_DOB_TRUE = true;
     private static final boolean SHOW_FULL_DOB_FALSE = false;
-    private static final LocalDate START_ON = LocalDate.parse("2025-06-12");
-    private static final LocalDate END_ON = LocalDate.parse("9999-12-31");
-    private static final LocalDate STATEMENT_DATE = LocalDate.parse("2025-06-01");
-    private static final LocalDate STATEMENT_DUE_DATE = LocalDate.parse("2025-06-15");
 
     @InjectMocks
     private CompanyPscService service;
@@ -109,10 +103,6 @@ class CompanyPscServiceTest {
     private CompanyMetricsApiService companyMetricsApiService;
     @Mock
     private FeatureFlags featureFlags;
-    @Mock
-    private OracleQueryApiService oracleQueryApiService;
-    @Mock
-    private IdentityVerificationDetailsMapper identityVerificationDetailsMapper;
 
     private FullRecordCompanyPSCApi request;
     private PscDocument pscDocument;
@@ -218,8 +208,9 @@ class CompanyPscServiceTest {
     void testDeletePSCThrowsResourceBadRequestException() {
         when(repository.getPscByCompanyNumberAndId("", NOTIFICATION_ID)).thenThrow(BadRequestException.class);
 
-        assertThrows(BadRequestException.class,
-                () -> service.deletePsc(new PscDeleteRequest("", NOTIFICATION_ID, "", INDIVIDUAL_KIND, DELTA_AT)));
+        final var deleteRequest = new PscDeleteRequest("", NOTIFICATION_ID, "", INDIVIDUAL_KIND, DELTA_AT);
+
+        assertThrows(BadRequestException.class, () -> service.deletePsc(deleteRequest));
 
         verify(repository, times(1)).getPscByCompanyNumberAndId("", NOTIFICATION_ID);
         verify(repository, never()).delete(any());
@@ -231,8 +222,9 @@ class CompanyPscServiceTest {
     void testDeletePSCThrowsBadRequestExceptionWhenCompanyNumberAndNotificationIdIsNull() {
         when(repository.getPscByCompanyNumberAndId("", "")).thenThrow(BadRequestException.class);
 
-        assertThrows(BadRequestException.class,
-                () -> service.deletePsc(new PscDeleteRequest("", "", "", INDIVIDUAL_KIND, DELTA_AT)));
+        final var deleteRequest = new PscDeleteRequest("", "", "", INDIVIDUAL_KIND, DELTA_AT);
+
+        assertThrows(BadRequestException.class, () -> service.deletePsc(deleteRequest));
 
         verify(repository, times(1)).getPscByCompanyNumberAndId("", "");
         verify(repository, never()).delete(any());
@@ -247,8 +239,9 @@ class CompanyPscServiceTest {
         when(chsKafkaApiService.invokeChsKafkaApiWithDeleteEvent(any(), any()))
                 .thenThrow(new ServiceUnavailableException("message"));
 
-        assertThrows(ServiceUnavailableException.class, () -> service.deletePsc(
-                new PscDeleteRequest(COMPANY_NUMBER, NOTIFICATION_ID, "", INDIVIDUAL_KIND, DELTA_AT)));
+        final var deleteRequest = new PscDeleteRequest(COMPANY_NUMBER, NOTIFICATION_ID, "", INDIVIDUAL_KIND, DELTA_AT);
+
+        assertThrows(ServiceUnavailableException.class, () -> service.deletePsc(deleteRequest));
 
         verify(repository).getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID);
         verify(repository).delete(pscDocument);
@@ -739,7 +732,7 @@ class CompanyPscServiceTest {
         metrics.setRegisters(registers);
         metrics.setCounts(new CountsApi().personsWithSignificantControl(new PscApi().activePscsCount(1)));
         PscData pscData = new PscData();
-        PscDocument pscDocument = new PscDocument();
+        pscDocument = new PscDocument();
         pscDocument.setData(pscData);
 
         ListSummary listSummary = new ListSummary();
@@ -785,6 +778,17 @@ class CompanyPscServiceTest {
         identification.setLegalForm("x");
         listSummary.setIdentification(identification);
 
+        IdentityVerificationDetails identityVerificationDetails = new IdentityVerificationDetails();
+        identityVerificationDetails.setAntiMoneyLaunderingSupervisoryBodies(Collections.singletonList("x"));
+        identityVerificationDetails.setAppointmentVerificationEndOn(LocalDate.parse("2020-12-12"));
+        identityVerificationDetails.setAppointmentVerificationStatementDate(LocalDate.parse("2020-10-10"));
+        identityVerificationDetails.setAppointmentVerificationStatementDueOn(LocalDate.parse("2020-11-11"));
+        identityVerificationDetails.setAppointmentVerificationStartOn(LocalDate.parse("2020-09-09"));
+        identityVerificationDetails.setAuthorisedCorporateServiceProviderName("x");
+        identityVerificationDetails.setIdentityVerifiedOn(LocalDate.parse("2020-11-11"));
+        identityVerificationDetails.setPreferredName("x");
+        listSummary.setIdentityVerificationDetails(identityVerificationDetails);
+
         when(repository.getPscDocumentList(anyString(), anyInt(), anyInt())).thenReturn(
                 Collections.singletonList(pscDocument));
 
@@ -792,6 +796,18 @@ class CompanyPscServiceTest {
                 .thenReturn(listSummary);
 
         PscList pscDocumentList = service.retrievePscListSummaryFromDb(COMPANY_NUMBER, 0, false, 25);
+
+        IdentityVerificationDetails expectedIdentityVerificationDetails = new IdentityVerificationDetails();
+        expectedIdentityVerificationDetails.setAntiMoneyLaunderingSupervisoryBodies(Collections.singletonList("x"));
+        expectedIdentityVerificationDetails.setAppointmentVerificationEndOn(LocalDate.parse("2020-12-12"));
+        expectedIdentityVerificationDetails.setAppointmentVerificationStatementDate(LocalDate.parse("2020-10-10"));
+        expectedIdentityVerificationDetails.setAppointmentVerificationStatementDueOn(LocalDate.parse("2020-11-11"));
+        expectedIdentityVerificationDetails.setAppointmentVerificationStartOn(LocalDate.parse("2020-09-09"));
+        expectedIdentityVerificationDetails.setAuthorisedCorporateServiceProviderName("x");
+        expectedIdentityVerificationDetails.setIdentityVerifiedOn(LocalDate.parse("2020-11-11"));
+        expectedIdentityVerificationDetails.setPreferredName("x");
+
+        expectedPscList.getItems().get(0).setIdentityVerificationDetails(expectedIdentityVerificationDetails);
 
         assertEquals(expectedPscList, pscDocumentList);
         verify(repository, times(1)).getPscDocumentList(COMPANY_NUMBER, 0, 25);
@@ -902,8 +918,7 @@ class CompanyPscServiceTest {
     void getIndividualFullRecordShouldReturnFullRecordWhenFound_FlagVerificationDetailsFalse() {
         when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID)).thenReturn(
                 Optional.of(pscDocument));
-        when(featureFlags.isIndividualPscFullRecordAddidentityVerificationDetailsEnabled()).thenReturn(false);
-        when(transformer.transformPscDocToIndividualFullRecord(pscDocument)).thenReturn(new PscIndividualFullRecordApi());
+        when(transformer.transformPscDocToIndividualFullRecord(pscDocument)).thenReturn(new IndividualFullRecord());
 
         service.getIndividualFullRecord(COMPANY_NUMBER, NOTIFICATION_ID);
 
@@ -915,11 +930,8 @@ class CompanyPscServiceTest {
     void getIndividualFullRecordShouldReturnFullRecordWhenFound_FlagVerificationDetailsTrue() {
         when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID)).thenReturn(
                 Optional.of(pscDocument));
-        when(featureFlags.isIndividualPscFullRecordAddidentityVerificationDetailsEnabled()).thenReturn(true);
-        when(oracleQueryApiService.getIdentityVerificationDetails(123L))
-                .thenReturn(Optional.of(new IdentityVerificationDetailsApi(START_ON, END_ON, STATEMENT_DATE, STATEMENT_DUE_DATE)));
         when(transformer.transformPscDocToIndividualFullRecord(pscDocument)).thenReturn(
-                new PscIndividualFullRecordApi().internalId(123L));
+                new IndividualFullRecord().internalId(123L));
 
         service.getIndividualFullRecord(COMPANY_NUMBER, NOTIFICATION_ID);
 
