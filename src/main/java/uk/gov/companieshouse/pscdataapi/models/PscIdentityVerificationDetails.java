@@ -47,6 +47,9 @@ public class PscIdentityVerificationDetails {
      * @param identityVerificationDetails API Address object.
      */
     public PscIdentityVerificationDetails(IdentityVerificationDetails identityVerificationDetails){
+        if (identityVerificationDetails == null) {
+            return;
+        }
         this.antiMoneyLaunderingSupervisoryBodies = identityVerificationDetails.getAntiMoneyLaunderingSupervisoryBodies();
         this.appointmentVerificationEndOn = identityVerificationDetails.getAppointmentVerificationEndOn();
         this.appointmentVerificationStatementDate = identityVerificationDetails.getAppointmentVerificationStatementDate();
