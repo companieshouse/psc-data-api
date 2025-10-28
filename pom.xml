@@ -28,7 +28,7 @@
         <jacoco-maven-plugin.version>0.8.13</jacoco-maven-plugin.version>
         <commons.io.version>2.19.0</commons.io.version>
         <org.mapstruct.version>1.6.3</org.mapstruct.version>
-        <tomcat-embed-core.version>11.0.10</tomcat-embed-core.version>
+        <tomcat-embed-core.version>11.0.11</tomcat-embed-core.version>
         <spring-web.version>6.2.9</spring-web.version>
         <spring-security-core.version>6.5.4</spring-security-core.version>
         <spring-core.version>6.2.11</spring-core.version>
