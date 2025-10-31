@@ -22,6 +22,7 @@ import uk.gov.companieshouse.api.psc.LegalPersonBeneficialOwner;
 import uk.gov.companieshouse.api.psc.PscList;
 import uk.gov.companieshouse.api.psc.SuperSecure;
 import uk.gov.companieshouse.api.psc.SuperSecureBeneficialOwner;
+import uk.gov.companieshouse.api.psc.SuperSecureIdentityVerificationDetails;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.companieshouse.pscdataapi.logging.DataMapHolder;
@@ -182,16 +183,15 @@ public class CompanyPscController {
     }
 
     @GetMapping("/company/{company_number}/persons-with-significant-control/super-secure/{notification_id}")
-    public ResponseEntity<SuperSecure> getSuperSecurePscData(
+    public ResponseEntity<SuperSecureIdentityVerificationDetails> getSuperSecurePscData(
             @PathVariable("company_number") String companyNumber,
             @PathVariable("notification_id") String notificationId) {
         DataMapHolder.get()
-                .companyNumber(companyNumber)
-                .itemId(notificationId);
+                     .companyNumber(companyNumber)
+                     .itemId(notificationId);
 
         LOGGER.info("Super secure GET request received", DataMapHolder.getLogMap());
-        SuperSecure superSecure =
-                pscService.getSuperSecurePsc(companyNumber, notificationId);
+        var superSecure = pscService.getSuperSecureIdv(companyNumber, notificationId);
 
         LOGGER.info("Successfully processed super secure GET request", DataMapHolder.getLogMap());
         return new ResponseEntity<>(superSecure, HttpStatus.OK);
