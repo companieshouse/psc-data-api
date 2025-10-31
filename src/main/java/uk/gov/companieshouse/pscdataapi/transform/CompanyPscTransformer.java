@@ -27,7 +27,6 @@ import uk.gov.companieshouse.api.psc.ListSummary;
 import uk.gov.companieshouse.api.psc.SensitiveData;
 import uk.gov.companieshouse.api.psc.SuperSecure;
 import uk.gov.companieshouse.api.psc.SuperSecureBeneficialOwner;
-import uk.gov.companieshouse.api.psc.SuperSecureIdentityVerificationDetails;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.companieshouse.pscdataapi.data.IndividualPscRoles;
@@ -290,21 +289,6 @@ public class CompanyPscTransformer {
         }
         return superSecure;
     }
-
-    public SuperSecureIdentityVerificationDetails transformPscDocToSuperSecureIdentityVerificationDetails(PscDocument pscDocument ) {
-        LOGGER.info("Attempting to transform PSC document to Super Secure Identity Verification Details", DataMapHolder.getLogMap());
-
-        SuperSecureIdentityVerificationDetails superSecureIVD = new SuperSecureIdentityVerificationDetails();
-        if (pscDocument.getData() != null) {
-            PscData pscData = pscDocument.getData();
-            var appointmentVerificationEndOn = pscData.getIdentityVerificationDetails().getAppointmentVerificationStartOn();
-            superSecureIVD.appointmentVerificationEndOn(appointmentVerificationEndOn);
-            var appointmentVerificationStatementStartOn = pscData.getIdentityVerificationDetails().getAppointmentVerificationStartOn();
-            superSecureIVD.appointmentVerificationStartOn(appointmentVerificationStatementStartOn);
-        }
-        return superSecureIVD;
-    }
-
 
     /**
      * Transform Super Secure Beneficial Owner PSC.

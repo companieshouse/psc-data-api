@@ -37,7 +37,6 @@ import uk.gov.companieshouse.api.psc.LegalPersonBeneficialOwner;
 import uk.gov.companieshouse.api.psc.PscList;
 import uk.gov.companieshouse.api.psc.SuperSecure;
 import uk.gov.companieshouse.api.psc.SuperSecureBeneficialOwner;
-import uk.gov.companieshouse.api.psc.SuperSecureIdentityVerificationDetails;
 import uk.gov.companieshouse.pscdataapi.exceptions.ConflictException;
 import uk.gov.companieshouse.pscdataapi.exceptions.NotFoundException;
 import uk.gov.companieshouse.pscdataapi.exceptions.ServiceUnavailableException;
@@ -142,7 +141,7 @@ class CompanyPscControllerTest {
     @DisplayName(
             "GET request returns a 200 response when Super Secure PSC found")
     void getSuperSecurePSCFound() throws Exception {
-        when(companyPscService.getSuperSecureIdv(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID)).thenReturn(new SuperSecureIdentityVerificationDetails() );
+        when(companyPscService.getSuperSecurePsc(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID)).thenReturn(new SuperSecure());
 
         mockMvc.perform(get(GET_SUPER_SECURE_URL)
                         .header("ERIC-Identity", ERIC_IDENTITY)
@@ -153,7 +152,7 @@ class CompanyPscControllerTest {
                         .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH))
                 .andExpect(status().isOk());
 
-        verify(companyPscService).getSuperSecureIdv(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID);
+        verify(companyPscService).getSuperSecurePsc(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID);
 
     }
 
@@ -161,7 +160,7 @@ class CompanyPscControllerTest {
     @DisplayName(
             "GET request returns a 503 response when service is unavailable")
     void getSuperSecurePSCDocumentWhenServiceIsDown() throws Exception {
-        when(companyPscService.getSuperSecureIdv(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID)).thenThrow(
+        when(companyPscService.getSuperSecurePsc(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID)).thenThrow(
                 ServiceUnavailableException.class);
 
         mockMvc.perform(get(GET_SUPER_SECURE_URL)
@@ -173,7 +172,7 @@ class CompanyPscControllerTest {
                         .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH))
                 .andExpect(status().isServiceUnavailable());
 
-        verify(companyPscService).getSuperSecureIdv(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID);
+        verify(companyPscService).getSuperSecurePsc(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID);
 
     }
 
@@ -181,7 +180,7 @@ class CompanyPscControllerTest {
     @DisplayName(
             "GET request returns a 404 response when Resource is not found")
     void getSuperSecurePSCDocumentWhenResourceNotFound() throws Exception {
-        when(companyPscService.getSuperSecureIdv(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID)).thenThrow(
+        when(companyPscService.getSuperSecurePsc(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID)).thenThrow(
                 NotFoundException.class);
 
         mockMvc.perform(get(GET_SUPER_SECURE_URL)
@@ -193,7 +192,7 @@ class CompanyPscControllerTest {
                         .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH))
                 .andExpect(status().isNotFound());
 
-        verify(companyPscService).getSuperSecureIdv(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID);
+        verify(companyPscService).getSuperSecurePsc(MOCK_COMPANY_NUMBER, MOCK_NOTIFICATION_ID);
 
     }
 

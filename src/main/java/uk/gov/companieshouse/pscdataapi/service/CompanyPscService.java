@@ -29,7 +29,6 @@ import uk.gov.companieshouse.api.psc.ListSummary;
 import uk.gov.companieshouse.api.psc.PscList;
 import uk.gov.companieshouse.api.psc.SuperSecure;
 import uk.gov.companieshouse.api.psc.SuperSecureBeneficialOwner;
-import uk.gov.companieshouse.api.psc.SuperSecureIdentityVerificationDetails;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
@@ -198,16 +197,6 @@ public class CompanyPscService {
                     LOGGER.error(NOT_FOUND_MSG, DataMapHolder.getLogMap());
                     return new NotFoundException(NOT_FOUND_MSG);
                 });
-    }
-
-    public SuperSecureIdentityVerificationDetails getSuperSecureIdv(final String companyNumber, final String notificationId ) {
-        return repository.getPscByCompanyNumberAndId(companyNumber, notificationId)
-                         .filter(document -> SUPER_SECURE_PERSON_WITH_SIGNIFICANT_CONTROL.equals(document.getData().getKind()))
-                         .map(transformer::transformPscDocToSuperSecureIdentityVerificationDetails)
-                         .orElseThrow(() -> {
-                             LOGGER.error(NOT_FOUND_MSG, DataMapHolder.getLogMap());
-                             return new NotFoundException(NOT_FOUND_MSG);
-                         });
     }
 
     public SuperSecureBeneficialOwner getSuperSecureBeneficialOwnerPsc(final String companyNumber, final String notificationId) {
