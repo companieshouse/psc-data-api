@@ -27,6 +27,7 @@ import uk.gov.companieshouse.api.psc.ListSummary;
 import uk.gov.companieshouse.api.psc.SensitiveData;
 import uk.gov.companieshouse.api.psc.SuperSecure;
 import uk.gov.companieshouse.api.psc.SuperSecureBeneficialOwner;
+import uk.gov.companieshouse.api.psc.SuperSecureIdentityVerificationDetails;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.companieshouse.pscdataapi.data.IndividualPscRoles;
@@ -287,6 +288,29 @@ public class CompanyPscTransformer {
             }
             superSecure.setLinks(pscData.getLinks());
         }
+
+        PscIdentityVerificationDetails pscIdentityVerificationDetails = Optional.ofNullable(pscDocument)
+                .map(PscDocument::getData)
+                .map(PscData::getIdentityVerificationDetails)
+                .orElse(null);
+
+        if (pscIdentityVerificationDetails != null && (pscIdentityVerificationDetails.getAppointmentVerificationEndOn() != null
+                || pscIdentityVerificationDetails.getAppointmentVerificationStartOn() != null)) {
+            SuperSecureIdentityVerificationDetails superSecureIdentityVerificationDetails =
+                    Optional.ofNullable(superSecure.getIdentityVerificationDetails())
+                            .orElseGet(() -> {
+                                SuperSecureIdentityVerificationDetails s = new SuperSecureIdentityVerificationDetails();
+                                superSecure.setIdentityVerificationDetails(s);
+                                return s;
+                            });
+
+            superSecureIdentityVerificationDetails.setAppointmentVerificationStartOn(
+                    pscIdentityVerificationDetails.getAppointmentVerificationStartOn());
+
+            superSecureIdentityVerificationDetails.setAppointmentVerificationEndOn(
+                    pscIdentityVerificationDetails.getAppointmentVerificationEndOn());
+        }
+
         return superSecure;
     }
 
