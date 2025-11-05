@@ -326,6 +326,72 @@ class CompanyPscTransformerTest {
     }
 
     @Test
+    void testIdvDatesPresentInSuperSecureWhenExistsInPscDocument() {
+        // Arrange
+        var pscDocument = TestHelper.buildPscDocument("individual");
+        var pscData = new PscData();
+
+        PscIdentityVerificationDetails idv = new PscIdentityVerificationDetails();
+        idv.setIdentityVerifiedOn(LocalDate.now());
+        var startOnDate = LocalDate.of(2023, 1, 1);
+        var endOnDate = LocalDate.of(2023, 1, 1);
+        idv.setAppointmentVerificationStartOn(startOnDate);
+        idv.setAppointmentVerificationEndOn(endOnDate);
+        pscData.setIdentityVerificationDetails(idv);
+        pscDocument.setData(pscData);
+        // Act
+        Individual result = pscTransformer.transformPscDocToIndividual(pscDocument, false);
+        var resultStartOnDate = result.getIdentityVerificationDetails().getAppointmentVerificationStartOn();
+        var resultEndOnDate = result.getIdentityVerificationDetails().getAppointmentVerificationEndOn();
+        // Assert
+        Assertions.assertNotNull(result.getIdentityVerificationDetails());
+        Assertions.assertEquals(startOnDate, resultStartOnDate);
+        Assertions.assertEquals(endOnDate, resultEndOnDate);
+    }
+
+    @Test
+    void testAppointmentVerificationStartOnInSuperSecureWhenExistsInPscDocument() {
+        // Arrange
+        var pscDocument = TestHelper.buildPscDocument("individual");
+        var pscData = new PscData();
+
+        PscIdentityVerificationDetails idv = new PscIdentityVerificationDetails();
+        idv.setIdentityVerifiedOn(LocalDate.now());
+        var startOnDate = LocalDate.of(2023, 1, 1);
+        idv.setAppointmentVerificationStartOn(startOnDate);
+        pscData.setIdentityVerificationDetails(idv);
+        pscDocument.setData(pscData);
+        // Act
+        Individual result = pscTransformer.transformPscDocToIndividual(pscDocument, false);
+        var resultStartOnDate = result.getIdentityVerificationDetails().getAppointmentVerificationStartOn();
+        // Assert
+        Assertions.assertNotNull(result.getIdentityVerificationDetails());
+        Assertions.assertEquals(startOnDate, resultStartOnDate);
+        Assertions.assertNull(result.getIdentityVerificationDetails().getAppointmentVerificationEndOn());
+    }
+
+    @Test
+    void testAppointmentVerificationEndOnInSuperSecureWhenExistsInPscDocument() {
+        // Arrange
+        var pscDocument = TestHelper.buildPscDocument("individual");
+        var pscData = new PscData();
+
+        PscIdentityVerificationDetails idv = new PscIdentityVerificationDetails();
+        idv.setIdentityVerifiedOn(LocalDate.now());
+        var endOnDate = LocalDate.of(2023, 1, 1);
+        idv.setAppointmentVerificationEndOn(endOnDate);
+        pscData.setIdentityVerificationDetails(idv);
+        pscDocument.setData(pscData);
+        // Act
+        Individual result = pscTransformer.transformPscDocToIndividual(pscDocument, false);
+        var resultEndOnDate = result.getIdentityVerificationDetails().getAppointmentVerificationEndOn();
+        // Assert
+        Assertions.assertNotNull(result.getIdentityVerificationDetails());
+        Assertions.assertEquals(endOnDate, resultEndOnDate);
+        Assertions.assertNull(result.getIdentityVerificationDetails().getAppointmentVerificationStartOn());
+    }
+
+    @Test
     void testEmptyPscIndividualBeneficialOwnerTransform() {
         IndividualBeneficialOwner individualBeneficialOwner = pscTransformer
                 .transformPscDocToIndividualBeneficialOwner(new PscDocument(), SHOW_FULL_DOB_TRUE);
