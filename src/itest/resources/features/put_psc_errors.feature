@@ -4,7 +4,7 @@ Feature: Error and Retry Psc Data Requests
     Given Psc data api service is running
     And the database is down
     When I send a PUT request with payload "<data>" file for company number "<companyNumber>" with notification id  "<notificationId>"
-    Then I should receive 503 status code
+    Then I should receive 502 status code
     And the CHS Kafka API service is not invoked
 
     Examples:
