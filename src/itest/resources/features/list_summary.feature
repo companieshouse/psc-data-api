@@ -66,7 +66,7 @@ Feature: Get list summary
     And a PSC does not exist for "<company_number>"
     And the database is down
     When a Get request is sent for "<company_number>" for List summary
-    Then I should receive 503 status code
+    Then I should receive 502 status code
 
     Examples:
       | company_number |

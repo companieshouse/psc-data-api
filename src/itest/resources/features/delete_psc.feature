@@ -36,7 +36,7 @@ Feature: Delete PSC
     And a PSC does not exist for "<company_number>"
     And the database is down
     When a DELETE request is sent for "<company_number>"
-    Then I should receive 503 status code
+    Then I should receive 502 status code
     And the CHS Kafka API is not invoked with a DELETE event
 
     Examples:

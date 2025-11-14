@@ -24,6 +24,7 @@ import uk.gov.companieshouse.api.psc.SuperSecure;
 import uk.gov.companieshouse.api.psc.SuperSecureBeneficialOwner;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
+import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
 import uk.gov.companieshouse.pscdataapi.logging.DataMapHolder;
 import uk.gov.companieshouse.pscdataapi.models.PscDeleteRequest;
 import uk.gov.companieshouse.pscdataapi.service.CompanyPscService;
@@ -49,6 +50,12 @@ public class CompanyPscController {
                 .itemId(notificationId);
 
         LOGGER.info("PUT request received", DataMapHolder.getLogMap());
+
+        if (request.getExternalData() == null || request.getInternalData() == null) {
+            final String msg = "Bad request - payload had null data";
+            LOGGER.error(msg, DataMapHolder.getLogMap());
+            throw new BadRequestException(msg);
+        }
 
         pscService.insertPscRecord(request);
 
