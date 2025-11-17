@@ -15,33 +15,29 @@
     <properties>
         <java.version>21</java.version>
         <start-class>uk.gov.companieshouse.pscdataapi.PscDataApiApplication</start-class>
-        <spring-boot-dependencies.version>3.4.9</spring-boot-dependencies.version>
-        <spring-boot-maven-plugin.version>3.4.9</spring-boot-maven-plugin.version>
+        <spring-boot-dependencies.version>3.5.7</spring-boot-dependencies.version>
+        <spring-boot-maven-plugin.version>3.5.7</spring-boot-maven-plugin.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
-        <maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
-        <maven-surefire-plugin.version>3.5.3</maven-surefire-plugin.version>
-        <maven-failsafe-plugin.version>3.5.3</maven-failsafe-plugin.version>
+        <maven-compiler-plugin.version>3.14.1</maven-compiler-plugin.version>
+        <maven-surefire-plugin.version>3.5.4</maven-surefire-plugin.version>
+        <maven-failsafe-plugin.version>3.5.4</maven-failsafe-plugin.version>
         <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
-        <maven-build-helper-plugin.version>3.6.0</maven-build-helper-plugin.version>
-        <jib-maven-plugin.version>3.4.4</jib-maven-plugin.version>
-        <jacoco-maven-plugin.version>0.8.13</jacoco-maven-plugin.version>
-        <commons.io.version>2.19.0</commons.io.version>
+        <maven-build-helper-plugin.version>3.6.1</maven-build-helper-plugin.version>
+        <jib-maven-plugin.version>3.4.6</jib-maven-plugin.version>
+        <jacoco-maven-plugin.version>0.8.14</jacoco-maven-plugin.version>
+        <commons.io.version>2.21.0</commons.io.version>
         <org.mapstruct.version>1.6.3</org.mapstruct.version>
-        <tomcat-embed-core.version>11.0.10</tomcat-embed-core.version>
-        <spring-web.version>6.2.9</spring-web.version>
-        <spring-security-core.version>6.5.4</spring-security-core.version>
-        <spring-core.version>6.2.11</spring-core.version>
-        <gson.version>2.13.1</gson.version>
-        <commons-lang3.version>3.18.0</commons-lang3.version>
+        <gson.version>2.13.2</gson.version>
+
         <!-- Internal -->
         <structured-logging.version>3.0.43</structured-logging.version>
-        <private-api-sdk-java.version>4.0.407</private-api-sdk-java.version>
-        <api-sdk-java.version>6.4.11</api-sdk-java.version>
-        <api-security-java.version>2.0.16</api-security-java.version>
+        <private-api-sdk-java.version>4.0.411</private-api-sdk-java.version>
+        <api-sdk-java.version>6.5.1</api-sdk-java.version>
+        <api-security-java.version>2.0.18</api-security-java.version>
 
         <!-- tests -->
-        <io-cucumber.version>7.22.0</io-cucumber.version>
+        <io-cucumber.version>7.23.0</io-cucumber.version> <!-- Higher version not compatible with junit engine at time of comment -->
         <skip.integration.tests>false</skip.integration.tests>
         <skip.unit.tests>false</skip.unit.tests>
 
@@ -87,7 +83,6 @@
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
         <dependency>
-<!--            Can't upgrade vulernable logback-core due to higher versions being incomaptible-->
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
         </dependency>
@@ -117,23 +112,10 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <!-- included commons-lang3-3.18.0 to address CVE-2025-48924 -->
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>${commons-lang3.version}</version>
-        </dependency>
         <dependency>
             <groupId>uk.gov.companieshouse</groupId>
             <artifactId>private-api-sdk-java</artifactId>
             <version>${private-api-sdk-java.version}</version>
-            <exclusions>
-                <!-- Excluding to address CVE-2025-48989 tomcat-embed-core pulled transitively-->
-                <exclusion>
-                    <groupId>org.apache.tomcat.embed</groupId>
-                    <artifactId>tomcat-embed-core</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>
@@ -224,32 +206,6 @@
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct</artifactId>
             <version>${org.mapstruct.version}</version>
-        </dependency>
-
-        <!-- Set to 11.0.8 to avoid CVE-2025-49125(6.3), CVE-2025-48988(8.7) as s sub dependency of velocity-engine-core 2.4.1 -->
-        <dependency>
-            <groupId>org.apache.tomcat.embed</groupId>
-            <artifactId>tomcat-embed-core</artifactId>
-            <version>${tomcat-embed-core.version}</version>
-        </dependency>
-
-        <!-- Set to 6.2.8 to avoid CVE-2025-41234(7.4) as s sub dependency of spring-boot-starter-web 3.4.5 -->
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-web</artifactId>
-            <version>${spring-web.version}</version>
-        </dependency>
-        <!-- Set to 6.5.1 to avoid CVE-2025-41232(9.3) as s sub dependency of spring-boot-starter-security 3.4.5 -->
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-core</artifactId>
-            <version>${spring-security-core.version}</version>
-        </dependency>
-        <!-- Set to 6.2.11 to avoid CVE-2025-41249(8.699999809265137) as a sub dependency of spring-boot-starter 3.4.9 -->
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-core</artifactId>
-            <version>${spring-core.version}</version>
         </dependency>
     </dependencies>
 
