@@ -65,7 +65,11 @@
 
   <dependencies>
     <!--        Vulnerable deps start here-->
-
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>3.20.0</version>
+    </dependency>
     <!--        Vulnerable deps end here-->
 
     <dependency>
