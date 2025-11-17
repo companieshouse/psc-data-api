@@ -9,7 +9,7 @@ public enum CorporatePscRoles {
     LEGAL_PSC("legal-person-person-with-significant-control"),
     LEGAL_BO("legal-person-beneficial-owner");
 
-    private String role;
+    private final String role;
 
     CorporatePscRoles(String role) {
         this.role = role;

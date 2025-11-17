@@ -13,7 +13,7 @@ public enum PscRoles {
     LEGAL_BO("legal-person-beneficial-owner"),
     SUPER_SECURE_BO("super-secure-beneficial-owner");
 
-    private String role;
+    private final String role;
 
     PscRoles(String role) {
         this.role = role;

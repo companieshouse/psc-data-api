@@ -33,7 +33,7 @@ public class WebSecurityConfig implements WebMvcConfigurer {
     public static final String PATTERN_IDENTITY_VERIFICATION_DETAILS =
             "/company/{company_number}/persons-with-significant-control/individual/{notification_id}/identity-verification-details";
 
-    List<String> otherAllowedAuthMethods = Arrays.asList("oauth2");
+    List<String> otherAllowedAuthMethods = List.of("oauth2");
 
     @Override
     public void addInterceptors(final InterceptorRegistry registry) {
@@ -88,6 +88,6 @@ public class WebSecurityConfig implements WebMvcConfigurer {
 
     @Bean
     public List<String> externalMethods() {
-        return Arrays.asList(HttpMethod.GET.name());
+        return List.of(HttpMethod.GET.name());
     }
 }
