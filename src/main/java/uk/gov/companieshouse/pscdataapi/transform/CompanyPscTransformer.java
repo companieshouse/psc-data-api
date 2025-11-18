@@ -443,7 +443,7 @@ public class CompanyPscTransformer {
 
             pscDocument.setUpdated(new Updated()
                     .at(LocalDateTime.now())
-                    .by(internalData.getUpdatedBy()));
+                    .by(DataMapHolder.getRequestId()));
         }
         return pscDocument;
     }
