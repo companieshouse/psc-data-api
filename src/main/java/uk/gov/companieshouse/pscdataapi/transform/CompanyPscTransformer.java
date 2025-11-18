@@ -3,6 +3,7 @@ package uk.gov.companieshouse.pscdataapi.transform;
 import static uk.gov.companieshouse.pscdataapi.PscDataApiApplication.APPLICATION_NAME_SPACE;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 import java.util.Optional;
@@ -398,8 +399,7 @@ public class CompanyPscTransformer {
      * @param requestBody    request payload.
      * @return PSC mongo Document.
      */
-    public PscDocument transformPscOnInsert(
-            String notificationId, FullRecordCompanyPSCApi requestBody) {
+    public PscDocument transformPscOnInsert(String notificationId, FullRecordCompanyPSCApi requestBody) {
         String pscStatementId = null;
         if (requestBody.getExternalData() != null) {
             final ExternalData externalData = requestBody.getExternalData();
@@ -441,8 +441,9 @@ public class CompanyPscTransformer {
             InternalData internalData = requestBody.getInternalData();
             pscDocument.setDeltaAt(dateTimeFormatter.format(internalData.getDeltaAt()));
 
-            pscDocument.setUpdated(new Updated().setAt(LocalDate.now()));
-            pscDocument.setUpdatedBy(internalData.getUpdatedBy());
+            pscDocument.setUpdated(new Updated()
+                    .at(LocalDateTime.now())
+                    .by(internalData.getUpdatedBy()));
         }
         return pscDocument;
     }
