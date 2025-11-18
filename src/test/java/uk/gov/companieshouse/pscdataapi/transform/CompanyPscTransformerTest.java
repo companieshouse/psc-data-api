@@ -1,9 +1,11 @@
 package uk.gov.companieshouse.pscdataapi.transform;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -258,7 +260,7 @@ class CompanyPscTransformerTest {
 
         assertThat(result.getDeltaAt(), is(expectedDocument.getDeltaAt()));
         assertThat(result.getUpdatedBy(), is(expectedDocument.getUpdatedBy()));
-        assertThat(result.getUpdated().getAt(), is(expectedDocument.getUpdated().getAt()));
+        assertThat(result.getUpdated().getAt(), instanceOf(LocalDateTime.class));
 
         result.setUpdated(expectedDocument.getUpdated()); // Updated objects would be different objects
         assertThat(result, is(expectedDocument));

@@ -246,8 +246,9 @@ public class TestHelper {
         output.setPscId(PSC_ID);
         output.setCompanyNumber(COMPANY_NUMBER);
         output.setDeltaAt("20220112000000000000");
-        output.setUpdated(new Updated().setAt(LocalDate.now()));
-        output.setUpdatedBy("user");
+        output.setUpdated(new Updated()
+                .at(LocalDateTime.now())
+                .by("user"));
 
         pscData.setKind(kind);
         pscData.setCeasedOn(LocalDate.of(2012, 12, 12));
@@ -365,7 +366,7 @@ public class TestHelper {
 
     public static PscDocument buildBasicDocument() {
         PscDocument document = new PscDocument();
-        document.setUpdated(new Updated().setAt(LocalDate.now()));
+        document.setUpdated(new Updated().at(LocalDateTime.now()));
         document.setCompanyNumber(COMPANY_NUMBER);
         document.setPscId(PSC_ID);
         document.setNotificationId(COMPANY_NUMBER);

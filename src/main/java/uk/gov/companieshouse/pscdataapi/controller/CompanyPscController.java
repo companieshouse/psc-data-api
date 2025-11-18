@@ -41,7 +41,8 @@ public class CompanyPscController {
     }
 
     @PutMapping("/company/{company_number}/persons-with-significant-control/{notification_id}/full_record")
-    public ResponseEntity<Void> submitPscData(@PathVariable("company_number") final String companyNumber,
+    public ResponseEntity<Void> submitPscData(
+            @PathVariable("company_number") final String companyNumber,
             @PathVariable("notification_id") final String notificationId,
             @RequestBody FullRecordCompanyPSCApi request) {
 
