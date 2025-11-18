@@ -267,7 +267,7 @@ class CompanyPscServiceTest {
         when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID)).thenReturn(Optional.of(document));
 
         final var deleteRequest = new PscDeleteRequest(COMPANY_NUMBER, NOTIFICATION_ID, "", INDIVIDUAL_KIND,
-            STALE_DELTA_AT);
+                STALE_DELTA_AT);
 
         assertThrows(ConflictException.class, () -> service.deletePsc(deleteRequest));
 
@@ -746,7 +746,6 @@ class CompanyPscServiceTest {
         when(repository.getListSummaryRegisterView(any(), any(), any(), any())).thenReturn(
                 Collections.singletonList(pscDocument));
         when(transformer.transformPscDocToListSummary(pscDocument)).thenReturn(listSummary);
-
 
         // when service method has registerView = true param set
         PscList result = service.retrievePscListSummaryFromDb(COMPANY_NUMBER, 0, true, 25);

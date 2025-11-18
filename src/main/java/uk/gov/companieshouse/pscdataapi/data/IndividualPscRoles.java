@@ -7,7 +7,7 @@ public enum IndividualPscRoles {
     INDIVIDUAL_PSC("individual-person-with-significant-control"),
     INDIVIDUAL_BO("individual-beneficial-owner");
 
-    private String role;
+    private final String role;
 
     IndividualPscRoles(String role) {
         this.role = role;

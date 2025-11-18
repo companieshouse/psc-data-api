@@ -1,8 +1,6 @@
 package uk.gov.companieshouse.pscdataapi.interceptor;
 
 import jakarta.servlet.http.HttpServletRequest;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Helper class for authenticating users

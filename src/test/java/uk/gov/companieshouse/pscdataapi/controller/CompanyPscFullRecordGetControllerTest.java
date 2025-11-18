@@ -9,7 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.LocalDate;
-import java.util.Arrays;
+import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -183,7 +183,7 @@ class CompanyPscFullRecordGetControllerTest {
                 .residentialAddressSameAsServiceAddress(Boolean.FALSE)
                 .usualResidentialAddress(residentialAddress)
                 .nationality("British")
-                .naturesOfControl(Arrays.asList("nature of my control"))
+                .naturesOfControl(List.of("nature of my control"))
                 .dateOfBirth(new Date3Tuple(1, 2, 2000))
                 .internalId(123456789L)
                 .links(pscLinks)

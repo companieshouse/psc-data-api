@@ -1,13 +1,12 @@
 package uk.gov.companieshouse.pscdataapi.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.lang.Nullable;
-import uk.gov.companieshouse.api.psc.IdentityVerificationDetails;
-
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.lang.Nullable;
+import uk.gov.companieshouse.api.psc.IdentityVerificationDetails;
 
 public class PscIdentityVerificationDetails {
 
@@ -48,14 +47,15 @@ public class PscIdentityVerificationDetails {
     @Nullable
     private String preferredName;
 
-    public PscIdentityVerificationDetails(){}
+    public PscIdentityVerificationDetails() {
+    }
 
     /**
      * Constructor using SDK IdentityVerificationDetails.
      *
      * @param identityVerificationDetails API Address object.
      */
-    public PscIdentityVerificationDetails(IdentityVerificationDetails identityVerificationDetails){
+    public PscIdentityVerificationDetails(IdentityVerificationDetails identityVerificationDetails) {
         if (identityVerificationDetails == null) {
             return;
         }

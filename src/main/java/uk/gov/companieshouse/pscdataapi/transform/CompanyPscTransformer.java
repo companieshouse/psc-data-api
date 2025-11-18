@@ -74,7 +74,8 @@ public class CompanyPscTransformer {
             if (Objects.equals(pscData.getIdentityVerificationDetails(), new PscIdentityVerificationDetails(null))) {
                 individual.setIdentityVerificationDetails(null);
             } else {
-                individual.setIdentityVerificationDetails(mapIdentityVerificationDetails(pscData.getIdentityVerificationDetails()));
+                individual.setIdentityVerificationDetails(
+                        mapIdentityVerificationDetails(pscData.getIdentityVerificationDetails()));
             }
         }
         if (pscDocument.getSensitiveData() != null) {
@@ -106,7 +107,8 @@ public class CompanyPscTransformer {
         individualFullRecord.setLinks(mapLinksToPscLinks(pscData.getLinks()));
         individualFullRecord.serviceAddress(mapAddress(pscData.getAddress()));
         individualFullRecord.setEtag(pscData.getEtag());
-        individualFullRecord.setIdentityVerificationDetails(mapIdentityVerificationDetails(pscData.getIdentityVerificationDetails()));
+        individualFullRecord.setIdentityVerificationDetails(
+                mapIdentityVerificationDetails(pscData.getIdentityVerificationDetails()));
 
         final PscSensitiveData sensitivePscData = pscDocument.getSensitiveData();
         individualFullRecord.setResidentialAddressSameAsServiceAddress(
@@ -666,13 +668,17 @@ public class CompanyPscTransformer {
     }
 
     private IdentityVerificationDetails mapIdentityVerificationDetails(final PscIdentityVerificationDetails details) {
-        if (details == null) return null;
+        if (details == null) {
+            return null;
+        }
 
         IdentityVerificationDetails ivd = new IdentityVerificationDetails();
 
         Optional<LocalDate> appointmentVerificationEndOn = Optional.ofNullable(details.getAppointmentVerificationEndOn());
-        Optional<LocalDate> appointmentVerificationStatementDate = Optional.ofNullable(details.getAppointmentVerificationStatementDate());
-        Optional<LocalDate> appointmentVerificationStatementDueOn = Optional.ofNullable(details.getAppointmentVerificationStatementDueOn());
+        Optional<LocalDate> appointmentVerificationStatementDate = Optional.ofNullable(
+                details.getAppointmentVerificationStatementDate());
+        Optional<LocalDate> appointmentVerificationStatementDueOn = Optional.ofNullable(
+                details.getAppointmentVerificationStatementDueOn());
         Optional<LocalDate> appointmentVerificationStartOn = Optional.ofNullable(details.getAppointmentVerificationStartOn());
         Optional<LocalDate> identityVerifiedOn = Optional.ofNullable(details.getIdentityVerifiedOn());
 

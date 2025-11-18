@@ -7,7 +7,7 @@ public enum SecurePscRoles {
     SUPER_SECURE_PSC("super-secure-person-with-significant-control"),
     SUPER_SECURE_BO("super-secure-beneficial-owner");
 
-    private String role;
+    private final String role;
 
     SecurePscRoles(String role) {
 
