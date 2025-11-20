@@ -38,7 +38,6 @@ public class CucumberFeaturesRunnerIT {
 
     @DynamicPropertySource
     public static void setProperties(DynamicPropertyRegistry registry) {
-        registry.add("feature.identity_verification", () -> true);
         registry.add("spring.data.mongodb.uri", mongoDBContainer::getReplicaSetUrl);
         mongoDBContainer.start();
     }

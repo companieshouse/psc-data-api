@@ -20,9 +20,7 @@ import uk.gov.companieshouse.pscdataapi.controller.CompanyPscFullRecordGetContro
 import uk.gov.companieshouse.pscdataapi.service.CompanyPscService;
 
 @ExtendWith(SpringExtension.class)
-@WebMvcTest(controllers = {
-        CompanyPscFullRecordGetController.class
-}, properties = {"feature.identity_verification=true"})
+@WebMvcTest(controllers = CompanyPscFullRecordGetController.class)
 class WebSecurityConfigTest {
 
     private static final String MOCK_COMPANY_NUMBER = "1234567";

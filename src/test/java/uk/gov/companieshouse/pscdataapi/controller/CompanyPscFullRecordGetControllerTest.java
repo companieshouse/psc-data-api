@@ -28,7 +28,7 @@ import uk.gov.companieshouse.pscdataapi.exceptions.InternalDataException;
 import uk.gov.companieshouse.pscdataapi.exceptions.NotFoundException;
 import uk.gov.companieshouse.pscdataapi.service.CompanyPscService;
 
-@SpringBootTest(properties = {"feature.identity_verification=true"})
+@SpringBootTest
 @AutoConfigureMockMvc
 class CompanyPscFullRecordGetControllerTest {
 
