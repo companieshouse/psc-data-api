@@ -7,20 +7,13 @@ import org.springframework.stereotype.Component;
 public class FeatureFlags {
 
     private final boolean streamHookDisabled;
-    private final boolean identityVerificationEnabled;
 
-    public FeatureFlags(@Value("${feature.seeding_collection_enabled}") final boolean streamHookDisabled,
-            @Value("${feature.identity_verification}") final boolean identityVerificationEnabled) {
+    public FeatureFlags(@Value("${feature.seeding_collection_enabled}") final boolean streamHookDisabled) {
         this.streamHookDisabled = streamHookDisabled;
-        this.identityVerificationEnabled = identityVerificationEnabled;
     }
 
     public boolean isStreamHookDisabled() {
         return streamHookDisabled;
-    }
-
-    public boolean isIdentityVerificationEnabled() {
-        return identityVerificationEnabled;
     }
 
 }
