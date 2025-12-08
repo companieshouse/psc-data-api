@@ -14,6 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.api.psc.CorporateEntity;
 import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
 import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
+import uk.gov.companieshouse.api.psc.ExternalData;
 import uk.gov.companieshouse.api.psc.IdentityVerificationDetails;
 import uk.gov.companieshouse.api.psc.Individual;
 import uk.gov.companieshouse.api.psc.IndividualBeneficialOwner;
@@ -267,6 +268,37 @@ class CompanyPscTransformerTest {
     }
 
     @Test
+    void doNotSetSensitiveDataWhenSensitiveDataIsNull() {
+        PscDocument pscDocument = new PscDocument();
+        ExternalData externalData = new ExternalData();
+        externalData.setSensitiveData(null);
+
+        pscTransformer.setSensitiveDataIfPresent(pscDocument, externalData);
+
+        Assertions.assertNull(pscDocument.getSensitiveData());
+    }
+
+    @Test
+    void transformPscOnInsertWithExternalDataButNullData() {
+        FullRecordCompanyPSCApi requestBody = new FullRecordCompanyPSCApi();
+        ExternalData externalData = new ExternalData();
+        externalData.setData(null);
+        externalData.setPscId("pscId123");
+        externalData.setCompanyNumber("12345678");
+        requestBody.setExternalData(externalData);
+        String notificationId = "notif-001";
+
+        PscDocument result = pscTransformer.transformPscOnInsert(notificationId, requestBody);
+
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals("notif-001", result.getId());
+        Assertions.assertEquals("notif-001", result.getNotificationId());
+        Assertions.assertEquals("pscId123", result.getPscId());
+        Assertions.assertEquals("12345678", result.getCompanyNumber());
+        Assertions.assertNull(result.getData());
+    }
+
+    @Test
     void testBasicPscDocumentWithNullDataTransform() {
         PscDocument pscDocument = new PscDocument();
         pscDocument.setData(new PscData());
@@ -401,6 +433,42 @@ class CompanyPscTransformerTest {
     }
 
     @Test
+    void transformPscDocToIndividualBeneficialOwnerWithNullData() {
+        PscDocument pscDocument = new PscDocument();
+
+        IndividualBeneficialOwner result = pscTransformer.transformPscDocToIndividualBeneficialOwner(pscDocument, true);
+
+        Assertions.assertNotNull(result);
+        Assertions.assertNull(result.getName());
+        Assertions.assertNull(result.getDateOfBirth());
+        Assertions.assertNull(result.getIsSanctioned());
+    }
+
+    @Test
+    void transformPscDocToIndividualBeneficialOwnerWithNullSensitiveData() {
+        PscDocument pscDocument = TestHelper.buildPscDocument(TestHelper.INDIVIDUAL_BO_KIND);
+        pscDocument.setSensitiveData(null);
+
+        IndividualBeneficialOwner result = pscTransformer.transformPscDocToIndividualBeneficialOwner(pscDocument, true);
+
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals(pscDocument.getData().getName(), result.getName());
+        Assertions.assertNull(result.getDateOfBirth());
+    }
+
+    @Test
+    void transformPscDocToIndividualBeneficialOwnerWithEmptySensitiveData() {
+        PscDocument pscDocument = TestHelper.buildPscDocument(TestHelper.INDIVIDUAL_BO_KIND);
+        pscDocument.setSensitiveData(new PscSensitiveData());
+
+        IndividualBeneficialOwner result = pscTransformer.transformPscDocToIndividualBeneficialOwner(pscDocument, true);
+
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals(pscDocument.getData().getName(), result.getName());
+        Assertions.assertNull(result.getDateOfBirth());
+    }
+
+    @Test
     void testEmptyPscCorporateEntityTransform() {
         CorporateEntity corporateEntity = pscTransformer
                 .transformPscDocToCorporateEntity(new PscDocument());
@@ -415,6 +483,155 @@ class CompanyPscTransformerTest {
     }
 
     @Test
+    void transformCorporateEntityBeneficialOwnerWithValidData() {
+        PscDocument pscDocument = TestHelper.buildPscDocument(TestHelper.CORPORATE_BO_KIND);
+
+        CorporateEntityBeneficialOwner result = pscTransformer.transformPscDocToCorporateEntityBeneficialOwner(pscDocument);
+
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals(pscDocument.getData().getEtag(), result.getEtag());
+        Assertions.assertEquals(pscDocument.getData().getName(), result.getName());
+        Assertions.assertEquals(pscDocument.getData().getAddress().getAddressLine1(), result.getAddress().getAddressLine1());
+        Assertions.assertEquals(pscDocument.getData().getNaturesOfControl(), result.getNaturesOfControl());
+        Assertions.assertEquals(pscDocument.getData().getLinks(), result.getLinks());
+        Assertions.assertEquals(pscDocument.getData().getSanctioned(), result.getIsSanctioned());
+        Assertions.assertEquals(pscDocument.getData().getIdentification().getLegalForm(), result.getIdentification().getLegalForm());
+        Assertions.assertEquals(pscDocument.getData().getPrincipalOfficeAddress().getAddressLine1(), result.getPrincipalOfficeAddress().getAddressLine1());
+        Assertions.assertEquals(pscDocument.getData().getCeasedOn(), result.getCeasedOn());
+    }
+
+    @Test
+    void transformCorporateEntityBeneficialOwnerWithNullData() {
+        PscDocument pscDocument = new PscDocument();
+
+        CorporateEntityBeneficialOwner result = pscTransformer.transformPscDocToCorporateEntityBeneficialOwner(pscDocument);
+
+        Assertions.assertNotNull(result);
+        Assertions.assertNull(result.getEtag());
+        Assertions.assertNull(result.getName());
+        Assertions.assertNull(result.getAddress());
+        Assertions.assertNull(result.getNaturesOfControl());
+        Assertions.assertNull(result.getLinks());
+        Assertions.assertNull(result.getIsSanctioned());
+        Assertions.assertNull(result.getIdentification());
+        Assertions.assertNull(result.getPrincipalOfficeAddress());
+        Assertions.assertNull(result.getCeasedOn());
+    }
+
+    @Test
+    void transformCorporateEntityBeneficialOwnerWithEmptyData() {
+        PscDocument pscDocument = new PscDocument();
+        pscDocument.setData(new PscData());
+
+        CorporateEntityBeneficialOwner result = pscTransformer.transformPscDocToCorporateEntityBeneficialOwner(pscDocument);
+
+        Assertions.assertNotNull(result);
+        Assertions.assertNull(result.getEtag());
+        Assertions.assertNull(result.getName());
+        Assertions.assertNull(result.getAddress());
+        Assertions.assertNull(result.getNaturesOfControl());
+        Assertions.assertNull(result.getLinks());
+        Assertions.assertNull(result.getIsSanctioned());
+        Assertions.assertNull(result.getIdentification());
+        Assertions.assertNull(result.getPrincipalOfficeAddress());
+        Assertions.assertNull(result.getCeasedOn());
+    }
+
+    @Test
+    void transformCorporateEntityBeneficialOwnerWithPartialData() {
+        PscDocument pscDocument = new PscDocument();
+        PscData pscData = new PscData();
+        pscData.setEtag("etag123");
+        pscData.setName("Test Corporate Entity Beneficial Owner");
+        pscDocument.setData(pscData);
+
+        CorporateEntityBeneficialOwner result = pscTransformer.transformPscDocToCorporateEntityBeneficialOwner(pscDocument);
+
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals("etag123", result.getEtag());
+        Assertions.assertEquals("Test Corporate Entity Beneficial Owner", result.getName());
+        Assertions.assertNull(result.getAddress());
+        Assertions.assertNull(result.getNaturesOfControl());
+        Assertions.assertNull(result.getLinks());
+        Assertions.assertNull(result.getIsSanctioned());
+        Assertions.assertNull(result.getIdentification());
+        Assertions.assertNull(result.getPrincipalOfficeAddress());
+        Assertions.assertNull(result.getCeasedOn());
+    }
+
+    @Test
+    void transformCorporateEntityWithValidData() {
+        PscDocument pscDocument = TestHelper.buildPscDocument(TestHelper.CORPORATE_KIND);
+
+        CorporateEntity result = pscTransformer.transformPscDocToCorporateEntity(pscDocument);
+
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals(pscDocument.getData().getEtag(), result.getEtag());
+        Assertions.assertEquals(pscDocument.getData().getName(), result.getName());
+        Assertions.assertEquals(pscDocument.getData().getCeasedOn(), result.getCeasedOn());
+        Assertions.assertEquals(pscDocument.getData().getNotifiedOn(), result.getNotifiedOn());
+        Assertions.assertEquals(pscDocument.getData().getLinks(), result.getLinks());
+        Assertions.assertEquals(pscDocument.getData().getNaturesOfControl(), result.getNaturesOfControl());
+        Assertions.assertNotNull(result.getAddress());
+        Assertions.assertNotNull(result.getIdentification());
+    }
+
+    @Test
+    void transformCorporateEntityWithNullData() {
+        PscDocument pscDocument = new PscDocument();
+
+        CorporateEntity result = pscTransformer.transformPscDocToCorporateEntity(pscDocument);
+
+        Assertions.assertNotNull(result);
+        Assertions.assertNull(result.getEtag());
+        Assertions.assertNull(result.getName());
+        Assertions.assertNull(result.getCeasedOn());
+        Assertions.assertNull(result.getNotifiedOn());
+        Assertions.assertNull(result.getLinks());
+        Assertions.assertNull(result.getAddress());
+        Assertions.assertNull(result.getIdentification());
+    }
+
+    @Test
+    void transformCorporateEntityWithEmptyData() {
+        PscDocument pscDocument = new PscDocument();
+        pscDocument.setData(new PscData());
+
+        CorporateEntity result = pscTransformer.transformPscDocToCorporateEntity(pscDocument);
+
+        Assertions.assertNotNull(result);
+        Assertions.assertNull(result.getEtag());
+        Assertions.assertNull(result.getName());
+        Assertions.assertNull(result.getCeasedOn());
+        Assertions.assertNull(result.getNotifiedOn());
+        Assertions.assertNull(result.getLinks());
+        Assertions.assertNull(result.getNaturesOfControl());
+        Assertions.assertNull(result.getAddress());
+        Assertions.assertNull(result.getIdentification());
+    }
+
+    @Test
+    void transformCorporateEntityWithPartialData() {
+        PscDocument pscDocument = new PscDocument();
+        PscData pscData = new PscData();
+        pscData.setEtag("etag123");
+        pscData.setName("Test Corporate Entity");
+        pscDocument.setData(pscData);
+
+        CorporateEntity result = pscTransformer.transformPscDocToCorporateEntity(pscDocument);
+
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals("etag123", result.getEtag());
+        Assertions.assertEquals("Test Corporate Entity", result.getName());
+        Assertions.assertNull(result.getCeasedOn());
+        Assertions.assertNull(result.getNotifiedOn());
+        Assertions.assertNull(result.getLinks());
+        Assertions.assertNull(result.getNaturesOfControl());
+        Assertions.assertNull(result.getAddress());
+        Assertions.assertNull(result.getIdentification());
+    }
+
+    @Test
     void testEmptyPscLegalPersonTransform() {
         LegalPerson legalPerson = pscTransformer
                 .transformPscDocToLegalPerson(new PscDocument());
@@ -426,6 +643,159 @@ class CompanyPscTransformerTest {
         LegalPersonBeneficialOwner legalPersonBeneficialOwner = pscTransformer
                 .transformPscDocToLegalPersonBeneficialOwner(new PscDocument());
         Assertions.assertNotNull(legalPersonBeneficialOwner);
+    }
+
+    @Test
+    void transformLegalPersonBeneficialOwnerWithValidData() {
+        PscDocument pscDocument = TestHelper.buildPscDocument(TestHelper.LEGAL_BO_KIND);
+
+        LegalPersonBeneficialOwner result = pscTransformer.transformPscDocToLegalPersonBeneficialOwner(pscDocument);
+
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals(pscDocument.getData().getEtag(), result.getEtag());
+        Assertions.assertEquals(pscDocument.getData().getName(), result.getName());
+        Assertions.assertEquals(pscDocument.getData().getAddress().getAddressLine1(), result.getAddress().getAddressLine1());
+        Assertions.assertEquals(pscDocument.getData().getNaturesOfControl(), result.getNaturesOfControl());
+        Assertions.assertEquals(pscDocument.getData().getLinks(), result.getLinks());
+        Assertions.assertEquals(pscDocument.getData().getCeasedOn(), result.getCeasedOn());
+        Assertions.assertEquals(pscDocument.getData().getNotifiedOn(), result.getNotifiedOn());
+        Assertions.assertEquals(pscDocument.getData().getSanctioned(), result.getIsSanctioned());
+        Assertions.assertEquals(pscDocument.getData().getIdentification().getLegalForm(), result.getIdentification().getLegalForm());
+        Assertions.assertEquals(pscDocument.getData().getPrincipalOfficeAddress().getAddressLine1(), result.getPrincipalOfficeAddress().getAddressLine1());
+    }
+
+    @Test
+    void transformLegalPersonBeneficialOwnerWithNullData() {
+        PscDocument pscDocument = new PscDocument();
+
+        LegalPersonBeneficialOwner result = pscTransformer.transformPscDocToLegalPersonBeneficialOwner(pscDocument);
+
+        Assertions.assertNotNull(result);
+        Assertions.assertNull(result.getEtag());
+        Assertions.assertNull(result.getName());
+        Assertions.assertNull(result.getAddress());
+        Assertions.assertNull(result.getNaturesOfControl());
+        Assertions.assertNull(result.getLinks());
+        Assertions.assertNull(result.getCeasedOn());
+        Assertions.assertNull(result.getNotifiedOn());
+        Assertions.assertNull(result.getIsSanctioned());
+        Assertions.assertNull(result.getIdentification());
+        Assertions.assertNull(result.getPrincipalOfficeAddress());
+    }
+
+    @Test
+    void transformLegalPersonBeneficialOwnerWithEmptyData() {
+        PscDocument pscDocument = new PscDocument();
+        pscDocument.setData(new PscData());
+
+        LegalPersonBeneficialOwner result = pscTransformer.transformPscDocToLegalPersonBeneficialOwner(pscDocument);
+
+        Assertions.assertNotNull(result);
+        Assertions.assertNull(result.getEtag());
+        Assertions.assertNull(result.getName());
+        Assertions.assertNull(result.getAddress());
+        Assertions.assertNull(result.getNaturesOfControl());
+        Assertions.assertNull(result.getLinks());
+        Assertions.assertNull(result.getCeasedOn());
+        Assertions.assertNull(result.getNotifiedOn());
+        Assertions.assertNull(result.getIsSanctioned());
+        Assertions.assertNull(result.getIdentification());
+        Assertions.assertNull(result.getPrincipalOfficeAddress());
+    }
+
+    @Test
+    void transformLegalPersonBeneficialOwnerWithPartialData() {
+        PscDocument pscDocument = new PscDocument();
+        PscData pscData = new PscData();
+        pscData.setEtag("etag123");
+        pscData.setName("Test Legal Person Beneficial Owner");
+        pscDocument.setData(pscData);
+
+        LegalPersonBeneficialOwner result = pscTransformer.transformPscDocToLegalPersonBeneficialOwner(pscDocument);
+
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals("etag123", result.getEtag());
+        Assertions.assertEquals("Test Legal Person Beneficial Owner", result.getName());
+        Assertions.assertNull(result.getAddress());
+        Assertions.assertNull(result.getNaturesOfControl());
+        Assertions.assertNull(result.getLinks());
+        Assertions.assertNull(result.getCeasedOn());
+        Assertions.assertNull(result.getNotifiedOn());
+        Assertions.assertNull(result.getIsSanctioned());
+        Assertions.assertNull(result.getIdentification());
+        Assertions.assertNull(result.getPrincipalOfficeAddress());
+    }
+
+    @Test
+    void transformLegalPersonWithValidData() {
+        PscDocument pscDocument = TestHelper.buildPscDocument(TestHelper.LEGAL_KIND);
+
+        LegalPerson result = pscTransformer.transformPscDocToLegalPerson(pscDocument);
+
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals(pscDocument.getData().getEtag(), result.getEtag());
+        Assertions.assertEquals(pscDocument.getData().getName(), result.getName());
+        Assertions.assertEquals(pscDocument.getData().getAddress().getAddressLine1(), result.getAddress().getAddressLine1());
+        Assertions.assertEquals(pscDocument.getData().getNaturesOfControl(), result.getNaturesOfControl());
+        Assertions.assertEquals(pscDocument.getData().getLinks(), result.getLinks());
+        Assertions.assertEquals(pscDocument.getData().getCeasedOn(), result.getCeasedOn());
+        Assertions.assertEquals(pscDocument.getData().getNotifiedOn(), result.getNotifiedOn());
+        Assertions.assertEquals(pscDocument.getData().getIdentification().getLegalForm(), result.getIdentification().getLegalForm());
+    }
+
+    @Test
+    void transformLegalPersonWithNullData() {
+        PscDocument pscDocument = new PscDocument();
+
+        LegalPerson result = pscTransformer.transformPscDocToLegalPerson(pscDocument);
+
+        Assertions.assertNotNull(result);
+        Assertions.assertNull(result.getEtag());
+        Assertions.assertNull(result.getName());
+        Assertions.assertNull(result.getAddress());
+        Assertions.assertNull(result.getLinks());
+        Assertions.assertNull(result.getCeasedOn());
+        Assertions.assertNull(result.getNotifiedOn());
+        Assertions.assertNull(result.getIdentification());
+    }
+
+    @Test
+    void transformLegalPersonWithEmptyData() {
+        PscDocument pscDocument = new PscDocument();
+        pscDocument.setData(new PscData());
+
+        LegalPerson result = pscTransformer.transformPscDocToLegalPerson(pscDocument);
+
+        Assertions.assertNotNull(result);
+        Assertions.assertNull(result.getEtag());
+        Assertions.assertNull(result.getName());
+        Assertions.assertNull(result.getAddress());
+        Assertions.assertNull(result.getNaturesOfControl());
+        Assertions.assertNull(result.getLinks());
+        Assertions.assertNull(result.getCeasedOn());
+        Assertions.assertNull(result.getNotifiedOn());
+        Assertions.assertNull(result.getIdentification());
+    }
+
+    @Test
+    void transformLegalPersonWithPartialData() {
+        PscDocument pscDocument = new PscDocument();
+        PscData pscData = new PscData();
+        pscData.setEtag("etag123");
+        pscData.setName("Test Legal Person");
+        pscDocument.setData(pscData);
+
+        LegalPerson result = pscTransformer.transformPscDocToLegalPerson(pscDocument);
+
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals("etag123", result.getEtag());
+        Assertions.assertEquals("Test Legal Person", result.getName());
+        Assertions.assertNull(result.getAddress());
+        Assertions.assertNull(result.getNaturesOfControl());
+        Assertions.assertNull(result.getLinks());
+        Assertions.assertNull(result.getCeasedOn());
+        Assertions.assertNull(result.getNotifiedOn());
+        Assertions.assertNull(result.getIdentification());
     }
 
     @Test

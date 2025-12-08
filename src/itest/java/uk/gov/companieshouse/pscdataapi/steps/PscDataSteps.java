@@ -333,7 +333,7 @@ public class PscDataSteps {
     }
 
     @When("a Get request is sent for {string} and {string} for Super Secure")
-    public void aGetRequestIsSentForAndForSuperSecure(String companyNumber, String notification_id) {
+    public void aGetRequestIsSentForAndForSuperSecure(String companyNumber, String notificationId) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -345,9 +345,9 @@ public class PscDataSteps {
         HttpEntity<String> request = new HttpEntity<>(null, headers);
 
         String uri =
-                String.format("/company/%s/persons-with-significant-control/super-secure/%s", companyNumber, notification_id);
+                String.format("/company/%s/persons-with-significant-control/super-secure/%s", companyNumber, notificationId);
         ResponseEntity<SuperSecure> response = restTemplate.exchange(uri,
-                HttpMethod.GET, request, SuperSecure.class, companyNumber, notification_id);
+                HttpMethod.GET, request, SuperSecure.class, companyNumber, notificationId);
 
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
         CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
@@ -366,7 +366,7 @@ public class PscDataSteps {
     }
 
     @When("a Get request is sent for {string} and {string} without ERIC headers for Super Secure")
-    public void aGetRequestIsSentForAndWithoutERICHeadersForSuperSecure(String companyNumber, String notification_id) {
+    public void aGetRequestIsSentForAndWithoutERICHeadersForSuperSecure(String companyNumber, String notificationId) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -375,16 +375,16 @@ public class PscDataSteps {
         HttpEntity<String> request = new HttpEntity<>(null, headers);
 
         String uri =
-                String.format("/company/%s/persons-with-significant-control/super-secure/%s", companyNumber, notification_id);
+                String.format("/company/%s/persons-with-significant-control/super-secure/%s", companyNumber, notificationId);
         ResponseEntity<SuperSecure> response = restTemplate.exchange(uri,
-                HttpMethod.GET, request, SuperSecure.class, companyNumber, notification_id);
+                HttpMethod.GET, request, SuperSecure.class, companyNumber, notificationId);
 
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
         CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
     }
 
     @When("a Get request has been sent for {string} and {string} for Super Secure")
-    public void aGetRequestHasBeenSentForAndForSuperSecure(String companyNumber, String notification_id) {
+    public void aGetRequestHasBeenSentForAndForSuperSecure(String companyNumber, String notificationId) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -396,9 +396,9 @@ public class PscDataSteps {
         HttpEntity<String> request = new HttpEntity<>(null, headers);
 
         String uri =
-                String.format("/company/%s/persons-with-significant-control/super-secure/%s", companyNumber, notification_id);
+                String.format("/company/%s/persons-with-significant-control/super-secure/%s", companyNumber, notificationId);
         ResponseEntity<SuperSecure> response = restTemplate.exchange(uri,
-                HttpMethod.GET, request, SuperSecure.class, companyNumber, notification_id);
+                HttpMethod.GET, request, SuperSecure.class, companyNumber, notificationId);
 
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
     }
@@ -484,7 +484,7 @@ public class PscDataSteps {
     }
 
     @When("a Get request has been sent for {string} and {string} for Super Secure Beneficial Owner")
-    public void aGetRequestHasBeenSentForAndForSuperSecureBeneficialOwner(String companyNumber, String notification_id) {
+    public void aGetRequestHasBeenSentForAndForSuperSecureBeneficialOwner(String companyNumber, String notificationId) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -497,9 +497,9 @@ public class PscDataSteps {
 
         String uri =
                 String.format("/company/%s/persons-with-significant-control/super-secure-beneficial-owner/%s", companyNumber,
-                        notification_id);
+                        NOTIFICATION_ID);
         ResponseEntity<SuperSecureBeneficialOwner> response = restTemplate.exchange(uri,
-                HttpMethod.GET, request, SuperSecureBeneficialOwner.class, companyNumber, notification_id);
+                HttpMethod.GET, request, SuperSecureBeneficialOwner.class, companyNumber, notificationId);
 
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
     }
@@ -550,7 +550,7 @@ public class PscDataSteps {
     }
 
     @When("a Get request is sent for {string} and {string} for Corporate Entity")
-    public void aGetRequestIsSentForAndForCorporateEntity(String companyNumber, String notification_id) {
+    public void aGetRequestIsSentForAndForCorporateEntity(String companyNumber, String notificationId) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -562,9 +562,9 @@ public class PscDataSteps {
         HttpEntity<String> request = new HttpEntity<>(null, headers);
 
         String uri =
-                String.format("/company/%s/persons-with-significant-control/corporate-entity/%s", companyNumber, notification_id);
+                String.format("/company/%s/persons-with-significant-control/corporate-entity/%s", companyNumber, notificationId);
         ResponseEntity<CorporateEntity> response = restTemplate.exchange(uri,
-                HttpMethod.GET, request, CorporateEntity.class, companyNumber, notification_id);
+                HttpMethod.GET, request, CorporateEntity.class, companyNumber, notificationId);
 
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
         CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
@@ -583,7 +583,7 @@ public class PscDataSteps {
     }
 
     @When("a Get request has been sent for {string} and {string} for Corporate Entity")
-    public void aGetRequestHasBeenSentForAndForCorporateEntity(String companyNumber, String notification_id) {
+    public void aGetRequestHasBeenSentForAndForCorporateEntity(String companyNumber, String notificationId) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -595,15 +595,15 @@ public class PscDataSteps {
         HttpEntity<String> request = new HttpEntity<>(null, headers);
 
         String uri =
-                String.format("/company/%s/persons-with-significant-control/corporate-entity/%s", companyNumber, notification_id);
+                String.format("/company/%s/persons-with-significant-control/corporate-entity/%s", companyNumber, notificationId);
         ResponseEntity<CorporateEntity> response = restTemplate.exchange(uri,
-                HttpMethod.GET, request, CorporateEntity.class, companyNumber, notification_id);
+                HttpMethod.GET, request, CorporateEntity.class, companyNumber, notificationId);
 
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
     }
 
     @When("a Get request is sent for {string} and {string} without ERIC headers for Corporate Entity")
-    public void aGetRequestIsSentForAndWithoutERICHeadersForCorporateEntity(String companyNumber, String notification_id) {
+    public void aGetRequestIsSentForAndWithoutERICHeadersForCorporateEntity(String companyNumber, String notificationId) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -612,9 +612,9 @@ public class PscDataSteps {
         HttpEntity<String> request = new HttpEntity<>(null, headers);
 
         String uri =
-                String.format("/company/%s/persons-with-significant-control/corporate-entity/%s", companyNumber, notification_id);
+                String.format("/company/%s/persons-with-significant-control/corporate-entity/%s", companyNumber, notificationId);
         ResponseEntity<CorporateEntity> response = restTemplate.exchange(uri,
-                HttpMethod.GET, request, CorporateEntity.class, companyNumber, notification_id);
+                HttpMethod.GET, request, CorporateEntity.class, companyNumber, notificationId);
 
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
         CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
@@ -732,7 +732,7 @@ public class PscDataSteps {
     }
 
     @When("a Get request is sent for {string} and {string} for Individual")
-    public void aGetRequestIsSentForAnd(String companyNumber, String notification_id) {
+    public void aGetRequestIsSentForAnd(String companyNumber, String notificationId) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -745,14 +745,14 @@ public class PscDataSteps {
 
         String uri = "/company/{company_number}/persons-with-significant-control/individual/{notification_id}";
         ResponseEntity<Individual> response = restTemplate.exchange(uri,
-                HttpMethod.GET, request, Individual.class, companyNumber, notification_id);
+                HttpMethod.GET, request, Individual.class, companyNumber, notificationId);
 
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
         CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
     }
 
     @When("an {string} Get request is sent for {string} and {string} for Individual Full Record")
-    public void aGetFullRecordRequestIsSentForAnd(final String auth, final String companyNumber, final String notification_id) {
+    public void aGetFullRecordRequestIsSentForAnd(final String auth, final String companyNumber, final String notificationId) {
         final HttpHeaders headers = setupHeaders(!"unauthenticated".equals(auth), "authorized".equals(auth) ? "*" : "");
         CucumberContext.CONTEXT.set("contextId", CONTEXT_ID);
 
@@ -760,7 +760,7 @@ public class PscDataSteps {
 
         final String uri = "/company/{company_number}/persons-with-significant-control/individual/{notification_id}/full_record";
         final ResponseEntity<IndividualFullRecord> response = restTemplate.exchange(uri, HttpMethod.GET, request,
-                IndividualFullRecord.class, companyNumber, notification_id);
+                IndividualFullRecord.class, companyNumber, notificationId);
 
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
         CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
@@ -786,7 +786,7 @@ public class PscDataSteps {
     }
 
     @When("a Get request is sent for {string} and {string} without ERIC headers for Individual Full Record")
-    public void aGetFullRecordRequestIsSentWithoutEricHeadersForAnd(final String companyNumber, final String notification_id) {
+    public void aGetFullRecordRequestIsSentWithoutEricHeadersForAnd(final String companyNumber, final String notificationId) {
         final HttpHeaders headers = new HttpHeaders();
 
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -801,7 +801,7 @@ public class PscDataSteps {
 
         final String uri = "/company/{company_number}/persons-with-significant-control/individual/{notification_id}/full_record";
         final ResponseEntity<IndividualFullRecord> response = restTemplate.exchange(uri, HttpMethod.GET, request,
-                IndividualFullRecord.class, companyNumber, notification_id);
+                IndividualFullRecord.class, companyNumber, notificationId);
 
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
         CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
@@ -836,7 +836,7 @@ public class PscDataSteps {
     }
 
     @When("a Get request is sent for {string} and {string} without ERIC headers for Individual")
-    public void aGetRequestIsSentForAndWithoutERICHeaders(String companyNumber, String notification_id) {
+    public void aGetRequestIsSentForAndWithoutERICHeaders(String companyNumber, String notificationId) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -846,14 +846,14 @@ public class PscDataSteps {
 
         String uri = "/company/{company_number}/persons-with-significant-control/individual/{notification_id}";
         ResponseEntity<Individual> response = restTemplate.exchange(uri,
-                HttpMethod.GET, request, Individual.class, companyNumber, notification_id);
+                HttpMethod.GET, request, Individual.class, companyNumber, notificationId);
 
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
         CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
     }
 
     @When("a Get request has been sent for {string} and {string} for Individual")
-    public void aGetRequestHasBeenSentForAnd(String companyNumber, String notification_id) {
+    public void aGetRequestHasBeenSentForAnd(String companyNumber, String notificationId) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -866,7 +866,7 @@ public class PscDataSteps {
 
         String uri = "/company/{company_number}/persons-with-significant-control/individual/{notification_id}";
         ResponseEntity<Individual> response = restTemplate.exchange(uri,
-                HttpMethod.GET, request, Individual.class, companyNumber, notification_id);
+                HttpMethod.GET, request, Individual.class, companyNumber, notificationId);
 
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
     }
@@ -900,7 +900,7 @@ public class PscDataSteps {
     }
 
     @When("a Get request is sent for {string} and {string} for Individual Beneficial Owner")
-    public void aGetRequestIsSentForAndForIndividualBeneficialOwner(String companyNumber, String notification_id) {
+    public void aGetRequestIsSentForAndForIndividualBeneficialOwner(String companyNumber, String notificationId) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -914,7 +914,7 @@ public class PscDataSteps {
         String uri =
                 "/company/{company_number}/persons-with-significant-control/individual-beneficial-owner/{notification_id}";
         ResponseEntity<IndividualBeneficialOwner> response = restTemplate.exchange(uri,
-                HttpMethod.GET, request, IndividualBeneficialOwner.class, companyNumber, notification_id);
+                HttpMethod.GET, request, IndividualBeneficialOwner.class, companyNumber, notificationId);
 
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
         CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
@@ -933,7 +933,7 @@ public class PscDataSteps {
     }
 
     @When("a Get request has been sent for {string} and {string} for Individual Beneficial Owner")
-    public void aGetRequestHasBeenSentForAndForIndividualBeneficialOwner(String companyNumber, String notification_id) {
+    public void aGetRequestHasBeenSentForAndForIndividualBeneficialOwner(String companyNumber, String notificationId) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -947,14 +947,14 @@ public class PscDataSteps {
         String uri =
                 "/company/{company_number}/persons-with-significant-control/individual-beneficial-owner/{notification_id}";
         ResponseEntity<IndividualBeneficialOwner> response = restTemplate.exchange(uri,
-                HttpMethod.GET, request, IndividualBeneficialOwner.class, companyNumber, notification_id);
+                HttpMethod.GET, request, IndividualBeneficialOwner.class, companyNumber, notificationId);
 
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
     }
 
     @When("a Get request is sent for {string} and {string} without ERIC headers for Individual Beneficial Owner")
     public void aGetRequestIsSentForAndWithoutERICHeadersForIndividualBeneficialOwner(String companyNumber,
-            String notification_id) {
+            String notificationId) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -964,7 +964,7 @@ public class PscDataSteps {
 
         String uri = "/company/{company_number}/persons-with-significant-control/individual-beneficial-owner/{notification_id}";
         ResponseEntity<IndividualBeneficialOwner> response = restTemplate.exchange(uri,
-                HttpMethod.GET, request, IndividualBeneficialOwner.class, companyNumber, notification_id);
+                HttpMethod.GET, request, IndividualBeneficialOwner.class, companyNumber, notificationId);
 
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
         CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
@@ -1005,7 +1005,7 @@ public class PscDataSteps {
     }
 
     @When("a Get request is sent for {string} and {string} for Corporate Entity Beneficial Owner")
-    public void aGetRequestIsSentForAndForCorporateEntityBeneficialOwner(String companyNumber, String notification_id) {
+    public void aGetRequestIsSentForAndForCorporateEntityBeneficialOwner(String companyNumber, String notificationId) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -1019,7 +1019,7 @@ public class PscDataSteps {
         String uri =
                 "/company/{company_number}/persons-with-significant-control/corporate-entity-beneficial-owner/{notification_id}";
         ResponseEntity<CorporateEntityBeneficialOwner> response = restTemplate.exchange(uri,
-                HttpMethod.GET, request, CorporateEntityBeneficialOwner.class, companyNumber, notification_id);
+                HttpMethod.GET, request, CorporateEntityBeneficialOwner.class, companyNumber, notificationId);
 
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
         CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
@@ -1039,7 +1039,7 @@ public class PscDataSteps {
 
     @When("a Get request is sent for {string} and {string} without ERIC headers for Corporate Entity Beneficial Owner")
     public void aGetRequestIsSentForAndWithoutERICHeadersForCorporateEntityBeneficialOwner(
-            String companyNumber, String notification_id) {
+            String companyNumber, String notificationId) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -1049,14 +1049,14 @@ public class PscDataSteps {
 
         String uri = "/company/{company_number}/persons-with-significant-control/corporate-entity-beneficial-owner/{notification_id}";
         ResponseEntity<CorporateEntityBeneficialOwner> response = restTemplate.exchange(uri,
-                HttpMethod.GET, request, CorporateEntityBeneficialOwner.class, companyNumber, notification_id);
+                HttpMethod.GET, request, CorporateEntityBeneficialOwner.class, companyNumber, notificationId);
 
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
         CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
     }
 
     @When("a Get request has been sent for {string} and {string} for Corporate Entity Beneficial Owner")
-    public void aGetRequestHasBeenSentForAndForCorporateEntityBeneficialOwner(String companyNumber, String notification_id) {
+    public void aGetRequestHasBeenSentForAndForCorporateEntityBeneficialOwner(String companyNumber, String notificationId) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -1070,7 +1070,7 @@ public class PscDataSteps {
         String uri =
                 "/company/{company_number}/persons-with-significant-control/corporate-entity-beneficial-owner/{notification_id}";
         ResponseEntity<CorporateEntityBeneficialOwner> response = restTemplate.exchange(uri,
-                HttpMethod.GET, request, CorporateEntityBeneficialOwner.class, companyNumber, notification_id);
+                HttpMethod.GET, request, CorporateEntityBeneficialOwner.class, companyNumber, notificationId);
 
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
     }
@@ -1098,7 +1098,7 @@ public class PscDataSteps {
     }
 
     @When("a Get request is sent for {string} and {string} for Legal Person")
-    public void aGetRequestIsSentForAndForLegalPerson(String companyNumber, String notification_id) {
+    public void aGetRequestIsSentForAndForLegalPerson(String companyNumber, String notificationId) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -1112,7 +1112,7 @@ public class PscDataSteps {
         String uri =
                 "/company/{company_number}/persons-with-significant-control/legal-person/{notification_id}";
         ResponseEntity<LegalPerson> response = restTemplate.exchange(uri,
-                HttpMethod.GET, request, LegalPerson.class, companyNumber, notification_id);
+                HttpMethod.GET, request, LegalPerson.class, companyNumber, notificationId);
 
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
         CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
@@ -1130,7 +1130,7 @@ public class PscDataSteps {
     }
 
     @When("a Get request is sent for {string} and {string} without ERIC headers for Legal Person")
-    public void aGetRequestIsSentForAndWithoutERICHeadersForLegalPerson(String companyNumber, String notification_id) {
+    public void aGetRequestIsSentForAndWithoutERICHeadersForLegalPerson(String companyNumber, String notificationId) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -1140,14 +1140,14 @@ public class PscDataSteps {
 
         String uri = "/company/{company_number}/persons-with-significant-control/legal-person/{notification_id}";
         ResponseEntity<LegalPerson> response = restTemplate.exchange(uri,
-                HttpMethod.GET, request, LegalPerson.class, companyNumber, notification_id);
+                HttpMethod.GET, request, LegalPerson.class, companyNumber, notificationId);
 
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
         CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
     }
 
     @When("a Get request has been sent for {string} and {string} for Legal Person")
-    public void aGetRequestHasBeenSentForAndForLegalPerson(String companyNumber, String notification_id) {
+    public void aGetRequestHasBeenSentForAndForLegalPerson(String companyNumber, String notificationId) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -1161,7 +1161,7 @@ public class PscDataSteps {
         String uri =
                 "/company/{company_number}/persons-with-significant-control/legal-person/{notification_id}";
         ResponseEntity<LegalPerson> response = restTemplate.exchange(uri,
-                HttpMethod.GET, request, LegalPerson.class, companyNumber, notification_id);
+                HttpMethod.GET, request, LegalPerson.class, companyNumber, notificationId);
 
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
     }
@@ -1199,7 +1199,7 @@ public class PscDataSteps {
     }
 
     @When("a Get request is sent for {string} and {string} for Legal Person Beneficial Owner")
-    public void aGetRequestIsSentForAndForLegalPersonBeneficialOwner(String companyNumber, String notification_id) {
+    public void aGetRequestIsSentForAndForLegalPersonBeneficialOwner(String companyNumber, String notificationId) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -1213,7 +1213,7 @@ public class PscDataSteps {
         String uri =
                 "/company/{company_number}/persons-with-significant-control/legal-person-beneficial-owner/{notification_id}";
         ResponseEntity<LegalPersonBeneficialOwner> response = restTemplate.exchange(uri,
-                HttpMethod.GET, request, LegalPersonBeneficialOwner.class, companyNumber, notification_id);
+                HttpMethod.GET, request, LegalPersonBeneficialOwner.class, companyNumber, notificationId);
 
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
         CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
@@ -1234,7 +1234,7 @@ public class PscDataSteps {
 
     @When("a Get request is sent for {string} and {string} without ERIC headers for Legal Person Beneficial Owner")
     public void aGetRequestIsSentForAndWithoutERICHeadersForLegalPersonBeneficialOwner(String companyNumber,
-            String notification_id) {
+            String notificationId) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -1244,14 +1244,14 @@ public class PscDataSteps {
 
         String uri = "/company/{company_number}/persons-with-significant-control/legal-person-beneficial-owner/{notification_id}";
         ResponseEntity<LegalPersonBeneficialOwner> response = restTemplate.exchange(uri,
-                HttpMethod.GET, request, LegalPersonBeneficialOwner.class, companyNumber, notification_id);
+                HttpMethod.GET, request, LegalPersonBeneficialOwner.class, companyNumber, notificationId);
 
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
         CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
     }
 
     @When("a Get request has been sent for {string} and {string} for Legal Person Beneficial Owner")
-    public void aGetRequestHasBeenSentForAndForLegalPersonBeneficialOwner(String companyNumber, String notification_id) {
+    public void aGetRequestHasBeenSentForAndForLegalPersonBeneficialOwner(String companyNumber, String notificationId) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -1265,7 +1265,7 @@ public class PscDataSteps {
         String uri =
                 "/company/{company_number}/persons-with-significant-control/legal-person-beneficial-owner/{notification_id}";
         ResponseEntity<LegalPersonBeneficialOwner> response = restTemplate.exchange(uri,
-                HttpMethod.GET, request, LegalPersonBeneficialOwner.class, companyNumber, notification_id);
+                HttpMethod.GET, request, LegalPersonBeneficialOwner.class, companyNumber, notificationId);
 
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
     }

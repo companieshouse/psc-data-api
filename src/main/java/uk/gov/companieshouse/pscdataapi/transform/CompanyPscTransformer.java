@@ -401,8 +401,8 @@ public class CompanyPscTransformer {
      */
     public PscDocument transformPscOnInsert(String notificationId, FullRecordCompanyPSCApi requestBody) {
         String pscStatementId = null;
-        if (requestBody.getExternalData() != null) {
-            final ExternalData externalData = requestBody.getExternalData();
+        ExternalData externalData = requestBody.getExternalData();
+        if (externalData != null) {
             pscStatementId = externalData.getPscStatementId();
         }
         final PscDocument pscDocument = new PscDocument();
@@ -410,42 +410,52 @@ public class CompanyPscTransformer {
 
         pscDocument.setId(notificationId);
         pscDocument.setNotificationId(notificationId);
-        if (requestBody.getExternalData() != null) {
-            final ExternalData externalData = requestBody.getExternalData();
+
+        if (externalData != null) {
             pscDocument.setPscId(externalData.getPscId());
             pscDocument.setCompanyNumber(externalData.getCompanyNumber());
 
-            if (externalData.getData() != null) {
-                Data data = externalData.getData();
-                PscData pscData;
-                pscData = transformDataFields(data, pscStatementId);
-
+            Data data = externalData.getData();
+            if (data != null) {
+                PscData pscData = transformDataFields(data, pscStatementId);
                 String kind = data.getKind();
-                if (IndividualPscRoles.includes(kind)) {
-                    if (externalData.getSensitiveData() != null) {
-                        pscDocument.setSensitiveData(transformSensitiveDataFields(externalData.getSensitiveData()));
-                    }
 
+                if (IndividualPscRoles.includes(kind)) {
+                    setSensitiveDataIfPresent(pscDocument, externalData);
                     handleIndividualFields(data, pscData);
                 }
-                if (SecurePscRoles.includes(kind)) {
-                    handleSecureFields(data, pscData);
-                } else {
-                    pscData.setAddress(new Address(data.getServiceAddress()));
-                }
+                setSecureOrAddressFields(kind, data, pscData);
 
                 pscDocument.setData(pscData);
             }
         }
+        setInternalDataIfPresent(pscDocument, requestBody);
+
+        return pscDocument;
+    }
+
+    void setSensitiveDataIfPresent(PscDocument pscDocument, ExternalData externalData) {
+        if (externalData.getSensitiveData() != null) {
+            pscDocument.setSensitiveData(transformSensitiveDataFields(externalData.getSensitiveData()));
+        }
+    }
+
+    private void setSecureOrAddressFields(String kind, Data data, PscData pscData) {
+        if (SecurePscRoles.includes(kind)) {
+            handleSecureFields(data, pscData);
+        } else {
+            pscData.setAddress(new Address(data.getServiceAddress()));
+        }
+    }
+
+    private void setInternalDataIfPresent(PscDocument pscDocument, FullRecordCompanyPSCApi requestBody) {
         if (requestBody.getInternalData() != null) {
             InternalData internalData = requestBody.getInternalData();
             pscDocument.setDeltaAt(dateTimeFormatter.format(internalData.getDeltaAt()));
-
             pscDocument.setUpdated(new Updated()
-                    .at(LocalDateTime.now())
-                    .by(DataMapHolder.getRequestId()));
+                .at(LocalDateTime.now())
+                .by(DataMapHolder.getRequestId()));
         }
-        return pscDocument;
     }
 
     private PscSensitiveData transformSensitiveDataFields(SensitiveData sensitiveData) {
@@ -579,26 +589,6 @@ public class CompanyPscTransformer {
         if (inputAddress != null) {
             uk.gov.companieshouse.api.psc.BeneficialOwnerAddress address =
                     new uk.gov.companieshouse.api.psc.BeneficialOwnerAddress();
-            address.setAddressLine1(inputAddress.getAddressLine1());
-            address.setAddressLine2(inputAddress.getAddressLine2());
-            address.setCountry(inputAddress.getCountry());
-            address.setLocality(inputAddress.getLocality());
-            address.setPoBox(inputAddress.getPoBox());
-            address.setPostalCode(inputAddress.getPostalCode());
-            address.setPremises(inputAddress.getPremises());
-            address.setRegion(inputAddress.getRegion());
-            address.setCareOf(inputAddress.getCareOf());
-            return address;
-        } else {
-            return null;
-        }
-    }
-
-    private uk.gov.companieshouse.api.model.common.Address mapCommonAddress(
-            uk.gov.companieshouse.pscdataapi.models.Address inputAddress) {
-        if (inputAddress != null) {
-            uk.gov.companieshouse.api.model.common.Address address =
-                    new uk.gov.companieshouse.api.model.common.Address();
             address.setAddressLine1(inputAddress.getAddressLine1());
             address.setAddressLine2(inputAddress.getAddressLine2());
             address.setCountry(inputAddress.getCountry());
