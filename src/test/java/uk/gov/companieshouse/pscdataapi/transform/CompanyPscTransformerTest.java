@@ -3,6 +3,7 @@ package uk.gov.companieshouse.pscdataapi.transform;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -11,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.companieshouse.api.model.psc.PscLinks;
 import uk.gov.companieshouse.api.psc.CorporateEntity;
 import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
 import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
@@ -28,6 +30,8 @@ import uk.gov.companieshouse.pscdataapi.models.PscData;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 import uk.gov.companieshouse.pscdataapi.models.PscIdentityVerificationDetails;
 import uk.gov.companieshouse.pscdataapi.models.PscSensitiveData;
+import uk.gov.companieshouse.pscdataapi.models.Links;
+
 import uk.gov.companieshouse.pscdataapi.util.TestHelper;
 
 @ExtendWith(MockitoExtension.class)
@@ -122,7 +126,7 @@ class CompanyPscTransformerTest {
 
         Assertions.assertNotNull(result.getData().getAddress());
         Assertions.assertNotNull(result.getData().getIdentification().getLegalForm());
-        Assertions.assertNull(result.getData().getIdentification().getCountryRegistered());
+        assertNull(result.getData().getIdentification().getCountryRegistered());
         Assertions.assertNotNull(result.getData().getCeasedOn());
 
         pscInsertAssertions(expectedDocument, result);
@@ -188,7 +192,7 @@ class CompanyPscTransformerTest {
         Assertions.assertNotNull(result.getData().getName());
         Assertions.assertNotNull(result.getData().getNationality());
         Assertions.assertNotNull(result.getData().getCountryOfResidence());
-        Assertions.assertNull(result.getData().getLinks().getStatement());
+        assertNull(result.getData().getLinks().getStatement());
         Assertions.assertNotNull(result.getData().getCeasedOn());
         pscInsertAssertions(expectedDocument, result);
     }
@@ -227,7 +231,7 @@ class CompanyPscTransformerTest {
         Assertions.assertTrue(result.getData().getSanctioned());
         Assertions.assertNotNull(result.getData().getAddress());
         Assertions.assertNotNull(result.getData().getIdentification().getLegalForm());
-        Assertions.assertNull(result.getData().getIdentification().getCountryRegistered());
+        assertNull(result.getData().getIdentification().getCountryRegistered());
         Assertions.assertNotNull(result.getData().getPrincipalOfficeAddress());
         Assertions.assertNotNull(result.getData().getCeasedOn());
 
@@ -275,7 +279,7 @@ class CompanyPscTransformerTest {
 
         pscTransformer.setSensitiveDataIfPresent(pscDocument, externalData);
 
-        Assertions.assertNull(pscDocument.getSensitiveData());
+        assertNull(pscDocument.getSensitiveData());
     }
 
     @Test
@@ -295,7 +299,7 @@ class CompanyPscTransformerTest {
         Assertions.assertEquals("notif-001", result.getNotificationId());
         Assertions.assertEquals("pscId123", result.getPscId());
         Assertions.assertEquals("12345678", result.getCompanyNumber());
-        Assertions.assertNull(result.getData());
+        assertNull(result.getData());
     }
 
     @Test
@@ -341,7 +345,7 @@ class CompanyPscTransformerTest {
         // Act
         Individual result = pscTransformer.transformPscDocToIndividual(pscDocument, false);
         // Assert
-        Assertions.assertNull(result.getIdentityVerificationDetails());
+        assertNull(result.getIdentityVerificationDetails());
     }
 
     @Test
@@ -401,7 +405,7 @@ class CompanyPscTransformerTest {
         // Assert
         Assertions.assertNotNull(result.getIdentityVerificationDetails());
         Assertions.assertEquals(startOnDate, resultStartOnDate);
-        Assertions.assertNull(result.getIdentityVerificationDetails().getAppointmentVerificationEndOn());
+        assertNull(result.getIdentityVerificationDetails().getAppointmentVerificationEndOn());
     }
 
     @Test
@@ -422,7 +426,7 @@ class CompanyPscTransformerTest {
         // Assert
         Assertions.assertNotNull(result.getIdentityVerificationDetails());
         Assertions.assertEquals(endOnDate, resultEndOnDate);
-        Assertions.assertNull(result.getIdentityVerificationDetails().getAppointmentVerificationStartOn());
+        assertNull(result.getIdentityVerificationDetails().getAppointmentVerificationStartOn());
     }
 
     @Test
@@ -439,9 +443,9 @@ class CompanyPscTransformerTest {
         IndividualBeneficialOwner result = pscTransformer.transformPscDocToIndividualBeneficialOwner(pscDocument, true);
 
         Assertions.assertNotNull(result);
-        Assertions.assertNull(result.getName());
-        Assertions.assertNull(result.getDateOfBirth());
-        Assertions.assertNull(result.getIsSanctioned());
+        assertNull(result.getName());
+        assertNull(result.getDateOfBirth());
+        assertNull(result.getIsSanctioned());
     }
 
     @Test
@@ -453,7 +457,7 @@ class CompanyPscTransformerTest {
 
         Assertions.assertNotNull(result);
         Assertions.assertEquals(pscDocument.getData().getName(), result.getName());
-        Assertions.assertNull(result.getDateOfBirth());
+        assertNull(result.getDateOfBirth());
     }
 
     @Test
@@ -465,7 +469,7 @@ class CompanyPscTransformerTest {
 
         Assertions.assertNotNull(result);
         Assertions.assertEquals(pscDocument.getData().getName(), result.getName());
-        Assertions.assertNull(result.getDateOfBirth());
+        assertNull(result.getDateOfBirth());
     }
 
     @Test
@@ -507,15 +511,15 @@ class CompanyPscTransformerTest {
         CorporateEntityBeneficialOwner result = pscTransformer.transformPscDocToCorporateEntityBeneficialOwner(pscDocument);
 
         Assertions.assertNotNull(result);
-        Assertions.assertNull(result.getEtag());
-        Assertions.assertNull(result.getName());
-        Assertions.assertNull(result.getAddress());
-        Assertions.assertNull(result.getNaturesOfControl());
-        Assertions.assertNull(result.getLinks());
-        Assertions.assertNull(result.getIsSanctioned());
-        Assertions.assertNull(result.getIdentification());
-        Assertions.assertNull(result.getPrincipalOfficeAddress());
-        Assertions.assertNull(result.getCeasedOn());
+        assertNull(result.getEtag());
+        assertNull(result.getName());
+        assertNull(result.getAddress());
+        assertNull(result.getNaturesOfControl());
+        assertNull(result.getLinks());
+        assertNull(result.getIsSanctioned());
+        assertNull(result.getIdentification());
+        assertNull(result.getPrincipalOfficeAddress());
+        assertNull(result.getCeasedOn());
     }
 
     @Test
@@ -526,15 +530,15 @@ class CompanyPscTransformerTest {
         CorporateEntityBeneficialOwner result = pscTransformer.transformPscDocToCorporateEntityBeneficialOwner(pscDocument);
 
         Assertions.assertNotNull(result);
-        Assertions.assertNull(result.getEtag());
-        Assertions.assertNull(result.getName());
-        Assertions.assertNull(result.getAddress());
-        Assertions.assertNull(result.getNaturesOfControl());
-        Assertions.assertNull(result.getLinks());
-        Assertions.assertNull(result.getIsSanctioned());
-        Assertions.assertNull(result.getIdentification());
-        Assertions.assertNull(result.getPrincipalOfficeAddress());
-        Assertions.assertNull(result.getCeasedOn());
+        assertNull(result.getEtag());
+        assertNull(result.getName());
+        assertNull(result.getAddress());
+        assertNull(result.getNaturesOfControl());
+        assertNull(result.getLinks());
+        assertNull(result.getIsSanctioned());
+        assertNull(result.getIdentification());
+        assertNull(result.getPrincipalOfficeAddress());
+        assertNull(result.getCeasedOn());
     }
 
     @Test
@@ -550,13 +554,13 @@ class CompanyPscTransformerTest {
         Assertions.assertNotNull(result);
         Assertions.assertEquals("etag123", result.getEtag());
         Assertions.assertEquals("Test Corporate Entity Beneficial Owner", result.getName());
-        Assertions.assertNull(result.getAddress());
-        Assertions.assertNull(result.getNaturesOfControl());
-        Assertions.assertNull(result.getLinks());
-        Assertions.assertNull(result.getIsSanctioned());
-        Assertions.assertNull(result.getIdentification());
-        Assertions.assertNull(result.getPrincipalOfficeAddress());
-        Assertions.assertNull(result.getCeasedOn());
+        assertNull(result.getAddress());
+        assertNull(result.getNaturesOfControl());
+        assertNull(result.getLinks());
+        assertNull(result.getIsSanctioned());
+        assertNull(result.getIdentification());
+        assertNull(result.getPrincipalOfficeAddress());
+        assertNull(result.getCeasedOn());
     }
 
     @Test
@@ -583,13 +587,13 @@ class CompanyPscTransformerTest {
         CorporateEntity result = pscTransformer.transformPscDocToCorporateEntity(pscDocument);
 
         Assertions.assertNotNull(result);
-        Assertions.assertNull(result.getEtag());
-        Assertions.assertNull(result.getName());
-        Assertions.assertNull(result.getCeasedOn());
-        Assertions.assertNull(result.getNotifiedOn());
-        Assertions.assertNull(result.getLinks());
-        Assertions.assertNull(result.getAddress());
-        Assertions.assertNull(result.getIdentification());
+        assertNull(result.getEtag());
+        assertNull(result.getName());
+        assertNull(result.getCeasedOn());
+        assertNull(result.getNotifiedOn());
+        assertNull(result.getLinks());
+        assertNull(result.getAddress());
+        assertNull(result.getIdentification());
     }
 
     @Test
@@ -600,14 +604,14 @@ class CompanyPscTransformerTest {
         CorporateEntity result = pscTransformer.transformPscDocToCorporateEntity(pscDocument);
 
         Assertions.assertNotNull(result);
-        Assertions.assertNull(result.getEtag());
-        Assertions.assertNull(result.getName());
-        Assertions.assertNull(result.getCeasedOn());
-        Assertions.assertNull(result.getNotifiedOn());
-        Assertions.assertNull(result.getLinks());
-        Assertions.assertNull(result.getNaturesOfControl());
-        Assertions.assertNull(result.getAddress());
-        Assertions.assertNull(result.getIdentification());
+        assertNull(result.getEtag());
+        assertNull(result.getName());
+        assertNull(result.getCeasedOn());
+        assertNull(result.getNotifiedOn());
+        assertNull(result.getLinks());
+        assertNull(result.getNaturesOfControl());
+        assertNull(result.getAddress());
+        assertNull(result.getIdentification());
     }
 
     @Test
@@ -623,12 +627,12 @@ class CompanyPscTransformerTest {
         Assertions.assertNotNull(result);
         Assertions.assertEquals("etag123", result.getEtag());
         Assertions.assertEquals("Test Corporate Entity", result.getName());
-        Assertions.assertNull(result.getCeasedOn());
-        Assertions.assertNull(result.getNotifiedOn());
-        Assertions.assertNull(result.getLinks());
-        Assertions.assertNull(result.getNaturesOfControl());
-        Assertions.assertNull(result.getAddress());
-        Assertions.assertNull(result.getIdentification());
+        assertNull(result.getCeasedOn());
+        assertNull(result.getNotifiedOn());
+        assertNull(result.getLinks());
+        assertNull(result.getNaturesOfControl());
+        assertNull(result.getAddress());
+        assertNull(result.getIdentification());
     }
 
     @Test
@@ -671,16 +675,16 @@ class CompanyPscTransformerTest {
         LegalPersonBeneficialOwner result = pscTransformer.transformPscDocToLegalPersonBeneficialOwner(pscDocument);
 
         Assertions.assertNotNull(result);
-        Assertions.assertNull(result.getEtag());
-        Assertions.assertNull(result.getName());
-        Assertions.assertNull(result.getAddress());
-        Assertions.assertNull(result.getNaturesOfControl());
-        Assertions.assertNull(result.getLinks());
-        Assertions.assertNull(result.getCeasedOn());
-        Assertions.assertNull(result.getNotifiedOn());
-        Assertions.assertNull(result.getIsSanctioned());
-        Assertions.assertNull(result.getIdentification());
-        Assertions.assertNull(result.getPrincipalOfficeAddress());
+        assertNull(result.getEtag());
+        assertNull(result.getName());
+        assertNull(result.getAddress());
+        assertNull(result.getNaturesOfControl());
+        assertNull(result.getLinks());
+        assertNull(result.getCeasedOn());
+        assertNull(result.getNotifiedOn());
+        assertNull(result.getIsSanctioned());
+        assertNull(result.getIdentification());
+        assertNull(result.getPrincipalOfficeAddress());
     }
 
     @Test
@@ -691,16 +695,16 @@ class CompanyPscTransformerTest {
         LegalPersonBeneficialOwner result = pscTransformer.transformPscDocToLegalPersonBeneficialOwner(pscDocument);
 
         Assertions.assertNotNull(result);
-        Assertions.assertNull(result.getEtag());
-        Assertions.assertNull(result.getName());
-        Assertions.assertNull(result.getAddress());
-        Assertions.assertNull(result.getNaturesOfControl());
-        Assertions.assertNull(result.getLinks());
-        Assertions.assertNull(result.getCeasedOn());
-        Assertions.assertNull(result.getNotifiedOn());
-        Assertions.assertNull(result.getIsSanctioned());
-        Assertions.assertNull(result.getIdentification());
-        Assertions.assertNull(result.getPrincipalOfficeAddress());
+        assertNull(result.getEtag());
+        assertNull(result.getName());
+        assertNull(result.getAddress());
+        assertNull(result.getNaturesOfControl());
+        assertNull(result.getLinks());
+        assertNull(result.getCeasedOn());
+        assertNull(result.getNotifiedOn());
+        assertNull(result.getIsSanctioned());
+        assertNull(result.getIdentification());
+        assertNull(result.getPrincipalOfficeAddress());
     }
 
     @Test
@@ -716,14 +720,14 @@ class CompanyPscTransformerTest {
         Assertions.assertNotNull(result);
         Assertions.assertEquals("etag123", result.getEtag());
         Assertions.assertEquals("Test Legal Person Beneficial Owner", result.getName());
-        Assertions.assertNull(result.getAddress());
-        Assertions.assertNull(result.getNaturesOfControl());
-        Assertions.assertNull(result.getLinks());
-        Assertions.assertNull(result.getCeasedOn());
-        Assertions.assertNull(result.getNotifiedOn());
-        Assertions.assertNull(result.getIsSanctioned());
-        Assertions.assertNull(result.getIdentification());
-        Assertions.assertNull(result.getPrincipalOfficeAddress());
+        assertNull(result.getAddress());
+        assertNull(result.getNaturesOfControl());
+        assertNull(result.getLinks());
+        assertNull(result.getCeasedOn());
+        assertNull(result.getNotifiedOn());
+        assertNull(result.getIsSanctioned());
+        assertNull(result.getIdentification());
+        assertNull(result.getPrincipalOfficeAddress());
     }
 
     @Test
@@ -750,13 +754,13 @@ class CompanyPscTransformerTest {
         LegalPerson result = pscTransformer.transformPscDocToLegalPerson(pscDocument);
 
         Assertions.assertNotNull(result);
-        Assertions.assertNull(result.getEtag());
-        Assertions.assertNull(result.getName());
-        Assertions.assertNull(result.getAddress());
-        Assertions.assertNull(result.getLinks());
-        Assertions.assertNull(result.getCeasedOn());
-        Assertions.assertNull(result.getNotifiedOn());
-        Assertions.assertNull(result.getIdentification());
+        assertNull(result.getEtag());
+        assertNull(result.getName());
+        assertNull(result.getAddress());
+        assertNull(result.getLinks());
+        assertNull(result.getCeasedOn());
+        assertNull(result.getNotifiedOn());
+        assertNull(result.getIdentification());
     }
 
     @Test
@@ -767,14 +771,14 @@ class CompanyPscTransformerTest {
         LegalPerson result = pscTransformer.transformPscDocToLegalPerson(pscDocument);
 
         Assertions.assertNotNull(result);
-        Assertions.assertNull(result.getEtag());
-        Assertions.assertNull(result.getName());
-        Assertions.assertNull(result.getAddress());
-        Assertions.assertNull(result.getNaturesOfControl());
-        Assertions.assertNull(result.getLinks());
-        Assertions.assertNull(result.getCeasedOn());
-        Assertions.assertNull(result.getNotifiedOn());
-        Assertions.assertNull(result.getIdentification());
+        assertNull(result.getEtag());
+        assertNull(result.getName());
+        assertNull(result.getAddress());
+        assertNull(result.getNaturesOfControl());
+        assertNull(result.getLinks());
+        assertNull(result.getCeasedOn());
+        assertNull(result.getNotifiedOn());
+        assertNull(result.getIdentification());
     }
 
     @Test
@@ -790,12 +794,12 @@ class CompanyPscTransformerTest {
         Assertions.assertNotNull(result);
         Assertions.assertEquals("etag123", result.getEtag());
         Assertions.assertEquals("Test Legal Person", result.getName());
-        Assertions.assertNull(result.getAddress());
-        Assertions.assertNull(result.getNaturesOfControl());
-        Assertions.assertNull(result.getLinks());
-        Assertions.assertNull(result.getCeasedOn());
-        Assertions.assertNull(result.getNotifiedOn());
-        Assertions.assertNull(result.getIdentification());
+        assertNull(result.getAddress());
+        assertNull(result.getNaturesOfControl());
+        assertNull(result.getLinks());
+        assertNull(result.getCeasedOn());
+        assertNull(result.getNotifiedOn());
+        assertNull(result.getIdentification());
     }
 
     @Test
@@ -845,5 +849,32 @@ class CompanyPscTransformerTest {
         Assertions.assertEquals(pscDocument.getData().getPrincipalOfficeAddress().getAddressLine1(),
                 listSummary.getPrincipalOfficeAddress().getAddressLine1());
 
+    }
+
+    @Test
+    void shouldMapAllFieldsWhenLinksArePopulated() {
+        Links links = new Links();
+        links.setSelf("self-link");
+        links.setStatement("statement-link");
+        links.setExemptions("exemptions-link");
+
+        PscLinks result = CompanyPscTransformer.mapLinksToPscLinks(links);
+
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals("self-link", result.getSelf());
+        Assertions.assertEquals("statement-link", result.getStatement());
+        Assertions.assertEquals("exemptions-link", result.getExemptions());
+    }
+
+    @Test
+    void shouldReturnNullFieldsWhenLinksAreEmpty() {
+        Links links = new Links();
+
+        PscLinks result = CompanyPscTransformer.mapLinksToPscLinks(links);
+
+        Assertions.assertNotNull(result);
+        assertNull(result.getSelf());
+        assertNull(result.getStatement());
+        assertNull(result.getExemptions());
     }
 }
