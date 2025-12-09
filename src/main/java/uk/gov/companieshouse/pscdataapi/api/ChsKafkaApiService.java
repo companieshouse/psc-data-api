@@ -38,6 +38,10 @@ public class ChsKafkaApiService {
     private static final String DELETE_EVENT_TYPE = "deleted";
     private static final DateTimeFormatter PUBLISHED_AT_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
             .withZone(UTC);
+    public static final String INDIVIDUAL_BENEFICIAL_OWNER = "individual-beneficial-owner";
+    public static final String CORPORATE_ENTITY_BENEFICIAL_OWNER = "corporate-entity-beneficial-owner";
+    public static final String LEGAL_PERSON_BENEFICIAL_OWNER = "legal-person-beneficial-owner";
+    public static final String SUPER_SECURE_BENEFICIAL_OWNER = "super-secure-beneficial-owner";
 
     private final CompanyPscTransformer companyPscTransformer;
     private final Supplier<InternalApiClient> kafkaApiClientSupplier;
@@ -85,19 +89,19 @@ public class ChsKafkaApiService {
                     Object pscObject = switch (pscDocument.getData().getKind()) {
                         case "individual-person-with-significant-control" ->
                                 companyPscTransformer.transformPscDocToIndividual(pscDocument, false);
-                        case "individual-beneficial-owner" ->
+                        case INDIVIDUAL_BENEFICIAL_OWNER ->
                                 companyPscTransformer.transformPscDocToIndividualBeneficialOwner(pscDocument, false);
                         case "corporate-entity-person-with-significant-control" ->
                                 companyPscTransformer.transformPscDocToCorporateEntity(pscDocument);
-                        case "corporate-entity-beneficial-owner" ->
+                        case CORPORATE_ENTITY_BENEFICIAL_OWNER ->
                                 companyPscTransformer.transformPscDocToCorporateEntityBeneficialOwner(pscDocument);
                         case "legal-person-person-with-significant-control" ->
                                 companyPscTransformer.transformPscDocToLegalPerson(pscDocument);
-                        case "legal-person-beneficial-owner" ->
+                        case LEGAL_PERSON_BENEFICIAL_OWNER ->
                                 companyPscTransformer.transformPscDocToLegalPersonBeneficialOwner(pscDocument);
                         case "super-secure-person-with-significant-control" ->
                                 companyPscTransformer.transformPscDocToSuperSecure(pscDocument);
-                        case "super-secure-beneficial-owner" ->
+                        case SUPER_SECURE_BENEFICIAL_OWNER ->
                                 companyPscTransformer.transformPscDocToSuperSecureBeneficialOwner(pscDocument);
                         default -> null;
                     };
@@ -123,10 +127,10 @@ public class ChsKafkaApiService {
         kindMap.put("legal-person-person-with-significant-control", "legal-person");
         kindMap.put("corporate-entity-person-with-significant-control", "corporate-entity");
         kindMap.put("super-secure-person-with-significant-control", "super-secure");
-        kindMap.put("individual-beneficial-owner", "individual-beneficial-owner");
-        kindMap.put("legal-person-beneficial-owner", "legal-person-beneficial-owner");
-        kindMap.put("corporate-entity-beneficial-owner", "corporate-entity-beneficial-owner");
-        kindMap.put("super-secure-beneficial-owner", "super-secure-beneficial-owner");
+        kindMap.put(INDIVIDUAL_BENEFICIAL_OWNER, INDIVIDUAL_BENEFICIAL_OWNER);
+        kindMap.put(LEGAL_PERSON_BENEFICIAL_OWNER, LEGAL_PERSON_BENEFICIAL_OWNER);
+        kindMap.put(CORPORATE_ENTITY_BENEFICIAL_OWNER, CORPORATE_ENTITY_BENEFICIAL_OWNER);
+        kindMap.put(SUPER_SECURE_BENEFICIAL_OWNER, SUPER_SECURE_BENEFICIAL_OWNER);
 
         return kindMap.get(kind);
     }
