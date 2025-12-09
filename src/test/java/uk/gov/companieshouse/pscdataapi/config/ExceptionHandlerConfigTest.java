@@ -1,8 +1,6 @@
 package uk.gov.companieshouse.pscdataapi.config;
 
-
 import java.time.format.DateTimeParseException;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.dao.DataAccessException;
@@ -10,7 +8,13 @@ import org.springframework.dao.TransientDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.servlet.NoHandlerFoundException;
-import uk.gov.companieshouse.pscdataapi.exceptions.*;
+import uk.gov.companieshouse.pscdataapi.exceptions.ConflictException;
+import uk.gov.companieshouse.pscdataapi.exceptions.NotFoundException;
+import uk.gov.companieshouse.pscdataapi.exceptions.ServiceUnavailableException;
+import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
+import uk.gov.companieshouse.pscdataapi.exceptions.InternalDataException;
+import uk.gov.companieshouse.pscdataapi.exceptions.BadGatewayException;
+import uk.gov.companieshouse.pscdataapi.exceptions.SerDesException;
 
 class ExceptionHandlerConfigTest {
 

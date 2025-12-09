@@ -26,7 +26,12 @@ import uk.gov.companieshouse.api.psc.ListSummary;
 import uk.gov.companieshouse.api.psc.SuperSecure;
 import uk.gov.companieshouse.api.psc.SuperSecureBeneficialOwner;
 import uk.gov.companieshouse.pscdataapi.exceptions.FailedToTransformException;
-import uk.gov.companieshouse.pscdataapi.models.*;
+import uk.gov.companieshouse.pscdataapi.models.PscData;
+import uk.gov.companieshouse.pscdataapi.models.PscDocument;
+import uk.gov.companieshouse.pscdataapi.models.PscIdentityVerificationDetails;
+import uk.gov.companieshouse.pscdataapi.models.PscSensitiveData;
+import uk.gov.companieshouse.pscdataapi.models.Links;
+
 import uk.gov.companieshouse.pscdataapi.util.TestHelper;
 
 @ExtendWith(MockitoExtension.class)
