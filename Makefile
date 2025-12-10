@@ -23,7 +23,7 @@ test: test-unit test-integration
 
 .PHONY: test-unit
 test-unit: clean
-	mvn test
+	mvn versions:set -DnewVersion=$(version) -DgenerateBackupPoms=false verify
 
 .PHONY: test-integration
 test-integration: clean
