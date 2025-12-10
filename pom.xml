@@ -351,6 +351,12 @@
               <value>org.sonar.java.jacoco.JUnitListener</value>
             </property>
           </properties>
+          <!-- Workaround for this error since Docker CLI 29.0:
+                     "client version 1.32 is too old. Minimum supported API version is 1.44, please upgrade your client to a newer version"
+                     see https://github.com/testcontainers/testcontainers-java/issues/11212#issuecomment-3518584924 -->
+          <systemPropertyVariables>
+            <api.version>1.44</api.version>
+          </systemPropertyVariables>
           <argLine>-Dfile.encoding=UTF-8</argLine>
           <argLine>${failsafeArgLine}</argLine>
           <classesDirectory>${project.build.outputDirectory}</classesDirectory>
