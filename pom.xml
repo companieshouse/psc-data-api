@@ -84,12 +84,6 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-security</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>org.apache.logging.log4j</groupId>
-          <artifactId>log4j-to-slf4j</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -106,12 +100,6 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-data-mongodb</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>org.apache.logging.log4j</groupId>
-          <artifactId>log4j-to-slf4j</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>uk.gov.companieshouse</groupId>
