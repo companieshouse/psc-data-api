@@ -271,7 +271,7 @@
         <version>${jacoco-maven-plugin.version}</version>
         <configuration>
           <excludes>
-            <exclude>**/models/*.class</exclude>
+            <exclude>**/models/*.java</exclude>
           </excludes>
         </configuration>
         <executions>
