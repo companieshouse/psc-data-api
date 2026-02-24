@@ -15,8 +15,8 @@
   <properties>
     <java.version>21</java.version>
     <start-class>uk.gov.companieshouse.pscdataapi.PscDataApiApplication</start-class>
-    <spring-boot-dependencies.version>3.5.7</spring-boot-dependencies.version>
-    <spring-boot-maven-plugin.version>3.5.7</spring-boot-maven-plugin.version>
+    <spring-boot-dependencies.version>3.5.11</spring-boot-dependencies.version>
+    <spring-boot-maven-plugin.version>3.5.11</spring-boot-maven-plugin.version>
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <maven.compiler.target>${java.version}</maven.compiler.target>
     <maven-compiler-plugin.version>3.14.1</maven-compiler-plugin.version>
@@ -31,10 +31,10 @@
     <gson.version>2.13.2</gson.version>
 
     <!-- Internal -->
-    <structured-logging.version>3.0.43</structured-logging.version>
-    <private-api-sdk-java.version>4.0.411</private-api-sdk-java.version>
-    <api-sdk-java.version>6.5.1</api-sdk-java.version>
-    <api-security-java.version>2.0.18</api-security-java.version>
+    <structured-logging.version>3.0.51</structured-logging.version>
+    <private-api-sdk-java.version>4.0.461</private-api-sdk-java.version>
+    <api-sdk-java.version>6.6.6</api-sdk-java.version>
+    <api-security-java.version>2.0.21</api-security-java.version>
 
     <!-- tests -->
     <io-cucumber.version>7.23.0</io-cucumber.version> <!-- Higher version not compatible with junit engine at time of comment -->
@@ -46,8 +46,6 @@
     <sonar.java.binaries>${project.basedir}/target,${project.basedir}/target/*</sonar.java.binaries>
     <sonar.jacoco.reports>${project.basedir}/target/site</sonar.jacoco.reports>
     <sonar.token>${CODE_ANALYSIS_TOKEN}</sonar.token>
-    <sonar.login></sonar.login>
-    <sonar.password></sonar.password>
     <sonar.projectKey>uk.gov.companieshouse:psc-data-api</sonar.projectKey>
     <sonar.projectName>psc-data-api</sonar.projectName>
   </properties>
@@ -69,6 +67,17 @@
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
       <version>3.20.0</version>
+    </dependency>
+    <!-- override log4j 2.24.3 brought in by spring-boot-starter 3.5.11 - CVE-2025-68161(6.3)-->
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-api</artifactId>
+      <version>2.25.3</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-to-slf4j</artifactId>
+      <version>2.25.3</version>
     </dependency>
     <!--        Vulnerable deps end here-->
 
