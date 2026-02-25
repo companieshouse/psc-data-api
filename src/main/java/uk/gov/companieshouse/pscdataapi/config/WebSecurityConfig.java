@@ -1,6 +1,7 @@
 package uk.gov.companieshouse.pscdataapi.config;
 
 import java.util.List;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -10,9 +11,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
-import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import org.springframework.web.util.pattern.PathPatternParser;
 import uk.gov.companieshouse.api.filter.CustomCorsFilter;
 import uk.gov.companieshouse.api.interceptor.InternalUserInterceptor;
 import uk.gov.companieshouse.api.interceptor.UserAuthenticationInterceptor;
@@ -25,28 +24,14 @@ public class WebSecurityConfig implements WebMvcConfigurer {
 
     public static final String PATTERN_FULL_RECORD =
             "/company/{company_number}/persons-with-significant-control/individual/{notification_id}/full_record";
-    public static final String PATTERN_IDENTITY_VERIFICATION_DETAILS =
-            "/company/{company_number}/persons-with-significant-control/individual/{notification_id}/identity-verification-details";
 
     List<String> otherAllowedAuthMethods = List.of("oauth2");
 
     @Override
     public void addInterceptors(final InterceptorRegistry registry) {
         registry.addInterceptor(userAuthenticationInterceptor());
-        registry.addInterceptor(internalUserInterceptor())
-                .addPathPatterns(PATTERN_IDENTITY_VERIFICATION_DETAILS);
         registry.addInterceptor(fullRecordAuthenticationInterceptor())
                 .addPathPatterns(PATTERN_FULL_RECORD);
-    }
-
-    @Bean
-    public PathPatternParser pathPatternParser() {
-        return new PathPatternParser();
-    }
-
-    @Override
-    public void configurePathMatch(final PathMatchConfigurer configurer) {
-        configurer.setPatternParser(pathPatternParser());
     }
 
     @Bean
