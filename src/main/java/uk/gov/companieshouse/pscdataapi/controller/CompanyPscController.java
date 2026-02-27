@@ -221,8 +221,7 @@ public class CompanyPscController {
         return new ResponseEntity<>(superSecureBeneficialOwner, HttpStatus.OK);
     }
 
-    @GetMapping({"/company/{company_number}/persons-with-significant-control",
-                 "/company/{company_number}/persons-with-significant-control/"})
+    @GetMapping({"/company/{company_number}/persons-with-significant-control"})
     public ResponseEntity<PscList> searchPscListSummary(
             @PathVariable("company_number") String companyNumber,
             @RequestParam(value = "items_per_page", required = false, defaultValue = "25") Integer itemsPerPage,
