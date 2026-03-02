@@ -1,6 +1,7 @@
 package uk.gov.companieshouse.pscdataapi.config;
 
 import java.util.List;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -9,8 +10,9 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.csrf.CsrfFilter;
+import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.filter.UrlHandlerFilter;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
-import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import uk.gov.companieshouse.api.filter.CustomCorsFilter;
 import uk.gov.companieshouse.api.interceptor.InternalUserInterceptor;
@@ -24,23 +26,14 @@ public class WebSecurityConfig implements WebMvcConfigurer {
 
     public static final String PATTERN_FULL_RECORD =
             "/company/{company_number}/persons-with-significant-control/individual/{notification_id}/full_record";
-    public static final String PATTERN_IDENTITY_VERIFICATION_DETAILS =
-            "/company/{company_number}/persons-with-significant-control/individual/{notification_id}/identity-verification-details";
 
     List<String> otherAllowedAuthMethods = List.of("oauth2");
 
     @Override
     public void addInterceptors(final InterceptorRegistry registry) {
         registry.addInterceptor(userAuthenticationInterceptor());
-        registry.addInterceptor(internalUserInterceptor())
-                .addPathPatterns(PATTERN_IDENTITY_VERIFICATION_DETAILS);
         registry.addInterceptor(fullRecordAuthenticationInterceptor())
                 .addPathPatterns(PATTERN_FULL_RECORD);
-    }
-
-    @Override
-    public void configurePathMatch(final PathMatchConfigurer configurer) {
-        configurer.setUseTrailingSlashMatch(true);
     }
 
     @Bean
@@ -82,4 +75,24 @@ public class WebSecurityConfig implements WebMvcConfigurer {
     public List<String> externalMethods() {
         return List.of(HttpMethod.GET.name());
     }
+
+    /**
+     * Preserve original behaviour of Spring Boot 2 to allow a trailing slash on service endpoints. This is to avoid
+     * negatively impacting external API users who may rely on it.
+     *
+     * @return the filter registration bean for the URL handler filter
+     */
+    @Bean
+    public FilterRegistrationBean<OncePerRequestFilter> urlHandlerFilterRegistrationBean() {
+        final FilterRegistrationBean<OncePerRequestFilter> registrationBean = new FilterRegistrationBean<>();
+
+        UrlHandlerFilter urlHandlerFilter = UrlHandlerFilter
+                                                .trailingSlashHandler("/company/*/persons-with-significant-control/**")
+                                                .wrapRequest()
+                                                .build();
+        registrationBean.setFilter(urlHandlerFilter);
+
+         return registrationBean;
+    }
+
 }
