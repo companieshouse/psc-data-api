@@ -1,22 +1,26 @@
 package uk.gov.companieshouse.pscdataapi.transform;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.assertNull;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import org.junit.jupiter.api.Assertions;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
+
 import uk.gov.companieshouse.api.model.psc.PscLinks;
 import uk.gov.companieshouse.api.psc.CorporateEntity;
 import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
-import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
 import uk.gov.companieshouse.api.psc.ExternalData;
+import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
 import uk.gov.companieshouse.api.psc.IdentityVerificationDetails;
 import uk.gov.companieshouse.api.psc.Individual;
 import uk.gov.companieshouse.api.psc.IndividualBeneficialOwner;
@@ -26,12 +30,11 @@ import uk.gov.companieshouse.api.psc.ListSummary;
 import uk.gov.companieshouse.api.psc.SuperSecure;
 import uk.gov.companieshouse.api.psc.SuperSecureBeneficialOwner;
 import uk.gov.companieshouse.pscdataapi.exceptions.FailedToTransformException;
+import uk.gov.companieshouse.pscdataapi.models.Links;
 import uk.gov.companieshouse.pscdataapi.models.PscData;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 import uk.gov.companieshouse.pscdataapi.models.PscIdentityVerificationDetails;
 import uk.gov.companieshouse.pscdataapi.models.PscSensitiveData;
-import uk.gov.companieshouse.pscdataapi.models.Links;
-
 import uk.gov.companieshouse.pscdataapi.util.TestHelper;
 
 @ExtendWith(MockitoExtension.class)
@@ -876,5 +879,56 @@ class CompanyPscTransformerTest {
         assertNull(result.getSelf());
         assertNull(result.getStatement());
         assertNull(result.getExemptions());
+    }
+
+    @Test
+    void shouldNotAddPscLinksWhenFeatureFlagEnabled() {
+         // given
+        CompanyPscTransformer transformer = new CompanyPscTransformer();
+        ReflectionTestUtils.setField(transformer, "isPscLinksEnabled", true);
+
+        PscDocument doc = new PscDocument();
+        PscData data = new PscData();
+
+        Links links = new Links();
+        data.setLinks(links);
+
+        doc.setData(data);
+        doc.setPscId("PSCDATA123");
+
+         // when
+        ListSummary result = transformer.transformPscDocToListSummary(doc);
+        Links resultLinks = (Links) result.getLinks();
+        // then
+        assertNotNull(resultLinks);
+        assertNull(resultLinks.getPersonsWithSignificantControl());
+    }
+
+    @Test
+    void shouldAddPscLinksWhenFeatureFlagDisabled() {
+        // given
+        CompanyPscTransformer transformer = new CompanyPscTransformer();
+        ReflectionTestUtils.setField(transformer, "isPscLinksEnabled", false);
+
+        PscDocument doc = new PscDocument();
+        PscData data = new PscData();
+
+        data.setLinks(new Links());
+
+        doc.setData(data);
+        doc.setPscId("PSCDATA123");
+
+        // when
+        ListSummary result = transformer.transformPscDocToListSummary(doc);
+        Links resultLinks = (Links) result.getLinks();
+
+        // then
+        assertNotNull(resultLinks);
+        assertEquals("/persons-with-significant-control/PSCDATA123",
+            resultLinks.getPersonsWithSignificantControl().getSelf()
+        );
+        assertEquals("/persons-with-significant-control/PSCDATA123/notifications",
+            resultLinks.getPersonsWithSignificantControl().getNotifications()
+        );
     }
 }
