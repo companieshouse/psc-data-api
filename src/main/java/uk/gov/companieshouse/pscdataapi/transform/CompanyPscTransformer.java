@@ -707,7 +707,7 @@ public class CompanyPscTransformer {
         }
 
         String pscId = document.getPscId();
-        LOGGER.info("PSCID is "+ pscId);
+        LOGGER.debug("Extending PSC links for pscId " + pscId);
         if (pscId != null) {
             PersonsWithSignificantControl pscLinks = new PersonsWithSignificantControl();
             pscLinks.setSelf(String.format("/persons-with-significant-control/%s", pscId));
