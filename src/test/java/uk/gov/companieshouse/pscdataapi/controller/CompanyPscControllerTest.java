@@ -2,6 +2,9 @@ package uk.gov.companieshouse.pscdataapi.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
@@ -15,6 +18,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static uk.gov.companieshouse.pscdataapi.util.TestHelper.STALE_DELTA_AT;
 
 import org.junit.jupiter.api.DisplayName;
@@ -25,6 +29,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import uk.gov.companieshouse.api.psc.CorporateEntity;
@@ -40,8 +45,11 @@ import uk.gov.companieshouse.api.psc.SuperSecureBeneficialOwner;
 import uk.gov.companieshouse.pscdataapi.exceptions.ConflictException;
 import uk.gov.companieshouse.pscdataapi.exceptions.NotFoundException;
 import uk.gov.companieshouse.pscdataapi.exceptions.ServiceUnavailableException;
+import uk.gov.companieshouse.pscdataapi.models.Links;
+import uk.gov.companieshouse.pscdataapi.models.PersonsWithSignificantControl;
 import uk.gov.companieshouse.pscdataapi.models.PscDeleteRequest;
 import uk.gov.companieshouse.pscdataapi.service.CompanyPscService;
+import uk.gov.companieshouse.pscdataapi.transform.CompanyPscTransformer;
 import uk.gov.companieshouse.pscdataapi.util.TestHelper;
 
 @SpringBootTest
@@ -93,6 +101,8 @@ class CompanyPscControllerTest {
     private MockMvc mockMvc;
     @Autowired
     private CompanyPscController companyPscController;
+    @Autowired
+    private CompanyPscTransformer companyPscTransformer;
 
     @Test
     void contextLoads() {
@@ -960,4 +970,367 @@ class CompanyPscControllerTest {
                 .andExpect(content().string(""));
     }
 
+    // ** Tests for PSC links in Controller GET request responses based on feature flag //
+
+        // Helper methods
+        private void setFeatureFlag(boolean enabled) { ReflectionTestUtils.setField(companyPscTransformer, "isPscLinksEnabled", enabled); }
+
+        private Individual createIndividualWithLinks() {
+                Individual individual = new Individual();
+                Links links = new Links();
+                PersonsWithSignificantControl pscLinks = new PersonsWithSignificantControl();
+                pscLinks.setSelf("/persons-with-significant-control/123");
+                links.setPersonsWithSignificantControl(pscLinks);
+                individual.setLinks(links);
+                return individual;
+        }
+
+        private Individual createIndividualWithoutPscLinks() {
+                Individual individual = new Individual();
+                Links links = new Links();
+                individual.setLinks(links);
+                return individual;
+        }
+
+        private IndividualBeneficialOwner createIndividualBeneficialOwnerWithLinks() {
+                IndividualBeneficialOwner ibo = new IndividualBeneficialOwner();
+                Links links = new Links();
+                PersonsWithSignificantControl pscLinks = new PersonsWithSignificantControl();
+                pscLinks.setSelf("/persons-with-significant-control/ibo-123");
+                links.setPersonsWithSignificantControl(pscLinks);
+                ibo.setLinks(links);
+                return ibo;
+        }
+
+        private IndividualBeneficialOwner createIndividualBeneficialOwnerWithoutPscLinks() {
+                IndividualBeneficialOwner ibo = new IndividualBeneficialOwner();
+                Links links = new Links();
+                ibo.setLinks(links);
+                return ibo;
+        }
+
+        private CorporateEntity createCorporateEntityWithLinks() {
+                CorporateEntity ce = new CorporateEntity();
+                Links links = new Links();
+                PersonsWithSignificantControl pscLinks = new PersonsWithSignificantControl();
+                pscLinks.setSelf("/persons-with-significant-control/ce-123");
+                links.setPersonsWithSignificantControl(pscLinks);
+                ce.setLinks(links);
+                return ce;
+        }
+
+        private CorporateEntity createCorporateEntityWithoutPscLinks() {
+                CorporateEntity ce = new CorporateEntity();
+                Links links = new Links();
+                ce.setLinks(links);
+                return ce;
+        }
+
+        private CorporateEntityBeneficialOwner createCorporateEntityBeneficialOwnerWithLinks() {
+                CorporateEntityBeneficialOwner cebo = new CorporateEntityBeneficialOwner();
+                Links links = new Links();
+                PersonsWithSignificantControl pscLinks = new PersonsWithSignificantControl();
+                pscLinks.setSelf("/persons-with-significant-control/cebo-123");
+                links.setPersonsWithSignificantControl(pscLinks);
+                cebo.setLinks(links);
+                return cebo;
+        }
+
+        private CorporateEntityBeneficialOwner createCorporateEntityBeneficialOwnerWithoutPscLinks() {
+                CorporateEntityBeneficialOwner cebo = new CorporateEntityBeneficialOwner();
+                Links links = new Links();
+                cebo.setLinks(links);
+                return cebo;
+        }
+
+        private LegalPerson createLegalPersonWithLinks() {
+                LegalPerson lp = new LegalPerson();
+                Links links = new Links();
+                PersonsWithSignificantControl pscLinks = new PersonsWithSignificantControl();
+                pscLinks.setSelf("/persons-with-significant-control/lp-123");
+                links.setPersonsWithSignificantControl(pscLinks);
+                lp.setLinks(links);
+                return lp;
+        }
+
+        private LegalPerson createLegalPersonWithoutPscLinks() {
+                LegalPerson lp = new LegalPerson();
+                Links links = new Links();
+                lp.setLinks(links);
+                return lp;
+        }
+
+        private LegalPersonBeneficialOwner createLegalPersonBeneficialOwnerWithLinks() {
+                LegalPersonBeneficialOwner lpbo = new LegalPersonBeneficialOwner();
+                Links links = new Links();
+                PersonsWithSignificantControl pscLinks = new PersonsWithSignificantControl();
+                pscLinks.setSelf("/persons-with-significant-control/lpbo-123");
+                links.setPersonsWithSignificantControl(pscLinks);
+                lpbo.setLinks(links);
+                return lpbo;
+        }
+
+        private LegalPersonBeneficialOwner createLegalPersonBeneficialOwnerWithoutPscLinks() {
+                LegalPersonBeneficialOwner lpbo = new LegalPersonBeneficialOwner();
+                Links links = new Links();
+                lpbo.setLinks(links);
+                return lpbo;
+        }
+
+        private SuperSecure createSuperSecureWithLinks() {
+                SuperSecure ss = new SuperSecure();
+                Links links = new Links();
+                PersonsWithSignificantControl pscLinks = new PersonsWithSignificantControl();
+                pscLinks.setSelf("/persons-with-significant-control/ss-123");
+                links.setPersonsWithSignificantControl(pscLinks);
+                ss.setLinks(links);
+                return ss;
+        }
+
+        private SuperSecure createSuperSecureWithoutPscLinks() {
+                SuperSecure ss = new SuperSecure();
+                Links links = new Links();
+                ss.setLinks(links);
+                return ss;
+        }
+
+        private SuperSecureBeneficialOwner createSuperSecureBeneficialOwnerWithLinks() {
+                SuperSecureBeneficialOwner ssbo = new SuperSecureBeneficialOwner();
+                Links links = new Links();
+                PersonsWithSignificantControl pscLinks = new PersonsWithSignificantControl();
+                pscLinks.setSelf("/persons-with-significant-control/ssbo-123");
+                links.setPersonsWithSignificantControl(pscLinks);
+                ssbo.setLinks(links);
+                return ssbo;
+        }
+
+        private SuperSecureBeneficialOwner createSuperSecureBeneficialOwnerWithoutPscLinks() {
+                SuperSecureBeneficialOwner ssbo = new SuperSecureBeneficialOwner();
+                Links links = new Links();
+                ssbo.setLinks(links);
+                return ssbo;
+        }
+   
+
+    // GET Individual
+    @Test
+    @DisplayName("GET individual includes PSC links when feature flag is disabled")
+    void getIndividualPSC_IncludesPscLinks_WhenFlagDisabled() throws Exception {
+        setFeatureFlag(false);
+
+        when(companyPscService.getIndividualPsc(any(), any(), anyBoolean()))
+                .thenReturn(createIndividualWithLinks());
+
+        mockMvc.perform(get(GET_INDIVIDUAL_URL)
+                .header("ERIC-Identity", ERIC_IDENTITY)
+                .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.links.persons-with-significant-control").exists());
+    }
+
+    @Test
+    @DisplayName("GET individual does NOT include PSC links when feature flag is enabled")
+    void getIndividualPSC_ExcludesPscLinks_WhenFlagEnabled() throws Exception {
+        setFeatureFlag(true);
+
+        when(companyPscService.getIndividualPsc(any(), any(), anyBoolean()))
+                .thenReturn(createIndividualWithoutPscLinks());
+
+        mockMvc.perform(get(GET_INDIVIDUAL_URL)
+                .header("ERIC-Identity", ERIC_IDENTITY)
+                .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.links.persons-with-significant-control").doesNotExist());
+    }
+
+    // GET Individual Beneficial Owner
+    @Test
+    @DisplayName("GET individual-beneficial-owner includes PSC links when feature flag is disabled")
+    void getIndividualBeneficialOwnerPSC_IncludesPscLinks_WhenFlagDisabled() throws Exception {
+        setFeatureFlag(false);
+        when(companyPscService.getIndividualBeneficialOwnerPsc(any(), any(), eq(MOCK_REGISTER_VIEW_FALSE))).thenReturn(createIndividualBeneficialOwnerWithLinks());
+        mockMvc.perform(get(GET_INDIVIDUAL_BENEFICIAL_OWNER_URL)
+                .header("ERIC-Identity", ERIC_IDENTITY)
+                .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.links.persons-with-significant-control").exists());
+    }
+
+    @Test
+    @DisplayName("GET individual-beneficial-owner does NOT include PSC links when feature flag is enabled")
+    void getIndividualBeneficialOwnerPSC_ExcludesPscLinks_WhenFlagEnabled() throws Exception {
+        setFeatureFlag(true);
+        when(companyPscService.getIndividualBeneficialOwnerPsc(any(), any(), eq(MOCK_REGISTER_VIEW_FALSE))).thenReturn(createIndividualBeneficialOwnerWithoutPscLinks());
+        mockMvc.perform(get(GET_INDIVIDUAL_BENEFICIAL_OWNER_URL)
+                .header("ERIC-Identity", ERIC_IDENTITY)
+                .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.links.persons-with-significant-control").doesNotExist());
+    }
+
+    // GET Corporate Entity
+    @Test
+    @DisplayName("GET corporate-entity includes PSC links when feature flag is disabled")
+    void getCorporateEntityPSC_IncludesPscLinks_WhenFlagDisabled() throws Exception {
+        setFeatureFlag(false);
+        when(companyPscService.getCorporateEntityPsc(any(), any())).thenReturn(createCorporateEntityWithLinks());
+        mockMvc.perform(get(GET_CORPORATE_ENTITY_URL)
+                .header("ERIC-Identity", ERIC_IDENTITY)
+                .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.links.persons-with-significant-control").exists());
+    }
+
+    @Test
+    @DisplayName("GET corporate-entity does NOT include PSC links when feature flag is enabled")
+    void getCorporateEntityPSC_ExcludesPscLinks_WhenFlagEnabled() throws Exception {
+        setFeatureFlag(true);
+        when(companyPscService.getCorporateEntityPsc(any(), any())).thenReturn(createCorporateEntityWithoutPscLinks());
+        mockMvc.perform(get(GET_CORPORATE_ENTITY_URL)
+                .header("ERIC-Identity", ERIC_IDENTITY)
+                .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.links.persons-with-significant-control").doesNotExist());
+    }
+
+    // GET Corporate Entity Beneficial Owner
+    @Test
+    @DisplayName("GET corporate-entity-beneficial-owner includes PSC links when feature flag is disabled")
+    void getCorporateEntityBeneficialOwnerPSC_IncludesPscLinks_WhenFlagDisabled() throws Exception {
+        setFeatureFlag(false);
+        when(companyPscService.getCorporateEntityBeneficialOwnerPsc(any(), any())).thenReturn(createCorporateEntityBeneficialOwnerWithLinks());
+        mockMvc.perform(get(GET_CORPORATE_ENTITY_BENEFICIAL_OWNER_URL)
+                .header("ERIC-Identity", ERIC_IDENTITY)
+                .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.links.persons-with-significant-control").exists());
+    }
+
+    @Test
+    @DisplayName("GET corporate-entity-beneficial-owner does NOT include PSC links when feature flag is enabled")
+    void getCorporateEntityBeneficialOwnerPSC_ExcludesPscLinks_WhenFlagEnabled() throws Exception {
+        setFeatureFlag(true);
+        when(companyPscService.getCorporateEntityBeneficialOwnerPsc(any(), any())).thenReturn(createCorporateEntityBeneficialOwnerWithoutPscLinks());
+        mockMvc.perform(get(GET_CORPORATE_ENTITY_BENEFICIAL_OWNER_URL)
+                .header("ERIC-Identity", ERIC_IDENTITY)
+                .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.links.persons-with-significant-control").doesNotExist());
+    }
+
+    // GET Legal Person
+    @Test
+    @DisplayName("GET legal-person includes PSC links when feature flag is disabled")
+    void getLegalPersonPSC_IncludesPscLinks_WhenFlagDisabled() throws Exception {
+        setFeatureFlag(false);
+        when(companyPscService.getLegalPersonPsc(any(), any())).thenReturn(createLegalPersonWithLinks());
+        mockMvc.perform(get(GET_LEGAL_PERSON_URL)
+                .header("ERIC-Identity", ERIC_IDENTITY)
+                .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.links.persons-with-significant-control").exists());
+    }
+
+    @Test
+    @DisplayName("GET legal-person does NOT include PSC links when feature flag is enabled")
+    void getLegalPersonPSC_ExcludesPscLinks_WhenFlagEnabled() throws Exception {
+        setFeatureFlag(true);
+        when(companyPscService.getLegalPersonPsc(any(), any())).thenReturn(createLegalPersonWithoutPscLinks());
+        mockMvc.perform(get(GET_LEGAL_PERSON_URL)
+                .header("ERIC-Identity", ERIC_IDENTITY)
+                .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.links.persons-with-significant-control").doesNotExist());
+    }
+
+    // GET Legal Person Beneficial Owner
+    @Test
+    @DisplayName("GET legal-person-beneficial-owner includes PSC links when feature flag is disabled")
+    void getLegalPersonBeneficialOwnerPSC_IncludesPscLinks_WhenFlagDisabled() throws Exception {
+        setFeatureFlag(false);
+        when(companyPscService.getLegalPersonBeneficialOwnerPsc(any(), any())).thenReturn(createLegalPersonBeneficialOwnerWithLinks());
+        mockMvc.perform(get(GET_LEGAL_PERSON_BENEFICIAL_OWNER_URL)
+                .header("ERIC-Identity", ERIC_IDENTITY)
+                .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.links.persons-with-significant-control").exists());
+    }
+
+    @Test
+    @DisplayName("GET legal-person-beneficial-owner does NOT include PSC links when feature flag is enabled")
+    void getLegalPersonBeneficialOwnerPSC_ExcludesPscLinks_WhenFlagEnabled() throws Exception {
+        setFeatureFlag(true);
+        when(companyPscService.getLegalPersonBeneficialOwnerPsc(any(), any())).thenReturn(createLegalPersonBeneficialOwnerWithoutPscLinks());
+        mockMvc.perform(get(GET_LEGAL_PERSON_BENEFICIAL_OWNER_URL)
+                .header("ERIC-Identity", ERIC_IDENTITY)
+                .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.links.persons-with-significant-control").doesNotExist());
+    }
+
+    // GET Super Secure
+    @Test
+    @DisplayName("GET super-secure includes PSC links when feature flag is disabled")
+    void getSuperSecurePSC_IncludesPscLinks_WhenFlagDisabled() throws Exception {
+        setFeatureFlag(false);
+        when(companyPscService.getSuperSecurePsc(any(), any())).thenReturn(createSuperSecureWithLinks());
+        mockMvc.perform(get(GET_SUPER_SECURE_URL)
+                .header("ERIC-Identity", ERIC_IDENTITY)
+                .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.links.persons-with-significant-control").exists());
+    }
+
+    @Test
+    @DisplayName("GET super-secure does NOT include PSC links when feature flag is enabled")
+    void getSuperSecurePSC_ExcludesPscLinks_WhenFlagEnabled() throws Exception {
+        setFeatureFlag(true);
+        when(companyPscService.getSuperSecurePsc(any(), any())).thenReturn(createSuperSecureWithoutPscLinks());
+        mockMvc.perform(get(GET_SUPER_SECURE_URL)
+                .header("ERIC-Identity", ERIC_IDENTITY)
+                .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.links.persons-with-significant-control").doesNotExist());
+    }
+
+    // GET Super Secure Beneficial Owner
+    @Test
+    @DisplayName("GET super-secure-beneficial-owner includes PSC links when feature flag is disabled")
+    void getSuperSecureBeneficialOwnerPSC_IncludesPscLinks_WhenFlagDisabled() throws Exception {
+        setFeatureFlag(false);
+        when(companyPscService.getSuperSecureBeneficialOwnerPsc(any(), any())).thenReturn(createSuperSecureBeneficialOwnerWithLinks());
+        mockMvc.perform(get(GET_SUPER_SECURE_BENEFICIAL_OWNER_URL)
+                .header("ERIC-Identity", ERIC_IDENTITY)
+                .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.links.persons-with-significant-control").exists());
+    }
+
+    @Test
+    @DisplayName("GET super-secure-beneficial-owner does NOT include PSC links when feature flag is enabled")
+    void getSuperSecureBeneficialOwnerPSC_ExcludesPscLinks_WhenFlagEnabled() throws Exception {
+        setFeatureFlag(true);
+        when(companyPscService.getSuperSecureBeneficialOwnerPsc(any(), any())).thenReturn(createSuperSecureBeneficialOwnerWithoutPscLinks());
+        mockMvc.perform(get(GET_SUPER_SECURE_BENEFICIAL_OWNER_URL)
+                .header("ERIC-Identity", ERIC_IDENTITY)
+                .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.links.persons-with-significant-control").doesNotExist());
+    }
 }
