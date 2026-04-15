@@ -973,10 +973,8 @@ class CompanyPscControllerTest {
 
     // ** Tests for PSC links in Controller GET request responses based on feature flag //
 
-    // Helper methods
-
-    private void setFeatureFlag(boolean enabled) { ReflectionTestUtils.setField(companyPscTransformer, "isPscLinksEnabled", enabled); }
-
+        // Helper methods
+        private void setFeatureFlag(boolean enabled) { ReflectionTestUtils.setField(companyPscTransformer, "isPscLinksEnabled", enabled); }
 
         private Individual createIndividualWithLinks() {
                 Individual individual = new Individual();
@@ -1119,7 +1117,6 @@ class CompanyPscControllerTest {
     @Test
     @DisplayName("GET /individual/{id} includes PSC links when feature flag is disabled")
     void getIndividualPSC_IncludesPscLinks_WhenFlagDisabled() throws Exception {
-        // Set feature flag to false (disabled)
         setFeatureFlag(false);
 
         when(companyPscService.getIndividualPsc(any(), any(), anyBoolean()))
@@ -1136,7 +1133,6 @@ class CompanyPscControllerTest {
     @Test
     @DisplayName("GET /individual/{id} does NOT include PSC links when feature flag is enabled")
     void getIndividualPSC_ExcludesPscLinks_WhenFlagEnabled() throws Exception {
-        // Set feature flag to true (enabled)
         setFeatureFlag(true);
 
         when(companyPscService.getIndividualPsc(any(), any(), anyBoolean()))
@@ -1338,8 +1334,4 @@ class CompanyPscControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.links.persons-with-significant-control").doesNotExist());
     }
-
-
-    // end of file
-
 }
