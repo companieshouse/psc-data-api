@@ -1115,7 +1115,7 @@ class CompanyPscControllerTest {
 
     // GET Individual
     @Test
-    @DisplayName("GET /individual/{id} includes PSC links when feature flag is disabled")
+    @DisplayName("GET individual includes PSC links when feature flag is disabled")
     void getIndividualPSC_IncludesPscLinks_WhenFlagDisabled() throws Exception {
         setFeatureFlag(false);
 
@@ -1131,7 +1131,7 @@ class CompanyPscControllerTest {
     }
 
     @Test
-    @DisplayName("GET /individual/{id} does NOT include PSC links when feature flag is enabled")
+    @DisplayName("GET individual does NOT include PSC links when feature flag is enabled")
     void getIndividualPSC_ExcludesPscLinks_WhenFlagEnabled() throws Exception {
         setFeatureFlag(true);
 
@@ -1148,7 +1148,7 @@ class CompanyPscControllerTest {
 
     // GET Individual Beneficial Owner
     @Test
-    @DisplayName("GET /individual-beneficial-owner/{id} includes PSC links when feature flag is disabled")
+    @DisplayName("GET individual-beneficial-owner includes PSC links when feature flag is disabled")
     void getIndividualBeneficialOwnerPSC_IncludesPscLinks_WhenFlagDisabled() throws Exception {
         setFeatureFlag(false);
         when(companyPscService.getIndividualBeneficialOwnerPsc(any(), any(), eq(MOCK_REGISTER_VIEW_FALSE))).thenReturn(createIndividualBeneficialOwnerWithLinks());
@@ -1161,7 +1161,7 @@ class CompanyPscControllerTest {
     }
 
     @Test
-    @DisplayName("GET /individual-beneficial-owner/{id} does NOT include PSC links when feature flag is enabled")
+    @DisplayName("GET individual-beneficial-owner does NOT include PSC links when feature flag is enabled")
     void getIndividualBeneficialOwnerPSC_ExcludesPscLinks_WhenFlagEnabled() throws Exception {
         setFeatureFlag(true);
         when(companyPscService.getIndividualBeneficialOwnerPsc(any(), any(), eq(MOCK_REGISTER_VIEW_FALSE))).thenReturn(createIndividualBeneficialOwnerWithoutPscLinks());
@@ -1175,7 +1175,7 @@ class CompanyPscControllerTest {
 
     // GET Corporate Entity
     @Test
-    @DisplayName("GET /corporate-entity/{id} includes PSC links when feature flag is disabled")
+    @DisplayName("GET corporate-entity includes PSC links when feature flag is disabled")
     void getCorporateEntityPSC_IncludesPscLinks_WhenFlagDisabled() throws Exception {
         setFeatureFlag(false);
         when(companyPscService.getCorporateEntityPsc(any(), any())).thenReturn(createCorporateEntityWithLinks());
@@ -1188,7 +1188,7 @@ class CompanyPscControllerTest {
     }
 
     @Test
-    @DisplayName("GET /corporate-entity/{id} does NOT include PSC links when feature flag is enabled")
+    @DisplayName("GET corporate-entity does NOT include PSC links when feature flag is enabled")
     void getCorporateEntityPSC_ExcludesPscLinks_WhenFlagEnabled() throws Exception {
         setFeatureFlag(true);
         when(companyPscService.getCorporateEntityPsc(any(), any())).thenReturn(createCorporateEntityWithoutPscLinks());
@@ -1202,7 +1202,7 @@ class CompanyPscControllerTest {
 
     // GET Corporate Entity Beneficial Owner
     @Test
-    @DisplayName("GET /corporate-entity-beneficial-owner/{id} includes PSC links when feature flag is disabled")
+    @DisplayName("GET corporate-entity-beneficial-owner includes PSC links when feature flag is disabled")
     void getCorporateEntityBeneficialOwnerPSC_IncludesPscLinks_WhenFlagDisabled() throws Exception {
         setFeatureFlag(false);
         when(companyPscService.getCorporateEntityBeneficialOwnerPsc(any(), any())).thenReturn(createCorporateEntityBeneficialOwnerWithLinks());
@@ -1215,7 +1215,7 @@ class CompanyPscControllerTest {
     }
 
     @Test
-    @DisplayName("GET /corporate-entity-beneficial-owner/{id} does NOT include PSC links when feature flag is enabled")
+    @DisplayName("GET corporate-entity-beneficial-owner does NOT include PSC links when feature flag is enabled")
     void getCorporateEntityBeneficialOwnerPSC_ExcludesPscLinks_WhenFlagEnabled() throws Exception {
         setFeatureFlag(true);
         when(companyPscService.getCorporateEntityBeneficialOwnerPsc(any(), any())).thenReturn(createCorporateEntityBeneficialOwnerWithoutPscLinks());
@@ -1229,7 +1229,7 @@ class CompanyPscControllerTest {
 
     // GET Legal Person
     @Test
-    @DisplayName("GET /legal-person/{id} includes PSC links when feature flag is disabled")
+    @DisplayName("GET legal-person includes PSC links when feature flag is disabled")
     void getLegalPersonPSC_IncludesPscLinks_WhenFlagDisabled() throws Exception {
         setFeatureFlag(false);
         when(companyPscService.getLegalPersonPsc(any(), any())).thenReturn(createLegalPersonWithLinks());
@@ -1242,7 +1242,7 @@ class CompanyPscControllerTest {
     }
 
     @Test
-    @DisplayName("GET /legal-person/{id} does NOT include PSC links when feature flag is enabled")
+    @DisplayName("GET legal-person does NOT include PSC links when feature flag is enabled")
     void getLegalPersonPSC_ExcludesPscLinks_WhenFlagEnabled() throws Exception {
         setFeatureFlag(true);
         when(companyPscService.getLegalPersonPsc(any(), any())).thenReturn(createLegalPersonWithoutPscLinks());
@@ -1256,7 +1256,7 @@ class CompanyPscControllerTest {
 
     // GET Legal Person Beneficial Owner
     @Test
-    @DisplayName("GET /legal-person-beneficial-owner/{id} includes PSC links when feature flag is disabled")
+    @DisplayName("GET legal-person-beneficial-owner includes PSC links when feature flag is disabled")
     void getLegalPersonBeneficialOwnerPSC_IncludesPscLinks_WhenFlagDisabled() throws Exception {
         setFeatureFlag(false);
         when(companyPscService.getLegalPersonBeneficialOwnerPsc(any(), any())).thenReturn(createLegalPersonBeneficialOwnerWithLinks());
@@ -1269,7 +1269,7 @@ class CompanyPscControllerTest {
     }
 
     @Test
-    @DisplayName("GET /legal-person-beneficial-owner/{id} does NOT include PSC links when feature flag is enabled")
+    @DisplayName("GET legal-person-beneficial-owner does NOT include PSC links when feature flag is enabled")
     void getLegalPersonBeneficialOwnerPSC_ExcludesPscLinks_WhenFlagEnabled() throws Exception {
         setFeatureFlag(true);
         when(companyPscService.getLegalPersonBeneficialOwnerPsc(any(), any())).thenReturn(createLegalPersonBeneficialOwnerWithoutPscLinks());
@@ -1283,7 +1283,7 @@ class CompanyPscControllerTest {
 
     // GET Super Secure
     @Test
-    @DisplayName("GET /super-secure/{id} includes PSC links when feature flag is disabled")
+    @DisplayName("GET super-secure includes PSC links when feature flag is disabled")
     void getSuperSecurePSC_IncludesPscLinks_WhenFlagDisabled() throws Exception {
         setFeatureFlag(false);
         when(companyPscService.getSuperSecurePsc(any(), any())).thenReturn(createSuperSecureWithLinks());
@@ -1296,7 +1296,7 @@ class CompanyPscControllerTest {
     }
 
     @Test
-    @DisplayName("GET /super-secure/{id} does NOT include PSC links when feature flag is enabled")
+    @DisplayName("GET super-secure does NOT include PSC links when feature flag is enabled")
     void getSuperSecurePSC_ExcludesPscLinks_WhenFlagEnabled() throws Exception {
         setFeatureFlag(true);
         when(companyPscService.getSuperSecurePsc(any(), any())).thenReturn(createSuperSecureWithoutPscLinks());
@@ -1310,7 +1310,7 @@ class CompanyPscControllerTest {
 
     // GET Super Secure Beneficial Owner
     @Test
-    @DisplayName("GET /super-secure-beneficial-owner/{id} includes PSC links when feature flag is disabled")
+    @DisplayName("GET super-secure-beneficial-owner includes PSC links when feature flag is disabled")
     void getSuperSecureBeneficialOwnerPSC_IncludesPscLinks_WhenFlagDisabled() throws Exception {
         setFeatureFlag(false);
         when(companyPscService.getSuperSecureBeneficialOwnerPsc(any(), any())).thenReturn(createSuperSecureBeneficialOwnerWithLinks());
@@ -1323,7 +1323,7 @@ class CompanyPscControllerTest {
     }
 
     @Test
-    @DisplayName("GET /super-secure-beneficial-owner/{id} does NOT include PSC links when feature flag is enabled")
+    @DisplayName("GET super-secure-beneficial-owner does NOT include PSC links when feature flag is enabled")
     void getSuperSecureBeneficialOwnerPSC_ExcludesPscLinks_WhenFlagEnabled() throws Exception {
         setFeatureFlag(true);
         when(companyPscService.getSuperSecureBeneficialOwnerPsc(any(), any())).thenReturn(createSuperSecureBeneficialOwnerWithoutPscLinks());
