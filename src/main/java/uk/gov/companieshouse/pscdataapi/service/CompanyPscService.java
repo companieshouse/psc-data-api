@@ -12,6 +12,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Component;
+
+import uk.gov.companieshouse.api.appointment.OfficerSummary;
 import uk.gov.companieshouse.api.exemptions.CompanyExemptions;
 import uk.gov.companieshouse.api.metrics.MetricsApi;
 import uk.gov.companieshouse.api.metrics.PscApi;
@@ -37,6 +39,7 @@ import uk.gov.companieshouse.pscdataapi.exceptions.NotFoundException;
 import uk.gov.companieshouse.pscdataapi.logging.DataMapHolder;
 import uk.gov.companieshouse.pscdataapi.models.Created;
 import uk.gov.companieshouse.pscdataapi.models.Links;
+import uk.gov.companieshouse.pscdataapi.models.PersonsWithSignificantControl;
 import uk.gov.companieshouse.pscdataapi.models.PscData;
 import uk.gov.companieshouse.pscdataapi.models.PscDeleteRequest;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
@@ -100,9 +103,26 @@ public class CompanyPscService {
             repository.delete(document);
             chsKafkaApiService.invokeChsKafkaApiWithDeleteEvent(deleteRequest, document);
         } else {
-            final String msg = "PSC document not found during delete";
+            final String msg = "PSC document not found during delete - publishing event with links.persons-with-significant-control only";
             LOGGER.info(msg, DataMapHolder.getLogMap());
-            chsKafkaApiService.invokeChsKafkaApiWithDeleteEvent(deleteRequest, document);
+            // Construct a PscDocument with links.persons-with-significant-control object to publish
+            final String pscUri = "/company/%s/persons-with-significant-control/%s".formatted(deleteRequest.companyNumber(), deleteRequest.notificationId());
+
+            PersonsWithSignificantControl psc = new PersonsWithSignificantControl();
+            psc.setSelf(pscUri);
+
+            Links links = new Links();
+            links.setPersonsWithSignificantControl(psc);
+
+            PscDocument pscDoc = new PscDocument();
+            pscDoc.setId(deleteRequest.notificationId());
+            pscDoc.setCompanyNumber(deleteRequest.companyNumber());
+
+            PscData pscData = new PscData();
+            pscData.setLinks(links);
+            pscDoc.setData(pscData);
+     
+            chsKafkaApiService.invokeChsKafkaApiWithDeleteEvent(deleteRequest, pscDoc);
         }
     }
 

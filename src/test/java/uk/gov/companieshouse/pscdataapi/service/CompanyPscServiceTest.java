@@ -261,6 +261,29 @@ class CompanyPscServiceTest {
     }
 
     @Test
+        @DisplayName("Kafka delete event contains correct links object when PSC record is already deleted")
+        void testDeleteEventContainsCorrectLinksWhenRecordDeleted() {
+        when(repository.getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID)).thenReturn(Optional.empty());
+
+        ArgumentCaptor<PscDocument> pscDoc = ArgumentCaptor.forClass(PscDocument.class);
+
+        service.deletePsc(new PscDeleteRequest(COMPANY_NUMBER, NOTIFICATION_ID, "", INDIVIDUAL_KIND, DELTA_AT));
+
+        verify(repository).getPscByCompanyNumberAndId(COMPANY_NUMBER, NOTIFICATION_ID);
+        verify(chsKafkaApiService).invokeChsKafkaApiWithDeleteEvent(any(), pscDoc.capture());
+
+        PscDocument dataSent = pscDoc.getValue();
+        assertNotNull(dataSent);
+        assertEquals(NOTIFICATION_ID, dataSent.getId());
+        assertEquals(COMPANY_NUMBER, dataSent.getCompanyNumber());
+        assertNotNull(dataSent.getData());
+        assertNotNull(dataSent.getData().getLinks());
+        assertNotNull(dataSent.getData().getLinks().getPersonsWithSignificantControl());
+        String expectedUri = "/company/" + COMPANY_NUMBER + "/persons-with-significant-control/" + NOTIFICATION_ID;
+        assertEquals(expectedUri, dataSent.getData().getLinks().getPersonsWithSignificantControl().getSelf());
+        }
+
+    @Test
     void deleteIndividualFullRecordThrowsConflictWhenDeltaAtCheckFails() {
         PscDocument document = new PscDocument();
         document.setDeltaAt(DELTA_AT);
