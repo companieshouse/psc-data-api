@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Component;
 
-import uk.gov.companieshouse.api.appointment.OfficerSummary;
 import uk.gov.companieshouse.api.exemptions.CompanyExemptions;
 import uk.gov.companieshouse.api.metrics.MetricsApi;
 import uk.gov.companieshouse.api.metrics.PscApi;
