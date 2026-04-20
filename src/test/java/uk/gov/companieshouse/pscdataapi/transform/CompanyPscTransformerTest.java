@@ -928,4 +928,31 @@ class CompanyPscTransformerTest {
             resultLinks.getPersonsWithSignificantControl().getNotifications()
         );
     }
+
+    @Test
+    void shouldDoNothingWhenLinksIsNullAndFeatureFlagDisabled() {
+        // given
+        CompanyPscTransformer transformer = new CompanyPscTransformer();
+        ReflectionTestUtils.setField(transformer, "isPscLinksEnabled", false);
+
+        PscDocument doc = new PscDocument();
+        PscData data = new PscData();
+
+        data.setLinks(null);
+        doc.setData(data);
+        doc.setPscId("PSCDATA123");
+
+        // when
+        ListSummary result = transformer.transformPscDocToListSummary(doc);
+
+        // then
+        assertNotNull(result);
+        assertNull(result.getLinks());
+    }
+
+    @Test
+    void shouldReturnNullWhenLinksIsNull() {
+        PscLinks result = CompanyPscTransformer.mapLinksToPscLinks(null);
+        assertNull(result);
+    }
 }

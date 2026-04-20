@@ -6,9 +6,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class PersonsWithSignificantControl {
 
-    @JsonProperty("self")
-    private String self;
-
     @JsonProperty("notifications")
     private String notifications;
 
@@ -35,6 +32,6 @@ public class PersonsWithSignificantControl {
 
     @Override
     public int hashCode() {
-        return Objects.hash(self, notifications);
+        return Objects.hash(notifications);
     }
 }
