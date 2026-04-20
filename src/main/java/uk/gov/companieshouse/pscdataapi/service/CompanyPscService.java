@@ -1,8 +1,5 @@
 package uk.gov.companieshouse.pscdataapi.service;
 
-import static uk.gov.companieshouse.pscdataapi.PscDataApiApplication.APPLICATION_NAME_SPACE;
-import static uk.gov.companieshouse.pscdataapi.util.DateUtils.isDeltaStale;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -11,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+
 import org.springframework.stereotype.Component;
 
 import uk.gov.companieshouse.api.exemptions.CompanyExemptions;
@@ -32,6 +30,7 @@ import uk.gov.companieshouse.api.psc.SuperSecure;
 import uk.gov.companieshouse.api.psc.SuperSecureBeneficialOwner;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
+import static uk.gov.companieshouse.pscdataapi.PscDataApiApplication.APPLICATION_NAME_SPACE;
 import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
 import uk.gov.companieshouse.pscdataapi.exceptions.ConflictException;
 import uk.gov.companieshouse.pscdataapi.exceptions.NotFoundException;
@@ -44,6 +43,7 @@ import uk.gov.companieshouse.pscdataapi.models.PscDeleteRequest;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 import uk.gov.companieshouse.pscdataapi.repository.CompanyPscRepository;
 import uk.gov.companieshouse.pscdataapi.transform.CompanyPscTransformer;
+import static uk.gov.companieshouse.pscdataapi.util.DateUtils.isDeltaStale;
 
 @Component
 public class CompanyPscService {
@@ -108,7 +108,7 @@ public class CompanyPscService {
             final String pscUri = "/company/%s/persons-with-significant-control/%s".formatted(deleteRequest.companyNumber(), deleteRequest.notificationId());
 
             PersonsWithSignificantControl psc = new PersonsWithSignificantControl();
-            psc.setSelf(pscUri);
+            psc.setNotifications(pscUri);
 
             Links links = new Links();
             links.setPersonsWithSignificantControl(psc);

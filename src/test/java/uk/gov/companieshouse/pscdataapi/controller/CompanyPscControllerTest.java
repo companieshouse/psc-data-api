@@ -2,6 +2,8 @@ package uk.gov.companieshouse.pscdataapi.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
@@ -11,27 +13,24 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static uk.gov.companieshouse.pscdataapi.util.TestHelper.STALE_DELTA_AT;
-
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import uk.gov.companieshouse.api.psc.CorporateEntity;
 import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
 import uk.gov.companieshouse.api.psc.FullRecordCompanyPSCApi;
@@ -51,6 +50,7 @@ import uk.gov.companieshouse.pscdataapi.models.PscDeleteRequest;
 import uk.gov.companieshouse.pscdataapi.service.CompanyPscService;
 import uk.gov.companieshouse.pscdataapi.transform.CompanyPscTransformer;
 import uk.gov.companieshouse.pscdataapi.util.TestHelper;
+import static uk.gov.companieshouse.pscdataapi.util.TestHelper.STALE_DELTA_AT;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -979,7 +979,6 @@ class CompanyPscControllerTest {
                 Individual individual = new Individual();
                 Links links = new Links();
                 PersonsWithSignificantControl pscLinks = new PersonsWithSignificantControl();
-                pscLinks.setSelf("/persons-with-significant-control/123");
                 links.setPersonsWithSignificantControl(pscLinks);
                 individual.setLinks(links);
                 return individual;
@@ -996,7 +995,6 @@ class CompanyPscControllerTest {
                 IndividualBeneficialOwner ibo = new IndividualBeneficialOwner();
                 Links links = new Links();
                 PersonsWithSignificantControl pscLinks = new PersonsWithSignificantControl();
-                pscLinks.setSelf("/persons-with-significant-control/ibo-123");
                 links.setPersonsWithSignificantControl(pscLinks);
                 ibo.setLinks(links);
                 return ibo;
@@ -1013,7 +1011,6 @@ class CompanyPscControllerTest {
                 CorporateEntity ce = new CorporateEntity();
                 Links links = new Links();
                 PersonsWithSignificantControl pscLinks = new PersonsWithSignificantControl();
-                pscLinks.setSelf("/persons-with-significant-control/ce-123");
                 links.setPersonsWithSignificantControl(pscLinks);
                 ce.setLinks(links);
                 return ce;
@@ -1030,7 +1027,6 @@ class CompanyPscControllerTest {
                 CorporateEntityBeneficialOwner cebo = new CorporateEntityBeneficialOwner();
                 Links links = new Links();
                 PersonsWithSignificantControl pscLinks = new PersonsWithSignificantControl();
-                pscLinks.setSelf("/persons-with-significant-control/cebo-123");
                 links.setPersonsWithSignificantControl(pscLinks);
                 cebo.setLinks(links);
                 return cebo;
@@ -1047,7 +1043,6 @@ class CompanyPscControllerTest {
                 LegalPerson lp = new LegalPerson();
                 Links links = new Links();
                 PersonsWithSignificantControl pscLinks = new PersonsWithSignificantControl();
-                pscLinks.setSelf("/persons-with-significant-control/lp-123");
                 links.setPersonsWithSignificantControl(pscLinks);
                 lp.setLinks(links);
                 return lp;
@@ -1064,7 +1059,6 @@ class CompanyPscControllerTest {
                 LegalPersonBeneficialOwner lpbo = new LegalPersonBeneficialOwner();
                 Links links = new Links();
                 PersonsWithSignificantControl pscLinks = new PersonsWithSignificantControl();
-                pscLinks.setSelf("/persons-with-significant-control/lpbo-123");
                 links.setPersonsWithSignificantControl(pscLinks);
                 lpbo.setLinks(links);
                 return lpbo;
@@ -1081,7 +1075,6 @@ class CompanyPscControllerTest {
                 SuperSecure ss = new SuperSecure();
                 Links links = new Links();
                 PersonsWithSignificantControl pscLinks = new PersonsWithSignificantControl();
-                pscLinks.setSelf("/persons-with-significant-control/ss-123");
                 links.setPersonsWithSignificantControl(pscLinks);
                 ss.setLinks(links);
                 return ss;
@@ -1098,7 +1091,6 @@ class CompanyPscControllerTest {
                 SuperSecureBeneficialOwner ssbo = new SuperSecureBeneficialOwner();
                 Links links = new Links();
                 PersonsWithSignificantControl pscLinks = new PersonsWithSignificantControl();
-                pscLinks.setSelf("/persons-with-significant-control/ssbo-123");
                 links.setPersonsWithSignificantControl(pscLinks);
                 ssbo.setLinks(links);
                 return ssbo;

@@ -924,9 +924,6 @@ class CompanyPscTransformerTest {
 
         // then
         assertNotNull(resultLinks);
-        assertEquals("/persons-with-significant-control/PSCDATA123",
-            resultLinks.getPersonsWithSignificantControl().getSelf()
-        );
         assertEquals("/persons-with-significant-control/PSCDATA123/notifications",
             resultLinks.getPersonsWithSignificantControl().getNotifications()
         );
