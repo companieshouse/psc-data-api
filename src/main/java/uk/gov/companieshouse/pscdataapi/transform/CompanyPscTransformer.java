@@ -423,7 +423,7 @@ public class CompanyPscTransformer {
 
             Data data = externalData.getData();
             if (data != null) {
-                PscData pscData = transformDataFields(data, pscStatementId);
+                PscData pscData = transformDataFields(data, pscStatementId, externalData.getPscId());
                 String kind = data.getKind();
 
                 if (IndividualPscRoles.includes(kind)) {
@@ -479,14 +479,16 @@ public class CompanyPscTransformer {
         return pscSensitiveData;
     }
 
-    private PscData transformDataFields(Data data, String pscStatementId) {
+    private PscData transformDataFields(Data data, String pscStatementId, String pscId) {
         PscData pscData = new PscData();
         pscData.setCeasedOn(data.getCeasedOn());
         pscData.setDescription(data.getDescription());
         pscData.setEtag(data.getEtag());
         pscData.setKind(data.getKind());
         pscData.setNotifiedOn(data.getNotifiedOn());
-        pscData.setLinks(PscTransformationHelper.createLinks(data, pscStatementId));
+        Links links = PscTransformationHelper.createLinks(data, pscStatementId);
+        createPscLinksIfDisabled(links, pscId);
+        pscData.setLinks(links);
         pscData.setName(data.getName());
         pscData.setNationality(data.getNationality());
         pscData.setNaturesOfControl(data.getNaturesOfControl());
@@ -695,28 +697,24 @@ public class CompanyPscTransformer {
         return ivd;
     }
 
-    private Links extendPscLinks(Links links, PscDocument document) {
-
-        // When featureFlag is enabled, pscLinks object is not created
-        if (isPscLinksEnabled) {
-            return links;
+    private void createPscLinksIfDisabled(Links links, String pscId) {
+        if (isPscLinksEnabled || links == null) {
+            return;
         }
 
+        PersonsWithSignificantControl pscLinks = new PersonsWithSignificantControl();
+        pscLinks.setNotifications(
+                String.format("/persons-with-significant-control/%s/notifications", pscId)
+        );
+
+        links.setPersonsWithSignificantControl(pscLinks);
+    }
+
+    private Links extendPscLinks(Links links, PscDocument document) {
         if (links == null) {
             return null;
         }
-
-        String pscId = document.getPscId();
-        LOGGER.debug("Extending PSC links for pscId " + pscId);
-        if (pscId != null) {
-            PersonsWithSignificantControl pscLinks = new PersonsWithSignificantControl();
-            pscLinks.setSelf(String.format("/persons-with-significant-control/%s", pscId));
-            pscLinks.setNotifications(
-                    String.format("/persons-with-significant-control/%s/notifications", pscId)
-            );
-
-            links.setPersonsWithSignificantControl(pscLinks);
-        }
+        createPscLinksIfDisabled(links, document.getPscId());
 
         return links;
     }

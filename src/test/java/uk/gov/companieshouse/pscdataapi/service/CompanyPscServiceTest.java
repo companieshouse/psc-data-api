@@ -1,20 +1,5 @@
 package uk.gov.companieshouse.pscdataapi.service;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static uk.gov.companieshouse.pscdataapi.util.TestHelper.DELTA_AT;
-import static uk.gov.companieshouse.pscdataapi.util.TestHelper.INDIVIDUAL_KIND;
-import static uk.gov.companieshouse.pscdataapi.util.TestHelper.STALE_DELTA_AT;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -24,6 +9,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Named;
@@ -34,10 +23,19 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
+
 import uk.gov.companieshouse.api.exemptions.CompanyExemptions;
 import uk.gov.companieshouse.api.exemptions.Exemptions;
 import uk.gov.companieshouse.api.exemptions.PscExemptAsTradingOnUkRegulatedMarketItem;
@@ -74,6 +72,9 @@ import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 import uk.gov.companieshouse.pscdataapi.repository.CompanyPscRepository;
 import uk.gov.companieshouse.pscdataapi.transform.CompanyPscTransformer;
 import uk.gov.companieshouse.pscdataapi.util.TestHelper;
+import static uk.gov.companieshouse.pscdataapi.util.TestHelper.DELTA_AT;
+import static uk.gov.companieshouse.pscdataapi.util.TestHelper.INDIVIDUAL_KIND;
+import static uk.gov.companieshouse.pscdataapi.util.TestHelper.STALE_DELTA_AT;
 
 @ExtendWith(MockitoExtension.class)
 class CompanyPscServiceTest {
@@ -280,7 +281,7 @@ class CompanyPscServiceTest {
         assertNotNull(dataSent.getData().getLinks());
         assertNotNull(dataSent.getData().getLinks().getPersonsWithSignificantControl());
         String expectedUri = "/company/" + COMPANY_NUMBER + "/persons-with-significant-control/" + NOTIFICATION_ID;
-        assertEquals(expectedUri, dataSent.getData().getLinks().getPersonsWithSignificantControl().getSelf());
+        assertEquals(expectedUri, dataSent.getData().getLinks().getPersonsWithSignificantControl().getNotifications());
         }
 
     @Test
