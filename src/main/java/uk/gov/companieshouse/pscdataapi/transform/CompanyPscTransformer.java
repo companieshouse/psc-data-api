@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 
 import uk.gov.companieshouse.api.model.common.Date3Tuple;
 import uk.gov.companieshouse.api.model.psc.NameElementsApi;
+import uk.gov.companieshouse.api.model.psc.PersonsWithSignificantControlLink;
 import uk.gov.companieshouse.api.model.psc.PscLinks;
 import uk.gov.companieshouse.api.psc.CorporateEntity;
 import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
@@ -665,7 +666,7 @@ public class CompanyPscTransformer {
         pscLinks.setSelf(links.getSelf());
         pscLinks.setStatement(links.getStatement());
         pscLinks.setExemptions(links.getExemptions());
-
+        pscLinks.setPscLink(mapPersonsWithSignificantControl(links.getPersonsWithSignificantControl()));
         return pscLinks;
     }
 
@@ -718,4 +719,15 @@ public class CompanyPscTransformer {
 
         return links;
     }
+
+     private static PersonsWithSignificantControlLink mapPersonsWithSignificantControl(PersonsWithSignificantControl input) {
+
+         if (input == null) {
+             return null;
+         }
+         PersonsWithSignificantControlLink output = new PersonsWithSignificantControlLink();
+         output.setNotifications(input.getNotifications());
+
+         return output;
+     }
 }
