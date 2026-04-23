@@ -31,6 +31,7 @@ import uk.gov.companieshouse.api.psc.SuperSecure;
 import uk.gov.companieshouse.api.psc.SuperSecureBeneficialOwner;
 import uk.gov.companieshouse.pscdataapi.exceptions.FailedToTransformException;
 import uk.gov.companieshouse.pscdataapi.models.Links;
+import uk.gov.companieshouse.pscdataapi.models.PersonsWithSignificantControl;
 import uk.gov.companieshouse.pscdataapi.models.PscData;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 import uk.gov.companieshouse.pscdataapi.models.PscIdentityVerificationDetails;
@@ -857,9 +858,13 @@ class CompanyPscTransformerTest {
     @Test
     void shouldMapAllFieldsWhenLinksArePopulated() {
         Links links = new Links();
+        PersonsWithSignificantControl personsWithSignificantControl = new PersonsWithSignificantControl();
         links.setSelf("self-link");
         links.setStatement("statement-link");
         links.setExemptions("exemptions-link");
+        personsWithSignificantControl.setNotifications("/persons-with-significant-control/PSCDATA123/notifications");
+
+        links.setPersonsWithSignificantControl(personsWithSignificantControl);
 
         PscLinks result = CompanyPscTransformer.mapLinksToPscLinks(links);
 
@@ -867,6 +872,11 @@ class CompanyPscTransformerTest {
         Assertions.assertEquals("self-link", result.getSelf());
         Assertions.assertEquals("statement-link", result.getStatement());
         Assertions.assertEquals("exemptions-link", result.getExemptions());
+        assertNotNull(result.getPscLink());
+        assertEquals(
+            "/persons-with-significant-control/PSCDATA123/notifications",
+            result.getPscLink().getNotifications()
+        );
     }
 
     @Test
