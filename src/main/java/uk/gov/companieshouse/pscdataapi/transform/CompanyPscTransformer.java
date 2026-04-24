@@ -699,7 +699,12 @@ public class CompanyPscTransformer {
     }
 
     private void createPscLinksIfDisabled(Links links, String pscId) {
-        if (isPscLinksEnabled || links == null) {
+        if ( links == null) {
+            return;
+        }
+
+        if (isPscLinksEnabled) {
+            links.setPersonsWithSignificantControl(null);
             return;
         }
 
