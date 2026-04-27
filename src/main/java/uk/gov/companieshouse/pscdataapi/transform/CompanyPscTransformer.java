@@ -488,7 +488,7 @@ public class CompanyPscTransformer {
         pscData.setKind(data.getKind());
         pscData.setNotifiedOn(data.getNotifiedOn());
         Links links = PscTransformationHelper.createLinks(data, pscStatementId);
-        createPscLinksIfDisabled(links, pscId);
+        createPscLinksObject(links, pscId);
         pscData.setLinks(links);
         pscData.setName(data.getName());
         pscData.setNationality(data.getNationality());
@@ -698,7 +698,7 @@ public class CompanyPscTransformer {
         return ivd;
     }
 
-    private void createPscLinksIfDisabled(Links links, String pscId) {
+    private void createPscLinksObject(Links links, String pscId) {
         if ( links == null) {
             return;
         }
@@ -720,7 +720,7 @@ public class CompanyPscTransformer {
         if (links == null) {
             return null;
         }
-        createPscLinksIfDisabled(links, document.getPscId());
+        createPscLinksObject(links, document.getPscId());
 
         return links;
     }
