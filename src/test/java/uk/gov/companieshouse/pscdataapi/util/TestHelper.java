@@ -263,10 +263,11 @@ public class TestHelper {
             links.setStatement("linkStatements");
         }
 
-        PersonsWithSignificantControl pscLinks = new PersonsWithSignificantControl();
-
-        pscLinks.setNotifications("/persons-with-significant-control/" + PSC_ID + "/notifications");
-        links.setPersonsWithSignificantControl(pscLinks);
+        if (!kind.contains("secure")) {
+            PersonsWithSignificantControl pscLinks = new PersonsWithSignificantControl();
+            pscLinks.setNotifications("/persons-with-significant-control/" + PSC_ID + "/notifications");
+            links.setPersonsWithSignificantControl(pscLinks);
+        }
         pscData.setLinks(links);
         pscData.setServiceAddressIsSameAsRegisteredOfficeAddress(false);
 
