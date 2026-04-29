@@ -488,7 +488,7 @@ public class CompanyPscTransformer {
         pscData.setKind(data.getKind());
         pscData.setNotifiedOn(data.getNotifiedOn());
         Links links = PscTransformationHelper.createLinks(data, pscStatementId);
-        createPscLinksObject(links, pscId);
+        createPscLinksObject(links, pscId, data.getKind());
         pscData.setLinks(links);
         pscData.setName(data.getName());
         pscData.setNationality(data.getNationality());
@@ -698,10 +698,15 @@ public class CompanyPscTransformer {
         return ivd;
     }
 
-    private void createPscLinksObject(Links links, String pscId) {
+    private void createPscLinksObject(Links links, String pscId, String kind) {
         if ( links == null) {
             return;
         }
+
+        if (isSuperSecureKind(kind)) {
+        links.setPersonsWithSignificantControl(null);
+        return;
+    }
 
         if (isPscLinksEnabled) {
             links.setPersonsWithSignificantControl(null);
@@ -720,9 +725,18 @@ public class CompanyPscTransformer {
         if (links == null) {
             return null;
         }
-        createPscLinksObject(links, document.getPscId());
+        createPscLinksObject(links, document.getPscId(),  document.getData() != null ? document.getData().getKind() : null);
 
         return links;
+    }
+
+    private boolean isSuperSecureKind(String kind) {
+        if (kind == null) {
+            return false;
+        }
+
+        return kind.equals("super-secure-person-with-significant-control")
+                || kind.equals("super-secure-beneficial-owner");
     }
 
      private static PersonsWithSignificantControlLink mapPersonsWithSignificantControl(PersonsWithSignificantControl input) {
