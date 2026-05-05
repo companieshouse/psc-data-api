@@ -666,7 +666,9 @@ public class CompanyPscTransformer {
         pscLinks.setSelf(links.getSelf());
         pscLinks.setStatement(links.getStatement());
         pscLinks.setExemptions(links.getExemptions());
-        pscLinks.setPscLink(mapPersonsWithSignificantControl(links.getPersonsWithSignificantControl()));
+        if (links.getPersonsWithSignificantControl() != null) {
+            pscLinks.setPscLink(mapPersonsWithSignificantControl(links.getPersonsWithSignificantControl()));
+        }
         return pscLinks;
     }
 
@@ -726,7 +728,6 @@ public class CompanyPscTransformer {
             return null;
         }
         createPscLinksObject(links, document.getPscId(),  document.getData() != null ? document.getData().getKind() : null);
-
         return links;
     }
 
@@ -736,17 +737,17 @@ public class CompanyPscTransformer {
         }
 
         return kind.equals("super-secure-person-with-significant-control")
-                || kind.equals("super-secure-beneficial-owner");
+            || kind.equals("super-secure-beneficial-owner");
     }
 
-     private static PersonsWithSignificantControlLink mapPersonsWithSignificantControl(PersonsWithSignificantControl input) {
+    private static PersonsWithSignificantControlLink mapPersonsWithSignificantControl(PersonsWithSignificantControl input) {
 
-         if (input == null) {
-             return null;
-         }
-         PersonsWithSignificantControlLink output = new PersonsWithSignificantControlLink();
-         output.setNotifications(input.getNotifications());
+        if (input == null) {
+            return null;
+        }
+        PersonsWithSignificantControlLink output = new PersonsWithSignificantControlLink();
+        output.setNotifications(input.getNotifications());
 
-         return output;
-     }
+        return output;
+    }
 }

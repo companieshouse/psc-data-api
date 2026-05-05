@@ -920,10 +920,15 @@ class CompanyPscTransformerTest {
         CompanyPscTransformer transformer = new CompanyPscTransformer();
         ReflectionTestUtils.setField(transformer, "isPscLinksEnabled", false);
 
+        Links links = new Links();
+        links.setSelf("self-link");
+        links.setStatement("statement-link");
+
         PscDocument doc = new PscDocument();
         PscData data = new PscData();
 
-        data.setLinks(new Links());
+        data.setLinks(links);
+        data.setKind("individual-person-with-significant-control");
 
         doc.setData(data);
         doc.setPscId("PSCDATA123");
