@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
+import uk.gov.companieshouse.api.psc_notifications.NotificationList;
 import uk.gov.companieshouse.pscdataapi.PscDataApiApplication;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
 import uk.gov.companieshouse.pscdataapi.logging.DataMapHolder;
@@ -33,7 +34,7 @@ public class PscNotificationsController {
             @RequestParam(value = "items_per_page", required = false) Integer itemsPerPage,
             @RequestParam(value = ERIC_AUTHORISED_KEY_PRIVILEGES_HEADER, required = false) String authPrivileges) {
         try {
-            DataMapHolder.get().pscId(pscId);
+
             LOGGER.info("Fetching psc notifications", DataMapHolder.getLogMap());
 
             PscNotificationsRequest request = PscNotificationsRequest.builder()
