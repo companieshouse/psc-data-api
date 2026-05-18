@@ -1,16 +1,17 @@
 package uk.gov.companieshouse.pscdataapi.api;
 
-import static java.time.ZoneOffset.UTC;
-import static uk.gov.companieshouse.pscdataapi.PscDataApiApplication.APPLICATION_NAME_SPACE;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Instant;
+import static java.time.ZoneOffset.UTC;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.function.Supplier;
+
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import uk.gov.companieshouse.api.InternalApiClient;
 import uk.gov.companieshouse.api.chskafka.ChangedResource;
 import uk.gov.companieshouse.api.chskafka.ChangedResourceEvent;
@@ -19,6 +20,7 @@ import uk.gov.companieshouse.api.handler.chskafka.request.PrivateChangedResource
 import uk.gov.companieshouse.api.model.ApiResponse;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
+import static uk.gov.companieshouse.pscdataapi.PscDataApiApplication.APPLICATION_NAME_SPACE;
 import uk.gov.companieshouse.pscdataapi.exceptions.SerDesException;
 import uk.gov.companieshouse.pscdataapi.exceptions.ServiceUnavailableException;
 import uk.gov.companieshouse.pscdataapi.logging.DataMapHolder;
@@ -67,12 +69,20 @@ public class ChsKafkaApiService {
 
     @StreamEvents
     public ApiResponse<Void> invokeChsKafkaApiWithDeleteEvent(PscDeleteRequest deleteRequest, PscDocument pscDocument) {
+        Object changedResource = mapChangedResource(
+                deleteRequest.companyNumber(),
+                deleteRequest.notificationId(),
+                deleteRequest.kind(),
+                true,
+                pscDocument
+        );
+        LOGGER.info("PSC delete stream payload: " + changedResource);
         PrivateChangedResourcePost changedResourcePost =
-                kafkaApiClientSupplier.get()
-                        .privateChangedResourceHandler()
-                        .postChangedResource(RESOURCE_CHANGED_URI,
-                                mapChangedResource(deleteRequest.companyNumber(),
-                                        deleteRequest.notificationId(), deleteRequest.kind(), true, pscDocument));
+            kafkaApiClientSupplier.get()
+                    .privateChangedResourceHandler()
+                    .postChangedResource(RESOURCE_CHANGED_URI,
+                            mapChangedResource(deleteRequest.companyNumber(),
+                                deleteRequest.notificationId(), deleteRequest.kind(), true, pscDocument));
         return handleApiCall(changedResourcePost);
     }
 

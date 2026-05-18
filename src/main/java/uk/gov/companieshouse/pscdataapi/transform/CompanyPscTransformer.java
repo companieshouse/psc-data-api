@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 
 import uk.gov.companieshouse.api.model.common.Date3Tuple;
 import uk.gov.companieshouse.api.model.psc.NameElementsApi;
+import uk.gov.companieshouse.api.model.psc.PersonsWithSignificantControlLink;
 import uk.gov.companieshouse.api.model.psc.PscLinks;
 import uk.gov.companieshouse.api.psc.CorporateEntity;
 import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
@@ -487,7 +488,7 @@ public class CompanyPscTransformer {
         pscData.setKind(data.getKind());
         pscData.setNotifiedOn(data.getNotifiedOn());
         Links links = PscTransformationHelper.createLinks(data, pscStatementId);
-        createPscLinksIfDisabled(links, pscId);
+        createPscLinksObject(links, pscId, data.getKind());
         pscData.setLinks(links);
         pscData.setName(data.getName());
         pscData.setNationality(data.getNationality());
@@ -665,7 +666,9 @@ public class CompanyPscTransformer {
         pscLinks.setSelf(links.getSelf());
         pscLinks.setStatement(links.getStatement());
         pscLinks.setExemptions(links.getExemptions());
-
+        if (links.getPersonsWithSignificantControl() != null) {
+            pscLinks.setPscLink(mapPersonsWithSignificantControl(links.getPersonsWithSignificantControl()));
+        }
         return pscLinks;
     }
 
@@ -697,8 +700,18 @@ public class CompanyPscTransformer {
         return ivd;
     }
 
-    private void createPscLinksIfDisabled(Links links, String pscId) {
-        if (isPscLinksEnabled || links == null) {
+    private void createPscLinksObject(Links links, String pscId, String kind) {
+        if ( links == null) {
+            return;
+        }
+
+        if (isSuperSecureKind(kind)) {
+        links.setPersonsWithSignificantControl(null);
+        return;
+    }
+
+        if (isPscLinksEnabled) {
+            links.setPersonsWithSignificantControl(null);
             return;
         }
 
@@ -714,8 +727,27 @@ public class CompanyPscTransformer {
         if (links == null) {
             return null;
         }
-        createPscLinksIfDisabled(links, document.getPscId());
-
+        createPscLinksObject(links, document.getPscId(),  document.getData() != null ? document.getData().getKind() : null);
         return links;
+    }
+
+    private boolean isSuperSecureKind(String kind) {
+        if (kind == null) {
+            return false;
+        }
+
+        return kind.equals("super-secure-person-with-significant-control")
+            || kind.equals("super-secure-beneficial-owner");
+    }
+
+    private static PersonsWithSignificantControlLink mapPersonsWithSignificantControl(PersonsWithSignificantControl input) {
+
+        if (input == null) {
+            return null;
+        }
+        PersonsWithSignificantControlLink output = new PersonsWithSignificantControlLink();
+        output.setNotifications(input.getNotifications());
+
+        return output;
     }
 }
