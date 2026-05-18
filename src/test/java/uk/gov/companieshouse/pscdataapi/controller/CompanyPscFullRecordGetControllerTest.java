@@ -103,7 +103,8 @@ class CompanyPscFullRecordGetControllerTest {
                     "appointment_verification_start_on": "%s",
                     "appointment_verification_end_on": "%s",
                     "appointment_verification_statement_date": "%s",
-                    "appointment_verification_statement_due_on": "%s"
+                    "appointment_verification_statement_due_on": "%s",
+                    "anti_money_laundering_supervisory_bodies": []
                   }
                 }
                 """.formatted(START_ON, END_ON, STATEMENT_DATE, STATEMENT_DUE_DATE);
