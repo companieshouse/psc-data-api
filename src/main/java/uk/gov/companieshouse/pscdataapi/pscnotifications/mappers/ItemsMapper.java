@@ -28,7 +28,7 @@ public class ItemsMapper {
     }
 
     public List<PscNotificationSummary> map(List<PscDocument> notifications) {
-        return (List<PscNotificationSummary>) notifications.stream()
+        return notifications.stream()
                 .map(notification -> ofNullable(notification.getData())
                     .map(data -> new PscNotificationSummary()
                         .address(addressMapper.map(data.getAddress()))
@@ -47,7 +47,9 @@ public class ItemsMapper {
                         .notifiedOn(data.getNotifiedOn().toString())
                         .notifiedTo(new NotifiedTo()
                                 .companyNumber(notification.getCompanyNumber()))
-                        .principalOfficeAddress(addressMapper.map(data.getPrincipalOfficeAddress()))));
+                        .principalOfficeAddress(addressMapper.map(data.getPrincipalOfficeAddress())))
+                    .orElse(new PscNotificationSummary()))
+                .toList();
     }
 
 }
