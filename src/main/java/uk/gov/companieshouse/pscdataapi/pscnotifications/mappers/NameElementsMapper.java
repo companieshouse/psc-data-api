@@ -7,6 +7,7 @@ import uk.gov.companieshouse.api.psc_notifications.NameElements;
 public class NameElementsMapper {
 
     NameElements map(uk.gov.companieshouse.pscdataapi.models.NameElements data) {
+        if (data == null) return null;
         return new NameElements()
                 .forename(data.getForename())
                 .middleName(data.getMiddleName())
