@@ -7,7 +7,7 @@ import uk.gov.companieshouse.pscdataapi.models.PscIdentification;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
-class IndentificationMapperTest {
+class IdentificationMapperTest {
 
     private final IdentificationMapper mapper = new IdentificationMapper();
 
