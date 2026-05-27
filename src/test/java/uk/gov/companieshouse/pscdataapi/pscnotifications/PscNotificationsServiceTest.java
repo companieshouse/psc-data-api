@@ -50,8 +50,8 @@ public class PscNotificationsServiceTest {
         List<PscDocument> documents = List.of(new PscDocument(), new PscDocument());
         NotificationList mappedNotificationList = new NotificationList().totalResults(2);
 
-        when(repository.countTotal(pscId)).thenReturn(2);
-        when(repository.findAllById(Set.of(pscId))).thenReturn(documents);
+        when(repository.countByPscId(pscId)).thenReturn(2);
+        when(repository.findAllByPscId(pscId)).thenReturn(documents);
         when(mapper.mapPscNotifications(any(PscNotificationsMapper.MapperRequest.class)))
                 .thenReturn(Optional.of(mappedNotificationList));
 
@@ -60,8 +60,8 @@ public class PscNotificationsServiceTest {
         assertTrue(result.isPresent());
         assertSame(mappedNotificationList, result.get());
 
-        verify(repository).countTotal(pscId);
-        verify(repository).findAllById(Set.of(pscId));
+        verify(repository).countByPscId(pscId);
+        verify(repository).findAllByPscId(pscId);
 
         ArgumentCaptor<PscNotificationsMapper.MapperRequest> mapperRequestCaptor =
                 ArgumentCaptor.forClass(PscNotificationsMapper.MapperRequest.class);
