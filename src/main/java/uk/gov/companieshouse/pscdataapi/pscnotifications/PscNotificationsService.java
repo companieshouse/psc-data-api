@@ -30,7 +30,6 @@ public class PscNotificationsService {
         final int itemsPerPage = params.itemsPerPage();
 
         final int totalResults = repository.countByPscId(pscId);
-        LOGGER.info("Trying to find a list of PscDocuments by the pscId");
         List<PscDocument> documents = repository.findAllByPscId(pscId);
         PscDocument firstNotification = documents.isEmpty() ? null : documents.getFirst();
 
