@@ -2,7 +2,6 @@ package uk.gov.companieshouse.pscdataapi.pscnotifications;
 
 import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.api.psc_notifications.NotificationList;
-import uk.gov.companieshouse.api.psc_notifications.PscNotificationSummary;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 import uk.gov.companieshouse.pscdataapi.pscnotifications.mappers.DateOfBirthMapper;
 import uk.gov.companieshouse.pscdataapi.pscnotifications.mappers.ItemsMapper;
