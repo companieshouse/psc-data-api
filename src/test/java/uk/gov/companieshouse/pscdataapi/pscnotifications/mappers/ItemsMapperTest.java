@@ -2,18 +2,13 @@ package uk.gov.companieshouse.pscdataapi.pscnotifications.mappers;
 
 import org.junit.jupiter.api.Test;
 import uk.gov.companieshouse.api.psc_notifications.PscNotificationSummary;
-import uk.gov.companieshouse.pscdataapi.models.Created;
 import uk.gov.companieshouse.pscdataapi.models.NameElements;
 import uk.gov.companieshouse.pscdataapi.models.PscData;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 import uk.gov.companieshouse.pscdataapi.models.PscIdentification;
 import uk.gov.companieshouse.pscdataapi.models.PscIdentityVerificationDetails;
-import uk.gov.companieshouse.pscdataapi.models.PscSensitiveData;
-import uk.gov.companieshouse.pscdataapi.models.Updated;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
