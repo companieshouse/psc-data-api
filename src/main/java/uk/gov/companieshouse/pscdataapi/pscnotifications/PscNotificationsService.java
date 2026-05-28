@@ -2,9 +2,6 @@ package uk.gov.companieshouse.pscdataapi.pscnotifications;
 
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.api.psc_notifications.NotificationList;
-import uk.gov.companieshouse.logging.Logger;
-import uk.gov.companieshouse.logging.LoggerFactory;
-import uk.gov.companieshouse.pscdataapi.PscDataApiApplication;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 
 import java.util.List;
@@ -16,7 +13,6 @@ public class PscNotificationsService {
 
     private final PscNotificationsRepository repository;
     private final PscNotificationsMapper mapper;
-    private static final Logger LOGGER = LoggerFactory.getLogger(PscDataApiApplication.APPLICATION_NAME_SPACE);
 
     PscNotificationsService(PscNotificationsRepository repository,
                             PscNotificationsMapper mapper) {
