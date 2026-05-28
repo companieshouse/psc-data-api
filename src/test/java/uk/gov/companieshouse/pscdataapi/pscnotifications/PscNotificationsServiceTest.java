@@ -10,7 +10,6 @@ import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -19,7 +18,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class PscNotificationsServiceTest {
+class PscNotificationsServiceTest {
 
     @Mock
     private PscNotificationsRepository repository;
