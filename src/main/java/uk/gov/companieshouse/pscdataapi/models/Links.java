@@ -17,7 +17,7 @@ public class Links {
     @Field("exemptions")
     private String exemptions;
 
-    @JsonProperty("persons-with-significant-control")
+    @JsonProperty("persons_with_significant_control")
     private PersonsWithSignificantControl personsWithSignificantControl;
 
     public String getSelf() {
