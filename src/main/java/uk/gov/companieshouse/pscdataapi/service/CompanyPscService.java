@@ -102,9 +102,9 @@ public class CompanyPscService {
             repository.delete(document);
             chsKafkaApiService.invokeChsKafkaApiWithDeleteEvent(deleteRequest, document);
         } else {
-            final String msg = "PSC document not found during delete - publishing event with links.persons-with-significant-control only";
+            final String msg = "PSC document not found during delete - publishing event with links.persons_with_significant_control only";
             LOGGER.info(msg, DataMapHolder.getLogMap());
-            // Construct a PscDocument with links.persons-with-significant-control object to publish
+            // Construct a PscDocument with links.persons_with_significant_control object to publish
             final String pscUri = "/company/%s/persons-with-significant-control/%s".formatted(deleteRequest.companyNumber(), deleteRequest.notificationId());
 
             PersonsWithSignificantControl psc = new PersonsWithSignificantControl();

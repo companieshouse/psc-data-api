@@ -1118,7 +1118,7 @@ class CompanyPscControllerTest {
                 .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.links.persons-with-significant-control").exists());
+                .andExpect(jsonPath("$.links.persons_with_significant_control").exists());
     }
 
     @Test
@@ -1134,7 +1134,7 @@ class CompanyPscControllerTest {
                 .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.links.persons-with-significant-control").doesNotExist());
+                .andExpect(jsonPath("$.links.persons_with_significant_control").doesNotExist());
     }
 
     // GET Individual Beneficial Owner
@@ -1148,7 +1148,7 @@ class CompanyPscControllerTest {
                 .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.links.persons-with-significant-control").exists());
+                .andExpect(jsonPath("$.links.persons_with_significant_control").exists());
     }
 
     @Test
@@ -1161,7 +1161,7 @@ class CompanyPscControllerTest {
                 .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.links.persons-with-significant-control").doesNotExist());
+                .andExpect(jsonPath("$.links.persons_with_significant_control").doesNotExist());
     }
 
     // GET Corporate Entity
@@ -1175,7 +1175,7 @@ class CompanyPscControllerTest {
                 .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.links.persons-with-significant-control").exists());
+                .andExpect(jsonPath("$.links.persons_with_significant_control").exists());
     }
 
     @Test
@@ -1188,7 +1188,7 @@ class CompanyPscControllerTest {
                 .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.links.persons-with-significant-control").doesNotExist());
+                .andExpect(jsonPath("$.links.persons_with_significant_control").doesNotExist());
     }
 
     // GET Corporate Entity Beneficial Owner
@@ -1202,7 +1202,7 @@ class CompanyPscControllerTest {
                 .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.links.persons-with-significant-control").exists());
+                .andExpect(jsonPath("$.links.persons_with_significant_control").exists());
     }
 
     @Test
@@ -1215,7 +1215,7 @@ class CompanyPscControllerTest {
                 .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.links.persons-with-significant-control").doesNotExist());
+                .andExpect(jsonPath("$.links.persons_with_significant_control").doesNotExist());
     }
 
     // GET Legal Person
@@ -1229,7 +1229,7 @@ class CompanyPscControllerTest {
                 .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.links.persons-with-significant-control").exists());
+                .andExpect(jsonPath("$.links.persons_with_significant_control").exists());
     }
 
     @Test
@@ -1242,7 +1242,7 @@ class CompanyPscControllerTest {
                 .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.links.persons-with-significant-control").doesNotExist());
+                .andExpect(jsonPath("$.links.persons_with_significant_control").doesNotExist());
     }
 
     // GET Legal Person Beneficial Owner
@@ -1256,7 +1256,7 @@ class CompanyPscControllerTest {
                 .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.links.persons-with-significant-control").exists());
+                .andExpect(jsonPath("$.links.persons_with_significant_control").exists());
     }
 
     @Test
@@ -1269,7 +1269,7 @@ class CompanyPscControllerTest {
                 .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.links.persons-with-significant-control").doesNotExist());
+                .andExpect(jsonPath("$.links.persons_with_significant_control").doesNotExist());
     }
 
     // GET Super Secure
@@ -1283,7 +1283,7 @@ class CompanyPscControllerTest {
                 .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.links.persons-with-significant-control").exists());
+                .andExpect(jsonPath("$.links.persons_with_significant_control").exists());
     }
 
     @Test
@@ -1296,7 +1296,7 @@ class CompanyPscControllerTest {
                 .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.links.persons-with-significant-control").doesNotExist());
+                .andExpect(jsonPath("$.links.persons_with_significant_control").doesNotExist());
     }
 
     // GET Super Secure Beneficial Owner
@@ -1310,7 +1310,7 @@ class CompanyPscControllerTest {
                 .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.links.persons-with-significant-control").exists());
+                .andExpect(jsonPath("$.links.persons_with_significant_control").exists());
     }
 
     @Test
@@ -1323,6 +1323,6 @@ class CompanyPscControllerTest {
                 .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.links.persons-with-significant-control").doesNotExist());
+                .andExpect(jsonPath("$.links.persons_with_significant_control").doesNotExist());
     }
 }
