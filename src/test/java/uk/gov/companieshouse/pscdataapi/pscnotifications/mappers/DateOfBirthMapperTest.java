@@ -11,7 +11,7 @@ class DateOfBirthMapperTest {
     private final DateOfBirthMapper mapper = new DateOfBirthMapper();
 
     @Test
-    void testDateOfBirthMapper_mapsDateOfBirth_whenGivenValidInput() {
+    void testDateOfBirthMapperMapsDateOfBirthWhenGivenValidInput() {
         uk.gov.companieshouse.pscdataapi.models.DateOfBirth dob =
                 new uk.gov.companieshouse.pscdataapi.models.DateOfBirth();
 
@@ -25,7 +25,7 @@ class DateOfBirthMapperTest {
     }
 
     @Test
-    void testDateOfBirthMapper_returnsNull_whenProvidedNullDateOfBirth() {
+    void testDateOfBirthMapperReturnsNullWhenProvidedNullDateOfBirth() {
         assertNull(mapper.map(null));
     }
  }

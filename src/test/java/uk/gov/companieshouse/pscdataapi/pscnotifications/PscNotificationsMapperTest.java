@@ -43,7 +43,7 @@ class PscNotificationsMapperTest {
     }
 
     @Test
-    void testMapPscNotificationMapper_returnsMappedNotificationList_whenFirstNotificationAndDataPresent() {
+    void testMapPscNotificationMapperReturnsMappedNotificationListWhenFirstNotificationAndDataPresent() {
         PscDocument firstNotification = new PscDocument();
         PscData pscData = new PscData();
         pscData.setKind("personal-notification");
@@ -103,7 +103,7 @@ class PscNotificationsMapperTest {
     }
 
     @Test
-    void testMapPscNotifications_returnsEmpty_whenFirstNotificationIsNull() {
+    void testMapPscNotificationsReturnsEmptyWhenFirstNotificationIsNull() {
         PscNotificationsMapper.MapperRequest request = PscNotificationsMapper.MapperRequest.builder()
                 .startIndex(0)
                 .itemsPerPage(25)
@@ -121,7 +121,7 @@ class PscNotificationsMapperTest {
     }
 
     @Test
-    void testMapPscNotifications_returnsEmpty_whenFirstNotificationDataIsNull() {
+    void testMapPscNotificationsReturnsEmptyWhenFirstNotificationDataIsNull() {
         PscDocument firstNotification = new PscDocument();
         firstNotification.setData(null);
 

@@ -11,7 +11,7 @@ class AddressMapperTest {
     private final AddressMapper mapper = new AddressMapper();
 
     @Test
-    void testAddressMapper_mapsAddress_whenProvidedAddress() {
+    void testAddressMapperMapsAddressWhenProvidedAddress() {
         uk.gov.companieshouse.pscdataapi.models.Address address =
                 new uk.gov.companieshouse.pscdataapi.models.Address();
         address.setAddressLine1("123 Fire Street");
@@ -38,7 +38,7 @@ class AddressMapperTest {
     }
 
     @Test
-    void testAddressMapper_returnsNull_whenProvidedNullAddress() {
+    void testAddressMapperReturnsNullWhenProvidedNullAddress() {
         assertNull(mapper.map(null));
     }
 }

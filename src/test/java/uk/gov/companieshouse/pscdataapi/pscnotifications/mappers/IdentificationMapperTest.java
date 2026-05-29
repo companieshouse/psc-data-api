@@ -12,7 +12,7 @@ class IdentificationMapperTest {
     private final IdentificationMapper mapper = new IdentificationMapper();
 
     @Test
-    void testIdentificationMapper_mapsIdentity_whenGivenValidInput() {
+    void testIdentificationMapperMapsIdentityWhenGivenValidInput() {
         PscIdentification identity = new PscIdentification();
         identity.setCountryRegistered("Wales");
         identity.setLegalAuthority("United Kingdom");
@@ -30,7 +30,7 @@ class IdentificationMapperTest {
     }
 
     @Test
-    void testIdentificationMapper_returnsNull_whenGivenNullInput() {
+    void testIdentificationMapperReturnsNullWhenGivenNullInput() {
         assertNull(mapper.map(null));
     }
 }

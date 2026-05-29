@@ -26,7 +26,7 @@ class PscNotificationsControllerTest {
     private PscNotificationsController controller;
 
     @Test
-    void getPscNotifications_returnsOk_whenNotificationsFound() {
+    void getPscNotificationsReturnsOkWhenNotificationsFound() {
         String pscId = "psc-123";
         String filter = "active";
         Integer startIndex = 0;
@@ -60,7 +60,7 @@ class PscNotificationsControllerTest {
     }
 
     @Test
-    void getPscNotifications_returnsNotFound_whenNoNotificationsFound() {
+    void getPscNotificationsReturnsNotFoundWhenNoNotificationsFound() {
         String pscId = "psc-404";
 
         when(service.getPscNotifications(any(PscNotificationsRequest.class)))
@@ -85,7 +85,7 @@ class PscNotificationsControllerTest {
     }
 
     @Test
-    void getPscNotifications_returnsBadRequest_whenServiceThrowsBadRequestException() {
+    void getPscNotificationsReturnsBadRequestWhenServiceThrowsBadRequestException() {
         when(service.getPscNotifications(any(PscNotificationsRequest.class)))
                 .thenThrow(new BadRequestException("Invalid filter"));
 

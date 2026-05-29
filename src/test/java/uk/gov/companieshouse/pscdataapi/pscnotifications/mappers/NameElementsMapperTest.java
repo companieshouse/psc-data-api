@@ -11,7 +11,7 @@ class NameElementsMapperTest {
     private final NameElementsMapper mapper = new NameElementsMapper();
 
     @Test
-    void testNameElementsMapper_returnsNameElements_whenGivenValidInput() {
+    void testNameElementsMapperReturnsNameElementsWhenGivenValidInput() {
         uk.gov.companieshouse.pscdataapi.models.NameElements elements =
                 new uk.gov.companieshouse.pscdataapi.models.NameElements();
 
@@ -29,7 +29,7 @@ class NameElementsMapperTest {
     }
 
     @Test
-    void testNameElementsMapper_returnsNull_whenGivenNullInput() {
+    void testNameElementsMapperReturnsNullWhenGivenNullInput() {
         assertNull(mapper.map(null));
     }
 }

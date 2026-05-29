@@ -15,7 +15,7 @@ class IdentityVerificationDetailsMapperTest {
     private final IdentityVerificationDetailsMapper mapper = new IdentityVerificationDetailsMapper();
 
     @Test
-    void testIdentityVerificationDetailsMapper_mapsIdentityVerificationDetails_whenGivenValidInput() {
+    void testIdentityVerificationDetailsMapperMapsIdentityVerificationDetailsWhenGivenValidInput() {
         PscIdentityVerificationDetails details = new PscIdentityVerificationDetails();
         details.setAntiMoneyLaunderingSupervisoryBodies(new ArrayList<>());
         details.setAppointmentVerificationEndOn(LocalDate.of(2024, 10, 10));
@@ -39,7 +39,7 @@ class IdentityVerificationDetailsMapperTest {
     }
 
     @Test
-    void testIdentityVerificationDetailsMapper_returnsNull_whenProvidedNullIdentityVerificationDetails() {
+    void testIdentityVerificationDetailsMapperReturnsNullWhenProvidedNullIdentityVerificationDetails() {
         assertNull(mapper.map(null));
     }
 }

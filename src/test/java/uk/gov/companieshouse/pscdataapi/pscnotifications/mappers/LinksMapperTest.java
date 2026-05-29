@@ -12,7 +12,7 @@ class LinksMapperTest {
     private final LinksMapper mapper = new LinksMapper();
 
     @Test
-    void testLinksMapper_returnsNotificationListLinkTypes_whenGivenValidInput() {
+    void testLinksMapperReturnsNotificationListLinkTypesWhenGivenValidInput() {
         Links links = new Links();
         links.setSelf("self-123");
 
@@ -22,7 +22,7 @@ class LinksMapperTest {
     }
 
     @Test
-    void testLinksMapper_returnsNull_whenGivenNullInput() {
+    void testLinksMapperReturnsNullWhenGivenNullInput() {
         assertNull(mapper.map(null));
     }
 }

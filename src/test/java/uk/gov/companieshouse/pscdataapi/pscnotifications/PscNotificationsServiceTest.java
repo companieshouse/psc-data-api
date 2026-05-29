@@ -35,7 +35,7 @@ class PscNotificationsServiceTest {
     }
 
     @Test
-    void testGetPscNotifications_returnsMappedresult_whenMapperReturnsValue() {
+    void testGetPscNotificationsReturnsMappedResultWhenMapperReturnsValue() {
         String pscId = "12345";
         int startIndex = 5;
         int itemsPerPage = 20;

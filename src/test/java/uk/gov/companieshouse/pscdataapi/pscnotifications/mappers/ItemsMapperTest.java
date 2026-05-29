@@ -26,7 +26,7 @@ class ItemsMapperTest {
     );
 
     @Test
-    void testItemsMapper_mapsItems_whenGivenValidInput() {
+    void testItemsMapperMapsItemsWhenGivenValidInput() {
         PscData data = new PscData();
         data.setCountryOfResidence("UK");
         data.setEtag("etag");
@@ -69,7 +69,7 @@ class ItemsMapperTest {
     }
 
     @Test
-    void testItemsMapper_returnsNull_whenGivenNullInput() {
+    void testItemsMapperReturnsNullWhenGivenNullInput() {
         PscDocument document = new PscDocument();
         document.setCompanyNumber("12345");
         document.setData(null);
