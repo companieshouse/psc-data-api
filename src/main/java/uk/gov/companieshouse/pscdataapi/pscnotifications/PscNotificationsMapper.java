@@ -30,7 +30,7 @@ class PscNotificationsMapper {
         return ofNullable(mapperRequest.firstNotification())
                 .flatMap(firstNotification -> ofNullable(firstNotification.getData())
                         .map(data -> new NotificationList()
-                                .activeCount(mapperRequest.activeCount())
+                                .activeCount(mapperRequest.totalResults() - mapperRequest.inactiveCount() - mapperRequest.ceasedCount())
                                 .ceasedCount(mapperRequest.ceasedCount())
                                 .dateOfBirth(dobMapper.map(firstNotification.getSensitiveData().getDateOfBirth()))
                                 .inactiveCount(mapperRequest.inactiveCount())
