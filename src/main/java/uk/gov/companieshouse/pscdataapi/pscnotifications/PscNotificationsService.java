@@ -13,11 +13,20 @@ public class PscNotificationsService {
 
     private final PscNotificationsRepository repository;
     private final PscNotificationsMapper mapper;
+    private final FilterService filterService;
+    private final ItemsPerPageService itemsPerPageService;
+    private final SortingThresholdService sortingThresholdService;
 
     PscNotificationsService(PscNotificationsRepository repository,
-                            PscNotificationsMapper mapper) {
+                            PscNotificationsMapper mapper,
+                            FilterService filterService,
+                            ItemsPerPageService itemsPerPageService,
+                            SortingThresholdService sortingThresholdService) {
         this.repository = repository;
         this.mapper = mapper;
+        this.filterService = filterService;
+        this.itemsPerPageService = itemsPerPageService;
+        this.sortingThresholdService = sortingThresholdService;
     }
 
     Optional<NotificationList> getPscNotifications(PscNotificationsRequest params) {
