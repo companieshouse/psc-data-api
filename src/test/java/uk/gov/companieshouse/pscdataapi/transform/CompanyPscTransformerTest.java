@@ -10,6 +10,8 @@ import org.junit.jupiter.api.Assertions;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -146,7 +148,7 @@ class CompanyPscTransformerTest {
         // then
         Assertions.assertNotNull(result.getData());
 
-        Assertions.assertTrue(result.getData().getCeased());
+        assertTrue(result.getData().getCeased());
         Assertions.assertNotNull(result.getData().getCeasedOn());
         Assertions.assertNotNull(result.getData().getDescription());
 
@@ -163,7 +165,7 @@ class CompanyPscTransformerTest {
         // then
         Assertions.assertNotNull(result.getData());
 
-        Assertions.assertTrue(result.getData().getSanctioned());
+        assertTrue(result.getData().getSanctioned());
         Assertions.assertNotNull(result.getData().getAddress());
         Assertions.assertNotNull(result.getSensitiveData().getDateOfBirth());
         Assertions.assertNotNull(result.getSensitiveData().getUsualResidentialAddress());
@@ -187,7 +189,7 @@ class CompanyPscTransformerTest {
         // then
         Assertions.assertNotNull(result.getData());
 
-        Assertions.assertTrue(result.getData().getSanctioned());
+        assertTrue(result.getData().getSanctioned());
         Assertions.assertNotNull(result.getData().getAddress());
         Assertions.assertNotNull(result.getSensitiveData().getDateOfBirth());
         Assertions.assertNotNull(result.getSensitiveData().getUsualResidentialAddress());
@@ -212,7 +214,7 @@ class CompanyPscTransformerTest {
         // then
         Assertions.assertNotNull(result.getData());
 
-        Assertions.assertTrue(result.getData().getSanctioned());
+        assertTrue(result.getData().getSanctioned());
         Assertions.assertNotNull(result.getData().getAddress());
         Assertions.assertNotNull(result.getData().getIdentification().getLegalForm());
         Assertions.assertNotNull(result.getData().getIdentification().getCountryRegistered());
@@ -232,7 +234,7 @@ class CompanyPscTransformerTest {
         // then
         Assertions.assertNotNull(result.getData());
 
-        Assertions.assertTrue(result.getData().getSanctioned());
+        assertTrue(result.getData().getSanctioned());
         Assertions.assertNotNull(result.getData().getAddress());
         Assertions.assertNotNull(result.getData().getIdentification().getLegalForm());
         assertNull(result.getData().getIdentification().getCountryRegistered());
@@ -252,8 +254,8 @@ class CompanyPscTransformerTest {
         // then
         Assertions.assertNotNull(result.getData());
 
-        Assertions.assertTrue(result.getData().getSanctioned());
-        Assertions.assertTrue(result.getData().getCeased());
+        assertTrue(result.getData().getSanctioned());
+        assertTrue(result.getData().getCeased());
         Assertions.assertNotNull(result.getData().getCeasedOn());
         Assertions.assertNotNull(result.getData().getDescription());
 
@@ -518,7 +520,7 @@ class CompanyPscTransformerTest {
         assertNull(result.getEtag());
         assertNull(result.getName());
         assertNull(result.getAddress());
-        assertNull(result.getNaturesOfControl());
+        assertTrue(result.getNaturesOfControl().isEmpty());
         assertNull(result.getLinks());
         assertNull(result.getIsSanctioned());
         assertNull(result.getIdentification());
@@ -682,7 +684,7 @@ class CompanyPscTransformerTest {
         assertNull(result.getEtag());
         assertNull(result.getName());
         assertNull(result.getAddress());
-        assertNull(result.getNaturesOfControl());
+        assertTrue(result.getNaturesOfControl().isEmpty());
         assertNull(result.getLinks());
         assertNull(result.getCeasedOn());
         assertNull(result.getNotifiedOn());
