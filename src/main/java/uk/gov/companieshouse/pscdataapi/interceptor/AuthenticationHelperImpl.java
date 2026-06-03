@@ -59,4 +59,11 @@ public class AuthenticationHelperImpl implements AuthenticationHelper {
     private String getRequestHeader(HttpServletRequest request, String header) {
         return request == null ? null : request.getHeader(header);
     }
+
+    public static boolean hasInternalAppPrivileges(String authPrivileges) {
+        return Optional.ofNullable(authPrivileges)
+                .map(rawAuthPrivileges -> rawAuthPrivileges.split(","))
+                .map(privileges -> ArrayUtils.contains(privileges, INTERNAL_APP_PRIVILEGE))
+                .orElse(false);
+    }
 }
