@@ -28,12 +28,21 @@ class PscNotificationsServiceTest {
     @Mock
     private PscNotificationsMapper mapper;
 
+    @Mock
+    private FilterService filterService;
+
+    @Mock
+    private ItemsPerPageService itemsPerPageService;
+
+    @Mock
+    private SortingThresholdService sortingThresholdService;
+
     private PscNotificationsService service;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        service = new PscNotificationsService(repository, mapper);
+        service = new PscNotificationsService(repository, mapper, filterService, itemsPerPageService, sortingThresholdService);
     }
 
     @Test
