@@ -11,7 +11,8 @@ locals {
   lb_listener_rule_priority   = 6
   lb_listener_paths           = [
     "/company/*/persons-with-significant-control",
-    "/company/*/persons-with-significant-control/*"
+    "/company/*/persons-with-significant-control/*",
+    "/persons-with-significant-control/*/notifications"
   ]
   healthcheck_path            = "/healthcheck" #healthcheck path for psc-data-api
   healthcheck_matcher         = "200"
