@@ -1,5 +1,7 @@
 package uk.gov.companieshouse.pscdataapi.pscnotifications;
 
+import static uk.gov.companieshouse.pscdataapi.interceptor.AuthenticationHelperImpl.ERIC_AUTHORISED_KEY_PRIVILEGES_HEADER;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 
@@ -12,8 +14,6 @@ import uk.gov.companieshouse.api.psc_notifications.NotificationList;
 import uk.gov.companieshouse.pscdataapi.PscDataApiApplication;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
 import uk.gov.companieshouse.pscdataapi.logging.DataMapHolder;
-
-import static uk.gov.companieshouse.pscdataapi.interceptor.AuthenticationHelperImpl.ERIC_AUTHORISED_KEY_PRIVILEGES_HEADER;
 
 @Controller
 public class PscNotificationsController {

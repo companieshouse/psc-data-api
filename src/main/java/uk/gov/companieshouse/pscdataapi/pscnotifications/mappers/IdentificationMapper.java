@@ -1,10 +1,10 @@
 package uk.gov.companieshouse.pscdataapi.pscnotifications.mappers;
 
+import static java.util.Optional.ofNullable;
+
 import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.api.psc_notifications.CorporateIdent;
 import uk.gov.companieshouse.pscdataapi.models.PscIdentification;
-
-import static java.util.Optional.ofNullable;
 
 @Component
 public class IdentificationMapper {
