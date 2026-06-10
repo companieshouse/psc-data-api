@@ -1,13 +1,13 @@
 package uk.gov.companieshouse.pscdataapi.pscnotifications.mappers;
 
+import static java.util.Optional.ofNullable;
+
 import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.api.psc_notifications.NotifiedTo;
 import uk.gov.companieshouse.api.psc_notifications.PscNotificationSummary;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 
 import java.util.List;
-
-import static java.util.Optional.ofNullable;
 
 @Component
 public class ItemsMapper {

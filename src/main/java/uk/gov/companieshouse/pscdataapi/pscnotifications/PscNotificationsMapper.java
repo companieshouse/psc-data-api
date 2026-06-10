@@ -1,5 +1,7 @@
 package uk.gov.companieshouse.pscdataapi.pscnotifications;
 
+import static java.util.Optional.ofNullable;
+
 import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.api.psc_notifications.NotificationList;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
@@ -9,8 +11,6 @@ import uk.gov.companieshouse.pscdataapi.pscnotifications.mappers.LinksMapper;
 
 import java.util.List;
 import java.util.Optional;
-
-import static java.util.Optional.ofNullable;
 
 @Component
 class PscNotificationsMapper {
