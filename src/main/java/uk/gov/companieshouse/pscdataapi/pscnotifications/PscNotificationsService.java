@@ -11,6 +11,9 @@ import java.util.Optional;
 @Service
 public class PscNotificationsService {
 
+    private static final int DEFAULT_START_INDEX = 0;
+    private static final int DEFAULT_ITEMS_PER_PAGE = 35;
+
     private final PscNotificationsRepository repository;
     private final PscNotificationsMapper mapper;
 
@@ -22,8 +25,8 @@ public class PscNotificationsService {
 
     Optional<NotificationList> getPscNotifications(PscNotificationsRequest params) {
         final String pscId = params.pscId();
-        final int startIndex = params.startIndex();
-        final int itemsPerPage = params.itemsPerPage();
+        final int startIndex = getStartIndex(params.startIndex());
+        final int itemsPerPage = getItemsPerPage(params.itemsPerPage());
 
         final int totalResults = repository.countByPscId(pscId);
         List<PscDocument> documents = repository.findAllByPscId(pscId);
@@ -36,5 +39,26 @@ public class PscNotificationsService {
                 .pscNotifications(documents)
                 .totalResults(totalResults)
                 .build());
+    }
+
+    private static int getStartIndex(Integer requestStartIndex) {
+        int startIndex;
+        if (requestStartIndex == null) {
+            startIndex = DEFAULT_START_INDEX;
+        } else {
+            startIndex = Math.abs(requestStartIndex);
+        }
+
+        return startIndex;
+    }
+
+    private static int getItemsPerPage(Integer requestItemsPerPage) {
+        int itemsPerPage;
+        if (requestItemsPerPage == null) {
+            itemsPerPage = DEFAULT_ITEMS_PER_PAGE;
+        } else {
+            itemsPerPage = Math.abs(requestItemsPerPage);
+        }
+        return itemsPerPage;
     }
 }
