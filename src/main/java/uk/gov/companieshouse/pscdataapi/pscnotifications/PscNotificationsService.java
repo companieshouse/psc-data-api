@@ -48,7 +48,7 @@ public class PscNotificationsService {
         } else {
             startIndex = Math.abs(requestStartIndex);
         }
-        //DataMapHolder.get().startIndex(String.valueOf(startIndex));
+
         return startIndex;
     }
 
