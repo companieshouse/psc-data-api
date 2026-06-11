@@ -109,4 +109,22 @@ class PscNotificationsServiceTest {
         assertNull(captured.firstNotification());
 
     }
+
+    @Test
+    void testGetPscNotificationsUsesDefaultsWhenPaginationParamsProvidedAsNull() {
+        PscNotificationsRequest request = new PscNotificationsRequest("11234", null, null, null, null);
+
+        when(repository.countByPscId("12345")).thenReturn(0);
+        when(repository.findAllByPscId("12345")).thenReturn(List.of());
+        when(mapper.mapPscNotifications(any())).thenReturn(Optional.empty());
+
+        service.getPscNotifications(request);
+
+        ArgumentCaptor<PscNotificationsMapper.MapperRequest> captor =
+                ArgumentCaptor.forClass(PscNotificationsMapper.MapperRequest.class);
+        verify(mapper).mapPscNotifications(captor.capture());
+
+        assertEquals(0, captor.getValue().startIndex());
+        assertEquals(35, captor.getValue().itemsPerPage());
+    }
 }
