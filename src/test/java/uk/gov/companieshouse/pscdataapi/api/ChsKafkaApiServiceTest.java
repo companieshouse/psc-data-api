@@ -3,6 +3,7 @@ package uk.gov.companieshouse.pscdataapi.api;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
@@ -43,7 +44,6 @@ import uk.gov.companieshouse.api.psc.LegalPersonBeneficialOwner;
 import uk.gov.companieshouse.api.psc.SuperSecure;
 import uk.gov.companieshouse.api.psc.SuperSecureBeneficialOwner;
 import uk.gov.companieshouse.pscdataapi.exceptions.ServiceUnavailableException;
-import uk.gov.companieshouse.pscdataapi.models.PscData;
 import uk.gov.companieshouse.pscdataapi.models.PscDeleteRequest;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 import uk.gov.companieshouse.pscdataapi.transform.CompanyPscTransformer;
@@ -58,7 +58,6 @@ class ChsKafkaApiServiceTest {
     private static final String PSC_URI = "/company/%s/persons-with-significant-control/%s/%s";
     private static final DateTimeFormatter ROUNDED_TO_SECONDS_FORMATTER =
             DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
-    private static final String KIND = "individual-person-with-significant-control";
 
     @InjectMocks
     private ChsKafkaApiService chsKafkaApiService;
@@ -80,8 +79,6 @@ class ChsKafkaApiServiceTest {
     private ApiResponse<Void> response;
     @Mock
     private PscDocument pscDocument;
-    @Mock
-    private PscData pscData;
 
     @Captor
     ArgumentCaptor<ChangedResource> changedResourceCaptor;
@@ -161,7 +158,7 @@ class ChsKafkaApiServiceTest {
         // when
         ApiResponse<?> apiResponse = chsKafkaApiService.invokeChsKafkaApiWithDeleteEvent(
                 new PscDeleteRequest(TestHelper.X_REQUEST_ID, TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID,
-                        TestHelper.INDIVIDUAL_KIND, DELTA_AT),
+                        TestHelper.INDIVIDUAL_BO_KIND, DELTA_AT),
                 document);
         assertThat(apiResponse).isNotNull();
 
@@ -373,6 +370,36 @@ class ChsKafkaApiServiceTest {
                 CorporateEntityBeneficialOwner.class);
     }
 
+        @Test
+        void invokeChsKafkaEndpointWithDeleteUsesDeleteRequestKindWhenDocumentKindMissing()
+                        throws ApiErrorResponseException, JsonProcessingException {
+                // given
+                when(kafkaApiClientSupplier.get()).thenReturn(client);
+                when(client.privateChangedResourceHandler()).thenReturn(privateChangedResourceHandler);
+                when(privateChangedResourceHandler.postChangedResource(any(), any())).thenReturn(privateChangedResourcePost);
+                when(privateChangedResourcePost.execute()).thenReturn(response);
+
+                PscDocument document = TestHelper.buildPscDocument(TestHelper.INDIVIDUAL_KIND);
+                assertNotNull(document.getData());
+                document.getData().setKind(null);
+
+                Individual individual = new Individual();
+                individual.setKind(Individual.KindEnum.INDIVIDUAL_PERSON_WITH_SIGNIFICANT_CONTROL);
+                when(companyPscTransformer.transformPscDocToIndividual(document, false)).thenReturn(individual);
+                when(objectMapper.writeValueAsString(individual)).thenReturn(individual.toString());
+                when(objectMapper.readValue(individual.toString(), Object.class)).thenReturn(individual);
+
+                // when
+                ApiResponse<?> apiResponse = chsKafkaApiService.invokeChsKafkaApiWithDeleteEvent(
+                                new PscDeleteRequest(COMPANY_NUMBER, NOTIFICATION_ID, X_REQUEST_ID, TestHelper.INDIVIDUAL_KIND, DELTA_AT),
+                                document);
+                assertThat(apiResponse).isNotNull();
+
+                // then
+                verify(privateChangedResourceHandler, times(1)).postChangedResource(any(), changedResourceCaptor.capture());
+                assertThat(changedResourceCaptor.getValue().getDeletedData()).isInstanceOf(Individual.class);
+        }
+
     @Test
     void invokeChsKafkaEndpointThrowsApiErrorException() throws ApiErrorResponseException {
         ApiErrorResponseException exception = new ApiErrorResponseException(
@@ -400,8 +427,6 @@ class ChsKafkaApiServiceTest {
         when(client.privateChangedResourceHandler()).thenReturn(privateChangedResourceHandler);
         when(privateChangedResourceHandler.postChangedResource(any(), any())).thenReturn(privateChangedResourcePost);
         when(privateChangedResourcePost.execute()).thenThrow(exception);
-        when(pscDocument.getData()).thenReturn(pscData);
-        when(pscData.getKind()).thenReturn(KIND);
 
         Executable executable = () -> chsKafkaApiService.invokeChsKafkaApiWithDeleteEvent(
                 new PscDeleteRequest(TestHelper.X_REQUEST_ID, TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID,
@@ -439,8 +464,6 @@ class ChsKafkaApiServiceTest {
         when(client.privateChangedResourceHandler()).thenReturn(privateChangedResourceHandler);
         when(privateChangedResourceHandler.postChangedResource(any(), any())).thenReturn(privateChangedResourcePost);
         when(privateChangedResourcePost.execute()).thenThrow(exception);
-        when(pscDocument.getData()).thenReturn(pscData);
-        when(pscData.getKind()).thenReturn(KIND);
 
         Executable executable = () -> chsKafkaApiService.invokeChsKafkaApiWithDeleteEvent(
                 new PscDeleteRequest(TestHelper.X_REQUEST_ID, TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID,
