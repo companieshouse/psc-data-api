@@ -2,8 +2,9 @@ package uk.gov.companieshouse.pscdataapi.pscnotifications;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.api.psc_notifications.DateOfBirth;
 import uk.gov.companieshouse.api.psc_notifications.NotificationList;
 import uk.gov.companieshouse.api.psc_notifications.NotificationListLinkTypes;
@@ -25,6 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class PscNotificationsMapperTest {
 
     private PscNotificationsMapper mapper;
@@ -38,7 +40,6 @@ class PscNotificationsMapperTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
         mapper = new PscNotificationsMapper(itemsMapper, dobMapper, linksMapper);
     }
 

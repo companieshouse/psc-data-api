@@ -3,7 +3,7 @@ package uk.gov.companieshouse.pscdataapi.converter;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import java.nio.charset.StandardCharsets;
 import org.apache.commons.io.IOUtils;
 import org.bson.Document;

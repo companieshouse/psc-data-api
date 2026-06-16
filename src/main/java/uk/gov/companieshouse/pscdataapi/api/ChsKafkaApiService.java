@@ -8,9 +8,8 @@ import java.util.function.Supplier;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 import uk.gov.companieshouse.api.InternalApiClient;
 import uk.gov.companieshouse.api.chskafka.ChangedResource;
@@ -49,8 +48,10 @@ public class ChsKafkaApiService {
     private final Supplier<InternalApiClient> kafkaApiClientSupplier;
     private final ObjectMapper objectMapper;
 
-    public ChsKafkaApiService(CompanyPscTransformer companyPscTransformer,
-            @Qualifier("kafkaApiClientSupplier") Supplier<InternalApiClient> kafkaApiClientSupplier, ObjectMapper objectMapper) {
+    public ChsKafkaApiService(
+        CompanyPscTransformer companyPscTransformer,
+        @Qualifier("kafkaApiClientSupplier") Supplier<InternalApiClient> kafkaApiClientSupplier,
+        @Qualifier("toolsObjectMapper") ObjectMapper objectMapper) {
         this.companyPscTransformer = companyPscTransformer;
         this.kafkaApiClientSupplier = kafkaApiClientSupplier;
         this.objectMapper = objectMapper;
@@ -116,7 +117,7 @@ public class ChsKafkaApiService {
                         default -> null;
                     };
                     changedResource.setDeletedData(deserializedData(pscObject));
-                } catch (JsonProcessingException e) {
+                } catch (JacksonException e) {
                     throw new SerDesException("Failed to serialise/deserialise psc data", e);
                 }
             }
@@ -158,7 +159,7 @@ public class ChsKafkaApiService {
         }
     }
 
-    private Object deserializedData(Object pscDocument) throws JsonProcessingException {
+    private Object deserializedData(Object pscDocument) throws JacksonException {
         return objectMapper.readValue(objectMapper.writeValueAsString(pscDocument), Object.class);
     }
 }

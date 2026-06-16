@@ -1,12 +1,14 @@
 package uk.gov.companieshouse.pscdataapi.config;
 
 import java.util.List;
+
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.csrf.CsrfFilter;
@@ -22,6 +24,7 @@ import uk.gov.companieshouse.pscdataapi.interceptor.AuthenticationHelperImpl;
 import uk.gov.companieshouse.pscdataapi.interceptor.FullRecordAuthenticationInterceptor;
 
 @Configuration
+@EnableWebSecurity
 public class WebSecurityConfig implements WebMvcConfigurer {
 
     public static final String PATTERN_FULL_RECORD =
@@ -62,8 +65,8 @@ public class WebSecurityConfig implements WebMvcConfigurer {
                 internalUserInterceptor());
     }
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(final HttpSecurity http) throws Exception {
+    @Bean(name = "securityFilterChain")
+    public SecurityFilterChain securityFilterChain(final HttpSecurity http) {
         http.cors(AbstractHttpConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable)
                 .addFilterBefore(new CustomCorsFilter(externalMethods()), CsrfFilter.class);

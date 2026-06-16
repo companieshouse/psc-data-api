@@ -9,8 +9,9 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.companieshouse.pscdataapi.CucumberFeaturesRunnerIT.mongoDBContainer;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.boot.resttestclient.TestRestTemplate;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import tools.jackson.databind.ObjectMapper;
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
 import io.cucumber.java.en.And;
@@ -28,10 +29,10 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -40,6 +41,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.FileCopyUtils;
+import tools.jackson.core.JacksonException;
 import uk.gov.companieshouse.api.metrics.MetricsApi;
 import uk.gov.companieshouse.api.psc.CorporateEntity;
 import uk.gov.companieshouse.api.psc.CorporateEntityBeneficialOwner;
@@ -69,6 +71,8 @@ import uk.gov.companieshouse.pscdataapi.service.CompanyPscService;
 import uk.gov.companieshouse.pscdataapi.transform.CompanyPscTransformer;
 import uk.gov.companieshouse.pscdataapi.util.FileReaderUtil;
 
+@WebMvcTest
+@ExtendWith(MockitoExtension.class)
 public class PscDataSteps {
 
     private static final String KIND = "individual-person-with-significant-control";
@@ -95,21 +99,17 @@ public class PscDataSteps {
     @InjectMocks
     private CompanyPscService companyPscService;
 
-    private AutoCloseable autoCloseable;
-
     @Before
     public void dbCleanUp() {
         if (!mongoDBContainer.isRunning()) {
             mongoDBContainer.start();
         }
         companyPscRepository.deleteAll();
-        autoCloseable = MockitoAnnotations.openMocks(this);
     }
 
     @After
-    public void dbStop() throws Exception {
+    public void dbStop() {
         mongoDBContainer.stop();
-        autoCloseable.close();
     }
 
     @Given("Psc data api service is running")
@@ -118,8 +118,7 @@ public class PscDataSteps {
     }
 
     @Given("a psc data record {string} exists with notification id {string} and delta_at {string}")
-    public void psc_record_exists_for_company_and_id_with_delta_at(String existingDataFile, String notificationId, String deltaAt)
-            throws IOException {
+    public void psc_record_exists_for_company_and_id_with_delta_at(String existingDataFile, String notificationId, String deltaAt) {
         String pscDataFile = FileReaderUtil.readFile(
                 "src/itest/resources/json/input/" + existingDataFile + ".json");
         PscData pscData = objectMapper.readValue(pscDataFile, PscData.class);
@@ -309,7 +308,7 @@ public class PscDataSteps {
     }
 
     @And("a PSC {string} exists for {string} for Super Secure")
-    public void aPSCExistsForForSuperSecure(String dataFile, String companyNumber) throws JsonProcessingException {
+    public void aPSCExistsForForSuperSecure(String dataFile, String companyNumber) throws JacksonException {
         String pscDataFile = FileReaderUtil.readFile("src/itest/resources/json/input/" + dataFile + ".json");
         PscData pscData = objectMapper.readValue(pscDataFile, PscData.class);
         PscDocument document = new PscDocument();
@@ -404,7 +403,7 @@ public class PscDataSteps {
     }
 
     @And("a PSC {string} exists for {string} for Super Secure Beneficial Owner")
-    public void aPSCExistsForForSuperSecureBeneficialOwner(String dataFile, String companyNumber) throws JsonProcessingException {
+    public void aPSCExistsForForSuperSecureBeneficialOwner(String dataFile, String companyNumber) throws JacksonException {
         String pscDataFile = FileReaderUtil.readFile("src/itest/resources/json/input/" + dataFile + ".json");
         PscData pscData = objectMapper.readValue(pscDataFile, PscData.class);
         PscDocument document = new PscDocument();
@@ -505,7 +504,7 @@ public class PscDataSteps {
     }
 
     @And("a PSC {string} exists for {string} for Corporate Entity")
-    public void aPSCExistsForCorporateEntity(String dataFile, String companyNumber) throws JsonProcessingException {
+    public void aPSCExistsForCorporateEntity(String dataFile, String companyNumber) throws JacksonException {
         String pscDataFile = FileReaderUtil.readFile("src/itest/resources/json/input/" + dataFile + ".json");
         PscData pscData = objectMapper.readValue(pscDataFile, PscData.class);
         PscDocument document = new PscDocument();
@@ -621,7 +620,7 @@ public class PscDataSteps {
     }
 
     @And("a PSC {string} exists for {string} for Individual")
-    public void aPSCExistsFor(String dataFile, String companyNumber) throws JsonProcessingException {
+    public void aPSCExistsFor(String dataFile, String companyNumber) throws JacksonException {
         String pscDataFile = FileReaderUtil.readFile("src/itest/resources/json/input/" + dataFile + ".json");
         PscData pscData = objectMapper.readValue(pscDataFile, PscData.class);
         PscSensitiveData pscSensitiveData = objectMapper.readValue(pscDataFile, PscSensitiveData.class);
@@ -676,7 +675,7 @@ public class PscDataSteps {
     }
 
     @And("a PSC {string} exists for {string} for Individual with {string}")
-    public void pscExistsWithDeltaAt(String dataFile, String companyNumber, String deltaAt) throws JsonProcessingException {
+    public void pscExistsWithDeltaAt(String dataFile, String companyNumber, String deltaAt) throws JacksonException {
         String pscDataFile = FileReaderUtil.readFile("src/itest/resources/json/input/" + dataFile + ".json");
         PscData pscData = objectMapper.readValue(pscDataFile, PscData.class);
         PscSensitiveData pscSensitiveData = objectMapper.readValue(pscDataFile, PscSensitiveData.class);
@@ -872,7 +871,7 @@ public class PscDataSteps {
     }
 
     @And("a PSC {string} exists for {string} for Individual Beneficial Owner")
-    public void aPSCExistsForForIndividualBeneficialOwner(String dataFile, String companyNumber) throws JsonProcessingException {
+    public void aPSCExistsForForIndividualBeneficialOwner(String dataFile, String companyNumber) throws JacksonException {
         String pscDataFile = FileReaderUtil.readFile("src/itest/resources/json/input/" + dataFile + ".json");
         PscData pscData = objectMapper.readValue(pscDataFile, PscData.class);
         PscSensitiveData pscSensitiveData = objectMapper.readValue(pscDataFile, PscSensitiveData.class);
@@ -972,7 +971,7 @@ public class PscDataSteps {
 
     @And("a PSC {string} exists for {string} for Corporate Entity Beneficial Owner")
     public void aPSCExistsForForCorporateEntityBeneficialOwner(String dataFile, String companyNumber)
-            throws JsonProcessingException {
+            throws JacksonException {
         String pscDataFile = FileReaderUtil.readFile("src/itest/resources/json/input/" + dataFile + ".json");
         PscData pscData = objectMapper.readValue(pscDataFile, PscData.class);
         PscDocument document = new PscDocument();
@@ -1077,7 +1076,7 @@ public class PscDataSteps {
 
 
     @And("a PSC {string} exists for {string} for Legal Person")
-    public void aPSCExistsForForLegalPerson(String dataFile, String companyNumber) throws JsonProcessingException {
+    public void aPSCExistsForForLegalPerson(String dataFile, String companyNumber) throws JacksonException {
         String pscDataFile = FileReaderUtil.readFile("src/itest/resources/json/input/" + dataFile + ".json");
         PscData pscData = objectMapper.readValue(pscDataFile, PscData.class);
         PscDocument document = new PscDocument();
@@ -1167,7 +1166,7 @@ public class PscDataSteps {
     }
 
     @And("a PSC {string} exists for {string} for Legal Person Beneficial Owner")
-    public void aPSCExistsForForLegalPersonBeneficialOwner(String dataFile, String companyNumber) throws JsonProcessingException {
+    public void aPSCExistsForForLegalPersonBeneficialOwner(String dataFile, String companyNumber) throws JacksonException {
         String pscDataFile = FileReaderUtil.readFile("src/itest/resources/json/input/" + dataFile + ".json");
         PscData pscData = objectMapper.readValue(pscDataFile, PscData.class);
         PscDocument document = new PscDocument();

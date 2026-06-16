@@ -12,8 +12,7 @@ import static uk.gov.companieshouse.pscdataapi.util.TestHelper.COMPANY_NUMBER;
 import static uk.gov.companieshouse.pscdataapi.util.TestHelper.NOTIFICATION_ID;
 import static uk.gov.companieshouse.pscdataapi.util.TestHelper.X_REQUEST_ID;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import com.google.api.client.http.HttpHeaders;
 import com.google.api.client.http.HttpResponseException;
 import java.time.format.DateTimeFormatter;
@@ -28,6 +27,7 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import tools.jackson.core.JacksonException;
 import uk.gov.companieshouse.api.InternalApiClient;
 import uk.gov.companieshouse.api.chskafka.ChangedResource;
 import uk.gov.companieshouse.api.error.ApiErrorResponseException;
@@ -108,7 +108,7 @@ class ChsKafkaApiServiceTest {
     }
 
     @Test
-    void invokeChsKafkaEndpointWithDeleteForIndividual() throws ApiErrorResponseException, JsonProcessingException {
+    void invokeChsKafkaEndpointWithDeleteForIndividual() throws ApiErrorResponseException, JacksonException {
         // given
         when(kafkaApiClientSupplier.get()).thenReturn(client);
         when(client.privateChangedResourceHandler()).thenReturn(privateChangedResourceHandler);
@@ -141,7 +141,7 @@ class ChsKafkaApiServiceTest {
 
     @Test
     void invokeChsKafkaEndpointWithDeleteForIndividualBeneficialOwner()
-            throws ApiErrorResponseException, JsonProcessingException {
+            throws ApiErrorResponseException, JacksonException {
         // given
         when(kafkaApiClientSupplier.get()).thenReturn(client);
         when(client.privateChangedResourceHandler()).thenReturn(privateChangedResourceHandler);
@@ -174,7 +174,7 @@ class ChsKafkaApiServiceTest {
     }
 
     @Test
-    void invokeChsKafkaEndpointWithDeleteForLegalPerson() throws ApiErrorResponseException, JsonProcessingException {
+    void invokeChsKafkaEndpointWithDeleteForLegalPerson() throws ApiErrorResponseException, JacksonException {
         // given
         when(kafkaApiClientSupplier.get()).thenReturn(client);
         when(client.privateChangedResourceHandler()).thenReturn(privateChangedResourceHandler);
@@ -207,7 +207,7 @@ class ChsKafkaApiServiceTest {
 
     @Test
     void invokeChsKafkaEndpointWithDeleteForLegalPersonBeneficialOwner()
-            throws ApiErrorResponseException, JsonProcessingException {
+            throws ApiErrorResponseException, JacksonException {
         // given
         when(kafkaApiClientSupplier.get()).thenReturn(client);
         when(client.privateChangedResourceHandler()).thenReturn(privateChangedResourceHandler);
@@ -242,7 +242,7 @@ class ChsKafkaApiServiceTest {
     }
 
     @Test
-    void invokeChsKafkaEndpointWithDeleteForSuperSecure() throws ApiErrorResponseException, JsonProcessingException {
+    void invokeChsKafkaEndpointWithDeleteForSuperSecure() throws ApiErrorResponseException, JacksonException {
         // given
         when(kafkaApiClientSupplier.get()).thenReturn(client);
         when(client.privateChangedResourceHandler()).thenReturn(privateChangedResourceHandler);
@@ -274,7 +274,7 @@ class ChsKafkaApiServiceTest {
     }
 
     @Test
-    void invokeChsKafkaEndpointWithDeleteForSuperSecureBO() throws ApiErrorResponseException, JsonProcessingException {
+    void invokeChsKafkaEndpointWithDeleteForSuperSecureBO() throws ApiErrorResponseException, JacksonException {
         // given
         when(kafkaApiClientSupplier.get()).thenReturn(client);
         when(client.privateChangedResourceHandler()).thenReturn(privateChangedResourceHandler);
@@ -307,7 +307,7 @@ class ChsKafkaApiServiceTest {
 
     @Test
     void invokeChsKafkaEndpointWithDeleteForCorporateEntity()
-            throws ApiErrorResponseException, JsonProcessingException {
+            throws ApiErrorResponseException, JacksonException {
         // given
         when(kafkaApiClientSupplier.get()).thenReturn(client);
         when(client.privateChangedResourceHandler()).thenReturn(privateChangedResourceHandler);
@@ -340,7 +340,7 @@ class ChsKafkaApiServiceTest {
 
     @Test
     void invokeChsKafkaEndpointWithDeleteForCorporateEntityBO()
-            throws ApiErrorResponseException, JsonProcessingException {
+            throws ApiErrorResponseException, JacksonException {
         // given
         when(kafkaApiClientSupplier.get()).thenReturn(client);
         when(client.privateChangedResourceHandler()).thenReturn(privateChangedResourceHandler);

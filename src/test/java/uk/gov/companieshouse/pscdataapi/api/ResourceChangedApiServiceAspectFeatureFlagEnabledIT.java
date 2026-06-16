@@ -1,17 +1,16 @@
 package uk.gov.companieshouse.pscdataapi.api;
 
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import uk.gov.companieshouse.api.InternalApiClient;
 import uk.gov.companieshouse.api.chskafka.ChangedResource;
-import uk.gov.companieshouse.api.error.ApiErrorResponseException;
 import uk.gov.companieshouse.api.handler.chskafka.PrivateChangedResourceHandler;
 import uk.gov.companieshouse.api.handler.chskafka.request.PrivateChangedResourcePost;
 import uk.gov.companieshouse.api.http.HttpClient;
@@ -22,6 +21,7 @@ import uk.gov.companieshouse.pscdataapi.exceptions.ServiceUnavailableException;
 import uk.gov.companieshouse.pscdataapi.models.PscDeleteRequest;
 import uk.gov.companieshouse.pscdataapi.util.TestHelper;
 
+@ExtendWith(MockitoExtension.class)
 @SpringBootTest(properties = {"feature.seeding_collection_enabled=true"})
 class ResourceChangedApiServiceAspectFeatureFlagEnabledIT {
 
@@ -49,13 +49,7 @@ class ResourceChangedApiServiceAspectFeatureFlagEnabledIT {
     private RequestExecutor requestExecutor;
 
     @Test
-    void testThatAspectShouldNotProceedWhenFeatureFlagEnabled() throws ServiceUnavailableException, ApiErrorResponseException {
-
-        when(internalApiClient.privateChangedResourceHandler()).thenReturn(
-                privateChangedResourceHandler);
-        when(privateChangedResourceHandler.postChangedResource(any(), any())).thenReturn(
-                changedResourcePost);
-        when(changedResourcePost.execute()).thenReturn(response);
+    void testThatAspectShouldNotProceedWhenFeatureFlagEnabled() throws ServiceUnavailableException {
 
         chsKafkaApiService.invokeChsKafkaApi(TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID,
                 "individual-person-with-significant-control");
@@ -68,13 +62,7 @@ class ResourceChangedApiServiceAspectFeatureFlagEnabledIT {
 
     @Test
     void testThatAspectShouldNotProceedOnDeleteWhenFeatureFlagEnabled()
-            throws ServiceUnavailableException, ApiErrorResponseException {
-
-        when(internalApiClient.privateChangedResourceHandler()).thenReturn(
-                privateChangedResourceHandler);
-        when(privateChangedResourceHandler.postChangedResource(any(), any())).thenReturn(
-                changedResourcePost);
-        when(changedResourcePost.execute()).thenReturn(response);
+            throws ServiceUnavailableException {
 
         chsKafkaApiService.invokeChsKafkaApiWithDeleteEvent(
                 new PscDeleteRequest(TestHelper.X_REQUEST_ID, TestHelper.COMPANY_NUMBER, TestHelper.NOTIFICATION_ID,
