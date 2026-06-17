@@ -276,11 +276,13 @@ class CompanyPscServiceTest {
         PscDocument dataSent = pscDoc.getValue();
         assertNotNull(dataSent);
         assertEquals(NOTIFICATION_ID, dataSent.getId());
+        assertEquals(NOTIFICATION_ID, dataSent.getPscId());
         assertEquals(COMPANY_NUMBER, dataSent.getCompanyNumber());
         assertNotNull(dataSent.getData());
+        assertEquals(INDIVIDUAL_KIND, dataSent.getData().getKind());
         assertNotNull(dataSent.getData().getLinks());
         assertNotNull(dataSent.getData().getLinks().getPersonsWithSignificantControl());
-        String expectedUri = "/company/" + COMPANY_NUMBER + "/persons-with-significant-control/" + NOTIFICATION_ID;
+        String expectedUri = "/persons-with-significant-control/" + NOTIFICATION_ID + "/notifications";
         assertEquals(expectedUri, dataSent.getData().getLinks().getPersonsWithSignificantControl().getNotifications());
         }
 

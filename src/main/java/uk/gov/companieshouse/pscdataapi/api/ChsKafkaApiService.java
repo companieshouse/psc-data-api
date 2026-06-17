@@ -97,7 +97,7 @@ public class ChsKafkaApiService {
             if (pscDocument != null) {
                 // This write-value/read-value is necessary to remove null fields during the jackson conversion
                 try {
-                    Object pscObject = switch (pscDocument.getData().getKind()) {
+                    Object pscObject = switch (kind) {
                         case "individual-person-with-significant-control" ->
                                 companyPscTransformer.transformPscDocToIndividual(pscDocument, false);
                         case INDIVIDUAL_BENEFICIAL_OWNER ->

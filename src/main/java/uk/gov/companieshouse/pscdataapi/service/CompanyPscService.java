@@ -104,8 +104,9 @@ public class CompanyPscService {
         } else {
             final String msg = "PSC document not found during delete - publishing event with links.persons_with_significant_control only";
             LOGGER.info(msg, DataMapHolder.getLogMap());
-            // Construct a PscDocument with links.persons_with_significant_control object to publish
-            final String pscUri = "/company/%s/persons-with-significant-control/%s".formatted(deleteRequest.companyNumber(), deleteRequest.notificationId());
+            // Construct a PscDocument with a notifications link for the delete event
+            final String pscUri = "/persons-with-significant-control/%s/notifications".formatted(
+                    deleteRequest.notificationId());
 
             PersonsWithSignificantControl psc = new PersonsWithSignificantControl();
             psc.setNotifications(pscUri);
@@ -115,9 +116,11 @@ public class CompanyPscService {
 
             PscDocument pscDoc = new PscDocument();
             pscDoc.setId(deleteRequest.notificationId());
+            pscDoc.setPscId(deleteRequest.notificationId());
             pscDoc.setCompanyNumber(deleteRequest.companyNumber());
 
             PscData pscData = new PscData();
+            pscData.setKind(deleteRequest.kind());
             pscData.setLinks(links);
             pscDoc.setData(pscData);
      
