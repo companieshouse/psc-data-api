@@ -2,11 +2,16 @@ package uk.gov.companieshouse.pscdataapi.api;
 
 import java.time.Instant;
 import static java.time.ZoneOffset.UTC;
+import java.time.temporal.ChronoUnit;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.HashMap;
 import java.util.function.Supplier;
 
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -26,6 +31,8 @@ import uk.gov.companieshouse.pscdataapi.exceptions.ServiceUnavailableException;
 import uk.gov.companieshouse.pscdataapi.logging.DataMapHolder;
 import uk.gov.companieshouse.pscdataapi.models.PscDeleteRequest;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
+import uk.gov.companieshouse.pscdataapi.models.StreamEventOutboxDocument;
+import uk.gov.companieshouse.pscdataapi.repository.StreamEventOutboxRepository;
 import uk.gov.companieshouse.pscdataapi.transform.CompanyPscTransformer;
 import uk.gov.companieshouse.pscdataapi.util.PscTransformationHelper;
 
@@ -44,32 +51,39 @@ public class ChsKafkaApiService {
     public static final String CORPORATE_ENTITY_BENEFICIAL_OWNER = "corporate-entity-beneficial-owner";
     public static final String LEGAL_PERSON_BENEFICIAL_OWNER = "legal-person-beneficial-owner";
     public static final String SUPER_SECURE_BENEFICIAL_OWNER = "super-secure-beneficial-owner";
+    private static final int MAX_BACKOFF_SECONDS = 300;
 
     private final CompanyPscTransformer companyPscTransformer;
     private final Supplier<InternalApiClient> kafkaApiClientSupplier;
     private final ObjectMapper objectMapper;
+    private final StreamEventOutboxRepository streamEventOutboxRepository;
+    private final int outboxBatchSize;
 
     public ChsKafkaApiService(CompanyPscTransformer companyPscTransformer,
-            @Qualifier("kafkaApiClientSupplier") Supplier<InternalApiClient> kafkaApiClientSupplier, ObjectMapper objectMapper) {
+            @Qualifier("kafkaApiClientSupplier") Supplier<InternalApiClient> kafkaApiClientSupplier,
+            ObjectMapper objectMapper,
+            StreamEventOutboxRepository streamEventOutboxRepository,
+            @Value("${stream.outbox.batch_size:50}") int outboxBatchSize) {
         this.companyPscTransformer = companyPscTransformer;
         this.kafkaApiClientSupplier = kafkaApiClientSupplier;
         this.objectMapper = objectMapper;
+        this.streamEventOutboxRepository = streamEventOutboxRepository;
+        this.outboxBatchSize = outboxBatchSize > 0 ? outboxBatchSize : 50;
     }
 
     @StreamEvents
     public ApiResponse<Void> invokeChsKafkaApi(String companyNumber, String notificationId, String kind) {
+        ChangedResource changedResource = mapChangedResource(companyNumber, notificationId, kind, false, null);
         PrivateChangedResourcePost changedResourcePost =
                 kafkaApiClientSupplier.get()
                         .privateChangedResourceHandler()
-                        .postChangedResource(RESOURCE_CHANGED_URI,
-                                mapChangedResource(companyNumber, notificationId, kind,
-                                        false, null));
-        return handleApiCall(changedResourcePost);
+                .postChangedResource(RESOURCE_CHANGED_URI, changedResource);
+        return handleApiCall(changedResourcePost, changedResource);
     }
 
     @StreamEvents
     public ApiResponse<Void> invokeChsKafkaApiWithDeleteEvent(PscDeleteRequest deleteRequest, PscDocument pscDocument) {
-        Object changedResource = mapChangedResource(
+        ChangedResource changedResource = mapChangedResource(
                 deleteRequest.companyNumber(),
                 deleteRequest.notificationId(),
                 deleteRequest.kind(),
@@ -80,10 +94,33 @@ public class ChsKafkaApiService {
         PrivateChangedResourcePost changedResourcePost =
             kafkaApiClientSupplier.get()
                     .privateChangedResourceHandler()
-                    .postChangedResource(RESOURCE_CHANGED_URI,
-                            mapChangedResource(deleteRequest.companyNumber(),
-                                deleteRequest.notificationId(), deleteRequest.kind(), true, pscDocument));
-        return handleApiCall(changedResourcePost);
+                    .postChangedResource(RESOURCE_CHANGED_URI, changedResource);
+        return handleApiCall(changedResourcePost, changedResource);
+    }
+
+    @Scheduled(fixedDelayString = "${stream.outbox.retry_interval_ms:30000}")
+    public void replayOutboxEvents() {
+        List<StreamEventOutboxDocument> pendingEvents = streamEventOutboxRepository
+                .findByNextAttemptAtLessThanEqualOrderByCreatedAtAsc(
+                        Instant.now(),
+                        PageRequest.of(0, outboxBatchSize)
+                );
+
+        for (StreamEventOutboxDocument event : pendingEvents) {
+            try {
+                ChangedResource changedResource = objectMapper.readValue(event.getPayload(), ChangedResource.class);
+                PrivateChangedResourcePost changedResourcePost = kafkaApiClientSupplier.get()
+                        .privateChangedResourceHandler()
+                        .postChangedResource(RESOURCE_CHANGED_URI, changedResource);
+                changedResourcePost.execute();
+                streamEventOutboxRepository.delete(event);
+                LOGGER.info("Successfully replayed outbox stream event", DataMapHolder.getLogMap());
+            } catch (ApiErrorResponseException | RuntimeException ex) {
+                recordReplayFailure(event, ex);
+            } catch (JsonProcessingException ex) {
+                recordReplayFailure(event, ex);
+            }
+        }
     }
 
     private ChangedResource mapChangedResource(String companyNumber, String notificationId,
@@ -145,17 +182,51 @@ public class ChsKafkaApiService {
         return kindMap.get(kind);
     }
 
-    private ApiResponse<Void> handleApiCall(PrivateChangedResourcePost changedResourcePost) {
+    private ApiResponse<Void> handleApiCall(PrivateChangedResourcePost changedResourcePost, ChangedResource changedResource) {
         try {
             return changedResourcePost.execute();
         } catch (ApiErrorResponseException ex) {
             final String msg = "Unsuccessful call to resource-changed endpoint";
             LOGGER.error(msg, ex);
+            saveToOutbox(changedResource, ex);
             throw new ServiceUnavailableException(msg);
         } catch (RuntimeException ex) {
             LOGGER.error("Error occurred while calling resource-changed endpoint", ex);
+            saveToOutbox(changedResource, ex);
             throw ex;
         }
+    }
+
+    private void saveToOutbox(ChangedResource changedResource, Exception ex) {
+        try {
+            StreamEventOutboxDocument outboxDocument = new StreamEventOutboxDocument();
+            outboxDocument.setPayload(objectMapper.writeValueAsString(changedResource));
+            outboxDocument.setResourceUri(changedResource.getResourceUri());
+            outboxDocument.setResourceKind(changedResource.getResourceKind());
+            outboxDocument.setEventType(changedResource.getEvent() != null ? changedResource.getEvent().getType() : null);
+            outboxDocument.setAttempts(0);
+            outboxDocument.setCreatedAt(Instant.now());
+            outboxDocument.setNextAttemptAt(Instant.now());
+            outboxDocument.setLastError(ex.getMessage());
+            streamEventOutboxRepository.save(outboxDocument);
+        } catch (JsonProcessingException jsonEx) {
+            LOGGER.error("Failed to serialise changed resource for outbox persistence", jsonEx);
+        } catch (RuntimeException runtimeEx) {
+            LOGGER.error("Failed to persist outbox stream event", runtimeEx);
+        }
+    }
+
+    private void recordReplayFailure(StreamEventOutboxDocument event, Exception ex) {
+        int attempts = event.getAttempts() + 1;
+        event.setAttempts(attempts);
+        event.setLastError(ex.getMessage());
+        event.setNextAttemptAt(Instant.now().plus(calculateBackoffSeconds(attempts), ChronoUnit.SECONDS));
+        streamEventOutboxRepository.save(event);
+        LOGGER.error("Failed replaying outbox stream event", ex);
+    }
+
+    private long calculateBackoffSeconds(int attempts) {
+        return Math.min(MAX_BACKOFF_SECONDS, 1L << Math.min(attempts, 20));
     }
 
     private Object deserializedData(Object pscDocument) throws JsonProcessingException {
