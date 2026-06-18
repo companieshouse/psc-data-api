@@ -88,16 +88,16 @@ class ChsKafkaApiServiceTest {
     @Captor
     ArgumentCaptor<ChangedResource> changedResourceCaptor;
 
-        @BeforeEach
-        void setUp() {
-                chsKafkaApiService = new ChsKafkaApiService(
-                                companyPscTransformer,
-                                kafkaApiClientSupplier,
-                                objectMapper,
-                                streamEventOutboxRepository,
-                                outboxBatchSize
-                );
-        }
+    @BeforeEach
+    void setUp() {
+        chsKafkaApiService = new ChsKafkaApiService(
+                        companyPscTransformer,
+                        kafkaApiClientSupplier,
+                        objectMapper,
+                        streamEventOutboxRepository,
+                        outboxBatchSize
+        );
+    }
 
     @Test
     void invokeChsKafkaEndpoint() throws ApiErrorResponseException {
@@ -432,7 +432,7 @@ class ChsKafkaApiServiceTest {
         verify(client, times(1)).privateChangedResourceHandler();
         verify(privateChangedResourceHandler, times(1)).postChangedResource(any(), changedResourceCaptor.capture());
         verify(privateChangedResourcePost, times(1)).execute();
-                verify(streamEventOutboxRepository, times(1)).save(any(StreamEventOutboxDocument.class));
+        verify(streamEventOutboxRepository, times(1)).save(any(StreamEventOutboxDocument.class));
         assertThat(changedResourceCaptor.getValue().getEvent().getType()).isEqualTo(EVENT_TYPE_CHANGED);
     }
 
@@ -453,56 +453,54 @@ class ChsKafkaApiServiceTest {
         verify(client, times(1)).privateChangedResourceHandler();
         verify(privateChangedResourceHandler, times(1)).postChangedResource(any(), changedResourceCaptor.capture());
         verify(privateChangedResourcePost, times(1)).execute();
-                verify(streamEventOutboxRepository, times(1)).save(any(StreamEventOutboxDocument.class));
+        verify(streamEventOutboxRepository, times(1)).save(any(StreamEventOutboxDocument.class));
         assertThat(changedResourceCaptor.getValue().getEvent().getType()).isEqualTo(EVENT_TYPE_DELETED);
     }
 
-        @Test
-        void replayOutboxEventsDeletesEventAfterSuccessfulReplay() throws Exception {
-                StreamEventOutboxDocument event = new StreamEventOutboxDocument();
-                event.setId("id-1");
-                event.setPayload("{\"resource_uri\":\"/company/123/persons-with-significant-control/individual/abc\"}");
-                ChangedResource changedResource = new ChangedResource();
-                changedResource.setResourceUri("/company/123/persons-with-significant-control/individual/abc");
+@Test
+void replayOutboxEventsDeletesEventAfterSuccessfulReplay() throws Exception {
+        StreamEventOutboxDocument event = new StreamEventOutboxDocument();
+        event.setId("id-1");
+        event.setPayload("{\"resource_uri\":\"/company/123/persons-with-significant-control/individual/abc\"}");
+        ChangedResource changedResource = new ChangedResource();
+        changedResource.setResourceUri("/company/123/persons-with-significant-control/individual/abc");
 
-                when(streamEventOutboxRepository.findByNextAttemptAtLessThanEqualOrderByCreatedAtAsc(any(Instant.class), any()))
-                                .thenReturn(List.of(event));
-                when(objectMapper.readValue(event.getPayload(), ChangedResource.class)).thenReturn(changedResource);
-                when(kafkaApiClientSupplier.get()).thenReturn(client);
-                when(client.privateChangedResourceHandler()).thenReturn(privateChangedResourceHandler);
-                when(privateChangedResourceHandler.postChangedResource(any(), any())).thenReturn(privateChangedResourcePost);
-                when(privateChangedResourcePost.execute()).thenReturn(response);
+        when(streamEventOutboxRepository.findByNextAttemptAtLessThanEqualOrderByCreatedAtAsc(any(Instant.class), any())).thenReturn(List.of(event));
+        when(objectMapper.readValue(event.getPayload(), ChangedResource.class)).thenReturn(changedResource);
+        when(kafkaApiClientSupplier.get()).thenReturn(client);
+        when(client.privateChangedResourceHandler()).thenReturn(privateChangedResourceHandler);
+        when(privateChangedResourceHandler.postChangedResource(any(), any())).thenReturn(privateChangedResourcePost);
+        when(privateChangedResourcePost.execute()).thenReturn(response);
 
-                chsKafkaApiService.replayOutboxEvents();
+        chsKafkaApiService.replayOutboxEvents();
 
-                verify(streamEventOutboxRepository, times(1)).delete(event);
-        }
+        verify(streamEventOutboxRepository, times(1)).delete(event);
+}
 
-        @Test
-        void replayOutboxEventsReschedulesEventWhenReplayFails() throws Exception {
-                StreamEventOutboxDocument event = new StreamEventOutboxDocument();
-                event.setId("id-1");
-                event.setAttempts(0);
-                event.setPayload("{\"resource_uri\":\"/company/123/persons-with-significant-control/individual/abc\"}");
-                ChangedResource changedResource = new ChangedResource();
-                changedResource.setResourceUri("/company/123/persons-with-significant-control/individual/abc");
+@Test
+void replayOutboxEventsReschedulesEventWhenReplayFails() throws Exception {
+        StreamEventOutboxDocument event = new StreamEventOutboxDocument();
+        event.setId("id-1");
+        event.setAttempts(0);
+        event.setPayload("{\"resource_uri\":\"/company/123/persons-with-significant-control/individual/abc\"}");
+        ChangedResource changedResource = new ChangedResource();
+        changedResource.setResourceUri("/company/123/persons-with-significant-control/individual/abc");
 
-                RuntimeException runtimeException = new RuntimeException("kafka-api unavailable");
+        RuntimeException runtimeException = new RuntimeException("kafka-api unavailable");
 
-                when(streamEventOutboxRepository.findByNextAttemptAtLessThanEqualOrderByCreatedAtAsc(any(Instant.class), any()))
-                                .thenReturn(List.of(event));
-                when(objectMapper.readValue(event.getPayload(), ChangedResource.class)).thenReturn(changedResource);
-                when(kafkaApiClientSupplier.get()).thenReturn(client);
-                when(client.privateChangedResourceHandler()).thenReturn(privateChangedResourceHandler);
-                when(privateChangedResourceHandler.postChangedResource(any(), any())).thenReturn(privateChangedResourcePost);
-                when(privateChangedResourcePost.execute()).thenThrow(runtimeException);
+        when(streamEventOutboxRepository.findByNextAttemptAtLessThanEqualOrderByCreatedAtAsc(any(Instant.class), any())).thenReturn(List.of(event));
+        when(objectMapper.readValue(event.getPayload(), ChangedResource.class)).thenReturn(changedResource);
+        when(kafkaApiClientSupplier.get()).thenReturn(client);
+        when(client.privateChangedResourceHandler()).thenReturn(privateChangedResourceHandler);
+        when(privateChangedResourceHandler.postChangedResource(any(), any())).thenReturn(privateChangedResourcePost);
+        when(privateChangedResourcePost.execute()).thenThrow(runtimeException);
 
-                chsKafkaApiService.replayOutboxEvents();
+        chsKafkaApiService.replayOutboxEvents();
 
-                verify(streamEventOutboxRepository, times(1)).save(event);
-                assertThat(event.getAttempts()).isEqualTo(1);
-                assertThat(event.getNextAttemptAt()).isNotNull();
-        }
+        verify(streamEventOutboxRepository, times(1)).save(event);
+        assertThat(event.getAttempts()).isEqualTo(1);
+        assertThat(event.getNextAttemptAt()).isNotNull();
+}
 
     @Test
     void invokeChsKafkaEndpointThrowsRuntimeException() throws ApiErrorResponseException {
