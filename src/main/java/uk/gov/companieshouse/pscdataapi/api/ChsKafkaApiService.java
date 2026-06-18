@@ -115,11 +115,9 @@ public class ChsKafkaApiService {
                 changedResourcePost.execute();
                 streamEventOutboxRepository.delete(event);
                 LOGGER.info("Successfully replayed outbox stream event", DataMapHolder.getLogMap());
-            } catch (ApiErrorResponseException | RuntimeException ex) {
-                recordReplayFailure(event, ex);
-            } catch (JsonProcessingException ex) {
-                recordReplayFailure(event, ex);
-            }
+                } catch (ApiErrorResponseException | JsonProcessingException | RuntimeException ex) {
+                    recordReplayFailure(event, ex);
+                }
         }
     }
 
@@ -203,7 +201,7 @@ public class ChsKafkaApiService {
             outboxDocument.setPayload(objectMapper.writeValueAsString(changedResource));
             outboxDocument.setResourceUri(changedResource.getResourceUri());
             outboxDocument.setResourceKind(changedResource.getResourceKind());
-            outboxDocument.setEventType(changedResource.getEvent() != null ? changedResource.getEvent().getType() : null);
+            outboxDocument.setEventType(changedResource.getEvent().getType());
             outboxDocument.setAttempts(0);
             outboxDocument.setCreatedAt(Instant.now());
             outboxDocument.setNextAttemptAt(Instant.now());
