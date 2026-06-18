@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
+import org.jspecify.annotations.Nullable;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.lang.Nullable;
 import uk.gov.companieshouse.api.psc.IdentityVerificationDetails;
 
 public class PscIdentityVerificationDetails {

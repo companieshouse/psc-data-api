@@ -2,9 +2,10 @@ package uk.gov.companieshouse.pscdataapi.pscnotifications;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.api.psc_notifications.NotificationList;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 
@@ -20,6 +21,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class PscNotificationsServiceTest {
 
     @Mock
@@ -32,7 +34,6 @@ class PscNotificationsServiceTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
         service = new PscNotificationsService(repository, mapper);
     }
 
@@ -113,10 +114,6 @@ class PscNotificationsServiceTest {
     @Test
     void testGetPscNotificationsUsesDefaultsWhenPaginationParamsProvidedAsNull() {
         PscNotificationsRequest request = new PscNotificationsRequest("11234", null, null, null, null);
-
-        when(repository.countByPscId("12345")).thenReturn(0);
-        when(repository.findAllByPscId("12345")).thenReturn(List.of());
-        when(mapper.mapPscNotifications(any())).thenReturn(Optional.empty());
 
         service.getPscNotifications(request);
 

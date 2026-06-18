@@ -20,7 +20,7 @@ public class MongoPscConfig extends AbstractMongoClientConfiguration {
     @Value("${spring.data.mongodb.name}")
     private String databaseName;
 
-    @Value("${spring.data.mongodb.uri}")
+    @Value("${spring.mongodb.uri}")
     private String databaseUri;
 
     private final MongoCustomConversions mongoCustomConversions;

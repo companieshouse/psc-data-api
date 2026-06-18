@@ -2,7 +2,8 @@ package uk.gov.companieshouse.pscdataapi.converter;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Qualifier;
+import tools.jackson.databind.ObjectMapper;
 import com.mongodb.BasicDBObject;
 import java.nio.charset.StandardCharsets;
 import org.apache.commons.io.IOUtils;
@@ -17,6 +18,7 @@ import uk.gov.companieshouse.pscdataapi.models.PscData;
 class CompanyPscWriteConverterTest {
 
     @Autowired
+    @Qualifier("toolsObjectMapper")
     private ObjectMapper objectMapper;
 
     private CompanyPscWriteConverter converter;

@@ -1,6 +1,6 @@
 package uk.gov.companieshouse.pscdataapi.converter;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import org.springframework.data.convert.WritingConverter;
 import uk.gov.companieshouse.pscdataapi.models.PscSensitiveData;
 
