@@ -72,9 +72,8 @@ class ChsKafkaApiServiceTest {
     private ObjectMapper objectMapper;
     @Mock
     private CompanyPscTransformer companyPscTransformer;
-        @Mock
-        private StreamEventOutboxRepository streamEventOutboxRepository;
-
+    @Mock
+    private StreamEventOutboxRepository streamEventOutboxRepository;
     @Mock
     private InternalApiClient client;
     @Mock
