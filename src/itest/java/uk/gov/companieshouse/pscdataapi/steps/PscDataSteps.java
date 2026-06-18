@@ -1,19 +1,20 @@
 package uk.gov.companieshouse.pscdataapi.steps;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
-import static uk.gov.companieshouse.pscdataapi.CucumberFeaturesRunnerIT.mongoDBContainer;
+import static uk.gov.companieshouse.pscdataapi.steps.CucumberSpringConfig.mongoDBContainer;
 
 import org.springframework.boot.resttestclient.TestRestTemplate;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ObjectNode;
 import io.cucumber.java.After;
-import io.cucumber.java.Before;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -21,6 +22,7 @@ import io.cucumber.java.en.When;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -29,10 +31,6 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -67,12 +65,8 @@ import uk.gov.companieshouse.pscdataapi.models.PscIdentification;
 import uk.gov.companieshouse.pscdataapi.models.PscSensitiveData;
 import uk.gov.companieshouse.pscdataapi.repository.CompanyPscRepository;
 import uk.gov.companieshouse.pscdataapi.service.CompanyMetricsApiService;
-import uk.gov.companieshouse.pscdataapi.service.CompanyPscService;
-import uk.gov.companieshouse.pscdataapi.transform.CompanyPscTransformer;
 import uk.gov.companieshouse.pscdataapi.util.FileReaderUtil;
 
-@WebMvcTest
-@ExtendWith(MockitoExtension.class)
 public class PscDataSteps {
 
     private static final String KIND = "individual-person-with-significant-control";
@@ -81,35 +75,39 @@ public class PscDataSteps {
     private static final String NOTIFICATION_ID = "ZfTs9WeeqpXTqf6dc6FZ4C0H0ZZ";
     private static final String CONTEXT_ID = "5234234234";
 
-    @Autowired
-    private ObjectMapper objectMapper;
-    @Autowired
-    private TestRestTemplate restTemplate;
-    @Autowired
-    private MongoTemplate mongoTemplate;
-    @Autowired
-    private CompanyPscRepository companyPscRepository;
-    @Autowired
-    private ChsKafkaApiService chsKafkaApiService;
-    @Autowired
-    private CompanyPscTransformer transformer;
-    @Autowired
-    private CompanyMetricsApiService companyMetricsApiService;
+    private final ObjectMapper objectMapper;
+    private final TestRestTemplate restTemplate;
+    private final MongoTemplate mongoTemplate;
+    private final CompanyPscRepository companyPscRepository;
+    private final ChsKafkaApiService chsKafkaApiService;
+    private final CompanyMetricsApiService companyMetricsApiService;
+    private boolean databaseSimulatedDown = false;
 
-    @InjectMocks
-    private CompanyPscService companyPscService;
 
-    @Before
-    public void dbCleanUp() {
-        if (!mongoDBContainer.isRunning()) {
-            mongoDBContainer.start();
-        }
-        companyPscRepository.deleteAll();
+    public PscDataSteps(final ObjectMapper objectMapper, final TestRestTemplate restTemplate,
+        final MongoTemplate mongoTemplate, final CompanyPscRepository companyPscRepository,
+        final ChsKafkaApiService chsKafkaApiService, final CompanyMetricsApiService companyMetricsApiService) {
+        this.objectMapper = objectMapper;
+        this.restTemplate = restTemplate;
+        this.mongoTemplate = mongoTemplate;
+        this.companyPscRepository = companyPscRepository;
+        this.chsKafkaApiService = chsKafkaApiService;
+        this.companyMetricsApiService = companyMetricsApiService;
     }
 
     @After
-    public void dbStop() {
-        mongoDBContainer.stop();
+    public void dbCleanup() {
+        if (databaseSimulatedDown) {
+            try (final var cmd = mongoDBContainer.getDockerClient()
+                    .unpauseContainerCmd(mongoDBContainer.getContainerId())) {
+                cmd.exec();
+            }
+            databaseSimulatedDown = false;
+            await().atMost(Duration.ofSeconds(5))
+                    .pollInterval(Duration.ofMillis(100))
+                    .untilAsserted(() -> companyPscRepository.count());
+        }
+        companyPscRepository.deleteAll();
     }
 
     @Given("Psc data api service is running")
@@ -298,7 +296,11 @@ public class PscDataSteps {
 
     @And("the database is down")
     public void theDatabaseIsDown() {
-        mongoDBContainer.stop();
+        try (final var cmd = mongoDBContainer.getDockerClient()
+                .pauseContainerCmd(mongoDBContainer.getContainerId())) {
+            cmd.exec();
+        }
+        databaseSimulatedDown = true;
     }
 
     @When("the chs kafka api is not available")
@@ -1387,9 +1389,32 @@ public class PscDataSteps {
                 new FileInputStream("src/itest/resources/json/output/" + result + ".json")));
         PscList expected = objectMapper.readValue(data, PscList.class);
         PscList actual = CucumberContext.CONTEXT.get("getResponseBody");
-        assertThat(expected.getItemsPerPage()).isEqualTo(actual.getItemsPerPage());
-        assertThat(expected.getItems()).isEqualTo(actual.getItems());
-        assertThat(expected.getLinks()).isEqualTo(actual.getLinks());
+        assertThat(actual.getItemsPerPage()).isEqualTo(expected.getItemsPerPage());
+        // SDK model uses Object-typed fields for links; Jackson cannot apply NON_NULL
+        // content inclusion to Object-typed properties, so nulls must be stripped for comparison
+        assertThat(toJsonIgnoringNulls(actual.getItems()))
+                .isEqualTo(toJsonIgnoringNulls(expected.getItems()));
+        assertThat(toJsonIgnoringNulls(actual.getLinks()))
+                .isEqualTo(toJsonIgnoringNulls(expected.getLinks()));
+    }
+
+    private String toJsonIgnoringNulls(final Object value) {
+        final JsonNode node = objectMapper.readTree(objectMapper.writeValueAsString(value));
+        stripNullFields(node);
+        return objectMapper.writeValueAsString(node);
+    }
+
+    private void stripNullFields(final JsonNode node) {
+        if (node instanceof final ObjectNode objectNode) {
+            objectNode.removeIf(JsonNode::isNull);
+            for (final var entry : objectNode.properties()) {
+                stripNullFields(entry.getValue());
+            }
+        } else if (node.isArray()) {
+            for (final var child : node) {
+                stripNullFields(child);
+            }
+        }
     }
 
     @When("a Get request is sent for {string} without ERIC headers for List summary")
