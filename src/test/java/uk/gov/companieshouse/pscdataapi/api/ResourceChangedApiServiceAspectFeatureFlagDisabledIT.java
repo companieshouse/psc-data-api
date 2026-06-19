@@ -10,10 +10,10 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.function.Supplier;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -27,14 +27,15 @@ import uk.gov.companieshouse.api.model.ApiResponse;
 import uk.gov.companieshouse.api.psc.Individual;
 import uk.gov.companieshouse.api.sdk.ApiClientService;
 import uk.gov.companieshouse.pscdataapi.models.PscDeleteRequest;
+import uk.gov.companieshouse.pscdataapi.repository.StreamEventOutboxRepository;
 import uk.gov.companieshouse.pscdataapi.transform.CompanyPscTransformer;
 import uk.gov.companieshouse.pscdataapi.util.TestHelper;
 
 @SpringBootTest
 class ResourceChangedApiServiceAspectFeatureFlagDisabledIT {
 
-    @InjectMocks
     private ChsKafkaApiService chsKafkaApiService;
+    private final int outboxBatchSize = 50;
 
     @Captor
     ArgumentCaptor<ChangedResource> changedResourceCaptor;
@@ -56,6 +57,19 @@ class ResourceChangedApiServiceAspectFeatureFlagDisabledIT {
     private ObjectMapper objectMapper;
     @Mock
     private CompanyPscTransformer companyPscTransformer;
+    @Mock
+    private StreamEventOutboxRepository streamEventOutboxRepository;
+
+    @BeforeEach
+    void setUp() {
+        chsKafkaApiService = new ChsKafkaApiService(
+                companyPscTransformer,
+                kafkaApiClientSupplier,
+                objectMapper,
+                streamEventOutboxRepository,
+                outboxBatchSize
+        );
+    }
 
     @Test
     void testThatKafkaApiShouldBeCalledWhenFeatureFlagDisabled() throws ApiErrorResponseException {
@@ -101,7 +115,7 @@ class ResourceChangedApiServiceAspectFeatureFlagDisabledIT {
         verify(client).privateChangedResourceHandler();
         verify(privateChangedResourceHandler, times(1)).postChangedResource(Mockito.any(), changedResourceCaptor.capture());
         verify(changedResourcePost, times(1)).execute();
-        verify(companyPscTransformer, times(2)).transformPscDocToIndividual(any(), eq(false));
+        verify(companyPscTransformer, times(1)).transformPscDocToIndividual(any(), eq(false));
 
         ChangedResource captured = changedResourceCaptor.getValue();
         assertThat(captured.getEvent().getType()).isEqualTo("deleted");
