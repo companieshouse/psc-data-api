@@ -420,7 +420,10 @@ public class CompanyPscTransformer {
 
         if (externalData != null) {
             pscDocument.setPscId(externalData.getPscId());
+            pscDocument.setPreviousPscId(externalData.getPreviousPscId());
             pscDocument.setCompanyNumber(externalData.getCompanyNumber());
+            pscDocument.setCompanyName(externalData.getCompanyName());
+            pscDocument.setCompanyStatus(externalData.getCompanyStatus());
 
             Data data = externalData.getData();
             if (data != null) {
