@@ -1,10 +1,12 @@
 package uk.gov.companieshouse.pscdataapi.models;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import java.util.Objects;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Document(collection = "delta_company_pscs")
@@ -16,6 +18,9 @@ public class PscDocument {
     @Field("psc_id")
     private String pscId;
 
+    @Field("previous_psc_id")
+    private String previousPscId;
+
     @Field("delta_at")
     private String deltaAt;
 
@@ -24,6 +29,12 @@ public class PscDocument {
 
     @Field("company_number")
     private String companyNumber;
+
+    @Field("company_name")
+    private String companyName;
+
+    @Field("company_status")
+    private String companyStatus;
 
     @Field("updated_by")
     private String updatedBy;
@@ -57,6 +68,14 @@ public class PscDocument {
         this.pscId = pscId;
     }
 
+    public String getPreviousPscId() {
+        return previousPscId;
+    }
+
+    public void setPreviousPscId(String previousPscId) {
+        this.previousPscId = previousPscId;
+    }
+
     public String getDeltaAt() {
         return deltaAt;
     }
@@ -79,6 +98,22 @@ public class PscDocument {
 
     public void setCompanyNumber(String companyNumber) {
         this.companyNumber = companyNumber;
+    }
+
+    public String getCompanyName() {
+        return companyName;
+    }
+
+    public void setCompanyName(String companyName) {
+        this.companyName = companyName;
+    }
+
+    public String getCompanyStatus() {
+        return companyStatus;
+    }
+
+    public void setCompanyStatus(String companyStatus) {
+        this.companyStatus = companyStatus;
     }
 
     public Created getCreated() {
@@ -130,6 +165,9 @@ public class PscDocument {
                 + ", pscId='"
                 + pscId
                 + '\''
+                + ", previousPscId='"
+                + previousPscId
+                + '\''
                 + ", deltaAt='"
                 + deltaAt
                 + '\''
@@ -138,6 +176,12 @@ public class PscDocument {
                 + '\''
                 + ", companyNumber='"
                 + companyNumber
+                + '\''
+                + ", companyName='"
+                + companyName
+                + '\''
+                + ", companyStatus='"
+                + companyStatus
                 + '\''
                 + ", updatedBy='"
                 + updatedBy
@@ -164,9 +208,12 @@ public class PscDocument {
         PscDocument that = (PscDocument) object;
         return Objects.equals(id, that.id)
                 && Objects.equals(pscId, that.pscId)
+                && Objects.equals(previousPscId, that.previousPscId)
                 && Objects.equals(deltaAt, that.deltaAt)
                 && Objects.equals(notificationId, that.notificationId)
                 && Objects.equals(companyNumber, that.companyNumber)
+                && Objects.equals(companyName, that.companyName)
+                && Objects.equals(companyStatus, that.companyStatus)
                 && Objects.equals(updatedBy, that.updatedBy)
                 && Objects.equals(created, that.created)
                 && Objects.equals(updated, that.updated)
@@ -176,7 +223,7 @@ public class PscDocument {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, pscId, deltaAt, notificationId, companyNumber,
+        return Objects.hash(id, pscId, previousPscId, deltaAt, notificationId, companyNumber, companyName, companyStatus,
                 updatedBy, created, updated, data, sensitiveData);
     }
 }
