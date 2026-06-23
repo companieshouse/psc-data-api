@@ -5,6 +5,7 @@ import static java.util.Optional.ofNullable;
 import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.api.psc_notifications.NotificationList;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
+import uk.gov.companieshouse.pscdataapi.models.PscSensitiveData;
 import uk.gov.companieshouse.pscdataapi.pscnotifications.mappers.DateOfBirthMapper;
 import uk.gov.companieshouse.pscdataapi.pscnotifications.mappers.ItemsMapper;
 import uk.gov.companieshouse.pscdataapi.pscnotifications.mappers.LinksMapper;
@@ -32,7 +33,12 @@ class PscNotificationsMapper {
                         .map(data -> new NotificationList()
                                 .activeCount(mapperRequest.activeCount())
                                 .ceasedCount(mapperRequest.ceasedCount())
-                                .dateOfBirth(dobMapper.map(firstNotification.getSensitiveData().getDateOfBirth()))
+                                .dateOfBirth(
+                                        ofNullable(firstNotification.getSensitiveData())
+                                                .map(PscSensitiveData::getDateOfBirth)
+                                                .map(dobMapper::map)
+                                                .orElse(null)
+                                )
                                 .inactiveCount(mapperRequest.inactiveCount())
                                 .items(itemsMapper.map(mapperRequest.pscNotifications()))
                                 .itemsPerPage(mapperRequest.itemsPerPage())
