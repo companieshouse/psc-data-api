@@ -19,6 +19,7 @@ import uk.gov.companieshouse.api.interceptor.InternalUserInterceptor;
 import uk.gov.companieshouse.api.interceptor.UserAuthenticationInterceptor;
 import uk.gov.companieshouse.pscdataapi.interceptor.AuthenticationHelper;
 import uk.gov.companieshouse.pscdataapi.interceptor.AuthenticationHelperImpl;
+import uk.gov.companieshouse.pscdataapi.interceptor.AuthenticationInterceptor;
 import uk.gov.companieshouse.pscdataapi.interceptor.FullRecordAuthenticationInterceptor;
 
 @Configuration
@@ -32,6 +33,7 @@ public class WebSecurityConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(final InterceptorRegistry registry) {
         registry.addInterceptor(userAuthenticationInterceptor());
+        registry.addInterceptor(authenticationInterceptor(authenticationHelper()));
         registry.addInterceptor(fullRecordAuthenticationInterceptor())
                 .addPathPatterns(PATTERN_FULL_RECORD);
     }
@@ -39,6 +41,11 @@ public class WebSecurityConfig implements WebMvcConfigurer {
     @Bean
     public InternalUserInterceptor internalUserInterceptor() {
         return new InternalUserInterceptor();
+    }
+
+    @Bean
+    public AuthenticationInterceptor authenticationInterceptor(AuthenticationHelper helper) {
+        return new AuthenticationInterceptor(helper);
     }
 
     @Bean
