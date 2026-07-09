@@ -33,7 +33,8 @@ public class WebSecurityConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(final InterceptorRegistry registry) {
         registry.addInterceptor(userAuthenticationInterceptor());
-        registry.addInterceptor(authenticationInterceptor(authenticationHelper()));
+        registry.addInterceptor(authenticationInterceptor(authenticationHelper()))
+                .excludePathPatterns(PATTERN_FULL_RECORD);
         registry.addInterceptor(fullRecordAuthenticationInterceptor())
                 .addPathPatterns(PATTERN_FULL_RECORD);
     }
