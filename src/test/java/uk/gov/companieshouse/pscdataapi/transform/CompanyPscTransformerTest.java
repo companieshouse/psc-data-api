@@ -11,7 +11,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -268,6 +267,9 @@ class CompanyPscTransformerTest {
 
         assertThat(result.getSensitiveData(), is(expectedDocument.getSensitiveData()));
         assertThat(result.getData().getIdentification(), is(expectedDocument.getData().getIdentification()));
+        assertThat(result.getPreviousPscId(), is(expectedDocument.getPreviousPscId()));
+        assertThat(result.getCompanyName(), is(expectedDocument.getCompanyName()));
+        assertThat(result.getCompanyStatus(), is(expectedDocument.getCompanyStatus()));
 
         assertThat(result.getDeltaAt(), is(expectedDocument.getDeltaAt()));
         assertThat(result.getUpdatedBy(), is(expectedDocument.getUpdatedBy()));
@@ -294,7 +296,10 @@ class CompanyPscTransformerTest {
         ExternalData externalData = new ExternalData();
         externalData.setData(null);
         externalData.setPscId("pscId123");
+        externalData.setPreviousPscId("previousPscId123");
         externalData.setCompanyNumber("12345678");
+        externalData.setCompanyName("TEST COMPANY LTD");
+        externalData.setCompanyStatus("active");
         requestBody.setExternalData(externalData);
         String notificationId = "notif-001";
 
@@ -304,8 +309,33 @@ class CompanyPscTransformerTest {
         Assertions.assertEquals("notif-001", result.getId());
         Assertions.assertEquals("notif-001", result.getNotificationId());
         Assertions.assertEquals("pscId123", result.getPscId());
+        Assertions.assertEquals("previousPscId123", result.getPreviousPscId());
         Assertions.assertEquals("12345678", result.getCompanyNumber());
+        Assertions.assertEquals("TEST COMPANY LTD", result.getCompanyName());
+        Assertions.assertEquals("active", result.getCompanyStatus());
         assertNull(result.getData());
+    }
+
+    @Test
+    void transformPscOnInsertShouldHandleNullPreviousPscId() {
+        FullRecordCompanyPSCApi requestBody =
+                TestHelper.buildFullRecordPsc(TestHelper.INDIVIDUAL_KIND,
+                        SHOW_FULL_DOB_TRUE, true);
+
+        ExternalData externalData = requestBody.getExternalData();
+        if (externalData != null) {
+            externalData.setPreviousPscId(null);
+            externalData.setCompanyName("TEST COMPANY LTD");
+            externalData.setCompanyStatus("active");
+        }
+
+        PscDocument result =
+                pscTransformer.transformPscOnInsert(NOTIFICATION_ID, requestBody);
+
+        assertNotNull(result);
+        assertNull(result.getPreviousPscId());
+        Assertions.assertEquals("TEST COMPANY LTD", result.getCompanyName());
+        Assertions.assertEquals("active", result.getCompanyStatus());
     }
 
     @Test
