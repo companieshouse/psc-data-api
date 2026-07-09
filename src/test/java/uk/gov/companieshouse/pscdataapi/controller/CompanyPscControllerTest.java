@@ -63,7 +63,7 @@ class CompanyPscControllerTest {
     private static final String DELTA_AT = "20240219123045999999";
     private static final Boolean MOCK_REGISTER_VIEW_TRUE = true;
     private static final Boolean MOCK_REGISTER_VIEW_FALSE = false;
-    private static final String ERIC_IDENTITY = "Test-Identity";
+    private static final String ERIC_IDENTITY = "ERIC-Identity";
     private static final String ERIC_IDENTITY_TYPE = "key";
     private static final String ERIC_PRIVILEGES = "*";
     private static final String ERIC_AUTH = "internal-app";
@@ -120,6 +120,7 @@ class CompanyPscControllerTest {
                         .header("ERIC-Identity", ERIC_IDENTITY)
                         .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
                         .header("ERIC-Authorised-Key-Roles", ERIC_PRIVILEGES)
+                        .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH)
                         .content(TestHelper.createJsonPayload()))
                 .andExpect(status().isCreated());
     }
@@ -134,6 +135,7 @@ class CompanyPscControllerTest {
                         .header("x-request-id", X_REQUEST_ID)
                         .header("ERIC-Identity", ERIC_IDENTITY)
                         .header("ERIC-Identity-Type", ERIC_IDENTITY_TYPE)
+                        .header("ERIC-Authorised-Key-Privileges", ERIC_AUTH)
                         .content(TestHelper.createJsonPayload()))
                 .andExpect(status().isForbidden());
     }
