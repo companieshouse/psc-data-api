@@ -31,7 +31,6 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull Object handler) {
         String identityType = request.getHeader(ERIC_IDENTITY_TYPE);
-        LOGGER.info("***** We've entered the prehandle *****");
         if (StringUtils.isEmpty(request.getHeader(ERIC_IDENTITY)) ||
                 (StringUtils.isEmpty(identityType) || isInvalidIdentityType(identityType))) {
             LOGGER.errorRequest(request, "User not authenticated", DataMapHolder.getLogMap());
@@ -46,21 +45,18 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
             return false;
         }
 
-        LOGGER.info("***** Both checks passed, user is allowed to enter *****");
         LOGGER.debugRequest(request, "User authenticated", DataMapHolder.getLogMap());
         return true;
     }
 
     private boolean isKeyAuthorised(HttpServletRequest request, String ericIdentityType) {
         String[] privileges = authenticationHelper.getApiKeyPrivileges(request);
-        LOGGER.info("***** Checking if key is authorised *****");
         return HttpMethod.GET.matches(request.getMethod())
                 || ("key".equalsIgnoreCase(ericIdentityType))
                 && ArrayUtils.contains(privileges, "internal-app");
     }
 
     private boolean isInvalidIdentityType(String identityType) {
-        LOGGER.info("***** Checking if is invalid identity type *****");
         return !("key".equalsIgnoreCase(identityType) || "oauth2".equalsIgnoreCase(identityType));
     }
 }
