@@ -69,6 +69,7 @@ import uk.gov.companieshouse.pscdataapi.service.CompanyPscService;
 import uk.gov.companieshouse.pscdataapi.transform.CompanyPscTransformer;
 import uk.gov.companieshouse.pscdataapi.util.FileReaderUtil;
 
+
 public class PscDataSteps {
 
     private static final String KIND = "individual-person-with-significant-control";
@@ -168,6 +169,7 @@ public class PscDataSteps {
         headers.set("ERIC-Identity", "TEST-IDENTITY");
         headers.set("ERIC-Identity-Type", "key");
         headers.set("ERIC-Authorised-Key-Roles", "*");
+        headers.set("ERIC-Authorised-Key-Privileges", "internal-app");
 
         HttpEntity<String> request = new HttpEntity<>(data, headers);
         String uri = String.format("/company/%s/persons-with-significant-control/%s/full_record", companyNumber, notificationId);
@@ -187,6 +189,7 @@ public class PscDataSteps {
         headers.set("ERIC-Identity", "TEST-IDENTITY");
         headers.set("ERIC-Identity-Type", "key");
         headers.set("ERIC-Authorised-Key-Roles", "*");
+        headers.set("ERIC-Authorised-Key-Privileges", "internal-app");
 
         HttpEntity<String> request = new HttpEntity<>(data, headers);
         String uri = "/company/{company_number}/persons-with-significant-control/{notfication_id}/full_record";
@@ -207,6 +210,7 @@ public class PscDataSteps {
         headers.set("ERIC-Identity", "TEST-IDENTITY");
         headers.set("ERIC-Identity-Type", "key");
         headers.set("ERIC-Authorised-Key-Roles", "*");
+        headers.set("ERIC-Authorised-Key-Privileges", "internal-app");
 
         HttpEntity<String> request = new HttpEntity<>(data, headers);
         String uri = "/company/{company_number}/persons-with-significant-control/{notification_id}/full_record";
@@ -262,6 +266,7 @@ public class PscDataSteps {
         headers.set("ERIC-Identity", "TEST-IDENTITY");
         headers.set("ERIC-Identity-Type", "key");
         headers.set("ERIC-Authorised-Key-Roles", "*");
+        headers.set("ERIC-Authorised-Key-Privileges", "internal-app");
         headers.set("x-kind", KIND);
         headers.set("x-delta-at", DELTA_AT);
 
@@ -282,6 +287,7 @@ public class PscDataSteps {
         headers.set("ERIC-Identity", "TEST-IDENTITY");
         headers.set("ERIC-Identity-Type", "key");
         headers.set("ERIC-Authorised-Key-Roles", "*");
+        headers.set("ERIC-Authorised-Key-Privileges", "internal-app");
         headers.set("x-kind", KIND);
         headers.set("x-delta-at", deltaAt);
 
