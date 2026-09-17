@@ -1,18 +1,18 @@
 package uk.gov.companieshouse.pscdataapi.pscnotifications;
 
-import static uk.gov.companieshouse.pscdataapi.interceptor.AuthenticationHelperImpl.ERIC_AUTHORISED_KEY_PRIVILEGES_HEADER;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import uk.gov.companieshouse.api.psc_notifications.NotificationList;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
-import uk.gov.companieshouse.api.psc_notifications.NotificationList;
 import uk.gov.companieshouse.pscdataapi.PscDataApiApplication;
 import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
+import static uk.gov.companieshouse.pscdataapi.interceptor.AuthenticationHelperImpl.ERIC_AUTHORISED_KEY_PRIVILEGES_HEADER;
 import uk.gov.companieshouse.pscdataapi.logging.DataMapHolder;
 
 @Controller
@@ -32,7 +32,7 @@ public class PscNotificationsController {
             @RequestParam(value = "filter", required = false) String filter,
             @RequestParam(value = "start_index", required = false) Integer startIndex,
             @RequestParam(value = "items_per_page", required = false) Integer itemsPerPage,
-            @RequestParam(value = ERIC_AUTHORISED_KEY_PRIVILEGES_HEADER, required = false) String authPrivileges) {
+            @RequestHeader(value = ERIC_AUTHORISED_KEY_PRIVILEGES_HEADER, required = false) String authPrivileges) {
         try {
 
             LOGGER.info("Fetching psc notifications", DataMapHolder.getLogMap());

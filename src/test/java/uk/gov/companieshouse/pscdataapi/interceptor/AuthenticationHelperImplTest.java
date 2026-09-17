@@ -2,6 +2,8 @@ package uk.gov.companieshouse.pscdataapi.interceptor;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -103,5 +105,20 @@ class AuthenticationHelperImplTest {
                 .thenReturn("GET");
 
         assertThat(testHelper.isKeyElevatedPrivilegesAuthorised(request), is(false));
+    }
+
+    @Test
+    void hasInternalAppPrivilegesReturnsTrueWhenPrivilegeIsPresent() {
+        assertTrue(AuthenticationHelperImpl.hasInternalAppPrivileges("other-role,internal-app"));
+    }
+
+    @Test
+    void hasInternalAppPrivilegesReturnsFalseWhenPrivilegeIsAbsent() {
+        assertFalse(AuthenticationHelperImpl.hasInternalAppPrivileges("other-role,sensitive-data"));
+    }
+
+    @Test
+    void hasInternalAppPrivilegesReturnsFalseWhenPrivilegesAreNull() {
+        assertFalse(AuthenticationHelperImpl.hasInternalAppPrivileges(null));
     }
 }

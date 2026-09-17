@@ -1,36 +1,62 @@
 package uk.gov.companieshouse.pscdataapi.pscnotifications;
 
-import org.springframework.stereotype.Service;
-import uk.gov.companieshouse.api.psc_notifications.NotificationList;
-import uk.gov.companieshouse.pscdataapi.models.PscDocument;
-
 import java.util.List;
 import java.util.Optional;
+
+import org.springframework.stereotype.Service;
+
+import uk.gov.companieshouse.api.psc_notifications.NotificationList;
+import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 
 
 @Service
 public class PscNotificationsService {
 
     private static final int DEFAULT_START_INDEX = 0;
-    private static final int DEFAULT_ITEMS_PER_PAGE = 35;
 
     private final PscNotificationsRepository repository;
     private final PscNotificationsMapper mapper;
+    private final FilterService filterService;
+    private final ItemsPerPageService itemsPerPageService;
+    private final SortingThresholdService sortingThresholdService;
 
     PscNotificationsService(PscNotificationsRepository repository,
-                            PscNotificationsMapper mapper) {
+                            PscNotificationsMapper mapper,
+                            FilterService filterService,
+                            ItemsPerPageService itemsPerPageService,
+                            SortingThresholdService sortingThresholdService) {
         this.repository = repository;
         this.mapper = mapper;
+        this.filterService = filterService;
+        this.itemsPerPageService = itemsPerPageService;
+        this.sortingThresholdService = sortingThresholdService;
     }
 
     Optional<NotificationList> getPscNotifications(PscNotificationsRequest params) {
         final String pscId = params.pscId();
         final int startIndex = getStartIndex(params.startIndex());
-        final int itemsPerPage = getItemsPerPage(params.itemsPerPage());
+        final int itemsPerPage = itemsPerPageService.adjustItemsPerPage(
+            params.itemsPerPage(), params.authPrivileges());
+        final Filter filter = filterService.prepareFilter(params.filter(), pscId);
+        final int totalResults = repository.countTotal(
+            pscId, filter.filterEnabled(), filter.filterStatuses());
+        final boolean sortByActiveThenCeased = sortingThresholdService.shouldSortByActiveThenResigned(
+            totalResults, params.authPrivileges());
 
-        final int totalResults = repository.countByPscId(pscId);
-        List<PscDocument> documents = repository.findAllByPscId(pscId);
-        PscDocument firstNotification = documents.isEmpty() ? null : documents.getFirst();
+        List<PscDocument> documents;
+        if (sortByActiveThenCeased) {
+            PscNotificationIds notificationIds = repository.findPscNotificationsIds(
+                    pscId, filter.filterEnabled(), filter.filterStatuses(), startIndex, itemsPerPage);
+            documents = notificationIds.getIds().isEmpty()
+                    ? List.of()
+                    : repository.findFullPscNotifications(notificationIds.getIds());
+        } else {
+            documents = repository.findRecentPscNotifications(
+                    pscId, filter.filterEnabled(), filter.filterStatuses(), startIndex, itemsPerPage);
+        }
+        PscDocument firstNotification = documents.isEmpty() ? null : documents.get(0);
+        int ceasedCount = filter.filterEnabled() ? 0 : repository.countCeased(pscId);
+        int inactiveCount = filter.filterEnabled() ? 0 : repository.countInactive(pscId);
 
         return mapper.mapPscNotifications(PscNotificationsMapper.MapperRequest.builder()
                 .startIndex(startIndex)
@@ -38,6 +64,9 @@ public class PscNotificationsService {
                 .firstNotification(firstNotification)
                 .pscNotifications(documents)
                 .totalResults(totalResults)
+                .activeCount(totalResults - ceasedCount)
+                .ceasedCount(ceasedCount)
+                .inactiveCount(inactiveCount)
                 .build());
     }
 
@@ -52,13 +81,4 @@ public class PscNotificationsService {
         return startIndex;
     }
 
-    private static int getItemsPerPage(Integer requestItemsPerPage) {
-        int itemsPerPage;
-        if (requestItemsPerPage == null) {
-            itemsPerPage = DEFAULT_ITEMS_PER_PAGE;
-        } else {
-            itemsPerPage = Math.abs(requestItemsPerPage);
-        }
-        return itemsPerPage;
-    }
 }
