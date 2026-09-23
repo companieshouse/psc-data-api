@@ -34,6 +34,7 @@ import static uk.gov.companieshouse.pscdataapi.PscDataApiApplication.APPLICATION
 import uk.gov.companieshouse.pscdataapi.api.ChsKafkaApiService;
 import uk.gov.companieshouse.pscdataapi.exceptions.ConflictException;
 import uk.gov.companieshouse.pscdataapi.exceptions.NotFoundException;
+import uk.gov.companieshouse.pscdataapi.kafka.PscMergeProducer;
 import uk.gov.companieshouse.pscdataapi.logging.DataMapHolder;
 import uk.gov.companieshouse.pscdataapi.models.Created;
 import uk.gov.companieshouse.pscdataapi.models.Links;
@@ -65,15 +66,18 @@ public class CompanyPscService {
     private final CompanyPscRepository repository;
     private final ChsKafkaApiService chsKafkaApiService;
     private final CompanyExemptionsApiService companyExemptionsApiService;
+    private final PscMergeProducer pscMergeProducer;
     private final CompanyMetricsApiService companyMetricsApiService;
 
     public CompanyPscService(final CompanyPscTransformer transformer, final CompanyPscRepository repository,
             final ChsKafkaApiService chsKafkaApiService, final CompanyExemptionsApiService companyExemptionsApiService,
-            final CompanyMetricsApiService companyMetricsApiService) {
+            final CompanyMetricsApiService companyMetricsApiService,
+            final PscMergeProducer pscMergeProducer) {
         this.transformer = transformer;
         this.repository = repository;
         this.chsKafkaApiService = chsKafkaApiService;
         this.companyExemptionsApiService = companyExemptionsApiService;
+        this.pscMergeProducer = pscMergeProducer;
         this.companyMetricsApiService = companyMetricsApiService;
     }
 
@@ -88,6 +92,10 @@ public class CompanyPscService {
 
         PscDocument document = transformer.transformPscOnInsert(notificationId, requestBody);
         save(notificationId, document);
+        if (document.getPscId() != null && document.getPreviousPscId() != null
+            && !document.getPscId().equals(document.getPreviousPscId())) {
+            pscMergeProducer.invokePscMerge(document.getPscId(), document.getPreviousPscId());
+        }
         chsKafkaApiService.invokeChsKafkaApi(requestBody.getExternalData().getCompanyNumber(), notificationId,
                 requestBody.getExternalData().getData().getKind());
     }
