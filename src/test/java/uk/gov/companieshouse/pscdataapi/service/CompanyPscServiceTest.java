@@ -64,6 +64,7 @@ import uk.gov.companieshouse.pscdataapi.exceptions.BadRequestException;
 import uk.gov.companieshouse.pscdataapi.exceptions.ConflictException;
 import uk.gov.companieshouse.pscdataapi.exceptions.NotFoundException;
 import uk.gov.companieshouse.pscdataapi.exceptions.ServiceUnavailableException;
+import uk.gov.companieshouse.pscdataapi.kafka.PscMergeProducer;
 import uk.gov.companieshouse.pscdataapi.models.Created;
 import uk.gov.companieshouse.pscdataapi.models.Links;
 import uk.gov.companieshouse.pscdataapi.models.PscData;
@@ -98,6 +99,8 @@ class CompanyPscServiceTest {
     private CompanyPscTransformer transformer;
     @Mock
     private ChsKafkaApiService chsKafkaApiService;
+        @Mock
+        private PscMergeProducer pscMergeProducer;
     @Mock
     private CompanyExemptionsApiService companyExemptionsApiService;
     @Mock
@@ -156,6 +159,51 @@ class CompanyPscServiceTest {
         assertEquals(dateString, dateCaptor.getValue());
         assertNotNull(pscDocument.getCreated().getAt());
         assertEquals(localDateTime, pscDocument.getCreated().getAt());
+    }
+
+    @Test
+    void insertMergedPscRecordShouldPublishPscMerge() {
+        pscDocument.setPscId("newPscId");
+        pscDocument.setPreviousPscId("previousPscId");
+        when(repository.findUpdatedPsc(eq(NOTIFICATION_ID), dateCaptor.capture())).thenReturn(new ArrayList<>());
+        when(repository.findById(NOTIFICATION_ID)).thenReturn(Optional.empty());
+        when(transformer.transformPscOnInsert(NOTIFICATION_ID, request)).thenReturn(pscDocument);
+
+        service.insertPscRecord(request);
+
+        verify(repository).save(pscDocument);
+        verify(pscMergeProducer).invokePscMerge("newPscId", "previousPscId");
+        verify(chsKafkaApiService).invokeChsKafkaApi(any(), any(), any());
+    }
+
+    @Test
+    void insertNonMergedPscRecordShouldNotPublishPscMerge() {
+        pscDocument.setPscId("pscId");
+        pscDocument.setPreviousPscId("pscId");
+        when(repository.findUpdatedPsc(eq(NOTIFICATION_ID), dateCaptor.capture())).thenReturn(new ArrayList<>());
+        when(repository.findById(NOTIFICATION_ID)).thenReturn(Optional.empty());
+        when(transformer.transformPscOnInsert(NOTIFICATION_ID, request)).thenReturn(pscDocument);
+
+        service.insertPscRecord(request);
+
+        verify(repository).save(pscDocument);
+        verify(pscMergeProducer, never()).invokePscMerge(anyString(), anyString());
+        verify(chsKafkaApiService).invokeChsKafkaApi(any(), any(), any());
+    }
+
+    @Test
+    void insertPscRecordWithNullPreviousPscIdShouldNotPublishPscMerge() {
+        pscDocument.setPscId("pscId");
+        pscDocument.setPreviousPscId(null);
+        when(repository.findUpdatedPsc(eq(NOTIFICATION_ID), dateCaptor.capture())).thenReturn(new ArrayList<>());
+        when(repository.findById(NOTIFICATION_ID)).thenReturn(Optional.empty());
+        when(transformer.transformPscOnInsert(NOTIFICATION_ID, request)).thenReturn(pscDocument);
+
+        service.insertPscRecord(request);
+
+        verify(repository).save(pscDocument);
+        verify(pscMergeProducer, never()).invokePscMerge(anyString(), anyString());
+        verify(chsKafkaApiService).invokeChsKafkaApi(any(), any(), any());
     }
 
     @Test
