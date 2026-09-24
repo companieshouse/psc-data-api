@@ -246,6 +246,7 @@ public class TestHelper {
         output.setId(NOTIFICATION_ID);
         output.setNotificationId(NOTIFICATION_ID);
         output.setPscId(PSC_ID);
+        output.setPreviousPscId(PSC_ID);
         output.setCompanyNumber(COMPANY_NUMBER);
         output.setDeltaAt("20220112000000000000");
         output.setUpdated(new Updated()

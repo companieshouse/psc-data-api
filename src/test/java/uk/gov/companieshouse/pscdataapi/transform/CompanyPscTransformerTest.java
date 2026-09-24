@@ -317,14 +317,15 @@ class CompanyPscTransformerTest {
     }
 
     @Test
-    void transformPscOnInsertShouldHandleNullPreviousPscId() {
+    void transformPscOnInsertShouldHandlePreviousPscId() {
         FullRecordCompanyPSCApi requestBody =
                 TestHelper.buildFullRecordPsc(TestHelper.INDIVIDUAL_KIND,
                         SHOW_FULL_DOB_TRUE, true);
 
         ExternalData externalData = requestBody.getExternalData();
         if (externalData != null) {
-            externalData.setPreviousPscId(null);
+            externalData.setPscId("pscId123");
+            externalData.setPreviousPscId("previousPscId123");
             externalData.setCompanyName("TEST COMPANY LTD");
             externalData.setCompanyStatus("active");
         }
@@ -333,9 +334,30 @@ class CompanyPscTransformerTest {
                 pscTransformer.transformPscOnInsert(NOTIFICATION_ID, requestBody);
 
         assertNotNull(result);
-        assertNull(result.getPreviousPscId());
+        assertEquals("pscId123", result.getPscId());
+        assertEquals("previousPscId123", result.getPreviousPscId());
         Assertions.assertEquals("TEST COMPANY LTD", result.getCompanyName());
         Assertions.assertEquals("active", result.getCompanyStatus());
+    }
+
+    @Test
+    void transformPscOnInsertShouldDefaultToPscIdWhenPreviousPscIdIsNull() {
+        FullRecordCompanyPSCApi requestBody =
+                TestHelper.buildFullRecordPsc(TestHelper.INDIVIDUAL_KIND,
+                        SHOW_FULL_DOB_TRUE, true);
+
+        ExternalData externalData = requestBody.getExternalData();
+        if (externalData != null) {
+            externalData.setPscId("pscId123");
+            externalData.setPreviousPscId(null);
+        }
+
+        PscDocument result =
+                pscTransformer.transformPscOnInsert(NOTIFICATION_ID, requestBody);
+
+        assertNotNull(result);
+        assertEquals("pscId123", result.getPscId());
+        assertEquals("pscId123", result.getPreviousPscId());
     }
 
     @Test
