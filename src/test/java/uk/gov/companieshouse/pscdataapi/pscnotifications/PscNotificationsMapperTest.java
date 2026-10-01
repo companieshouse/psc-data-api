@@ -64,10 +64,10 @@ class PscNotificationsMapperTest {
         List<PscNotificationSummary> mappedItems = List.of(new PscNotificationSummary().name("name"));
 
         when(dobMapper.map(modelDob)).thenReturn(mappedDob);
-//        when(linksMapper.map(pscData.getLinks())).thenReturn(mappedLinks);
         when(itemsMapper.map(documents)).thenReturn(mappedItems);
 
         PscNotificationsMapper.MapperRequest request = PscNotificationsMapper.MapperRequest.builder()
+                .pscId("test-psc-id")
                 .startIndex(0)
                 .itemsPerPage(25)
                 .firstNotification(firstNotification)
@@ -91,11 +91,10 @@ class PscNotificationsMapperTest {
         assertEquals("Test Name", notificationList.getName());
         assertEquals(NotificationList.KindEnum.fromValue("personal-notification"), notificationList.getKind());
         assertEquals(mappedDob, notificationList.getDateOfBirth());
-        assertEquals(mappedLinks, notificationList.getLinks());
+        assertEquals("/persons_with_significant_control/test-psc-id/notifications", notificationList.getLinks().getSelf());
         assertEquals(mappedItems, notificationList.getItems());
 
         verify(dobMapper).map(modelDob);
-//        verify(linksMapper).map(pscData.getLinks());
         verify(itemsMapper).map(documents);
     }
 
