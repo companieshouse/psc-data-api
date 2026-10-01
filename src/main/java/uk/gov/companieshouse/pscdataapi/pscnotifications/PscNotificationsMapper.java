@@ -9,7 +9,6 @@ import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 import uk.gov.companieshouse.pscdataapi.models.PscSensitiveData;
 import uk.gov.companieshouse.pscdataapi.pscnotifications.mappers.DateOfBirthMapper;
 import uk.gov.companieshouse.pscdataapi.pscnotifications.mappers.ItemsMapper;
-import uk.gov.companieshouse.pscdataapi.pscnotifications.mappers.LinksMapper;
 
 import java.util.List;
 import java.util.Optional;
@@ -19,12 +18,10 @@ class PscNotificationsMapper {
 
     private final ItemsMapper itemsMapper;
     private final DateOfBirthMapper dobMapper;
-    private final LinksMapper linksMapper;
 
-    PscNotificationsMapper(ItemsMapper itemsMapper, DateOfBirthMapper dobMapper, LinksMapper linksMapper) {
+    PscNotificationsMapper(ItemsMapper itemsMapper, DateOfBirthMapper dobMapper) {
         this.itemsMapper = itemsMapper;
         this.dobMapper = dobMapper;
-        this.linksMapper = linksMapper;
     }
 
     Optional<NotificationList> mapPscNotifications(MapperRequest mapperRequest) {
