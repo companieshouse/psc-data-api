@@ -59,6 +59,7 @@ public class PscNotificationsService {
         int inactiveCount = filter.filterEnabled() ? 0 : repository.countInactive(pscId);
 
         return mapper.mapPscNotifications(PscNotificationsMapper.MapperRequest.builder()
+                .pscId(pscId)
                 .startIndex(startIndex)
                 .itemsPerPage(itemsPerPage)
                 .firstNotification(firstNotification)

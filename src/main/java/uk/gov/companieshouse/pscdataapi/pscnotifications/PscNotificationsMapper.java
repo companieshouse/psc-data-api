@@ -4,11 +4,11 @@ import static java.util.Optional.ofNullable;
 
 import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.api.psc_notifications.NotificationList;
+import uk.gov.companieshouse.api.psc_notifications.NotificationListLinkTypes;
 import uk.gov.companieshouse.pscdataapi.models.PscDocument;
 import uk.gov.companieshouse.pscdataapi.models.PscSensitiveData;
 import uk.gov.companieshouse.pscdataapi.pscnotifications.mappers.DateOfBirthMapper;
 import uk.gov.companieshouse.pscdataapi.pscnotifications.mappers.ItemsMapper;
-import uk.gov.companieshouse.pscdataapi.pscnotifications.mappers.LinksMapper;
 
 import java.util.List;
 import java.util.Optional;
@@ -18,12 +18,10 @@ class PscNotificationsMapper {
 
     private final ItemsMapper itemsMapper;
     private final DateOfBirthMapper dobMapper;
-    private final LinksMapper linksMapper;
 
-    PscNotificationsMapper(ItemsMapper itemsMapper, DateOfBirthMapper dobMapper, LinksMapper linksMapper) {
+    PscNotificationsMapper(ItemsMapper itemsMapper, DateOfBirthMapper dobMapper) {
         this.itemsMapper = itemsMapper;
         this.dobMapper = dobMapper;
-        this.linksMapper = linksMapper;
     }
 
     Optional<NotificationList> mapPscNotifications(MapperRequest mapperRequest) {
@@ -43,19 +41,19 @@ class PscNotificationsMapper {
                                 .items(itemsMapper.map(mapperRequest.pscNotifications()))
                                 .itemsPerPage(mapperRequest.itemsPerPage())
                                 .kind(NotificationList.KindEnum.PERSONAL_NOTIFICATION)
-                                .links(linksMapper.map(data.getLinks()))
+                                .links(new NotificationListLinkTypes(String.format("/persons_with_significant_control/%s/notifications", mapperRequest.pscId())))
                                 .name(data.getName())
                                 .startIndex(mapperRequest.startIndex())
                                 .totalResults(mapperRequest.totalResults())
                         ));
     }
 
-    record MapperRequest(Integer startIndex, Integer itemsPerPage, PscDocument firstNotification,
+    record MapperRequest(String pscId, Integer startIndex, Integer itemsPerPage, PscDocument firstNotification,
                          List<PscDocument> pscNotifications, Integer totalResults, Integer activeCount,
                          Integer inactiveCount, Integer ceasedCount) {
 
         private MapperRequest(Builder builder) {
-            this(builder.startIndex, builder.itemsPerPage, builder.firstNotification, builder.pscNotifications,
+            this(builder.pscId, builder.startIndex, builder.itemsPerPage, builder.firstNotification, builder.pscNotifications,
                     builder.totalResults, builder.activeCount, builder.inactiveCount, builder.ceasedCount);
         }
 
@@ -64,6 +62,7 @@ class PscNotificationsMapper {
         }
 
         static final class Builder {
+            private String pscId;
             private Integer startIndex;
             private Integer itemsPerPage;
             private PscDocument firstNotification;
@@ -74,6 +73,11 @@ class PscNotificationsMapper {
             private Integer ceasedCount;
 
             private Builder(){}
+
+            Builder pscId(String pscId) {
+                this.pscId = pscId;
+                return this;
+            }
 
             Builder startIndex(Integer startIndex) {
                 this.startIndex = startIndex;
