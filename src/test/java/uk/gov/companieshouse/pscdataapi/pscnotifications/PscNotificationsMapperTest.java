@@ -91,7 +91,7 @@ class PscNotificationsMapperTest {
         assertEquals("Test Name", notificationList.getName());
         assertEquals(NotificationList.KindEnum.fromValue("personal-notification"), notificationList.getKind());
         assertEquals(mappedDob, notificationList.getDateOfBirth());
-        assertEquals("/persons_with_significant_control/test-psc-id/notifications", notificationList.getLinks().getSelf());
+        assertEquals("/persons-with-significant-control/test-psc-id/notifications", notificationList.getLinks().getSelf());
         assertEquals(mappedItems, notificationList.getItems());
 
         verify(dobMapper).map(modelDob);

@@ -41,7 +41,7 @@ class PscNotificationsMapper {
                                 .items(itemsMapper.map(mapperRequest.pscNotifications()))
                                 .itemsPerPage(mapperRequest.itemsPerPage())
                                 .kind(NotificationList.KindEnum.PERSONAL_NOTIFICATION)
-                                .links(new NotificationListLinkTypes(String.format("/persons_with_significant_control/%s/notifications", mapperRequest.pscId())))
+                                .links(new NotificationListLinkTypes(String.format("/persons-with-significant-control/%s/notifications", mapperRequest.pscId())))
                                 .name(data.getName())
                                 .startIndex(mapperRequest.startIndex())
                                 .totalResults(mapperRequest.totalResults())
