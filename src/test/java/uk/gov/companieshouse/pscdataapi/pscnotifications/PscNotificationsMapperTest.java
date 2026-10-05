@@ -60,7 +60,6 @@ class PscNotificationsMapperTest {
         List<PscDocument> documents = List.of(firstNotification);
 
         DateOfBirth mappedDob = new DateOfBirth().month(1).year(2000);
-        NotificationListLinkTypes mappedLinks = new NotificationListLinkTypes().self("self");
         List<PscNotificationSummary> mappedItems = List.of(new PscNotificationSummary().name("name"));
 
         when(dobMapper.map(modelDob)).thenReturn(mappedDob);
