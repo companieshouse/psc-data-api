@@ -60,7 +60,6 @@ class PscNotificationsMapperTest {
         List<PscDocument> documents = List.of(firstNotification);
 
         DateOfBirth mappedDob = new DateOfBirth().month(1).year(2000);
-        NotificationListLinkTypes mappedLinks = new NotificationListLinkTypes().self("self");
         List<PscNotificationSummary> mappedItems = List.of(new PscNotificationSummary().name("name"));
 
         when(dobMapper.map(modelDob)).thenReturn(mappedDob);
@@ -91,7 +90,7 @@ class PscNotificationsMapperTest {
         assertEquals("Test Name", notificationList.getName());
         assertEquals(NotificationList.KindEnum.fromValue("personal-notification"), notificationList.getKind());
         assertEquals(mappedDob, notificationList.getDateOfBirth());
-        assertEquals("/persons_with_significant_control/test-psc-id/notifications", notificationList.getLinks().getSelf());
+        assertEquals("/persons-with-significant-control/test-psc-id/notifications", notificationList.getLinks().getSelf());
         assertEquals(mappedItems, notificationList.getItems());
 
         verify(dobMapper).map(modelDob);
