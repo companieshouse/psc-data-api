@@ -46,7 +46,7 @@ class CompanyPscTransformerTest {
     private static final boolean SHOW_FULL_DOB_TRUE = true;
     private static final boolean SHOW_FULL_DOB_FALSE = false;
     private static final boolean HAS_PREVIOUS_PSC_ID_TRUE = true;
-    private static final boolean HAS_PREVIOUS_PSC_ID_FALSE = true;
+    private static final boolean HAS_PREVIOUS_PSC_ID_FALSE = false;
 
     @InjectMocks
     private CompanyPscTransformer pscTransformer;
@@ -63,7 +63,7 @@ class CompanyPscTransformerTest {
     void testInsertIndividualPscWithDateOfBirthIsTransformedSuccessfully() throws FailedToTransformException {
         // given
         fullRecordCompanyPSCApi = TestHelper.buildFullRecordPsc(TestHelper.INDIVIDUAL_KIND, SHOW_FULL_DOB_TRUE, true, HAS_PREVIOUS_PSC_ID_FALSE);
-        PscDocument expectedDocument = TestHelper.buildPscDocument(TestHelper.INDIVIDUAL_KIND, SHOW_FULL_DOB_TRUE, true);
+        PscDocument expectedDocument = TestHelper.buildPscDocument(TestHelper.INDIVIDUAL_KIND, SHOW_FULL_DOB_TRUE, true, HAS_PREVIOUS_PSC_ID_FALSE);
         // when
         PscDocument result = pscTransformer.transformPscOnInsert(NOTIFICATION_ID, fullRecordCompanyPSCApi);
         // then
@@ -85,7 +85,7 @@ class CompanyPscTransformerTest {
     void testInsertIndividualPscNoDateOfBirthIsTransformedSuccessfully() throws FailedToTransformException {
         // given
         fullRecordCompanyPSCApi = TestHelper.buildFullRecordPsc(TestHelper.INDIVIDUAL_KIND, SHOW_FULL_DOB_FALSE, true, HAS_PREVIOUS_PSC_ID_FALSE);
-        PscDocument expectedDocument = TestHelper.buildPscDocument(TestHelper.INDIVIDUAL_KIND, SHOW_FULL_DOB_FALSE, true);
+        PscDocument expectedDocument = TestHelper.buildPscDocument(TestHelper.INDIVIDUAL_KIND, SHOW_FULL_DOB_FALSE, true, HAS_PREVIOUS_PSC_ID_FALSE);
         // when
         PscDocument result = pscTransformer.transformPscOnInsert(NOTIFICATION_ID, fullRecordCompanyPSCApi);
         // then
@@ -160,7 +160,7 @@ class CompanyPscTransformerTest {
     void testInsertIndividualBeneficialOwnerPscIsTransformedSuccessfully() throws FailedToTransformException {
         // given
         fullRecordCompanyPSCApi = TestHelper.buildFullRecordPsc(TestHelper.INDIVIDUAL_BO_KIND, SHOW_FULL_DOB_TRUE, true, HAS_PREVIOUS_PSC_ID_FALSE);
-        PscDocument expectedDocument = TestHelper.buildPscDocument(TestHelper.INDIVIDUAL_BO_KIND, SHOW_FULL_DOB_TRUE, true);
+        PscDocument expectedDocument = TestHelper.buildPscDocument(TestHelper.INDIVIDUAL_BO_KIND, SHOW_FULL_DOB_TRUE, true, HAS_PREVIOUS_PSC_ID_FALSE);
         // when
         PscDocument result = pscTransformer.transformPscOnInsert(NOTIFICATION_ID, fullRecordCompanyPSCApi);
         // then
@@ -184,7 +184,7 @@ class CompanyPscTransformerTest {
     void testInsertIndividualBeneficialOwnerPscIsTransformedSuccessfullyNoPscStatements() throws FailedToTransformException {
         // given
         fullRecordCompanyPSCApi = TestHelper.buildFullRecordPsc(TestHelper.INDIVIDUAL_BO_KIND, SHOW_FULL_DOB_TRUE, false, HAS_PREVIOUS_PSC_ID_FALSE);
-        PscDocument expectedDocument = TestHelper.buildPscDocument(TestHelper.INDIVIDUAL_BO_KIND, SHOW_FULL_DOB_TRUE, false);
+        PscDocument expectedDocument = TestHelper.buildPscDocument(TestHelper.INDIVIDUAL_BO_KIND, SHOW_FULL_DOB_TRUE, false, HAS_PREVIOUS_PSC_ID_FALSE);
         // when
         PscDocument result = pscTransformer.transformPscOnInsert(NOTIFICATION_ID, fullRecordCompanyPSCApi);
         // then

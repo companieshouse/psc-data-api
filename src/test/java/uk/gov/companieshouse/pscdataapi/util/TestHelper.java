@@ -78,7 +78,7 @@ public class TestHelper {
     private static final LocalDate EXEMPTION_DATE = LocalDate.of(2022, 11, 3);
 
     public static FullRecordCompanyPSCApi buildFullRecordPsc(String kind) {
-        return buildFullRecordPsc(kind, false, true, true);
+        return buildFullRecordPsc(kind, false, true, false);
     }
 
     public static FullRecordCompanyPSCApi buildFullRecordPsc(String kind, boolean showFullDateOfBirth,
@@ -241,17 +241,19 @@ public class TestHelper {
     }
 
     public static PscDocument buildPscDocument(String kind) {
-        return buildPscDocument(kind, false, true);
+        return buildPscDocument(kind, false, true, false);
     }
 
-    public static PscDocument buildPscDocument(String kind, boolean showFullDateOfBirth, boolean pscStatementsExists) {
+    public static PscDocument buildPscDocument(String kind, boolean showFullDateOfBirth, boolean pscStatementsExists, boolean hasPreviousPscId) {
         PscDocument output = new PscDocument();
         PscData pscData = new PscData();
 
         output.setId(NOTIFICATION_ID);
         output.setNotificationId(NOTIFICATION_ID);
         output.setPscId(PSC_ID);
-        output.setPreviousPscId(PREVIOUS_PSC_ID);
+        if (hasPreviousPscId) {
+            output.setPreviousPscId(PREVIOUS_PSC_ID);
+        }
         output.setCompanyNumber(COMPANY_NUMBER);
         output.setDeltaAt("20220112000000000000");
         output.setUpdated(new Updated()
