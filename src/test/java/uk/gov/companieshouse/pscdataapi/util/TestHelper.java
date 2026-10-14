@@ -72,21 +72,26 @@ public class TestHelper {
     public static final String COMPANY_NUMBER = "companyNumber";
     public static final String NOTIFICATION_ID = "notificationId";
     public static final String PSC_ID = "pscId";
+    public static final String PREVIOUS_PSC_ID = "previousPscId";
     public static final String PSC_STATEMENT_ID = "pscStatementId";
     public static final String X_REQUEST_ID = "654321";
     private static final LocalDate EXEMPTION_DATE = LocalDate.of(2022, 11, 3);
 
     public static FullRecordCompanyPSCApi buildFullRecordPsc(String kind) {
-        return buildFullRecordPsc(kind, false, true);
+        return buildFullRecordPsc(kind, false, true, false);
     }
 
     public static FullRecordCompanyPSCApi buildFullRecordPsc(String kind, boolean showFullDateOfBirth,
-            boolean pscStatementsExists) {
+            boolean pscStatementsExists, boolean hasPreviousPscId) {
         FullRecordCompanyPSCApi output = new FullRecordCompanyPSCApi();
         ExternalData externalData = new ExternalData();
         Data data = new Data();
 
         externalData.setPscId(PSC_ID);
+
+        if (hasPreviousPscId) {
+            externalData.setPreviousPscId(PREVIOUS_PSC_ID);
+        }
 
         if (pscStatementsExists) {
             externalData.setPscStatementId(PSC_STATEMENT_ID);
@@ -236,17 +241,19 @@ public class TestHelper {
     }
 
     public static PscDocument buildPscDocument(String kind) {
-        return buildPscDocument(kind, false, true);
+        return buildPscDocument(kind, false, true, false);
     }
 
-    public static PscDocument buildPscDocument(String kind, boolean showFullDateOfBirth, boolean pscStatementsExists) {
+    public static PscDocument buildPscDocument(String kind, boolean showFullDateOfBirth, boolean pscStatementsExists, boolean hasPreviousPscId) {
         PscDocument output = new PscDocument();
         PscData pscData = new PscData();
 
         output.setId(NOTIFICATION_ID);
         output.setNotificationId(NOTIFICATION_ID);
         output.setPscId(PSC_ID);
-        output.setPreviousPscId(PSC_ID);
+        if (hasPreviousPscId) {
+            output.setPreviousPscId(PREVIOUS_PSC_ID);
+        }
         output.setCompanyNumber(COMPANY_NUMBER);
         output.setDeltaAt("20220112000000000000");
         output.setUpdated(new Updated()
