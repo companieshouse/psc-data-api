@@ -4,6 +4,7 @@ import org.junit.platform.suite.api.ConfigurationParameter;
 import org.junit.platform.suite.api.IncludeEngines;
 import org.junit.platform.suite.api.SelectClasspathResource;
 import org.junit.platform.suite.api.Suite;
+import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureTestRestTemplate;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.test.annotation.DirtiesContext;
@@ -27,6 +28,7 @@ import uk.gov.companieshouse.pscdataapi.service.CompanyMetricsApiService;
 @ConfigurationParameter(key = PLUGIN_PROPERTY_NAME, value="pretty")
 @CucumberContextConfiguration
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
+@AutoConfigureTestRestTemplate
 @DirtiesContext
 public class CucumberFeaturesRunnerIT {
 
@@ -44,7 +46,7 @@ public class CucumberFeaturesRunnerIT {
 
     @DynamicPropertySource
     public static void setProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.data.mongodb.uri", mongoDBContainer::getReplicaSetUrl);
+        registry.add("spring.mongodb.uri", mongoDBContainer::getReplicaSetUrl);
         registry.add("psc-notifications.sorting-threshold-internal", () -> "500");
         registry.add("psc-notifications.sorting-threshold-external", () -> "500");
         mongoDBContainer.start();
