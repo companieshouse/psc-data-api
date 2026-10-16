@@ -32,7 +32,7 @@
     <!-- Internal -->
     <opentelemetry-instrumentation-bom.version>2.26.1</opentelemetry-instrumentation-bom.version>
     <opentelemetry.logback.appender.version>2.26.1-alpha</opentelemetry.logback.appender.version>
-    <private-api-sdk-java.version>6.0.31</private-api-sdk-java.version>
+    <private-api-sdk-java.version>7.2.35</private-api-sdk-java.version>
     <api-sdk-java.version>6.6.22</api-sdk-java.version>
 
     <!-- tests -->
