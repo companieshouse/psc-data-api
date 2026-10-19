@@ -713,7 +713,7 @@ public class CompanyPscTransformer {
         return;
     }
 
-        if (isPscLinksEnabled) {
+        if (!isPscLinksEnabled) {
             links.setPersonsWithSignificantControl(null);
             return;
         }
