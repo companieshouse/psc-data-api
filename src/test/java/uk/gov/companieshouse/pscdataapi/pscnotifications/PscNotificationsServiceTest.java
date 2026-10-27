@@ -10,6 +10,8 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.ArgumentCaptor;
 import static org.mockito.ArgumentMatchers.any;
 import org.mockito.Mock;
@@ -303,5 +305,53 @@ class PscNotificationsServiceTest {
                 ArgumentCaptor.forClass(PscNotificationsMapper.MapperRequest.class);
         verify(mapper).mapPscNotifications(captor.capture());
         assertEquals(5, captor.getValue().startIndex());
+    }
+
+    @ParameterizedTest
+    @CsvSource({"false,false", "false,true", "true,false", "true,true"})
+    void testOutOfRangePageRetainsMetadataWithoutNotificationEntries(
+            boolean activeFilter, boolean sortedByActiveThenCeased) {
+        String pscId = "psc-pagination";
+        String filterValue = activeFilter ? "active" : null;
+        List<String> statuses = activeFilter ? List.of("dissolved", "closed") : List.of();
+        int startIndex = 3465;
+        Filter filter = new Filter(activeFilter, statuses);
+        PscDocument metadata = new PscDocument();
+        NotificationList mapped = new NotificationList().totalResults(75).items(List.of());
+        PscNotificationsRequest request = PscNotificationsRequest.builder()
+                .pscId(pscId)
+                .filter(filterValue)
+                .startIndex(startIndex)
+                .itemsPerPage(35)
+                .build();
+
+        when(itemsPerPageService.adjustItemsPerPage(35, null)).thenReturn(35);
+        when(filterService.prepareFilter(filterValue, pscId)).thenReturn(filter);
+        when(repository.countTotal(pscId, activeFilter, statuses)).thenReturn(75);
+        when(sortingThresholdService.shouldSortByActiveThenResigned(75, null))
+                .thenReturn(sortedByActiveThenCeased);
+        if (sortedByActiveThenCeased) {
+            when(repository.findPscNotificationsIds(pscId, activeFilter, statuses, startIndex, 35))
+                    .thenReturn(new PscNotificationIds().ids(List.of()));
+        } else {
+            when(repository.findRecentPscNotifications(pscId, activeFilter, statuses, startIndex, 35))
+                    .thenReturn(List.of());
+        }
+        when(repository.findRecentPscNotifications(pscId, activeFilter, statuses, 0, 1))
+                .thenReturn(List.of(metadata));
+        when(mapper.mapPscNotifications(any())).thenReturn(Optional.of(mapped));
+
+        assertSame(mapped, service.getPscNotifications(request).orElseThrow());
+
+        ArgumentCaptor<PscNotificationsMapper.MapperRequest> captor =
+                ArgumentCaptor.forClass(PscNotificationsMapper.MapperRequest.class);
+        verify(mapper).mapPscNotifications(captor.capture());
+        PscNotificationsMapper.MapperRequest captured = captor.getValue();
+        assertSame(metadata, captured.firstNotification());
+        assertTrue(captured.pscNotifications().isEmpty());
+        assertEquals(75, captured.totalResults());
+        assertEquals(startIndex, captured.startIndex());
+        assertEquals(35, captured.itemsPerPage());
+        verify(repository).findRecentPscNotifications(pscId, activeFilter, statuses, 0, 1);
     }
 }
