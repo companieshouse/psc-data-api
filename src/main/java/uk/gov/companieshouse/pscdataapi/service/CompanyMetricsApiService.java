@@ -41,7 +41,7 @@ public class CompanyMetricsApiService {
                     DataMapHolder.getLogMap());
             if (statusCode != 404) {
                 final String msg = "Error calling Company Metrics API endpoint";
-                LOGGER.error(msg, DataMapHolder.getLogMap());
+                LOGGER.error(msg, ex, DataMapHolder.getLogMap());
                 throw new BadGatewayException(msg, ex);
             }
         } catch (URIValidationException ex) {
