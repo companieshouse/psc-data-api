@@ -55,6 +55,12 @@ public class PscNotificationsService {
                     pscId, filter.filterEnabled(), filter.filterStatuses(), startIndex, itemsPerPage);
         }
         PscDocument firstNotification = documents.isEmpty() ? null : documents.get(0);
+        if (documents.isEmpty() && totalResults > 0 && startIndex >= totalResults) {
+            // Retain PSC metadata without adding entries to the requested empty page.
+            firstNotification = repository.findRecentPscNotifications(
+                    pscId, filter.filterEnabled(), filter.filterStatuses(), DEFAULT_START_INDEX, 1)
+                    .stream().findFirst().orElse(null);
+        }
         int ceasedCount = filter.filterEnabled() ? 0 : repository.countCeased(pscId);
         int inactiveCount = filter.filterEnabled() ? 0 : repository.countInactive(pscId);
 

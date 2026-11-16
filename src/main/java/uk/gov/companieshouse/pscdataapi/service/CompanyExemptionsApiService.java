@@ -41,7 +41,7 @@ public class CompanyExemptionsApiService {
                     DataMapHolder.getLogMap());
             if (statusCode != 404) {
                 final String msg = "Error calling Company Exemptions API endpoint";
-                LOGGER.error(msg, DataMapHolder.getLogMap());
+                LOGGER.error(msg, ex, DataMapHolder.getLogMap());
                 throw new BadGatewayException(msg, ex);
             }
         } catch (URIValidationException ex) {
