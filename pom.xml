@@ -32,8 +32,8 @@
     <!-- Internal -->
     <opentelemetry-instrumentation-bom.version>2.33.1</opentelemetry-instrumentation-bom.version>
     <opentelemetry.logback.appender.version>2.33.1-alpha</opentelemetry.logback.appender.version>
-    <private-api-sdk-java.version>7.2.35</private-api-sdk-java.version>
-    <api-sdk-java.version>6.6.22</api-sdk-java.version>
+    <private-api-sdk-java.version>7.2.50</private-api-sdk-java.version>
+    <api-sdk-java.version>7.2.10</api-sdk-java.version>
 
     <!-- tests -->
     <io-cucumber.version>7.23.0</io-cucumber.version> <!-- Higher version not compatible with junit engine at time of comment -->
@@ -52,7 +52,7 @@
       <dependency>
         <groupId>uk.gov.companieshouse</groupId>
         <artifactId>ch-dependency-bom</artifactId>
-        <version>0.1.24</version>
+        <version>0.1.40</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
