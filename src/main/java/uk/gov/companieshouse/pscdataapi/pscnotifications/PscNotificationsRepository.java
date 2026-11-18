@@ -45,7 +45,7 @@ interface PscNotificationsRepository extends MongoRepository<PscDocument, String
                     + "] }"
                     + "} }"
     })
-    @Meta(allowDiskUse = true)
+    @Meta(allowDiskUse = "true")
     PscNotificationIds findPscNotificationsIds(String pscId, boolean filterEnabled,
             List<String> filterStatuses, int startIndex, int pageSize);
 
@@ -67,7 +67,7 @@ interface PscNotificationsRepository extends MongoRepository<PscDocument, String
             "{ $limit: ?4 }"
     })
 
-    @Meta(allowDiskUse = true)
+    @Meta(allowDiskUse = "true")
     List<PscDocument> findRecentPscNotifications(String pscId, boolean filterEnabled,
             List<String> filterStatuses, int startIndex, int pageSize);
 

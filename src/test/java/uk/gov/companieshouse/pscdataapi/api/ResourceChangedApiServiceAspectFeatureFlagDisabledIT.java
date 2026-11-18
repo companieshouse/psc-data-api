@@ -12,9 +12,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -31,6 +33,7 @@ import uk.gov.companieshouse.pscdataapi.repository.StreamEventOutboxRepository;
 import uk.gov.companieshouse.pscdataapi.transform.CompanyPscTransformer;
 import uk.gov.companieshouse.pscdataapi.util.TestHelper;
 
+@ExtendWith(MockitoExtension.class)
 @SpringBootTest
 class ResourceChangedApiServiceAspectFeatureFlagDisabledIT {
 
